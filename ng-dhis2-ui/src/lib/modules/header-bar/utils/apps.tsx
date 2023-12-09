@@ -22,9 +22,7 @@ function escapeRegExpCharacters(text: string) {
   return text.replace(/[/.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-function Search({ value, onChange }: any) {
-  const { baseUrl } = useConfig();
-
+function Search({ value, onChange, baseUrl }: any) {
   return (
     <div className="headerbar-apps-search">
       <span className="headerbar-apps-search-input">
@@ -68,6 +66,7 @@ function Search({ value, onChange }: any) {
 Search.propTypes = {
   value: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
+  baseUrl: PropTypes.string,
 };
 
 function Item({ name, path, img }: any) {
@@ -196,10 +195,10 @@ List.propTypes = {
   filter: PropTypes.string,
 };
 
-const AppMenu = ({ apps, filter, onFilterChange }: any) => (
+const AppMenu = ({ apps, filter, onFilterChange, baseUrl }: any) => (
   <div className="headerbar-apps-menu" data-test="headerbar-apps-menu">
     <Card>
-      <Search value={filter} onChange={onFilterChange} />
+      <Search value={filter} onChange={onFilterChange} baseUrl={baseUrl} />
       <List apps={apps} filter={filter} />
     </Card>
 
@@ -217,9 +216,10 @@ AppMenu.propTypes = {
   apps: PropTypes.array.isRequired,
   onFilterChange: PropTypes.func.isRequired,
   filter: PropTypes.string,
+  baseUrl: PropTypes.string,
 };
 
-const Apps = ({ apps }: any) => {
+const Apps = ({ apps, baseUrl }: any) => {
   const [show, setShow] = useState(false);
   const [filter, setFilter] = useState('');
 
@@ -257,6 +257,7 @@ const Apps = ({ apps }: any) => {
         <AppMenu
           apps={apps}
           filter={filter}
+          baseUrl={baseUrl}
           onFilterChange={handleFilterChange}
         />
       ) : null}
@@ -295,6 +296,7 @@ const Apps = ({ apps }: any) => {
 
 Apps.propTypes = {
   apps: PropTypes.array.isRequired,
+  baseUrl: PropTypes.string,
 };
 
 export default Apps;

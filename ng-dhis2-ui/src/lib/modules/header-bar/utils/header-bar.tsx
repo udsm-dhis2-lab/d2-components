@@ -29,12 +29,17 @@ export const HeaderBar = ({ appName, data, className }: HeaderBarProp) => {
     i18n.changeLanguage(locale);
   }
 
+  {
+    /* TODO: Find better way to attach base URL */
+  }
+  const baseUrl = '../../../';
+
   return (
     <header className={className}>
       <div className="main">
         {!loading && !error && (
           <>
-            <Logo baseUrl="../../../" />
+            <Logo baseUrl={baseUrl} />
 
             <Title
               app={appName}
@@ -51,7 +56,7 @@ export const HeaderBar = ({ appName, data, className }: HeaderBarProp) => {
               messages={data.notifications.unreadMessageConversations}
               userAuthorities={data.user['authorities'] as any}
             />
-            <Apps apps={data.apps} />
+            <Apps apps={data.apps} baseUrl={baseUrl} />
 
             <Profile
               name={data.user['name'] as string}
