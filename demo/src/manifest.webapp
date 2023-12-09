@@ -1,0 +1,23 @@
+{
+  "version": "1.0.0",
+  "name": "NgDHIS2Ui Demo App",
+  "description": "NgDHIS2Ui Demo App",
+  "appType": "APP",
+  "launch_path": "index.html",
+  "icons": {
+    "16": "assets/icons/icon-72x72.png",
+    "48": "assets/icons/icon-96x96.png",
+    "128": "assets/icons/icon-128x128.png"
+  },
+  "developer": {
+    "name": "UDSM DHIS2 Lab",
+    "url": "https://dhis2.udsm.ac.tz"
+  },
+  "default_locale": "en",
+  "activities": {
+    "dhis": {
+      "href": "../../../"
+    }
+  },
+  "authorities": []
+}
