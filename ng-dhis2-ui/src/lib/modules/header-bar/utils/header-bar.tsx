@@ -6,7 +6,6 @@ import { HeaderBarData } from '../models';
 import Apps from './apps';
 import { Logo } from './logo';
 import { Notifications } from './notifications';
-import { OnlineStatus } from './online-status';
 import Profile from './profile';
 import { Title } from './title';
 

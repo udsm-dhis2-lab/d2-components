@@ -4,7 +4,11 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build:demo": "nx build demo && cd dist/demo && zip -r -D dhis2-ui-demo.zip ."
+    "build:demo": "nx build demo && cd dist/demo && zip -r -D dhis2-ui-demo.zip .",
+    "build:dhis2-ui": "nx build ng-dhis2-ui",
+    "publish:dhis2-ui": "npm run build:dhis2-ui && cd dist/ng-dhis2-ui && npm publish --access public && cd ../../",
+    "pack:dhis2-ui": "npm run build:dhis2-ui && cd dist/ng-dhis2-ui && npm pack",
+    "link:dhis2-ui": "npm run build:dhis2-ui && cd dist/ng-dhis2-ui && npm link"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~16.2.0",
