@@ -5,4 +5,5 @@ import { ReactWrapperComponent } from './react-component-wrapper/react-wrapper.c
 
 export const sharedComponents: any[] = [];
 
+export * from './TransferOption';
 export { ReactWrapperComponent };

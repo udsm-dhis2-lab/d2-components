@@ -1,0 +1,410 @@
+import {
+  generateFixedPeriods,
+  getNowInCalendar,
+} from '@dhis2/multi-calendar-dates';
+import i18n from '@dhis2/d2-i18n';
+import {
+  DAILY,
+  WEEKLY,
+  WEEKLYWED,
+  WEEKLYTHU,
+  WEEKLYSAT,
+  WEEKLYSUN,
+  BIWEEKLY,
+  MONTHLY,
+  BIMONTHLY,
+  QUARTERLY,
+  SIXMONTHLY,
+  SIXMONTHLYAPR,
+  YEARLY,
+  FYNOV,
+  FYOCT,
+  FYJUL,
+  FYAPR,
+} from './periodTypes';
+
+const PERIOD_TYPE_REGEX = {
+  [DAILY]: /^([0-9]{4})([0-9]{2})([0-9]{2})$/, // YYYYMMDD
+  [WEEKLY]: /^([0-9]{4})()W([0-9]{1,2})$/, // YYYY"W"[1-53]
+  [BIWEEKLY]: /^([0-9]{4})BiW([0-9]{1,2})$/, // YYYY"BiW"[1-27]
+  [WEEKLYWED]: /^([0-9]{4})(Wed)W([0-9]{1,2})$/, // YYYY"WedW"[1-53]
+  [WEEKLYTHU]: /^([0-9]{4})(Thu)W([0-9]{1,2})$/, // YYYY"ThuW"[1-53]
+  [WEEKLYSAT]: /^([0-9]{4})(Sat)W([0-9]{1,2})$/, // YYYY"SatW"[1-53]
+  [WEEKLYSUN]: /^([0-9]{4})(Sun)W([0-9]{1,2})$/, // YYYY"SunW"[1-53]
+  [MONTHLY]: /^([0-9]{4})([0-9]{2})$/, // YYYYMM
+  [BIMONTHLY]: /^([0-9]{4})([0-9]{2})B$/, // YYYY0[1-6]"B"
+  [QUARTERLY]: /^([0-9]{4})Q([1234])$/, // YYYY"Q"[1-4]
+  [SIXMONTHLY]: /^([0-9]{4})S([12])$/, // YYYY"S"[1/2]
+  [SIXMONTHLYAPR]: /^([0-9]{4})AprilS([12])$/, // YYYY"AprilS"[1/2]
+  // [SIXMONTHLYNOV]: /^([0-9]{4})NovS([12])$/, // YYYY"NovS"[1/2] Not supported?
+  [YEARLY]: /^([0-9]{4})$/, // YYYY
+  [FYNOV]: /^([0-9]{4})Nov$/, // YYYY"Nov"
+  [FYOCT]: /^([0-9]{4})Oct$/, // YYYY"Oct"
+  [FYJUL]: /^([0-9]{4})July$/, // YYYY"July"
+  [FYAPR]: /^([0-9]{4})April$/, // YYYY"April"
+};
+
+const getPeriods = ({
+  periodType,
+  config,
+  fnFilter,
+  periodSettings = {},
+}: any) => {
+  const offset = parseInt(config.offset, 10);
+  const isFilter = config.filterFuturePeriods;
+  const isReverse = periodType.match(/^FY|YEARLY/)
+    ? true
+    : config.reversePeriods;
+
+  const { calendar = 'gregory', locale = 'en' } = periodSettings as any;
+  const now = getNowInCalendar(calendar);
+  const year = (now.eraYear || now.year) + offset;
+
+  const params = {
+    periodType,
+    year,
+    calendar,
+    locale,
+    startingDay: config.startDay,
+  };
+
+  let periods = generateFixedPeriods(params);
+
+  periods = isFilter ? fnFilter(periods) : periods;
+  periods = !isReverse ? periods : periods.reverse();
+
+  return periods;
+};
+
+const getDailyPeriodType = (fnFilter: any, periodSettings?: any) => {
+  return (config: any) => {
+    return getPeriods({
+      periodType: 'DAILY',
+      config,
+      fnFilter,
+      periodSettings,
+    });
+  };
+};
+
+const getWeeklyPeriodType = (
+  weekObj: any,
+  fnFilter: any,
+  periodSettings: any
+) => {
+  return (config: any) => {
+    return getPeriods({
+      periodType: 'WEEKLY',
+      config: {
+        ...config,
+        startDay: weekObj.startDay,
+      },
+      fnFilter,
+      periodSettings,
+    });
+  };
+};
+
+const getBiWeeklyPeriodType = (fnFilter: any, periodSettings: any) => {
+  return (config: any) => {
+    return getPeriods({
+      periodType: 'BIWEEKLY',
+      config,
+      fnFilter,
+      periodSettings,
+    });
+  };
+};
+
+const getMonthlyPeriodType = (fnFilter: any, periodSettings: any) => {
+  return (config: any) => {
+    return getPeriods({
+      periodType: 'MONTHLY',
+      config,
+      fnFilter,
+      periodSettings,
+    });
+  };
+};
+
+const getBiMonthlyPeriodType = (fnFilter: any, periodSettings: any) => {
+  return (config: any) => {
+    return getPeriods({
+      periodType: 'BIMONTHLY',
+      config,
+      fnFilter,
+      periodSettings,
+    });
+  };
+};
+
+const getQuarterlyPeriodType = (fnFilter: any, periodSettings: any) => {
+  return (config: any) => {
+    return getPeriods({
+      periodType: 'QUARTERLY',
+      config,
+      fnFilter,
+      periodSettings,
+    });
+  };
+};
+
+const getSixMonthlyPeriodType = (fnFilter: any, periodSettings: any) => {
+  return (config: any) => {
+    return getPeriods({
+      periodType: 'SIXMONTHLY',
+      config,
+      fnFilter,
+      periodSettings,
+    });
+  };
+};
+
+const getSixMonthlyAprilPeriodType = (fnFilter: any, periodSettings: any) => {
+  return (config: any) => {
+    return getPeriods({
+      periodType: 'SIXMONTHLYAPR',
+      config,
+      fnFilter,
+      periodSettings,
+    });
+  };
+};
+
+const getYearlyPeriodType = (fnFilter: any, periodSettings: any) => {
+  return (config: any) => {
+    return getPeriods({
+      periodType: 'YEARLY',
+      config,
+      fnFilter,
+      periodSettings,
+    });
+  };
+};
+
+const getFinancialOctoberPeriodType = (fnFilter: any, periodSettings: any) => {
+  return (config: any) => {
+    return getPeriods({
+      periodType: 'FYOCT',
+      config,
+      fnFilter,
+      periodSettings,
+    });
+  };
+};
+
+const getFinancialNovemberPeriodType = (fnFilter: any, periodSettings: any) => {
+  return (config: any) => {
+    return getPeriods({
+      periodType: 'FYNOV',
+      config,
+      fnFilter,
+      periodSettings,
+    });
+  };
+};
+
+const getFinancialJulyPeriodType = (fnFilter: any, periodSettings: any) => {
+  return (config: any) => {
+    return getPeriods({
+      periodType: 'FYJUL',
+      config,
+      fnFilter,
+      periodSettings,
+    });
+  };
+};
+
+const getFinancialAprilPeriodType = (fnFilter: any, periodSettings: any) => {
+  return (config: any) => {
+    return getPeriods({
+      periodType: 'FYAPR',
+      config,
+      fnFilter,
+      periodSettings,
+    });
+  };
+};
+
+const filterFuturePeriods = (periods: any) => {
+  const array = [];
+  const now = new Date(Date.now());
+
+  for (let i = 0; i < periods.length; i++) {
+    if (new Date(periods[i].startDate) <= now) {
+      array.push(periods[i]);
+    }
+  }
+
+  return array;
+};
+
+const getOptions = (periodSettings?: any) => {
+  return [
+    {
+      id: DAILY,
+      getPeriods: getDailyPeriodType(filterFuturePeriods, periodSettings),
+      name: i18n.t('Daily'),
+    },
+    {
+      id: WEEKLY,
+      getPeriods: getWeeklyPeriodType(
+        { startDay: 1 },
+        filterFuturePeriods,
+        periodSettings
+      ),
+      name: i18n.t('Weekly'),
+    },
+    {
+      id: WEEKLYWED,
+      getPeriods: getWeeklyPeriodType(
+        { startDay: 3 },
+        filterFuturePeriods,
+        periodSettings
+      ),
+      name: i18n.t('Weekly (Start Wednesday)'),
+    },
+    {
+      id: WEEKLYTHU,
+      getPeriods: getWeeklyPeriodType(
+        { startDay: 4 },
+        filterFuturePeriods,
+        periodSettings
+      ),
+      name: i18n.t('Weekly (Start Thursday)'),
+    },
+    {
+      id: WEEKLYSAT,
+      getPeriods: getWeeklyPeriodType(
+        { startDay: 6 },
+        filterFuturePeriods,
+        periodSettings
+      ),
+      name: i18n.t('Weekly (Start Saturday)'),
+    },
+    {
+      id: WEEKLYSUN,
+      getPeriods: getWeeklyPeriodType(
+        { startDay: 7 },
+        filterFuturePeriods,
+        periodSettings
+      ),
+      name: i18n.t('Weekly (Start Sunday)'),
+    },
+    {
+      id: BIWEEKLY,
+      getPeriods: getBiWeeklyPeriodType(filterFuturePeriods, periodSettings),
+      name: i18n.t('Bi-weekly'),
+    },
+    {
+      id: MONTHLY,
+      getPeriods: getMonthlyPeriodType(filterFuturePeriods, periodSettings),
+      name: i18n.t('Monthly'),
+    },
+    {
+      id: BIMONTHLY,
+      getPeriods: getBiMonthlyPeriodType(filterFuturePeriods, periodSettings),
+      name: i18n.t('Bi-monthly'),
+    },
+    {
+      id: QUARTERLY,
+      getPeriods: getQuarterlyPeriodType(filterFuturePeriods, periodSettings),
+      name: i18n.t('Quarterly'),
+    },
+    {
+      id: SIXMONTHLY,
+      getPeriods: getSixMonthlyPeriodType(filterFuturePeriods, periodSettings),
+      name: i18n.t('Six-monthly'),
+    },
+    {
+      id: SIXMONTHLYAPR,
+      getPeriods: getSixMonthlyAprilPeriodType(
+        filterFuturePeriods,
+        periodSettings
+      ),
+      name: i18n.t('Six-monthly April'),
+    },
+    {
+      id: YEARLY,
+      getPeriods: getYearlyPeriodType(filterFuturePeriods, periodSettings),
+      name: i18n.t('Yearly'),
+    },
+    {
+      id: FYNOV,
+      getPeriods: getFinancialNovemberPeriodType(
+        filterFuturePeriods,
+        periodSettings
+      ),
+      name: i18n.t('Financial year (Start November)'),
+    },
+    {
+      id: FYOCT,
+      getPeriods: getFinancialOctoberPeriodType(
+        filterFuturePeriods,
+        periodSettings
+      ),
+      name: i18n.t('Financial year (Start October)'),
+    },
+    {
+      id: FYJUL,
+      getPeriods: getFinancialJulyPeriodType(
+        filterFuturePeriods,
+        periodSettings
+      ),
+      name: i18n.t('Financial year (Start July)'),
+    },
+    {
+      id: FYAPR,
+      getPeriods: getFinancialAprilPeriodType(
+        filterFuturePeriods,
+        periodSettings
+      ),
+      name: i18n.t('Financial year (Start April)'),
+    },
+  ];
+};
+
+export const getFixedPeriodsOptionsById = (
+  id: string,
+  periodSettings?: any
+) => {
+  return getOptions(periodSettings).find((option) => option.id === id);
+};
+
+export const getFixedPeriodsOptions = () => getOptions();
+
+export const getYearOffsetFromNow = (yearStr: any) =>
+  parseInt(yearStr) - new Date(Date.now()).getFullYear();
+
+export const parsePeriodCode = (code: any, allowedTypes: any) => {
+  const periodTypes = Object.keys(PERIOD_TYPE_REGEX);
+  let i = 0;
+  let type = '';
+  let match = undefined;
+
+  while (i < periodTypes.length && !match) {
+    type = periodTypes[i];
+    match = code.match((PERIOD_TYPE_REGEX as any)[type]);
+    i++;
+  }
+
+  if (
+    !match ||
+    (Array.isArray(allowedTypes) && !allowedTypes.some((t) => t === type))
+  ) {
+    return undefined;
+  }
+
+  const period = getFixedPeriodsOptionsById(type);
+  const offset = getYearOffsetFromNow(match[1]);
+  const options = period?.getPeriods({ offset });
+
+  return period
+    ? {
+        id: period.id,
+        name: period.name,
+        year: match[1],
+        options,
+      }
+    : null;
+};

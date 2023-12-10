@@ -1,20 +1,18 @@
-import { Component, ElementRef, OnInit } from '@angular/core';
-import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
-import { Observable, firstValueFrom } from 'rxjs';
-import { HeaderBarData } from './models';
-import { ReactWrapperComponent } from '../../shared/components';
+import { Component, ElementRef } from '@angular/core';
 import { DataProvider } from '@dhis2/app-runtime';
+import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
 import React from 'react';
 import * as ReactDOM from 'react-dom/client';
+import { firstValueFrom } from 'rxjs';
+import { ReactWrapperComponent } from '../../shared/components';
+import { HeaderBarData } from './models';
 import { HeaderBar } from './utils/header-bar';
 
 @Component({
   selector: 'ng-dhis2-ui-header-bar',
-  template: `<ng-container *ngIf="data$ | async as data"> </ng-container>`,
+  template: `<ng-container></ng-container>`,
 })
 export class HeaderBarComponent extends ReactWrapperComponent {
-  data$!: Observable<HeaderBarData | null>;
-
   constructor(
     elementRef: ElementRef<HTMLElement>,
     private httpClient: NgxDhis2HttpClientService

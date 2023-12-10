@@ -61,6 +61,7 @@
     "@angular/platform-browser": "~16.2.0",
     "@angular/platform-browser-dynamic": "~16.2.0",
     "@angular/router": "~16.2.0",
+    "@dhis2/analytics": "^26.1.8",
     "@dhis2/app-adapter": "^10.3.10",
     "@dhis2/app-runtime": "^3.9.4",
     "@dhis2/d2-i18n": "^1.1.2",

@@ -7,4 +7,13 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'demo';
+  selectedPeriods = [
+    { id: 'THIS_MONTH', name: 'This month' },
+    { id: 'LAST_MONTH', name: 'Last month' },
+    { id: 'LAST_3_MONTHS', name: 'Last 3 months' },
+  ];
+
+  onSelectPeriods(periods: any) {
+    console.log(periods);
+  }
 }

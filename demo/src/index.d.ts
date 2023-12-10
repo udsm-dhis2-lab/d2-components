@@ -18,4 +18,5 @@ declare module '@dhis2-ui/button';
 declare module '@dhis2-ui/input';
 declare module '@dhis2/ui-constants';
 declare module '@dhis2/ui-icons';
+declare module '@dhis2/analytics';
 /// <reference types="styled-jsx" />
