@@ -1,9 +1,14 @@
+<h5>Header Bar component</h5>
 <ng-dhis2-ui-header-bar></ng-dhis2-ui-header-bar>
+
+<h5>Button component</h5>
 <ng-dhis2-ui-button [label]="'Button'" [primary]="true" [small]="true">
   <div #ngDhis2UiContent>
     <div>Button</div>
   </div>
 </ng-dhis2-ui-button>
+
+<h5>Period selector component</h5>
 <ng-dhis2-ui-period-selector
   [selectedPeriods]="selectedPeriods"
   (selectPeriods)="onSelectPeriods($event)"
