@@ -53,11 +53,11 @@ If you want to collaborate to the codebase, to run the codebase locally;
 
 **NOTE**: Sometimes npm installation may failed due to mismatch in resolving package version dependencies. If you are using npm then run `npm install --legacy-peer-deps` to ensure all packages regardless of unmatched dependencies are getting installed. This may however break the code if the packages dependencies are incompatible
 
-3. To run the demo app, in order to view and test the components
+3. You will be required to set up a proxy config file named `proxy-config.json`. You can simply copy `proxy-config.example.json` and modify your access credentials to DHIS2 instances to run the demo application.
 
-`nx serve demo`
+4. To run the demo app, in order to view and test the components `nx serve demo`
 
-4. To build, pack, link and publish the library
+## Deployment
 
 - To build, run `npm run build:dhis2-ui`
 - To pack, run `npm run pack:dhis2-ui`
