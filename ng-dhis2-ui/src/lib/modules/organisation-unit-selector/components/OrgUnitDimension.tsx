@@ -48,6 +48,8 @@ const OrgUnitDimension = ({
     const { id, checked, displayName, path } = selectedItem;
     let result = [...selectedItems];
 
+    console.log(DYNAMIC_ORG_UNITS);
+
     if (checked && DYNAMIC_ORG_UNITS.includes(id)) {
       result = [
         ...result.filter((item) => DYNAMIC_ORG_UNITS.includes(item.id)),

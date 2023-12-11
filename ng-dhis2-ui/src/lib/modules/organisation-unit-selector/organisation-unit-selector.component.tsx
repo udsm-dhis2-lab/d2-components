@@ -12,6 +12,10 @@ import * as ReactDOM from 'react-dom/client';
 import { firstValueFrom, map } from 'rxjs';
 import { DataProvider } from '@dhis2/app-runtime';
 import OrgUnitDimension from './components/OrgUnitDimension';
+import {
+  OrganisationUnitSelectionConfig,
+  OrganisationUnitSelectionUsageType,
+} from './models';
 
 type OrganisationUnitSelectionEvent = {
   dimensionId: string;
@@ -24,6 +28,8 @@ type OrganisationUnitSelectionEvent = {
 })
 export class OrganisationUnitSelectorComponent extends ReactWrapperComponent {
   @Input() selectedOrgUnits: any[] = [];
+  @Input() orgUnitSelectionConfig: OrganisationUnitSelectionConfig =
+    new OrganisationUnitSelectionConfig();
 
   @Output() selectOrgUnits = new EventEmitter();
 
@@ -50,6 +56,9 @@ export class OrganisationUnitSelectorComponent extends ReactWrapperComponent {
         {
           <OrgUnitDimension
             selected={this.selectedOrgUnits}
+            hideGroupSelect={this.orgUnitSelectionConfig.hideGroupSelect}
+            hideLevelSelect={this.orgUnitSelectionConfig.hideLevelSelect}
+            hideUserOrgUnits={this.orgUnitSelectionConfig.hideUserOrgUnits}
             onSelect={(selectionEvent: OrganisationUnitSelectionEvent) =>
               this.onSelectItems(selectionEvent)
             }
@@ -60,16 +69,33 @@ export class OrganisationUnitSelectorComponent extends ReactWrapperComponent {
         }
       </DataProvider>
     );
+
     this.render();
   }
 
+  getOrgUnitAttributeByUsage(usageType: OrganisationUnitSelectionUsageType) {
+    switch (usageType) {
+      case 'DATA_ENTRY':
+        return 'organisationUnits';
+
+      case 'DATA_VIEW':
+        return 'dataViewOrganisationUnits';
+
+      default:
+        return 'organisationUnits';
+    }
+  }
+
   getRootOrgUnits(): Promise<string[]> {
+    const orgUnitAttribute = this.getOrgUnitAttributeByUsage(
+      this.orgUnitSelectionConfig.usageType
+    );
     return firstValueFrom(
       this.httpClient
         .me()
         .pipe(
           map((user: User) =>
-            (user?.organisationUnits || []).map((orgUnit) => orgUnit.id)
+            (user ? user[orgUnitAttribute] : []).map((orgUnit) => orgUnit.id)
           )
         )
     );
