@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import {
   ButtonModule,
   HeaderBarModule,
+  OrganisationUnitSelectorModule,
   PeriodSelectorModule,
 } from '@iapps/ng-dhis2-ui';
 import { AppComponent } from './app.component';
@@ -18,6 +19,7 @@ import { NgxDhis2HttpClientModule } from '@iapps/ngx-dhis2-http-client';
     HeaderBarModule,
     ButtonModule,
     PeriodSelectorModule,
+    OrganisationUnitSelectorModule,
     RouterModule.forRoot(appRoutes, { initialNavigation: 'enabledBlocking' }),
     NgxDhis2HttpClientModule.forRoot({
       version: 1,
