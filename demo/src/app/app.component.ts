@@ -13,7 +13,15 @@ export class AppComponent {
     { id: 'LAST_3_MONTHS', name: 'Last 3 months' },
   ];
 
+  selectedOrgUnits = [];
+
   onSelectPeriods(periods: any) {
     console.log(periods);
+  }
+
+  onSelectOrgUnits(orgUnits: any) {
+    this.selectedOrgUnits = orgUnits;
+
+    console.log(this.selectedOrgUnits);
   }
 }
