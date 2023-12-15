@@ -5,7 +5,6 @@ import {
   Input,
   Output,
 } from '@angular/core';
-import { ReactWrapperComponent } from '../../shared';
 import { NgxDhis2HttpClientService, User } from '@iapps/ngx-dhis2-http-client';
 import React from 'react';
 import * as ReactDOM from 'react-dom/client';
@@ -16,6 +15,7 @@ import {
   OrganisationUnitSelectionConfig,
   OrganisationUnitSelectionUsageType,
 } from './models';
+import { ReactWrapperComponent } from '../react-wrapper';
 
 type OrganisationUnitSelectionEvent = {
   dimensionId: string;

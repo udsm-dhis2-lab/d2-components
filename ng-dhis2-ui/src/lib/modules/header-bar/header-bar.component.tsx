@@ -4,9 +4,9 @@ import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
 import React from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { firstValueFrom } from 'rxjs';
-import { ReactWrapperComponent } from '../../shared/components';
 import { HeaderBarData } from './models';
 import { HeaderBar } from './utils/header-bar';
+import { ReactWrapperComponent } from '../react-wrapper';
 
 @Component({
   selector: 'ng-dhis2-ui-header-bar',
