@@ -1,12 +1,11 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { Button } from '@dhis2/ui';
-import { ReactWrapperComponent } from '../../shared/components';
+import { ReactWrapperComponent } from '../react-wrapper';
 
 @Component({
   selector: 'ng-dhis2-ui-button',
   template: '<ng-content></ng-content>',
-
 })
 export class ButtonComponent extends ReactWrapperComponent {
   @Input() label!: string;
@@ -26,7 +25,6 @@ export class ButtonComponent extends ReactWrapperComponent {
   };
 
   override component = Button;
-
 
   ngOnInit() {
     this.props = {

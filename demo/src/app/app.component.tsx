@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { Menu, MenuItem } from '@dhis2/ui';
+import React from 'react';
 
 @Component({
   selector: 'ng-dhis2-ui-root',
@@ -14,6 +16,14 @@ export class AppComponent {
   ];
 
   selectedOrgUnits = [];
+  menu = () => (
+    <div>
+      <Menu>
+        <MenuItem label="Menu item" />
+        <MenuItem label="Menu item" />
+      </Menu>
+    </div>
+  );
 
   onSelectPeriods(periods: any) {
     console.log(periods);

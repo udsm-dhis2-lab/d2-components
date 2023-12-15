@@ -10,7 +10,6 @@ import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
 import React from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { firstValueFrom } from 'rxjs';
-import { ReactWrapperComponent } from '../../shared/components';
 import { PeriodDimension } from './components/PeriodDimension';
 import {
   BIMONTHLY,
@@ -23,6 +22,7 @@ import {
   WEEKLYTHU,
   WEEKLYWED,
 } from './components/utils';
+import { ReactWrapperComponent } from '../react-wrapper/react-wrapper.component';
 
 type PeriodSelectionEvent = {
   dimensionId: string;
