@@ -1,6 +1,6 @@
 {
   "name": "@iapps/ng-dhis2-ui",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "peerDependencies": {
     "@angular/common": "^16.2.0",
     "@angular/core": "^16.2.0",
