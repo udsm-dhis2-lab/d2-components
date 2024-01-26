@@ -43,7 +43,10 @@ export class ReactWrapperComponent
   }
 
   protected render() {
-    if (!this.component) throw new Error('React component must be supplied');
+    if (!this.component) {
+      console.warn('React component must be supplied');
+      return;
+    }
 
     if (!this.reactDomRoot) return;
 
