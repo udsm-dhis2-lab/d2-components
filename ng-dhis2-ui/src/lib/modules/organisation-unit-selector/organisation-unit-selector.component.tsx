@@ -8,8 +8,8 @@ import {
 import { NgxDhis2HttpClientService, User } from '@iapps/ngx-dhis2-http-client';
 import React from 'react';
 import * as ReactDOM from 'react-dom/client';
-import { firstValueFrom, map } from 'rxjs';
-import { DataProvider } from '@dhis2/app-runtime';
+import { firstValueFrom, lastValueFrom, map } from 'rxjs';
+import { Provider } from '@dhis2/app-runtime';
 import OrgUnitDimension from './components/OrgUnitDimension';
 import {
   OrganisationUnitSelectionConfig,
@@ -51,8 +51,10 @@ export class OrganisationUnitSelectorComponent extends ReactWrapperComponent {
     this.reactDomRoot = ReactDOM.createRoot(this.elementRef.nativeElement);
     const rootOrgUnits = await this.getRootOrgUnits();
 
+    const config = await this.getAppConfig();
+
     this.component = () => (
-      <DataProvider>
+      <Provider config={config}>
         {
           <OrgUnitDimension
             selected={this.selectedOrgUnits}
@@ -67,10 +69,25 @@ export class OrganisationUnitSelectorComponent extends ReactWrapperComponent {
             roots={rootOrgUnits}
           />
         }
-      </DataProvider>
+      </Provider>
     );
 
     this.render();
+  }
+
+  private async getAppConfig() {
+    const systemInfo = (await firstValueFrom(
+      this.httpClient.systemInfo()
+    )) as unknown as Record<string, unknown>;
+
+    return {
+      baseUrl: (document?.location?.host?.includes('localhost')
+        ? `${document.location.protocol}//${document.location.host}`
+        : systemInfo['contextPath']) as string,
+      apiVersion: Number(
+        (((systemInfo['version'] as string) || '')?.split('.') || [])[1]
+      ),
+    };
   }
 
   getOrgUnitAttributeByUsage(usageType: OrganisationUnitSelectionUsageType) {
