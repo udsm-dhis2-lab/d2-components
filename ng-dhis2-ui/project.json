@@ -26,26 +26,12 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "ng-dhis2-ui/jest.config.ts",
-        "passWithNoTests": true
-      },
-      "configurations": {
-        "ci": {
-          "ci": true,
-          "codeCoverage": true
-        }
+        "jestConfig": "ng-dhis2-ui/jest.config.ts"
       }
     },
     "lint": {
       "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"],
-      "options": {
-        "lintFilePatterns": [
-          "ng-dhis2-ui/**/*.ts",
-          "ng-dhis2-ui/**/*.html",
-          "ng-dhis2-ui/package.json"
-        ]
-      }
+      "outputs": ["{options.outputFile}"]
     }
   }
 }
