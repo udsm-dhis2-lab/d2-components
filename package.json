@@ -19,7 +19,11 @@
     "link:ng-dhis2-dashboard": "npm run build:ng-dhis2-dashboard && cd dist/packages/ng-dhis2-dashboard && npm link",
     "build:ng-dhis2-shell": "nx build ng-dhis2-shell && cd ng-dhis2-shell && npm run build",
     "pack:ng-dhis2-shell": "npm run build:ng-dhis2-shell && cd dist/packages/ng-dhis2-shell && npm pack",
-    "publish:ng-dhis2-shell": "npm run build:ng-dhis2-shell && cd dist/packages/ng-dhis2-shell && npm publish --access public"
+    "publish:ng-dhis2-shell": "npm run build:ng-dhis2-shell && cd dist/packages/ng-dhis2-shell && npm publish --access public",
+    "build:dhis2-period": "nx build dhis2-period-utilities",
+    "pack:dhis2-period": "nx build dhis2-period-utilities && cd dist/packages/dhis2-period-utilities && npm pack",
+    "link:dhis2-period": "nx build dhis2-period-utilities && cd dist/packages/dhis2-period-utilities && npm link",
+    "publish:dhis2-period": "nx build dhis2-period-utilities && cd dist/packages/dhis2-period-utilities && npm publish --access public"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "17.1.4",
