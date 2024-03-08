@@ -1,0 +1,82 @@
+export const VISUALIZATION_TYPES = [
+  {
+    type: 'COLUMN',
+    description: 'Column chart',
+    label: 'Column',
+    icon: 'assets/icons/column.png',
+  },
+  {
+    type: 'LINE',
+    description: 'Line chart',
+    label: 'Line',
+    icon: 'assets/icons/line.png',
+  },
+  {
+    type: 'DOTTED',
+    description: 'Dotted chart',
+    label: 'Dotted',
+    icon: 'assets/icons/dotted.png',
+  },
+  {
+    type: 'BAR',
+    description: 'Bar chart',
+    label: 'Bar',
+    icon: 'assets/icons/bar.png',
+  },
+  {
+    type: 'AREA',
+    description: 'Area chart',
+    label: 'Area',
+    icon: 'assets/icons/area.png',
+  },
+  {
+    type: 'PIE',
+    description: 'Pie chart',
+    label: 'Pie',
+    icon: 'assets/icons/pie.png',
+  },
+  {
+    type: 'STACKED_COLUMN',
+    description: 'stacked column chart',
+    label: 'Stacked Column',
+    icon: 'assets/icons/stacked-column.png',
+  },
+  {
+    type: 'STACKED_BAR',
+    description: 'stacked bar chart',
+    label: 'Stacked Bar',
+    icon: 'assets/icons/stacked-bar.png',
+  },
+  {
+    type: 'SOLIDGAUGE',
+    description: 'Gauge chart',
+    label: 'Gauge',
+    icon: 'assets/icons/gauge.png',
+  },
+  {
+    type: 'RADAR',
+    description: 'Radar chart',
+    label: 'Radar',
+    icon: 'assets/icons/radar.png',
+  },
+  {
+    type: 'PIVOT_TABLE',
+    description: 'Pivot Table',
+    label: 'Pivot Table',
+    icon: 'assets/icons/table.png',
+  },
+  {
+    type: 'MAP',
+    description: 'Map',
+    icon: 'assets/icons/map.png',
+    label: 'Map',
+    hiddenInList: true,
+  },
+  {
+    type: 'TRACKED_ENTITY_LAYER',
+    description: 'Tracked entity layer',
+    icon: 'assets/icons/map.png',
+    label: 'Layer',
+    hiddenInList: true,
+  },
+];

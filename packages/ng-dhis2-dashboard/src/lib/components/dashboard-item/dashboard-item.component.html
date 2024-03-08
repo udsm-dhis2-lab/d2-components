@@ -1,0 +1,29 @@
+<div
+  class="d2-dashboard__visualization-container"
+  [id]="dashboardContainerId"
+  *ngIf="{ loading: loading$ | async } as params"
+>
+  <d2-dashboard-item-header
+    *ngIf="!params.loading && currrentVisualizationType"
+    [fullScreen]="fullScreen"
+    [isChart]="isChart"
+    [visualizationType]="currrentVisualizationType"
+    [visualizationTitle]="visualizer?.config?.title"
+    [disableVisualizationChange]="disableVisualizationChange"
+    (download)="onDownload($event)"
+    (fullscreenChange)="onFullScreenAction()"
+    (visualizationTypeChange)="onTypeChange($event)"
+  ></d2-dashboard-item-header>
+  <div
+    [id]="dashboardItem?.visualization?.id || 'visualization_id'"
+    [style.height]="visualizationContainerHeight"
+    class="d2-dashboard__visualization-content"
+  ></div>
+
+  <div
+    class="d2-dashboard__visualization-loading-overlay"
+    *ngIf="params.loading"
+  >
+    <mat-spinner [strokeWidth]="2" [diameter]="30"></mat-spinner>
+  </div>
+</div>

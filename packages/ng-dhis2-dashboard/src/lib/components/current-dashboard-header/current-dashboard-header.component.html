@@ -1,0 +1,26 @@
+<div class="d2-dashboard__current-dashboard-header" *ngIf="dashboard">
+  <div class="d2-dashboard__current-dashboard-title-container">
+    <h3 class="d2-dashboard__current-dashboard-title" [id]="dashboard?.id">
+      {{ dashboard?.name }}
+    </h3>
+    <div class="d2-dashboard__dashboard-filters d-print-none">
+      <d2-dashboard-selection-filters
+        [additionalFilters]="dashboard.additionalFilters"
+        [dataSelections]="dataSelections"
+        [selectionConfig]="selectionConfig"
+        (setFilterSelection)="onFilterSelection($event)"
+      ></d2-dashboard-selection-filters>
+    </div>
+  </div>
+  <div>
+    <button
+      class="d-print-none button"
+      printSectionId="d2_current_dashboard"
+      [useExistingCss]="true"
+      ngxPrint
+    >
+      <mat-icon inline>print</mat-icon>
+      <span class="d2-dashboard__print-label">Print</span>
+    </button>
+  </div>
+</div>

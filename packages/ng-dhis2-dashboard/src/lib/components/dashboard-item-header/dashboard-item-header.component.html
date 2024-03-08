@@ -1,0 +1,114 @@
+<div
+  class="d2-dashboard__visualization-header {{
+    fullScreen ? 'd2-dashboard__fullscreen-header' : ''
+  }}"
+>
+  <div class="d2-dashboard__visualization-title-block">
+    <button
+      class="d2-dashboard__visualization-icon"
+      (click)="onToggleVisualizationType($event)"
+      [disabled]="disableVisualizationChange"
+      *ngIf="visualizationType"
+    >
+      <img [src]="visualizationType.icon" alt="visualization" />
+      <!-- <span class="d2-dashboard__visualization-type-label">{{
+        visualizationType.label
+      }}</span> -->
+      <!-- <mat-icon inline>expand_more</mat-icon> -->
+    </button>
+    <div class="d2-dashboard__visualization-title">
+      {{ visualizationTitle }}
+    </div>
+  </div>
+
+  <div
+    class="d2-dashboard__visualization-types-container"
+    *ngIf="showVisualizationTypes"
+  >
+    <div class="d2-dashboard__visualization-types">
+      <button
+        class="d2-dashboard__visualization-type-close-btn"
+        [matTooltip]="'Close'"
+        (click)="onToggleVisualizationType($event)"
+      >
+        <mat-icon inline>close</mat-icon>
+      </button>
+      <ng-container *ngFor="let visualizationTypeObject of visualizationTypes">
+        <div
+          [matTooltip]="visualizationTypeObject.description"
+          class="d2-dashboard__visualization-type-icon {{
+            visualizationTypeObject.type === visualizationType?.type
+              ? 'd2-dashboard__visualization-type-icon-selected'
+              : ''
+          }}"
+          (click)="
+            onVisualizationTypeChange($event, visualizationTypeObject.type)
+          "
+        >
+          <img [src]="visualizationTypeObject.icon" alt="" />
+          <div class="d2-dashboard__visualization-type-details">
+            <div class="d2-dashboard__visualization-type-label">
+              {{ visualizationTypeObject.label }}
+            </div>
+            <div class="d2-dashboard__visualization-type-description">
+              {{ visualizationTypeObject.description }}
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <div class="d2-dashboard__visualization-actions">
+    <!-- Download section -->
+    <ng-container>
+      <button
+        [matTooltip]="'Download'"
+        [matMenuTriggerFor]="downloadMenu"
+        class="d-print-none d2-dashboard__visualization-action-icon mr-1"
+        *ngIf="downloadOptions.length > 0"
+      >
+        <mat-icon>download</mat-icon>
+      </button>
+      <mat-menu #downloadMenu="matMenu" xPosition="before">
+        <button
+          mat-menu-item
+          (click)="onDownload($event, downloadOption.format)"
+          *ngFor="let downloadOption of downloadOptions"
+        >
+          <span>{{ downloadOption.label }}</span>
+        </button>
+      </mat-menu>
+    </ng-container>
+
+    <!-- Fullscreen section -->
+    <ng-container>
+      <button
+        [matTooltip]="fullScreen ? 'Hide fullscreen' : 'View in fullscreen'"
+        class="d-print-none d2-dashboard__visualization-action-icon"
+        (click)="onFullScreenAction($event)"
+      >
+        <mat-icon>{{
+          fullScreen ? 'close_fullscreen' : 'open_in_full'
+        }}</mat-icon>
+      </button>
+    </ng-container>
+  </div>
+
+  <!-- <ng-container *ngIf="!hideChartTypes">
+    <ul class="chart-type-list animated fadeInRight">
+      <li *ngFor="let chartType of chartTypes">
+        <button
+          (click)="updateChartType(chartType.type, $event)"
+          title="{{ chartType.description }}"
+          [ngClass]="
+            currentChartType === chartType.type ? 'active-chart-type' : ''
+          "
+          [disabled]="currentChartType === chartType.type"
+        >
+          <img [src]="chartType.icon" class="chart-option-icon" alt="" />
+        </button>
+      </li>
+    </ul>
+  </ng-container> -->
+</div>

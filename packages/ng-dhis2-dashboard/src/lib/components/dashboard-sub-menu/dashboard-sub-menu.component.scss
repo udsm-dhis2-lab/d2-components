@@ -1,0 +1,37 @@
+.d2-dashboard__sub-menu-container {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  width: 100%;
+  overflow: auto;
+  & > * {
+    flex: 0 0 auto;
+  }
+}
+
+.d2-dashboard__sub-menu-item {
+  font-size: 10px;
+  background-color: #f1f9f9;
+  padding: 8px 16px;
+  border-radius: 16px;
+  cursor: pointer;
+  margin-left: 8px;
+  max-width: 150px;
+  white-space: nowrap;
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  &:hover {
+    background-color: #00695c;
+    color: #fff;
+  }
+}
+
+.d2-dashboard__sub-menu-item:first-child {
+  margin-left: 0;
+}
+
+.d2-dashboard__sub-menu-item-selected {
+  background-color: #00695c;
+  color: #fff;
+}

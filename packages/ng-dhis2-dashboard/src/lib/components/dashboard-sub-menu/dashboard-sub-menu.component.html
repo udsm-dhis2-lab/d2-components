@@ -1,0 +1,14 @@
+<div class="d2-dashboard__sub-menu-container">
+  <div
+    *ngFor="let dashboardSubMenu of dashboardSubMenus"
+    [ngClass]="{
+      'd2-dashboard__sub-menu-item': true,
+      'd2-dashboard__sub-menu-item-selected':
+        dashboardSubMenu.id === curentDashboardSubMenu?.id
+    }"
+    [matTooltip]="dashboardSubMenu.name"
+    (click)="onSetCurrentDashboardSubMenu($event, dashboardSubMenu)"
+  >
+    {{ dashboardSubMenu.name }}
+  </div>
+</div>

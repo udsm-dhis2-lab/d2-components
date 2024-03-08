@@ -27,7 +27,20 @@
         "{workspaceRoot}/.eslintignore",
         "{workspaceRoot}/eslint.config.js"
       ]
+    },
+    "@nx/angular:package": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
+    },
+    "@nx/js:tsc": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
     }
+  },
+  "workspaceLayout": {
+    "libsDir": "packages"
   },
   "namedInputs": {
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
@@ -46,7 +59,7 @@
   "nxCloudAccessToken": "Mzc1M2MxOTUtOTg5YS00OTU0LWFiYzYtYTI4NzhlZmZjYjBjfHJlYWQtd3JpdGU=",
   "generators": {
     "@nx/angular:application": {
-      "style": "css",
+      "style": "scss",
       "linter": "eslint",
       "unitTestRunner": "jest",
       "e2eTestRunner": "none"
@@ -56,7 +69,7 @@
       "unitTestRunner": "jest"
     },
     "@nx/angular:component": {
-      "style": "css"
+      "style": "scss"
     }
   }
 }

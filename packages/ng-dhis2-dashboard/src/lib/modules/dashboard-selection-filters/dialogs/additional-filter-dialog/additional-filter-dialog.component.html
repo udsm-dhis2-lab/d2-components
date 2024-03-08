@@ -1,0 +1,48 @@
+<ng-container *ngIf="{ filterSelection: filterSelection$ | async } as params">
+  <div mat-dialog-title class="h5 font-weight-bold">
+    {{ params.filterSelection?.label }} filter
+    <small
+      class="font-italic text-muted"
+      *ngIf="options?.selectedOptions?.selected?.length as selectionCount"
+      >({{ selectionCount }} Selected)</small
+    >
+  </div>
+  <mat-dialog-content class="mat-typography">
+    <div *ngIf="loading">Loading content for {{ data.label }} filter...</div>
+    <div *ngIf="loadingError" class="alert alert-danger">
+      {{ loadingError.message }}
+    </div>
+    <div>
+      <mat-selection-list
+        class="additional-selection-list"
+        #options
+        [multiple]="!params.filterSelection?.singleSelection"
+      >
+        <mat-list-option
+          *ngFor="let option of params.filterSelection?.optionSet?.options"
+          [value]="option.code"
+        >
+          {{ option.name }}
+        </mat-list-option>
+      </mat-selection-list>
+    </div></mat-dialog-content
+  >
+  <mat-dialog-actions align="end">
+    <button mat-stroked-button mat-dialog-close>Cancel</button>
+    <button
+      mat-flat-button
+      (click)="
+        onUpdate(
+          $event,
+          options,
+          params.filterSelection?.optionSet?.options || []
+        )
+      "
+      cdkFocusInitial
+      color="primary"
+      [disabled]="options?.selectedOptions?.selected?.length === 0"
+    >
+      Update
+    </button>
+  </mat-dialog-actions>
+</ng-container>

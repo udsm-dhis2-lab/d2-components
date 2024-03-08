@@ -1,0 +1,33 @@
+{
+  "name": "dhis2-period-utilities",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/dhis2-period-utilities/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/dhis2-period-utilities",
+        "main": "packages/dhis2-period-utilities/src/index.ts",
+        "tsConfig": "packages/dhis2-period-utilities/tsconfig.lib.json",
+        "assets": ["packages/dhis2-period-utilities/*.md"]
+      }
+    },
+    "publish": {
+      "command": "node tools/scripts/publish.mjs dhis2-period-utilities {args.ver} {args.tag}",
+      "dependsOn": ["build"]
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "packages/dhis2-period-utilities/jest.config.ts"
+      }
+    }
+  },
+  "tags": []
+}
