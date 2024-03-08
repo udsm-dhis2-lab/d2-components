@@ -1,13 +1,42 @@
-import { Meta, StoryObj } from '@storybook/angular';
+import {
+  Meta,
+  StoryObj,
+  applicationConfig,
+  moduleMetadata,
+} from '@storybook/angular';
 
 import { HeaderBarComponent } from './header-bar.component';
+import { NgxDhis2HttpClientModule } from '@iapps/ngx-dhis2-http-client';
+import { HttpClient } from '@angular/common/http';
+import { importProvidersFrom } from '@angular/core';
 
 type ComponentWithCustomControls = HeaderBarComponent;
 
 const meta: Meta<ComponentWithCustomControls> = {
-  // title: 'Components/Header Bar Wrapper',
+  title: 'Header Bar Wrapper',
   component: HeaderBarComponent,
-  // decorators: [moduleMetadata({imports: []})],
+  decorators: [
+    moduleMetadata({
+      imports: [
+        // NgxDhis2HttpClientModule.forRoot({
+        //   version: 1,
+        //   namespace: 'header',
+        //   models: [],
+        // }),
+      ],
+    }),
+    applicationConfig({
+      providers: [
+        importProvidersFrom(
+          NgxDhis2HttpClientModule.forRoot({
+            version: 1,
+            namespace: 'header',
+            models: [],
+          })
+        ),
+      ],
+    }),
+  ],
   parameters: {
     docs: { description: { component: `HeaderBar` } },
   },
