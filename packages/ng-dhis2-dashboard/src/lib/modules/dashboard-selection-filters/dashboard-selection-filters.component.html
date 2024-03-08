@@ -1,0 +1,35 @@
+<div>
+  <button class="button" [matMenuTriggerFor]="menu">
+    <mat-icon>filter_list</mat-icon>
+    <span class="d2-dashboard__filter-label">Add Filters</span>
+    <mat-icon>arrow_drop_down</mat-icon>
+  </button>
+  <mat-menu #menu="matMenu">
+    <button
+      mat-menu-item
+      class="filter-menu-item"
+      (click)="onOpenPeriodDialog($event)"
+    >
+      <mat-icon>watch_later</mat-icon>
+      <mat-label>{{ 'Period' }}</mat-label>
+    </button>
+    <button
+      mat-menu-item
+      class="filter-menu-item"
+      (click)="onOpenOrgUnitDialog($event)"
+    >
+      <mat-icon>account_tree</mat-icon>
+      <mat-label>{{ 'Organisation unit' }}</mat-label>
+    </button>
+
+    <button
+      mat-menu-item
+      class="filter-menu-item"
+      *ngFor="let additionalFilter of additionalFilters"
+      (click)="onOpenFilterDialog($event, additionalFilter)"
+    >
+      <mat-icon>filter</mat-icon>
+      <mat-label>{{ additionalFilter.label }}</mat-label>
+    </button>
+  </mat-menu>
+</div>

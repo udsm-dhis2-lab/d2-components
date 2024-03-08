@@ -1,0 +1,13 @@
+.d2-dashboard__dashboard-item {
+  display: flex !important;
+}
+.d2-dashboard__dashboard-item-card {
+  background-color: #ffffff;
+  width: 100%;
+  box-shadow: 0 0 3px 0 #999 !important;
+  border-radius: 5px !important;
+  margin: 6px;
+  min-height: 70px;
+  min-width: 70px;
+  overflow: hidden !important;
+}

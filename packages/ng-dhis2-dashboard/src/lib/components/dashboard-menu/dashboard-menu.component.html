@@ -1,0 +1,39 @@
+<div class="d2-dashboard__menu-container">
+  <div class="d2-dashboard__menu" id="d2_dashboard__menu">
+    <div class="d2-dashboard__menu-list" id="d2_dashboard__menu_list">
+      <!-- <button mat-icon-button color="light" class="">
+        <mat-icon>search</mat-icon>
+      </button> -->
+      <d2-dashboard-menu-item
+        *ngFor="
+          let dashboardMenuItem of dashboardMenuItems
+            | filterDashboardBy : 'name' : searchTerm
+        "
+        [dashboardMenuItem]="dashboardMenuItem"
+        [isCurrentDashboard]="
+          dashboardMenuItem?.id === currentDashboardMenu?.id
+        "
+        (setDashboard)="onSetCurrentDashboard($event)"
+      ></d2-dashboard-menu-item>
+    </div>
+    <!-- <div class="d2-dashboard__menu-actions">
+      <button class="button button-sm" matTooltip="Previous">
+        <mat-icon>keyboard_double_arrow_left</mat-icon>
+      </button>
+      <button class="button button-sm" matTooltip="Forward">
+        <mat-icon>keyboard_double_arrow_right</mat-icon>
+      </button>
+    </div> -->
+  </div>
+  <div
+    class="d2-dashboard__sub-menu"
+    *ngIf="currentDashboardMenu?.subMenus as dashboardSubMenus"
+  >
+    <mat-divider></mat-divider>
+    <d2-dashboard-sub-menu
+      [dashboardSubMenus]="dashboardSubMenus"
+      [curentDashboardSubMenu]="currentDashboardSubMenu"
+      (setCurrentDashboardSubMenu)="onSetCurrentDashboardSubMenu($event)"
+    ></d2-dashboard-sub-menu>
+  </div>
+</div>

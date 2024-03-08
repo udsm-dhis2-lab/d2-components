@@ -1,0 +1,21 @@
+<div class="d2-dashboard__container">
+  <ng-container *ngIf="dashboardMenuList$ | async as dashboardMenuList">
+    <ng-container *ngIf="dashboardMenuLoaded$ | async">
+      <d2-dashboard-menu
+        [dashboardMenuItems]="dashboardMenuList"
+        [currentDashboardMenu]="(currentDashboardMenu$ | async) || undefined"
+        [currentDashboardSubMenu]="
+          (currentDashboardSubMenu$ | async) || undefined
+        "
+        (setCurrentDashboard)="onSetCurrentDashboard($event)"
+        (setCurrentSubDashboard)="onSetCurrentSubDashboard($event)"
+      ></d2-dashboard-menu>
+    </ng-container>
+    <ng-container *ngIf="dashboardMenuLoadingError$ | async as error">
+      {{ error.message }}
+    </ng-container>
+  </ng-container>
+  <div class="d2-dashboard__content">
+    <router-outlet></router-outlet>
+  </div>
+</div>

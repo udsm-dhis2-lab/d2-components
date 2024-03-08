@@ -1,0 +1,45 @@
+<div
+  class="d2-dashboard__current-dashboard-container"
+  id="d2_current_dashboard"
+  *ngIf="{
+    currentDashboard: currentDashboard$ | async,
+    globalSelection: globalSelection$ | async
+  } as params"
+>
+  <ng-container *ngIf="params.currentDashboard as currentDashboard">
+    <d2-current-dashboard-header
+      [dashboard]="currentDashboard"
+      [selectionConfig]="selectionConfig"
+      [dataSelections]="params?.globalSelection?.dataSelections || []"
+      (setGlobalFilter)="onSetGlobalFilter($event, currentDashboard!.id)"
+    ></d2-current-dashboard-header>
+
+    <ng-container>
+      <div
+        class="d2-dashboard__selection-description"
+        *ngIf="params.globalSelection?.summary"
+      >
+        {{ params.globalSelection?.summary }}
+      </div>
+      <div
+        class="d2-dashboard__dashboard-selection-summary"
+        *ngIf="!params.globalSelection?.default"
+      >
+        <d2-dashboard-selection-summary
+          [globalSelection]="params?.globalSelection || undefined"
+          (removeSelection)="
+            onSetGlobalFilter($event, params.currentDashboard!.id)
+          "
+        ></d2-dashboard-selection-summary>
+      </div>
+
+      <d2-dashboard-items
+        [dashboardItems]="currentDashboard?.dashboardItems || []"
+        [dataSelections]="params?.globalSelection?.dataSelections || []"
+        [dashboardItemsLayout]="currentDashboard?.dashboardItemsLayout || []"
+      ></d2-dashboard-items>
+    </ng-container>
+  </ng-container>
+
+  <ng-container *ngIf="error"> Dashboard Error </ng-container>
+</div>
