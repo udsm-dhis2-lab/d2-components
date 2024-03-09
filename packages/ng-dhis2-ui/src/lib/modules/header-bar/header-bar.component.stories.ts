@@ -17,13 +17,7 @@ const meta: Meta<ComponentWithCustomControls> = {
   component: HeaderBarComponent,
   decorators: [
     moduleMetadata({
-      imports: [
-        // NgxDhis2HttpClientModule.forRoot({
-        //   version: 1,
-        //   namespace: 'header',
-        //   models: [],
-        // }),
-      ],
+      imports: [],
     }),
     applicationConfig({
       providers: [
