@@ -115,7 +115,10 @@ export class NgxDhis2HttpClientService {
         : this.httpClient.get(url);
     }
 
-    if (isDataStoreRequest(url)) {
+    if (
+      newHttpConfig.allowDataStoreRequestStandardization &&
+      isDataStoreRequest(url)
+    ) {
       return this.dataStoreService.get(url, this._instance.rootUrl);
     }
 

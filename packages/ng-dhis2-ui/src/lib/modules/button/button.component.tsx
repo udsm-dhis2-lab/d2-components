@@ -2,6 +2,8 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { Button } from '@dhis2/ui';
 import { ReactWrapperComponent } from '../react-wrapper';
+import React from 'react';
+import * as ReactDOM from 'react-dom/client';
 
 @Component({
   selector: 'ng-dhis2-ui-button',
@@ -18,13 +20,28 @@ export class ButtonComponent extends ReactWrapperComponent {
 
   @Output() buttonClick: EventEmitter<any> = new EventEmitter();
 
-  override props: Record<string, unknown> = {
-    onClick: (e: any) => {
-      this.onButtonClick(e);
-    },
-  };
+  override async ngAfterViewInit() {
+    if (!this.elementRef) throw new Error('No element ref');
+    this.reactDomRoot = ReactDOM.createRoot(this.elementRef.nativeElement);
 
-  override component = Button;
+    this.component = () => (
+      <Button
+        onClick={(e: any) => {
+          this.onButtonClick(e);
+        }}
+        primary={this.primary}
+        secondary={this.secondary}
+        destructive={this.destructive}
+        disabled={this.disabled}
+        small={this.small}
+        large={this.large}
+        {...this.props}
+      >
+        {this.label}
+      </Button>
+    );
+    this.render();
+  }
 
   ngOnInit() {
     this.props = {
