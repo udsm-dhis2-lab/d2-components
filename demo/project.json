@@ -13,7 +13,7 @@
         "outputPath": "dist/demo",
         "index": "demo/src/index.html",
         "main": "demo/src/main.ts",
-        "polyfills": ["zone.js"],
+        "polyfills": ["demo/src/polyfills.ts"],
         "tsConfig": "demo/tsconfig.app.json",
         "assets": [
           "demo/src/favicon.ico",

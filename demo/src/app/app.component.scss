@@ -2,3 +2,22 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+.app-container {
+}
+
+.app-sidebar {
+  position: fixed;
+  top: 48px;
+  width: 220px;
+  height: 100vh;
+  border-right: 1px solid #d5dde5;
+  background: #f2f5f7;
+}
+
+.app-content {
+  margin-left: 220px;
+}
+
+::ng-deep .menu-background {
+  background-color: #f2f5f7;
+}

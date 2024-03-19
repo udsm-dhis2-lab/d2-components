@@ -9,7 +9,6 @@
     "@dhis2/d2-i18n": "^1.1.2",
     "@dhis2/pwa": "^10.3.10",
     "@dhis2/ui": "^8.14.9",
-    "@iapps/ngx-dhis2-http-client": "^3.0.0-alpha.3",
     "dexie": "^3.2.4",
     "html-react-parser": "^5.0.6",
     "react": "^18.2.0",

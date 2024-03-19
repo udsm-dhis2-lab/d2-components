@@ -46,6 +46,11 @@
         "{projectRoot}/.storybook/**/*",
         "{projectRoot}/tsconfig.storybook.json"
       ]
+    },
+    "@angular-devkit/build-angular:application": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
     }
   },
   "workspaceLayout": {
@@ -71,10 +76,10 @@
   "nxCloudAccessToken": "Mzc1M2MxOTUtOTg5YS00OTU0LWFiYzYtYTI4NzhlZmZjYjBjfHJlYWQtd3JpdGU=",
   "generators": {
     "@nx/angular:application": {
-      "style": "scss",
+      "e2eTestRunner": "none",
       "linter": "eslint",
-      "unitTestRunner": "jest",
-      "e2eTestRunner": "none"
+      "style": "scss",
+      "unitTestRunner": "jest"
     },
     "@nx/angular:library": {
       "linter": "eslint",

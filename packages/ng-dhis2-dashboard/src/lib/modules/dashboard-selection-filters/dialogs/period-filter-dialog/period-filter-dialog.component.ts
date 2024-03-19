@@ -1,9 +1,9 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { PeriodFilterConfig } from '@iapps/ngx-dhis2-period-filter';
+// import { PeriodFilterConfig } from '@iapps/ngx-dhis2-period-filter';
 
 export interface PeridFilterDialogData {
-  periodConfig: PeriodFilterConfig;
+  periodConfig: any;
   selectedPeriods: any[];
 }
 
@@ -13,7 +13,7 @@ export interface PeridFilterDialogData {
   styleUrls: ['./period-filter-dialog.component.scss'],
 })
 export class PeriodFilterDialogComponent implements OnInit {
-  periodFilterConfig: PeriodFilterConfig = {
+  periodFilterConfig: any = {
     singleSelection: false,
     emitOnSelection: false,
     childrenPeriodSortOrder: 'ASC',

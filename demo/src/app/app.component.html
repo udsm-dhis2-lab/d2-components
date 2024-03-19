@@ -1,26 +1,8 @@
-<h5>Header Bar component</h5>
-<ng-dhis2-ui-header-bar></ng-dhis2-ui-header-bar>
-
-<h5>Button component</h5>
-<ng-dhis2-ui-button [label]="'Button'" [primary]="true" [small]="true">
-  <div #ngDhis2UiContent>
-    <div>Button</div>
+<div class="app-container">
+  <div class="app-sidebar">
+    <ng-dhis2-ui-wrapper [component]="menu"></ng-dhis2-ui-wrapper>
   </div>
-</ng-dhis2-ui-button>
-
-<h5>Period selector component</h5>
-<ng-dhis2-ui-period-selector
-  [selectedPeriods]="selectedPeriods"
-  (selectPeriods)="onSelectPeriods($event)"
-></ng-dhis2-ui-period-selector>
-
-<h5>Organisation unit selector component</h5>
-<ng-dhis2-ui-org-unit-selector
-  [selectedOrgUnits]="selectedOrgUnits"
-  (selectOrgUnits)="onSelectOrgUnits($event)"
-></ng-dhis2-ui-org-unit-selector>
-
-<h5>Wrapper implementation</h5>
-<ng-dhis2-ui-wrapper [component]="menu"></ng-dhis2-ui-wrapper>
-
-<router-outlet></router-outlet>
+  <div class="app-content">
+    <router-outlet></router-outlet>
+  </div>
+</div>
