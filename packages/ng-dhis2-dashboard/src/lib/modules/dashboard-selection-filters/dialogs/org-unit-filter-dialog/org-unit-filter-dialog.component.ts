@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { OrgUnitFilterConfig } from '@iapps/ngx-dhis2-org-unit-filter';
+// import { OrgUnitFilterConfig } from '@iapps/ngx-dhis2-org-unit-filter';
 
 @Component({
   selector: 'iapps-org-unit-filter-dialog',
@@ -8,7 +8,7 @@ import { OrgUnitFilterConfig } from '@iapps/ngx-dhis2-org-unit-filter';
   styleUrls: ['./org-unit-filter-dialog.component.scss'],
 })
 export class OrgUnitFilterDialogComponent implements OnInit {
-  orgUnitFilterConfig: OrgUnitFilterConfig = {
+  orgUnitFilterConfig: any = {
     singleSelection: false,
     showOrgUnitLevelGroupSection: true,
     showUserOrgUnitSection: true,

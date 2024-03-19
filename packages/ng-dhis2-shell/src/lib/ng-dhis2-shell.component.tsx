@@ -42,6 +42,17 @@ export class NgDhis2ShellComponent {
     this.reactDomRoot = ReactDOM.createRoot(this.elementRef.nativeElement);
 
     this.render();
+
+    const isShellLoaded = async (selector: string) => {
+      while (document.querySelector(selector) === null) {
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+      }
+      return document.querySelector(selector);
+    };
+
+    isShellLoaded('#app_shell_content').then(() => {
+      this.shellHasLoaded.emit(true);
+    });
   }
 
   ngOnDestroy() {
@@ -55,8 +66,6 @@ export class NgDhis2ShellComponent {
 
     this.setConfig.emit(config);
 
-    console.log(config);
-
     const App = (
       <AppAdapter {...config}>
         <React.Suspense
@@ -69,7 +78,6 @@ export class NgDhis2ShellComponent {
           }
         >
           <>
-            {this.shellHasLoaded.emit(true)}
             <CssReset />
             <CssVariables colors spacers theme />
             <div id="app_shell_content"></div>

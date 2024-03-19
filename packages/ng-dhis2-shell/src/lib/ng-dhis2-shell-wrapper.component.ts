@@ -24,14 +24,11 @@ export abstract class NgDhis2ShellWrapper implements AfterViewInit {
   ngAfterViewInit() {}
 
   onReady() {
-    setTimeout(() => {
-      try {
-        this.attachPortalOutlet();
-      } catch (e) {
-        console.warn('Could not attach the portal to dom, retrying...');
-        this.onReady();
-      }
-    }, 1000);
+    try {
+      this.attachPortalOutlet();
+    } catch (e) {
+      console.error('Could not attach the portal to dom');
+    }
   }
 
   private attachPortalOutlet() {

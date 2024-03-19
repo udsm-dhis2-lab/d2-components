@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { Menu, MenuItem } from '@dhis2/ui';
 import React from 'react';
 
@@ -8,30 +9,33 @@ import React from 'react';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
-  title = 'demo';
-  selectedPeriods = [
-    { id: 'THIS_MONTH', name: 'This month' },
-    { id: 'LAST_MONTH', name: 'Last month' },
-    { id: 'LAST_3_MONTHS', name: 'Last 3 months' },
-  ];
+  constructor(private router: Router) {}
 
-  selectedOrgUnits = [];
   menu = () => (
     <div>
       <Menu>
-        <MenuItem label="Menu item" />
-        <MenuItem label="Menu item" />
+        <MenuItem
+          label="Dashboard"
+          value="dashboard"
+          active
+          className="menu-background"
+          onClick={(e: any) => {
+            this.onSelectPage(e);
+          }}
+        />
+        <MenuItem
+          label="Components"
+          value="components"
+          className="menu-background"
+          onClick={(e: any) => {
+            this.onSelectPage(e);
+          }}
+        />
       </Menu>
     </div>
   );
 
-  onSelectPeriods(periods: any) {
-    console.log(periods);
-  }
-
-  onSelectOrgUnits(orgUnits: any) {
-    this.selectedOrgUnits = orgUnits;
-
-    console.log(this.selectedOrgUnits);
+  onSelectPage(menuChange: any) {
+    this.router.navigate([`${menuChange.value}`]);
   }
 }
