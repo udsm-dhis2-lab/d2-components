@@ -2,4 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 export * from './period-selector.module';
-export * from './period-selector.component';
+export {
+  PeriodSelectorComponent,
+  PeriodSelectorModalComponent,
+} from './containers';

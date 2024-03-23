@@ -25,6 +25,7 @@ import {
   d2DashboardSelectionFeature,
 } from './store';
 import { EffectsModule } from '@ngrx/effects';
+import { ReactWrapperModule } from '@iapps/ng-dhis2-ui';
 
 @NgModule({
   imports: [
@@ -33,6 +34,7 @@ import { EffectsModule } from '@ngrx/effects';
     NgxDhis2HttpClientModule,
     KtdGridModule,
     NgxPrintModule,
+    ReactWrapperModule,
     ...d2DashboardMaterialModules,
     ...d2DashboardModules,
     StoreModule.forFeature(d2DashboardMenuFeature),

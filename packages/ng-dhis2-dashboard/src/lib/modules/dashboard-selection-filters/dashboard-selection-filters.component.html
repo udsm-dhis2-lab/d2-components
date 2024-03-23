@@ -1,9 +1,7 @@
 <div>
-  <button class="button" [matMenuTriggerFor]="menu">
-    <mat-icon>filter_list</mat-icon>
-    <span class="d2-dashboard__filter-label">Add Filters</span>
-    <mat-icon>arrow_drop_down</mat-icon>
-  </button>
+  <ng-dhis2-ui-wrapper [component]="FilterButton"></ng-dhis2-ui-wrapper>
+
+  <ng-dhis2-ui-period-selector-modal></ng-dhis2-ui-period-selector-modal>
   <mat-menu #menu="matMenu">
     <button
       mat-menu-item

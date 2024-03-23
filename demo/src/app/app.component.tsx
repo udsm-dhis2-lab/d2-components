@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { Menu, MenuItem } from '@dhis2/ui';
 import React from 'react';
+import { Fn } from '@iapps/function-analytics';
 
 @Component({
   selector: 'ng-dhis2-ui-root',
@@ -9,7 +10,13 @@ import React from 'react';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
-  constructor(private router: Router) {}
+  constructor(private router: Router) {
+    if (Fn) {
+      Fn.init({
+        baseUrl: '../../../api/',
+      });
+    }
+  }
 
   menu = () => (
     <div>
@@ -36,6 +43,6 @@ export class AppComponent {
   );
 
   onSelectPage(menuChange: any) {
-    this.router.navigate([`${menuChange.value}`]);
+    this.router.navigate([`/${menuChange.value}`]);
   }
 }

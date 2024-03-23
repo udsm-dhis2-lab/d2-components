@@ -31,7 +31,6 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     }),
     RouterModule.forRoot(appRoutes, {
       useHash: true,
-      initialNavigation: 'enabledBlocking',
     }),
     NgxDhis2HttpClientModule.forRoot({
       version: 1,

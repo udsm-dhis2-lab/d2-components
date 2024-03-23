@@ -156,6 +156,7 @@ export class DashboardService {
         },
       },
     });
+
     this.router.navigate([config.rootUrl, currentDashboardMenu.id]);
   }
 
