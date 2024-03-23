@@ -17,6 +17,18 @@ import {
 import { AdditionalFilterDialogComponent } from './dialogs/additional-filter-dialog/additional-filter-dialog.component';
 import { OrgUnitFilterDialogComponent } from './dialogs/org-unit-filter-dialog/org-unit-filter-dialog.component';
 import { PeriodFilterDialogComponent } from './dialogs/period-filter-dialog/period-filter-dialog.component';
+import React from 'react';
+import {
+  DropdownButton,
+  FlyoutMenu,
+  MenuItem,
+  IconFilter16,
+  spacers,
+  IconClock16,
+  IconDimensionOrgUnit16,
+  Modal,
+  ModalTitle,
+} from '@dhis2/ui';
 
 @Component({
   selector: 'd2-dashboard-selection-filters',
@@ -33,11 +45,39 @@ export class DashboardSelectionFiltersComponent {
     VisualizationDataSelection[]
   >();
   @ViewChild(MatMenuTrigger) menu!: MatMenuTrigger;
+
+  FilterButton = () => (
+    <>
+      <DropdownButton
+        component={
+          <FlyoutMenu dense>
+            <MenuItem
+              icon={<IconClock16 />}
+              label="Period"
+              onClick={() => {
+                this.onOpenPeriodDialog();
+              }}
+            />
+            <MenuItem
+              icon={<IconDimensionOrgUnit16 />}
+              label="Organisation unit"
+            />
+          </FlyoutMenu>
+        }
+        name="dashboard-filters"
+        value="dashboard-filters"
+      >
+        <IconFilter16 />
+        <span style={{ marginLeft: spacers.dp8 }}>Add filter</span>
+      </DropdownButton>
+    </>
+  );
+
   constructor(private dialog: MatDialog) {}
 
-  onOpenPeriodDialog(e: MouseEvent) {
-    e.stopPropagation();
-    this.menu.closeMenu();
+  onOpenPeriodDialog(e?: MouseEvent) {
+    console.log('WE ARE CALLED');
+    e?.stopPropagation();
 
     this._updateSelectionEntities();
 

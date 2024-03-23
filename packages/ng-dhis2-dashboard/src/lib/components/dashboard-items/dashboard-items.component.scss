@@ -4,10 +4,14 @@
 .d2-dashboard__dashboard-item-card {
   background-color: #ffffff;
   width: 100%;
-  box-shadow: 0 0 3px 0 #999 !important;
-  border-radius: 5px !important;
+  border: solid 1px #d5dde5;
+  border-radius: 3px !important;
   margin: 6px;
   min-height: 70px;
   min-width: 70px;
   overflow: hidden !important;
+}
+
+.d2-dashboard__grid-container {
+  z-index: 0 !important;
 }
