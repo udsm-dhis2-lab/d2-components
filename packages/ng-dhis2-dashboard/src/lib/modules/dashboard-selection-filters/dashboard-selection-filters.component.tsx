@@ -1,9 +1,12 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   EventEmitter,
   Input,
   Output,
   ViewChild,
+  WritableSignal,
+  signal,
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatMenuTrigger } from '@angular/material/menu';
@@ -34,6 +37,7 @@ import {
   selector: 'd2-dashboard-selection-filters',
   templateUrl: './dashboard-selection-filters.component.html',
   styleUrls: ['./dashboard-selection-filters.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardSelectionFiltersComponent {
   @Input() dataSelections!: VisualizationDataSelection[];
@@ -46,6 +50,8 @@ export class DashboardSelectionFiltersComponent {
   >();
   @ViewChild(MatMenuTrigger) menu!: MatMenuTrigger;
 
+  showPeriodSelector: WritableSignal<boolean> = signal(false);
+
   FilterButton = () => (
     <>
       <DropdownButton
@@ -55,7 +61,7 @@ export class DashboardSelectionFiltersComponent {
               icon={<IconClock16 />}
               label="Period"
               onClick={() => {
-                this.onOpenPeriodDialog();
+                this.showPeriodSelector.set(true);
               }}
             />
             <MenuItem
@@ -75,33 +81,14 @@ export class DashboardSelectionFiltersComponent {
 
   constructor(private dialog: MatDialog) {}
 
-  onOpenPeriodDialog(e?: MouseEvent) {
-    console.log('WE ARE CALLED');
-    e?.stopPropagation();
+  onSelectPeriod(selectedPeriods: any[]) {
+    this.showPeriodSelector.set(false);
+    this.selectionEntities = {
+      ...this.selectionEntities,
+      pe: selectedPeriods,
+    };
 
-    this._updateSelectionEntities();
-
-    const periodDialog = this.dialog.open(PeriodFilterDialogComponent, {
-      width: '800px',
-
-      data: {
-        periodConfig: this.selectionConfig?.periodConfig,
-        selectedPeriods:
-          this.dataSelections?.find((selection) => selection.dimension === 'pe')
-            ?.items || [],
-      },
-    });
-
-    periodDialog.afterClosed().subscribe((res) => {
-      if (res?.action === 'UPDATE') {
-        this.selectionEntities = {
-          ...this.selectionEntities,
-          pe: res?.periodObject?.items || [],
-        };
-
-        this.setFilterSelection.emit(this._getVisualizationSelections());
-      }
-    });
+    this.setFilterSelection.emit(this._getVisualizationSelections());
   }
 
   onOpenOrgUnitDialog(e: MouseEvent) {
