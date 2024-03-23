@@ -95,6 +95,7 @@ export class PeriodSelectorModalComponent extends ReactWrapperComponent {
                   </Button>
                   <Button
                     primary
+                    disabled={selected.length === 0}
                     onClick={() => {
                       this.onConfirm(selected);
                     }}

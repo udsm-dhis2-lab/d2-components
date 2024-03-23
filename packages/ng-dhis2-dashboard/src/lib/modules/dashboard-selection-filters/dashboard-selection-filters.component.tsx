@@ -51,6 +51,7 @@ export class DashboardSelectionFiltersComponent {
   @ViewChild(MatMenuTrigger) menu!: MatMenuTrigger;
 
   showPeriodSelector: WritableSignal<boolean> = signal(false);
+  showOrgUnitSelector: WritableSignal<boolean> = signal(false);
 
   FilterButton = () => (
     <>
@@ -67,6 +68,9 @@ export class DashboardSelectionFiltersComponent {
             <MenuItem
               icon={<IconDimensionOrgUnit16 />}
               label="Organisation unit"
+              onClick={() => {
+                this.showOrgUnitSelector.set(true);
+              }}
             />
           </FlyoutMenu>
         }
@@ -91,31 +95,14 @@ export class DashboardSelectionFiltersComponent {
     this.setFilterSelection.emit(this._getVisualizationSelections());
   }
 
-  onOpenOrgUnitDialog(e: MouseEvent) {
-    e.stopPropagation();
-    this.menu.closeMenu();
+  onSelectOrgUnit(selectedOrgUnits: any[]) {
+    this.showOrgUnitSelector.set(false);
+    this.selectionEntities = {
+      ...this.selectionEntities,
+      ou: selectedOrgUnits,
+    };
 
-    this._updateSelectionEntities();
-
-    const orgUnitDialog = this.dialog.open(OrgUnitFilterDialogComponent, {
-      width: '800px',
-      data: {
-        selectedOrgUnits:
-          this.dataSelections?.find((selection) => selection.dimension === 'ou')
-            ?.items || [],
-      },
-    });
-
-    orgUnitDialog.afterClosed().subscribe((res) => {
-      if (res?.action === 'UPDATE') {
-        this.selectionEntities = {
-          ...this.selectionEntities,
-          ou: res?.selectionItems?.items || [],
-        };
-
-        this.setFilterSelection.emit(this._getVisualizationSelections());
-      }
-    });
+    this.setFilterSelection.emit(this._getVisualizationSelections());
   }
 
   onOpenFilterDialog(
