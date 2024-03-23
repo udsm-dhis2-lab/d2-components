@@ -1,11 +1,12 @@
+import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { SharedDhis2UiModule } from '../../shared/shared.module';
-import { CommonModule } from '@angular/common';
-import { periodContainers } from './containers';
+import { PeriodSelectorModalComponent } from './containers/period-selector-modal/period-selector-modal.component';
+import { PeriodSelectorComponent } from './containers/period-selector/period-selector.component';
 
 @NgModule({
   imports: [CommonModule, SharedDhis2UiModule],
-  declarations: [...periodContainers],
-  exports: [...periodContainers],
+  declarations: [PeriodSelectorComponent, PeriodSelectorModalComponent],
+  exports: [PeriodSelectorComponent, PeriodSelectorModalComponent],
 })
 export class PeriodSelectorModule {}

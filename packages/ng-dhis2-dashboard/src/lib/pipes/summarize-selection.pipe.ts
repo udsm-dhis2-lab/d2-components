@@ -34,7 +34,6 @@ export class SummarizeSelectionPipe implements PipeTransform {
   }
 
   private _getLevelOrGroupList(selectionList: any[]) {
-    console.log(selectionList);
     return (selectionList || []).filter(
       (item: any) =>
         item?.type?.indexOf('LEVEL') !== -1 ||
