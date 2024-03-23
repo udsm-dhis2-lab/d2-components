@@ -34,16 +34,19 @@ export class SummarizeSelectionPipe implements PipeTransform {
   }
 
   private _getLevelOrGroupList(selectionList: any[]) {
+    console.log(selectionList);
     return (selectionList || []).filter(
       (item: any) =>
-        item.type.indexOf('LEVEL') !== -1 || item.type.indexOf('GROUP') !== -1
+        item?.type?.indexOf('LEVEL') !== -1 ||
+        item?.type?.indexOf('GROUP') !== -1
     );
   }
 
   private _getOrgUnitList(selectionList: any[]) {
     return (selectionList || []).filter(
       (item: any) =>
-        item.type.indexOf('LEVEL') === -1 && item.type.indexOf('GROUP') === -1
+        item?.type?.indexOf('LEVEL') === -1 &&
+        item?.type?.indexOf('GROUP') === -1
     );
   }
 

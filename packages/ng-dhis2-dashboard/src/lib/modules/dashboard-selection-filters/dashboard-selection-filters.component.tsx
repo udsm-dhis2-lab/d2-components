@@ -1,5 +1,6 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
@@ -8,6 +9,7 @@ import {
   WritableSignal,
   signal,
 } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { MatDialog } from '@angular/material/dialog';
 import { MatMenuTrigger } from '@angular/material/menu';
 import { keys } from 'lodash';
@@ -32,12 +34,12 @@ import {
   Modal,
   ModalTitle,
 } from '@dhis2/ui';
+import { BehaviorSubject } from 'rxjs';
 
 @Component({
   selector: 'd2-dashboard-selection-filters',
   templateUrl: './dashboard-selection-filters.component.html',
   styleUrls: ['./dashboard-selection-filters.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardSelectionFiltersComponent {
   @Input() dataSelections!: VisualizationDataSelection[];
@@ -51,7 +53,25 @@ export class DashboardSelectionFiltersComponent {
   @ViewChild(MatMenuTrigger) menu!: MatMenuTrigger;
 
   showPeriodSelector: WritableSignal<boolean> = signal(false);
+  $showPeriodSelector = toObservable(this.showPeriodSelector);
   showOrgUnitSelector: WritableSignal<boolean> = signal(false);
+  $showOrgUnitSelector = toObservable(this.showOrgUnitSelector);
+
+  get selectedPeriods() {
+    return (
+      this.dataSelections.find(
+        (dataSelection) => dataSelection.dimension === 'pe'
+      )?.items || []
+    );
+  }
+
+  get selectedOrgUnits() {
+    return (
+      this.dataSelections.find(
+        (dataSelection) => dataSelection.dimension === 'ou'
+      )?.items || []
+    );
+  }
 
   FilterButton = () => (
     <>
@@ -84,6 +104,14 @@ export class DashboardSelectionFiltersComponent {
   );
 
   constructor(private dialog: MatDialog) {}
+
+  onCancelPeriod() {
+    this.showPeriodSelector.set(false);
+  }
+
+  onCancelOrgUnit() {
+    this.showOrgUnitSelector.set(false);
+  }
 
   onSelectPeriod(selectedPeriods: any[]) {
     this.showPeriodSelector.set(false);
@@ -141,17 +169,5 @@ export class DashboardSelectionFiltersComponent {
         ] as VisualizationDataSelectionItem[],
       };
     });
-  }
-
-  private _updateSelectionEntities() {
-    this.selectionEntities = this.dataSelections.reduce(
-      (selectionEntity, dataSelection) => {
-        return {
-          ...selectionEntity,
-          [dataSelection.dimension]: dataSelection.items || [],
-        };
-      },
-      {}
-    );
   }
 }
