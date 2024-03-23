@@ -10,6 +10,8 @@ import { AssignedCategoriesIcon } from '../assets/AssignedCategoriesIcon';
 export const DIMENSION_ID_DATA = 'dx';
 export const DIMENSION_ID_PERIOD = 'pe';
 export const DIMENSION_ID_ORGUNIT = 'ou';
+export const DIMENSION_ID_ORGUNIT_LEVEL = 'ouLevel';
+export const DIMENSION_ID_ORGUNIT_GROUP = 'ouGroup';
 export const DIMENSION_ID_ASSIGNED_CATEGORIES = 'co';
 export const DIMENSION_PROP_NO_ITEMS = 'noItems';
 

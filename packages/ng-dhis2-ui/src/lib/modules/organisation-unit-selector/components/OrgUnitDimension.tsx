@@ -13,7 +13,11 @@ import cx from 'classnames';
 import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
 
-import { DIMENSION_ID_ORGUNIT, formatList } from '../../../shared';
+import {
+  DIMENSION_ID_ORGUNIT,
+  DIMENSION_ID_ORGUNIT_LEVEL,
+  formatList,
+} from '../../../shared';
 import {
   ouIdHelper,
   USER_ORG_UNIT,
@@ -51,10 +55,10 @@ const OrgUnitDimension = ({
     if (checked && DYNAMIC_ORG_UNITS.includes(id)) {
       result = [
         ...result.filter((item) => DYNAMIC_ORG_UNITS.includes(item.id)),
-        { id, displayName },
+        { id, displayName, type: 'USER_ORGUNIT' },
       ];
     } else if (checked) {
-      result.push({ id, path, name: displayName });
+      result.push({ id, path, name: displayName, type: 'ORGUNIT' });
     } else {
       result = [...result.filter((item) => item.id !== id)];
     }
@@ -95,16 +99,19 @@ const OrgUnitDimension = ({
       id: ouIdHelper.addLevelPrefix(id),
       name: (ouLevels?.find((level: any) => level.id === id) as any)
         ?.displayName,
+      type: 'ORGUNIT_LEVEL',
     }));
 
-    setSelectedItems([
+    const updatedSelectedItems = [
       ...selectedItems.filter((ou: any) => !ouIdHelper.hasLevelPrefix(ou.id)),
       ...items,
-    ]);
+    ];
+
+    setSelectedItems(updatedSelectedItems);
 
     onSelect({
       dimensionId: DIMENSION_ID_ORGUNIT,
-      items: selectedItems,
+      items: updatedSelectedItems,
     });
   };
 
@@ -113,16 +120,19 @@ const OrgUnitDimension = ({
       id: ouIdHelper.addGroupPrefix(id),
       name: ((ouGroups?.find((group: any) => group.id === id) || {}) as any)
         .displayName,
+      type: 'ORGUNIT_GROUP',
     }));
 
-    setSelectedItems([
+    const updatedSelectedItems = [
       ...selectedItems.filter((ou: any) => !ouIdHelper.hasGroupPrefix(ou.id)),
       ...items,
-    ]);
+    ];
+
+    setSelectedItems(updatedSelectedItems);
 
     onSelect({
       dimensionId: DIMENSION_ID_ORGUNIT,
-      items: selectedItems,
+      items: updatedSelectedItems,
     });
   };
 

@@ -7,8 +7,7 @@ export const USER_ORG_UNIT_GRANDCHILDREN = 'USER_ORGUNIT_GRANDCHILDREN';
 const hasGroupPrefix = (id: string) =>
   id.substr(0, GROUP_ID_PREFIX.length) === GROUP_ID_PREFIX;
 
-const hasLevelPrefix = (id: string) =>
-  id.substr(0, LEVEL_ID_PREFIX.length) === LEVEL_ID_PREFIX;
+const hasLevelPrefix = (id: string) => id.includes(LEVEL_ID_PREFIX);
 
 const stripLevelPrefix = (id: string) =>
   hasLevelPrefix(id) ? id.substr(LEVEL_ID_PREFIX.length + 1) : id;
