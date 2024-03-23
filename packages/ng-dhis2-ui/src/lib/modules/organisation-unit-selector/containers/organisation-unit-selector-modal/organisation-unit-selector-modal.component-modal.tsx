@@ -88,7 +88,6 @@ export class OrganisationUnitSelectorModalComponent extends ReactWrapperComponen
                   onSelect={(
                     selectionEvent: OrganisationUnitSelectionEvent
                   ) => {
-                    console.log('SELECTED::', selectionEvent);
                     setSelected(selectionEvent.items);
                   }}
                   orgUnitGroupPromise={this.getOrgUnitGroups()}
