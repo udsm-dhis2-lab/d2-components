@@ -5,25 +5,25 @@ import {
   Input,
   Output,
 } from '@angular/core';
+import { Provider } from '@dhis2/app-runtime';
 import {
-  Modal,
-  ModalContent,
-  ModalActions,
-  ButtonStrip,
   Button,
+  ButtonStrip,
+  Modal,
+  ModalActions,
+  ModalContent,
   ModalTitle,
 } from '@dhis2/ui';
 import { NgxDhis2HttpClientService, User } from '@iapps/ngx-dhis2-http-client';
 import React, { useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
-import { firstValueFrom, lastValueFrom, map } from 'rxjs';
-import { Provider } from '@dhis2/app-runtime';
+import { firstValueFrom, map } from 'rxjs';
+import { ReactWrapperComponent } from '../../../react-wrapper';
 import OrgUnitDimension from '../../components/OrgUnitDimension';
 import {
   OrganisationUnitSelectionConfig,
   OrganisationUnitSelectionUsageType,
 } from '../../models';
-import { ReactWrapperComponent } from '../../../react-wrapper';
 
 type OrganisationUnitSelectionEvent = {
   dimensionId: string;
