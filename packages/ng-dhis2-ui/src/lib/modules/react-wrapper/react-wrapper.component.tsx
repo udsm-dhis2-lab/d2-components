@@ -35,7 +35,7 @@ export class ReactWrapperComponent
   }
 
   ngOnChanges(): void {
-    if (this.elementRef) this.render();
+    // if (this.elementRef) this.render();
   }
 
   ngOnDestroy() {
@@ -45,17 +45,16 @@ export class ReactWrapperComponent
   protected render() {
     if (!this.component) {
       console.warn('React component must be supplied');
-      return;
+    } else {
+      if (!this.reactDomRoot) return;
+
+      const jsxContent = this.content?.nativeElement?.outerHTML
+        ? parse(this.content?.nativeElement?.outerHTML)
+        : undefined;
+
+      this.reactDomRoot.render(
+        <this.component {...this.props}> {jsxContent || ''} </this.component>
+      );
     }
-
-    if (!this.reactDomRoot) return;
-
-    const jsxContent = this.content?.nativeElement?.outerHTML
-      ? parse(this.content?.nativeElement?.outerHTML)
-      : undefined;
-
-    this.reactDomRoot.render(
-      <this.component {...this.props}> {jsxContent || ''} </this.component>
-    );
   }
 }

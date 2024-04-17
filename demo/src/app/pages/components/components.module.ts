@@ -10,6 +10,7 @@ import {
 } from '@iapps/ng-dhis2-ui';
 import { routes } from './components-routes';
 import { ComponentsComponent } from './components.component';
+import { NgxDhis2DictionaryModule } from '@iapps/ngx-dhis2-dictionary';
 
 @NgModule({
   declarations: [ComponentsComponent],
@@ -20,6 +21,7 @@ import { ComponentsComponent } from './components.component';
     ButtonModule,
     PeriodSelectorModule,
     OrganisationUnitSelectorModule,
+    NgxDhis2DictionaryModule,
   ],
 })
 export class ComponentsModule {}

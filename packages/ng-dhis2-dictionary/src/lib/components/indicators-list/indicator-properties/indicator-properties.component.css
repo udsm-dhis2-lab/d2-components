@@ -1,0 +1,53 @@
+
+.card-div:hover {
+    transform: scale(1.04, 1.04);
+    -webkit-box-shadow:0 0 10px rgba(0,0,0,0.2);
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    background-color: rgba(0,0,0,0.03);
+    /* border: 1px solid #ddd; */
+    z-index: 100;
+    -webkit-box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    background-color: rgba(255,255,255,1);
+    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    padding: 10px; 
+    -webkit-transition-delay: 100ms;
+    -moz-transition-delay: 100ms;
+    -o-transition-delay: 100ms;
+    transition-delay: 100ms;
+  }
+
+.card-body {
+    flex: 1 1 auto;
+    padding: 0.25rem !important;
+}
+
+.card-body a {
+    color: #2C6695 !important;
+    text-decoration: none;
+}
+
+.card-title {
+    padding: 10px 10px 2px 0;
+}
+
+.card {
+    border: none !important;
+}
+
+.analysis-link {
+    float: right;
+}
+
+.list-group-item {
+    text-align: left;
+    padding: .5rem 0.15rem;
+}
+
+.listing {
+    text-align: left; word-wrap: break-word; border: solid 1px #f5f5f5; padding: 7px; padding-left: 10px; cursor: pointer;
+}
+
+.selected-list-item {
+    background-color: aqua;
+}

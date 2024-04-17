@@ -1,0 +1,35 @@
+<div class="card-div" style="display: block;" *ngIf="!listingIsSet" id="{{indicator.id}}" (click)="addSelectedMetadata(indicator.id)">
+  <div class="heading"><h5 class="card-title">{{ indicator.name }}</h5></div>
+  <div class="card cursor-pointer" style="width: 90%; margin-top: 10px;margin-bottom: 5px;">
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item">
+            <label>Type</label> <br>
+            {{ indicator.indicatorType.name}}
+          </li>
+      <li class="list-group-item">
+        <label>Numerator</label> <br>
+        {{ indicator.numeratorDescription}}
+      </li>
+      <li class="list-group-item">
+        <label>Denominator</label> <br>
+        {{ indicator.denominatorDescription}}
+      </li>
+      <li class="list-group-item">
+        <div class="row">
+          <div class="col-6">
+              <label>Created by:</label> <br>{{indicator.user.name}}
+          </div>
+          <div class="col-6">
+              <label>Created on:</label> <br>{{indicator.lastUpdated | date}}
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+<div class="listing card-div" *ngIf="listingIsSet" id="{{indicator.id}}" (click)="addSelectedMetadata(indicator.id)" [ngClass]="checkIfTheIndicatorIsAmongSelected(indicator.id, metadataIdentifiers) === true ? 'selected-list-item': ''">
+  <div style="width: 35%; display: inline-block;">{{indicator.name}}</div>
+  <div style="width: 45%; display: inline-block;" *ngIf="indicator.description">{{indicator.description}}</div>
+  <div style="width: 45%; display: inline-block;" *ngIf="!indicator.description">It is measured by {{indicator.numeratorDescription}} <span *ngIf="indicator.denominatorDescription">to {{indicator.denominatorDescription}}</span></div>
+  <div style="width: 18%; margin-left: 2%; display: inline-block;"><label>Created on: {{indicator.lastUpdated | date}}</label></div>
+</div>
