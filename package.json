@@ -33,7 +33,12 @@
     "pack:ng-dhis2-http-client": "nx build ng-dhis2-http-client && cd dist/packages/ng-dhis2-http-client && npm pack",
     "link:ng-dhis2-http-client": "nx build ng-dhis2-http-client && cd dist/packages/ng-dhis2-http-client && npm link",
     "publish:ng-dhis2-http-client": "nx build ng-dhis2-http-client && cd dist/packages/ng-dhis2-http-client && npm publish --access public",
-    "publish-local:ng-dhis2-http-client": "nx build ng-dhis2-http-client && cd dist/packages/ng-dhis2-http-client && npm publish --access public --registry http://localhost:4873/"
+    "publish-local:ng-dhis2-http-client": "nx build ng-dhis2-http-client && cd dist/packages/ng-dhis2-http-client && npm publish --access public --registry http://localhost:4873/",
+    "build:ng-dhis2-dictionary": "nx build ng-dhis2-dictionary",
+    "pack:ng-dhis2-dictionary": "nx build ng-dhis2-dictionary && cd dist/packages/ng-dhis2-dictionary && npm pack",
+    "link:ng-dhis2-dictionary": "nx build ng-dhis2-dictionary && cd dist/packages/ng-dhis2-dictionary && npm link",
+    "publish:ng-dhis2-dictionary": "nx build ng-dhis2-dictionary && cd dist/packages/ng-dhis2-dictionary && npm publish --access public",
+    "publish-local:ng-dhis2-dictionary": "nx build ng-dhis2-dictionary && cd dist/packages/ng-dhis2-dictionary && npm publish --access public --registry http://localhost:4873/"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "17.2.3",
@@ -102,7 +107,7 @@
     "@angular/platform-browser": "17.2.4",
     "@angular/platform-browser-dynamic": "17.2.4",
     "@angular/router": "17.2.4",
-    "@dhis2/analytics": "^26.1.8",
+    "@dhis2/analytics": "^26.6.1",
     "@dhis2/app-adapter": "^11.0.0",
     "@dhis2/app-runtime": "^3.9.4",
     "@dhis2/d2-i18n": "^1.1.2",
@@ -129,6 +134,7 @@
     "mapbox-gl": "^3.2.0",
     "mapbox-gl-controls": "^2.3.5",
     "mapbox-gl-style-switcher": "^1.0.11",
+    "ngx-pagination": "^6.0.3",
     "ngx-print": "^1.5.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",

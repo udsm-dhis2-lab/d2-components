@@ -2106,10 +2106,10 @@
     classnames "^2.3.1"
     prop-types "^15.7.2"
 
-"@dhis2/analytics@^26.1.8":
-  version "26.1.8"
-  resolved "https://registry.npmjs.org/@dhis2/analytics/-/analytics-26.1.8.tgz"
-  integrity sha512-jZ2nY1YpBrbs4H/2BzD3AAKAahRyOlqSie3MLkwHDnfhLSom9yhtfJotLbuF/cm+t3xWhcxci1W0/QOR6nl6Ng==
+"@dhis2/analytics@^26.6.1":
+  version "26.6.2"
+  resolved "https://registry.npmjs.org/@dhis2/analytics/-/analytics-26.6.2.tgz"
+  integrity sha512-Fy8d3tOvbSoJhhF2vmeAGVXQj0RqIY31XLIdMwgGPVdaEb77V8NwIE0WCzSpQMAMjdEJpJKKE/WOFXbGlHqj6A==
   dependencies:
     "@dhis2/d2-ui-rich-text" "^7.4.1"
     "@dhis2/multi-calendar-dates" "1.0.0"
@@ -2492,14 +2492,20 @@
     tslib "^2.3.0"
 
 "@iapps/ng-dhis2-shell@file:/Users/rajabmkomwa/Office/UDSM DHIS2 Lab/Innovations/DHIS2 Components/03 Software Development/d2-components/packages/ng-dhis2-shell":
-  version "1.0.4"
+  version "1.0.7"
   resolved "file:packages/ng-dhis2-shell"
   dependencies:
     tslib "^2.3.0"
 
 "@iapps/ng-dhis2-ui@file:/Users/rajabmkomwa/Office/UDSM DHIS2 Lab/Innovations/DHIS2 Components/03 Software Development/d2-components/packages/ng-dhis2-ui":
-  version "1.0.5"
+  version "1.0.6"
   resolved "file:packages/ng-dhis2-ui"
+  dependencies:
+    tslib "^2.3.0"
+
+"@iapps/ngx-dhis2-dictionary@file:/Users/rajabmkomwa/Office/UDSM DHIS2 Lab/Innovations/DHIS2 Components/03 Software Development/d2-components/packages/ng-dhis2-dictionary":
+  version "0.0.1"
+  resolved "file:packages/ng-dhis2-dictionary"
   dependencies:
     tslib "^2.3.0"
 
@@ -14427,6 +14433,13 @@ ng-packagr@17.2.1:
   optionalDependencies:
     esbuild "^0.20.0"
     rollup "^4.5.0"
+
+ngx-pagination@^6.0.3:
+  version "6.0.3"
+  resolved "https://registry.npmjs.org/ngx-pagination/-/ngx-pagination-6.0.3.tgz"
+  integrity sha512-lONjTQ7hFPh1SyhwDrRd5ZwM4NMGQ7bNR6vLrs6mrU0Z8Q1zCcWbf/pvyp4DOlGyd9uyZxRy2wUsSZLeIPjbAw==
+  dependencies:
+    tslib "^2.3.0"
 
 ngx-print@^1.5.1:
   version "1.5.1"

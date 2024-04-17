@@ -17,6 +17,7 @@ import { TableUtil } from './modules/table/utils/table.util';
 import { getSelectionDimensionsFromFavorite } from './shared/helpers';
 import { Visualizer, VisualizerPlotOptions } from './shared/models';
 import { VisualizationConfiguration } from './shared/models/visualization-configuration.model';
+import * as React from 'react';
 import {
   ChartType,
   VisualizationType,

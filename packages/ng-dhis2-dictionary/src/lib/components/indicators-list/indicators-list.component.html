@@ -1,0 +1,233 @@
+<div class="container-fluid" style="margin-top: 15px">
+  <div class="row">
+    <div class="col-md-4" style="padding-top: 5px"></div>
+    <div class="col-md-4">
+      <input
+        class=""
+        id="searching-input"
+        placeholder="Search indicator "
+        [(ngModel)]="searchText"
+      />
+    </div>
+    <div class="col-md-4">
+      <div style="float: right">
+        <button
+          (click)="toggleListingOfItems()"
+          id="listing-btn"
+          style="
+            border-radius: 4px;
+            border: none;
+            background-color: #fff;
+            padding: 2px;
+          "
+        >
+          <span *ngIf="!listingIsSet" title="To list view">
+            <img
+              height="30"
+              width="30"
+              src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACXSURBVGhD7dexDYJQFIXhV1g4ALGwsKCixhVcgQ2orampqRmCFViBFVzBFeRYv5tgDPG9a/4v+Wc4OQHAx14OG1Xk6bBBAQD8OqgyYYXaxUVZi/urzGX/xlk9EtYrAEAerg57D3LEWs7cM5d9cVinAAB+HdUtYZXaxd989pOaE3ZXAIA8NA6rVcRaztwzl31yWKsAbAphBQ5/i9OD8QfcAAAAAElFTkSuQmCC"
+            />
+          </span>
+          <span *ngIf="listingIsSet" title="To Grid view"
+            ><img
+              height="30"
+              width="30"
+              src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAJjSURBVGhD7dhJqM1hHMbxY3bJXLoyEzaSKfNGlGKlWNkpllZsbJQNG2yUpJSpkLJAZjtFlGGjyMpGMqUUJXyfOq9+Xs/7v5270un91mf3nMV777n/4bZqtVqtVqv92xCMKxiEvKFwWxmAvOFw27Fw9cDtx6Cxl/hVcA+xkXgLt5VziE3GF7itHEZsPr7BbWUPirkPJJ8Rmwa3S54jtgZul1xFbBPcLsl/UH/lPpDUg7T7bw7yEbFOD7Iabpd0epCzKHYBrwuOIDYYN+G2shex0bgPt32FHYhNxWO4vS5KW9D9jcKsAl3T83T9d1vRPSlvAtx2Jtx9aiLcfgbcfepPb+C+j/IAMR36E9xWLiM2HU33hWOILcIPuK3sQzH3gaReftvVgxT0+yAfENPl0e2SZ4itgtslnR7kDIodh67dzn7EdJXRfcdtZRdiesi8Brd9hG2I9eIO3P4hNqL703V7SYF7Z9CjuduKfgN5ugS77WIMQ94cuP1C6Mmi2Du476M8RUwvN1/htnIdsdloui+cRGwZfsJt5QCKuQ8k9fLbrh6koN8HeY9YX/eR/G9qJdwu6fQgp1HsIG4X7EZsIHTfcVvZjtgI6KfotrewGTE9KV+C29/AWnR/ei9YXzAJeXPhtjIeeQvgtuug14K8pXB7/Tb0P7JiTe8XLxDTDfI73FbuIjYPTfeF/Nmpr3f8QyjmPpDUy2+7epCCxoM0fYfz+8gUuF3yBLEVcLvkCmJ6THe75BSK6X9RFwt2Iqb/Yui+47ayFTE93R6F2+q9ZgNieig9Abc/j+Wo1Wq1Wq3WhbVavwE61eDXWXWDaAAAAABJRU5ErkJggg=="
+          /></span>
+        </button>
+      </div>
+      <div class="cursor-pointer" style="float: right; margin-right: 10px">
+        <a
+          class="removeGroups"
+          style="float: right"
+          title="Clear all"
+          *ngIf="indicatorGroupsForSearching.length != 0"
+          (click)="indicatorGroupsForSearching = []"
+        >
+          <i>
+            <img
+              height="20"
+              width="20"
+              style="margin-top: -5px"
+              src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAOLSURBVGhD7ZrHqlRBEIYvqAvFhHFpfAn3RgwYUXRvduMTmBEfwQuKKEZcGbaKWRFdqrg1Lcwujf8Ht6Fs6szpPmHmDswPHwxnuqq77jmnurrmDg000EBd1QyxURwRV8Rt8XQEPl8WfLdBMHZUaYrYKx6IP+JvIozFZrfAR880VRwV34S30By+isMCn13VNvFBeIuqwzuxRbSuieKc8BYR4K97TRwXu8TWEfjMNb4ru4unxQTRimYKXlpv4p/ivFgsxogyMWaJuCCw9Xw+EY0nBIJ4KbwJL4p5oqrmC7KZ5/uFYO5GxOP0WMSTfBSrRFNaLfAZz/NINPKYnRWx81dirmha3Fl8x/OdErVEdoqdvhazRFvCN3PE824WlUROj1Mst36OaFsLxSdh5yY1TxbZOiasI1gpPC0S7O65wgZbT2tEPP8hkSXuBvuBdUJ28sRCwtj9XEgUY7HBtiiYOJt9EVnlzB5hHZDrvRRrgwikBBOCCBQFs0DE+8xOkSxSnjVms/O0T9hxgU7BxEEE8OWJTdOOuyeSxG4aV7Hs2EUqWpgXTM7YoGXCjv0tpotScZ6whjyXZWVHygKrBIHGiu/C2qwXpeLgY42uixR1WmjVIIJuCmuXlL3iTEHFmqqiBXukBoFOCGtblEH/0x1hjTjB5SglmJwgUJxFOTaX6rmwRpwlctUpmNwgUFwqPROlYpA16ttARuOjRSlj7ZMerUvCGvXty94P6fegKBXNM2tEo6CXG+I4EW+I60SpKFEoA6zhUlGknAVWCWa5sGNZ2zSRpIfCGlO4eepG0Ri/s3dFsshU1phSmm5HrLbLeE6KcRm/QySLgxXFonVA6eLJBpMSRFAIpigIdFXYNbCm7OMufV3rBDh+emIhTR9114p4/gMiW0T+XlhHNAS43W2LOT4LO/cbMUlUEi0Y6wzabgfNFl47aJOopTMidkoTrU6btEic0b0ghkVt0a6Mz/BAj4s2Z1Pi1BcnGGisZYpoJNNQjicBshl/yarCNs5OgUab2EEc+L07A+R6Nk0aBZyxy8SYFYLi75fwfLIpJzUZqohbzI8w3sQB6qIbgoqVjZWzBPCZaxSAP4RnGzgpxovWRTajF+stog5vBV2crop9hh8wvRc0F/YMSnN+i+mZCIg25n0RV82dYCw220WlLnub4uXkrMCdomq9JcI/DPCZa/SkGJNcig800EB1NTT0D1aOmPFs1wNIAAAAAElFTkSuQmCC"
+            />
+          </i>
+        </a>
+        <span class="group-icon" (click)="showGroups()">
+          <img
+            title="Indicator group filter"
+            height="30"
+            width="40"
+            src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAJbSURBVGhD7drPSxRhHMfx7QcVZUbULQsSoi56iehQQaQnD11EiDoEeYggKPoHOmQR1CWhIiIINDDrIpKXQOoQFAQRnTuLRj+1ol/a+/Nse5Ed93lmnO9M9XzghfMs+4zz2d0ZZ2esxMQUkyU4iuf4hjlj7zGEHUgdlbiF2kp/4Z2hadR+t5YPIFV6oZV8hN6VtbDOVgxA2/EG6xCcF9AKjrhRcdEn4zG0LSf0QEiWQx+ln1itBwrOSajITTcKiN5CTfzgRv5ZiWXVxQWz4s9P3xyGtueOGwUkTZE1mMJ9N0pOC7TzXnUjv5gW2QDN+QIdLtfXoeechZ53F74xLaKMQfN8HIRvzIvoEH0FL/E6wSMcQkjMi+SVWOSfK/IJrSVwGpmKlE3qIjpNqXfksTaJTEXizr7IiUVikZxiXmQTNLdRtmBVddErpkU05yvG3Sg52/ADg27kF/Mi+rvzHV3YWccuXIPWrYsKvjH/aN2G5jWid2QvfGNeRBctTmEUuqg331Oo7B6ExLxIXolFakVm0FkCF5CpSNmkLqKjy8MSeIVMReLOvsiJRf77Ijqf2lxdXDC7sbG66BXTIrpArZPGZ26UnDbM4p4b+cW0SBN05qsyx9GTYBhat+5P+sb8o3UJmteIzhja4ZvURXRVXRN1QyY03bgOvfLz6Z5IH/TlKiS6j5mqiFK7Peyz8+adc9C2XHajwOgV1GR9k1uqBwqKvt+/hbalQw+EZjs+Qyt4gjOot/PmRfvFReifB7QND5A6+zEBrahII2hGpuiwegz9uGHsPPYh5i9LpfIbp7H+LIdnKu0AAAAASUVORK5CYII="
+          />
+        </span>
+      </div>
+      <div *ngIf="showIndicatorGroups && indicatorGroups$">
+        <ul class="submenu" style="height: 300px; overflow: auto">
+          <input
+            id="searching-input-group"
+            placeholder="Search group "
+            [(ngModel)]="searchingTextForIndicatorGroup"
+          />
+          <li
+            id="indGroup.id"
+            *ngFor="
+              let indGroup of ((indicatorGroups$ | async) || {})[
+                'indicatorGroups'
+              ] | searchIndicatorGroup : searchingTextForIndicatorGroup
+            "
+          >
+            <a
+              ><input
+                type="checkbox"
+                name="indicator-groups-ids"
+                (change)="updateIndicatorGroupsForSearch(indGroup, $event)"
+              />
+              {{ indGroup.name }}({{ indGroup.indicators.length }})
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid" style="margin-top: 20px">
+  <div style="margin-bottom: 10px" *ngIf="completedPercent < 100">
+    <h5 class="text-center">
+      Loading Indicators <span *ngIf="!indicators">0</span
+      ><span *ngIf="indicators">{{ indicators.length }}</span
+      >/{{ totalAvailableIndicators || 0 }}(
+      {{ completedPercent | number : '1.0-0' }}% )
+    </h5>
+    <div class="progress" style="margin-bottom: 5px">
+      <div
+        class="progress-bar progress-bar-striped progress-bar-animated"
+        role="progressbar"
+        [attr.aria-valuenow]="completedPercent"
+        [attr.aria-valuemin]="0"
+        [attr.aria-valuemax]="100"
+        [style.width]="completedPercent + '%'"
+      ></div>
+    </div>
+  </div>
+
+  <p
+    *ngIf="
+      (completedPercent > 10 && searchText != '') ||
+      (completedPercent > 10 && indicatorGroupsForSearching.length > 0)
+    "
+    class="text-center lead"
+    style="margin-bottom: 5px; margin-top: 5px"
+  >
+    <b class="searched-indicators"
+      >{{
+        (
+          allIndicators$
+          | async
+          | filterBySearchInput : searchText
+          | filterIndicatorsByGroupId : indicatorGroupsForSearching
+        ).length || 0
+      }}
+    </b>
+    <b
+      *ngIf="
+        (
+          allIndicators$
+          | async
+          | filterBySearchInput : searchText
+          | filterIndicatorsByGroupId : indicatorGroupsForSearching
+        ).length <= 1
+      "
+      >indicator</b
+    >
+    <b
+      *ngIf="
+        (
+          allIndicators$
+          | async
+          | filterBySearchInput : searchText
+          | filterIndicatorsByGroupId : indicatorGroupsForSearching
+        ).length > 1
+      "
+      >indicators</b
+    >
+    <span *ngIf="searchText">
+      matching <b class="searching-text">`{{ searchText }}`</b> out of
+      <b class="total-indicators">{{ (allIndicators$ | async).length }} </b>
+      indicators
+    </span>
+    <span *ngIf="indicatorGroupsForSearching.length !== 0">
+      in {{ groupNames() }}
+    </span>
+    <span *ngIf="indicatorGroupsForSearching.length == 1">
+      indicator group</span
+    >
+    <span *ngIf="indicatorGroupsForSearching.length > 1">
+      indicator groups</span
+    >
+  </p>
+
+  <p
+    *ngIf="
+      completedPercent == 100 &&
+      (
+        allIndicators$
+        | async
+        | filterBySearchInput : searchText
+        | filterIndicatorsByGroupId : indicatorGroupsForSearching
+      ).length == 0
+    "
+    class="text-center lead"
+    style="margin-bottom: 5px; margin-top: 100px"
+  >
+    <span class="lead"> No Indicators</span>
+  </p>
+
+  <div>
+    <div class="card-deck" style="margin-bottom: 20px" *ngIf="!listingIsSet">
+      <div
+        class="col-sm-12 col-md-3"
+        *ngFor="
+          let indicator of allIndicators$
+            | async
+            | filterBySearchInput : searchText
+            | filterIndicatorsByGroupId : indicatorGroupsForSearching
+            | paginate : { itemsPerPage: 4, currentPage: currentPage }
+        "
+      >
+        <app-indicator-properties
+          [metadataIdentifiers]="metadataIdentifiers"
+          [indicator]="indicator"
+          [listingIsSet]="listingIsSet"
+          [routingConfiguration]="routingConfiguration"
+          (selectedMetadata)="selectedMetadata($event)"
+        ></app-indicator-properties>
+      </div>
+    </div>
+    <div *ngIf="listingIsSet">
+      <div
+        *ngFor="
+          let indicator of allIndicators$
+            | async
+            | filterBySearchInput : searchText
+            | filterIndicatorsByGroupId : indicatorGroupsForSearching
+            | paginate : { itemsPerPage: 7, currentPage: currentPage }
+        "
+      >
+        <app-indicator-properties
+          [metadataIdentifiers]="metadataIdentifiers"
+          [indicator]="indicator"
+          [listingIsSet]="listingIsSet"
+          [routingConfiguration]="routingConfiguration"
+          (selectedMetadata)="selectedMetadata($event)"
+        ></app-indicator-properties>
+      </div>
+    </div>
+    <div style="margin-top: 30px" *ngIf="allIndicators$">
+      <pagination-controls
+        (pageChange)="currentPage = $event"
+      ></pagination-controls>
+    </div>
+  </div>
+</div>

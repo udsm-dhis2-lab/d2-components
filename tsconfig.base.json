@@ -22,6 +22,9 @@
       "@iapps/function-analytics": ["packages/dhis2-analytics/src/index.ts"],
       "@iapps/ng-dhis2-shell": ["packages/ng-dhis2-shell/src/index.ts"],
       "@iapps/ng-dhis2-ui": ["packages/ng-dhis2-ui/src/index.ts"],
+      "@iapps/ngx-dhis2-dictionary": [
+        "packages/ng-dhis2-dictionary/src/index.ts"
+      ],
       "@iapps/ngx-dhis2-http-client": [
         "packages/ng-dhis2-http-client/src/index.ts"
       ],

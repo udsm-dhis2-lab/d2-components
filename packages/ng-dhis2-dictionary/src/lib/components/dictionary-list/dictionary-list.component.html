@@ -1,0 +1,133 @@
+<div class="dictionary-list-container">
+  <div class="dictionary-header">
+    <input
+      id="searching-input"
+      placeholder="Search "
+      [(ngModel)]="searchingText"
+    />
+    <button
+      class="indicator-btn"
+      (click)="setActiveItem('all', $event, 'all')"
+      [ngClass]="selectedIndicator === 'all' ? 'active-item' : ''"
+    >
+      All indicators
+    </button>
+    <ng-template
+      ngFor
+      let-dictionaryItem
+      [ngForOf]="
+        (dictionaryList$ | async) || [] | filterBySearchInput : searchingText
+      "
+      let-i="index"
+    >
+      <button
+        *ngIf="dictionaryItem.name.indexOf('not found') < 0"
+        class="dictionary-title indicator-btn"
+        (click)="setActiveItem(dictionaryItem.id, $event, dictionaryItem.id)"
+        [ngClass]="dictionaryItem.id === selectedIndicator ? 'active-item' : ''"
+      >
+        <span
+          class="category"
+          *ngIf="dictionaryItem.category && dictionaryItem.category == 'in'"
+          style="
+            color: #fff;
+            margin-right: 10px;
+            margin-left: -8px;
+            background-color: #e36e40;
+          "
+          >{{ dictionaryItem.category }}</span
+        >
+        <span
+          class="category"
+          *ngIf="dictionaryItem.category && dictionaryItem.category == 'pi'"
+          style="
+            color: #fff;
+            margin-right: 10px;
+            margin-left: -8px;
+            background-color: #5c9d18;
+          "
+          >{{ dictionaryItem.category }}</span
+        >
+        <span
+          class="category"
+          *ngIf="dictionaryItem.category && dictionaryItem.category == 'ds'"
+          style="
+            color: #fff;
+            margin-right: 10px;
+            margin-left: -8px;
+            background-color: #2d2d30;
+          "
+          >{{ dictionaryItem.category }}</span
+        >
+        <span
+          class="category"
+          *ngIf="dictionaryItem.category && dictionaryItem.category == 'de'"
+          style="
+            color: #fff;
+            margin-right: 10px;
+            margin-left: -8px;
+            background-color: #27cec8;
+          "
+          >{{ dictionaryItem.category }}</span
+        >
+        <span
+          class="category"
+          *ngIf="dictionaryItem.category && dictionaryItem.category == 'fn'"
+          style="
+            color: #fff;
+            margin-right: 10px;
+            margin-left: -8px;
+            background-color: #a763d8;
+          "
+          >{{ dictionaryItem.category }}</span
+        >
+
+        <span title="{{ dictionaryItem.name }}">{{
+          dictionaryItem.name | shortenName
+        }}</span>
+        <span
+          *ngIf="dictionaryItem.name !== ''"
+          (click)="remove(dictionaryItem, dictionaryList$)"
+          title="remove"
+          style="
+            margin-left: 15px;
+            padding: 2px;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 1.2em;
+            font-weight: 900;
+          "
+          >x</span
+        >
+        <span *ngIf="dictionaryItem.name == ''">Loading ...</span>
+      </button>
+    </ng-template>
+  </div>
+  <div *ngIf="selectedIndicator == 'all'">
+    <app-indicators-list
+      [metadataIdentifiers]="metadataIdentifiers"
+      (selectedMetadataIdentifier)="selectedMetadataIdentifier($event)"
+    ></app-indicators-list>
+  </div>
+  <div
+    class="dictionary-item-container"
+    *ngFor="
+      let dictionaryItem of (dictionaryList$ | async) || []
+        | filterBySearchInput : searchingText;
+      let i = index
+    "
+  >
+    <div
+      class="dictionary-body"
+      *ngIf="dictionaryItem.id === selectedIndicator"
+    >
+      <div
+        class="dictionary-description"
+        [innerHtml]="getSafeHtml(dictionaryItem.description)"
+      ></div>
+      <div *ngIf="dictionaryItem.progress.loading">
+        <app-dictionary-progress></app-dictionary-progress>
+      </div>
+    </div>
+  </div>
+</div>
