@@ -6,6 +6,7 @@ import {
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of, throwError, zip } from 'rxjs';
 import { catchError, filter, map, mergeMap, switchMap } from 'rxjs/operators';
+import { isArray } from 'lodash';
 import {
   DEFAULT_ROOT_URL,
   HTTP_HEADER_OPTIONS,
@@ -264,7 +265,13 @@ export class NgxDhis2HttpClientService {
                   return id
                     ? this.indexDbService.saveOne(schemaName, serverResponse)
                     : this.indexDbService
-                        .saveBulk(schemaName, serverResponse[schemaName])
+                        .saveBulk(
+                          schemaName,
+                          isArray(serverResponse)
+                            ? serverResponse
+                            : serverResponse[schemaName] ||
+                                serverResponse['entries']
+                        )
                         .pipe(map(() => serverResponse));
                 })
               );
