@@ -262,17 +262,25 @@ export class NgxDhis2HttpClientService {
                     return of(null);
                   }
 
+                  const isDataStoreResource = url.includes('dataStore');
+
+                  const responseData = isDataStoreResource
+                    ? isArray(serverResponse)
+                      ? serverResponse
+                      : serverResponse['entries']
+                    : serverResponse[schemaName];
+
                   return id
                     ? this.indexDbService.saveOne(schemaName, serverResponse)
                     : this.indexDbService
-                        .saveBulk(
-                          schemaName,
-                          isArray(serverResponse)
-                            ? serverResponse
-                            : serverResponse[schemaName] ||
-                                serverResponse['entries']
-                        )
-                        .pipe(map(() => serverResponse));
+                        .saveBulk(schemaName, responseData)
+                        .pipe(
+                          map(() =>
+                            isDataStoreResource
+                              ? { [schemaName]: responseData }
+                              : serverResponse
+                          )
+                        );
                 })
               );
         }
