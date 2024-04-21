@@ -63,7 +63,6 @@ export class DictionaryListComponent implements OnInit {
   }
 
   ngOnInit() {
-    console.log('metadataIdentifiers', this.metadataIdentifiers);
     if (this.selectedItem) {
       this.selectedIndicator = this.selectedItem;
     } else {

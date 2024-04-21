@@ -24,6 +24,7 @@ import {
 
 import { NgxPaginationModule } from 'ngx-pagination';
 import { ShortenNamePipe } from './pipes/shorten-name.pipe';
+import { DictionaryHeaderComponent } from './components/dictionary-header/dictionary-header.component';
 
 @NgModule({
   imports: [
@@ -42,6 +43,7 @@ import { ShortenNamePipe } from './pipes/shorten-name.pipe';
   declarations: [
     DictionaryListComponent,
     DictionaryProgressComponent,
+    DictionaryHeaderComponent,
     IndicatorsListComponent,
     IndicatorPropertiesComponent,
     SearchIndicatorGroupPipe,
