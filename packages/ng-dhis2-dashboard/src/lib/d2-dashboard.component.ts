@@ -1,9 +1,8 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ErrorMessage } from '@iapps/ngx-dhis2-http-client';
 import { select, Store } from '@ngrx/store';
-import { catchError, Observable, of, tap } from 'rxjs';
+import { Observable } from 'rxjs';
 import { DashboardMenuObject } from './models';
-import { DashboardService } from './services';
 import {
   D2DashboardMenuState,
   DashboardMenuActions,
@@ -14,10 +13,15 @@ import {
   getSelectedDashboardMenu,
   getSelectedDashboardSubMenu,
 } from './store';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { DashboardMenuComponent } from './components/dashboard-menu/dashboard-menu.component';
 
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'd2-dashboard',
+  standalone: true,
+  imports: [CommonModule, RouterModule, DashboardMenuComponent],
   templateUrl: './d2-dashboard.component.html',
   styleUrls: ['./d2-dashboard.component.scss'],
 })

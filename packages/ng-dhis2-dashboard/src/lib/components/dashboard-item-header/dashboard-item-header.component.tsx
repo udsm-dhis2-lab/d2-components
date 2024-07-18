@@ -1,24 +1,28 @@
+import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, NgZone, Output } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import {
+  Button,
+  IconDownload16,
+  IconFullscreen16,
+  IconFullscreenExit16,
+  IconVisualizationColumn16,
+  Menu,
+  MenuItem,
+} from '@dhis2/ui';
 import {
   DownloadFormat,
   VISUALIZATION_TYPES,
   VisualizationDownloadOption,
   VisualizationDownloadOptionUtil,
 } from '@iapps/d2-visualizer';
-import {
-  Button,
-  IconFullscreen16,
-  IconFullscreenExit16,
-  DropdownButton,
-  FlyoutMenu,
-  MenuItem,
-  IconDownload16,
-  IconVisualizationColumn16,
-  Menu,
-} from '@dhis2/ui';
+import { ReactWrapperModule } from '@iapps/ng-dhis2-ui';
 import React, { useState } from 'react';
 
 @Component({
+  standalone: true,
+  imports: [CommonModule, ReactWrapperModule, MatTooltipModule, MatIconModule],
   selector: 'd2-dashboard-item-header',
   templateUrl: './dashboard-item-header.component.html',
   styleUrls: ['./dashboard-item-header.component.scss'],
@@ -51,7 +55,7 @@ export class DashboardItemHeaderComponent {
     return (
       <Button
         small
-        className="d2-dashboard__visualization-action-button"
+        className="d2-dashboard__visualization-button"
         title={fullScreen ? 'Hide fullscreen' : 'View in fullscreen'}
         onClick={() => {
           setFullScreen(!fullScreen);
@@ -132,28 +136,39 @@ export class DashboardItemHeaderComponent {
 
     if (this.downloadOptions?.length > 0) {
       this.DownloadButton = () => {
+        const [showDownloadOptions, setShowDownloadOptions] = useState(false);
         return (
-          <DropdownButton
-            className="d2-dashboard__visualization-action-button"
-            small
-            component={
-              <FlyoutMenu>
-                {this.downloadOptions.map((downloadOption) => (
-                  <MenuItem
-                    key={downloadOption.label}
-                    label={downloadOption.label}
-                    onClick={() => {
-                      this.ngZone.run(() => {
-                        this.onDownload(downloadOption.format);
-                      });
-                    }}
-                  />
-                ))}
-              </FlyoutMenu>
-            }
-          >
-            <IconDownload16 />
-          </DropdownButton>
+          <>
+            <Button
+              className="d2-dashboard__visualization-button"
+              small
+              onClick={() => {
+                setShowDownloadOptions(!showDownloadOptions);
+              }}
+            >
+              <IconDownload16 />
+            </Button>
+            {showDownloadOptions ? (
+              <div className="d2-dashboard__visualization-download-options">
+                <Menu dense>
+                  {this.downloadOptions.map((downloadOption) => (
+                    <MenuItem
+                      key={downloadOption.label}
+                      label={downloadOption.label}
+                      onClick={() => {
+                        setShowDownloadOptions(!showDownloadOptions);
+                        this.ngZone.run(() => {
+                          this.onDownload(downloadOption.format);
+                        });
+                      }}
+                    />
+                  ))}
+                </Menu>
+              </div>
+            ) : (
+              <></>
+            )}
+          </>
         );
       };
     }

@@ -3,8 +3,12 @@ import { find } from 'lodash';
 import { DIMENSION_LABELS } from '../../constants/selection-dimension-label.constant';
 import { VisualizationDataSelection } from '../../models';
 import { IGlobalSelection } from '../../models/global-selection.model';
+import { CommonModule } from '@angular/common';
+import { SummarizeSelectionPipe } from '../../pipes/summarize-selection.pipe';
 
 @Component({
+  standalone: true,
+  imports: [CommonModule, SummarizeSelectionPipe],
   selector: 'd2-dashboard-selection-summary',
   templateUrl: './dashboard-selection-summary.component.html',
   styleUrls: ['./dashboard-selection-summary.component.scss'],

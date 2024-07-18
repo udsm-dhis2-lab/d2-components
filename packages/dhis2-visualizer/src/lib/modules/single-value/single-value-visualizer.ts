@@ -26,7 +26,7 @@ export class SingleValueVisualizer
 
     const value: number = (this._data?.rows || []).reduce(
       (valueSum: number, row: string[]) => {
-        return valueSum + parseFloat(row[valueIndex] ?? 0);
+        return valueSum + parseFloat(row[valueIndex] ?? '0');
       },
       0
     );

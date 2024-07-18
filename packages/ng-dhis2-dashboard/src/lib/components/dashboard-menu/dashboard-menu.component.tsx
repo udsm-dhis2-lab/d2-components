@@ -9,8 +9,19 @@ import {
 import { DashboardMenuObject } from '../../models';
 import React, { useState } from 'react';
 import { TabBar, Tab } from '@dhis2/ui';
+import { CommonModule } from '@angular/common';
+import { ReactWrapperModule } from '@iapps/ng-dhis2-ui';
+import { DashboardSubMenuComponent } from '../dashboard-sub-menu/dashboard-sub-menu.component';
+import { MatDividerModule } from '@angular/material/divider';
 
 @Component({
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactWrapperModule,
+    DashboardSubMenuComponent,
+    MatDividerModule,
+  ],
   selector: 'd2-dashboard-menu',
   templateUrl: './dashboard-menu.component.html',
   styleUrls: ['./dashboard-menu.component.scss'],

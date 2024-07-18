@@ -2,7 +2,7 @@
   "name": "ng-dhis2-dashboard",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/ng-dhis2-dashboard/src",
-  "prefix": "ng-dhis2-ui",
+  "prefix": "ng-dhis2-dashboard",
   "tags": [],
   "projectType": "library",
   "targets": {

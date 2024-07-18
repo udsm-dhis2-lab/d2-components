@@ -1,6 +1,4 @@
 import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
@@ -12,7 +10,17 @@ import {
 import { toObservable } from '@angular/core/rxjs-interop';
 import { MatDialog } from '@angular/material/dialog';
 import { MatMenuTrigger } from '@angular/material/menu';
+import {
+  DropdownButton,
+  FlyoutMenu,
+  IconClock16,
+  IconDimensionOrgUnit16,
+  IconFilter16,
+  MenuItem,
+  spacers,
+} from '@dhis2/ui';
 import { keys } from 'lodash';
+import React from 'react';
 import {
   DashboardAdditionalFilter,
   DashboardSelectionConfig,
@@ -20,23 +28,24 @@ import {
   VisualizationDataSelectionItem,
 } from '../../models';
 import { AdditionalFilterDialogComponent } from './dialogs/additional-filter-dialog/additional-filter-dialog.component';
-import { OrgUnitFilterDialogComponent } from './dialogs/org-unit-filter-dialog/org-unit-filter-dialog.component';
-import { PeriodFilterDialogComponent } from './dialogs/period-filter-dialog/period-filter-dialog.component';
-import React from 'react';
+import { CommonModule } from '@angular/common';
 import {
-  DropdownButton,
-  FlyoutMenu,
-  MenuItem,
-  IconFilter16,
-  spacers,
-  IconClock16,
-  IconDimensionOrgUnit16,
-  Modal,
-  ModalTitle,
-} from '@dhis2/ui';
-import { BehaviorSubject } from 'rxjs';
+  OrganisationUnitSelectorModule,
+  PeriodSelectorModule,
+  ReactWrapperModule,
+} from '@iapps/ng-dhis2-ui';
+import { DashboardSelectionFilterService } from './services/dashboard-selection-filter.service';
 
 @Component({
+  standalone: true,
+  imports: [
+    CommonModule,
+    AdditionalFilterDialogComponent,
+    OrganisationUnitSelectorModule,
+    PeriodSelectorModule,
+    ReactWrapperModule,
+  ],
+  providers: [DashboardSelectionFilterService],
   selector: 'd2-dashboard-selection-filters',
   templateUrl: './dashboard-selection-filters.component.html',
   styleUrls: ['./dashboard-selection-filters.component.scss'],

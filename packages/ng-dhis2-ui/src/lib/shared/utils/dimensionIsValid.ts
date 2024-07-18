@@ -2,7 +2,7 @@ import { DIMENSION, DIMENSION_PROPS } from './dimension';
 import { dimensionIsEmpty } from './dimensionIsEmpty';
 
 export const dimensionIsValid = (
-  dimension: any,
+  dimension: { [x: string]: unknown },
   { requireItems }: any = {}
 ) => {
   if (!DIMENSION.isValid(dimension)) {
@@ -15,7 +15,10 @@ export const dimensionIsValid = (
     return false;
   }
 
-  if (requireItems === true && dimensionIsEmpty(dimension)) {
+  if (
+    requireItems === true &&
+    dimensionIsEmpty(dimension as { [x: string]: any[] })
+  ) {
     return false;
   }
 

@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -5,13 +6,23 @@ import {
   Input,
   Output,
 } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
+import { NgxPrintModule } from 'ngx-print';
 import {
   DashboardObject,
   DashboardSelectionConfig,
   VisualizationDataSelection,
 } from '../../models';
+import { DashboardSelectionFiltersComponent } from '../../modules/dashboard-selection-filters/dashboard-selection-filters.component';
 
 @Component({
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatIconModule,
+    NgxPrintModule,
+    DashboardSelectionFiltersComponent,
+  ],
   selector: 'd2-current-dashboard-header',
   templateUrl: './current-dashboard-header.component.html',
   styleUrls: ['./current-dashboard-header.component.scss'],

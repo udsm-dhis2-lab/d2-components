@@ -49,11 +49,13 @@
 
   <div class="d2-dashboard__visualization-actions">
     <!-- Download section -->
-    <ng-dhis2-ui-wrapper
-      *ngIf="DownloadButton"
-      class="d-print-none"
-      [component]="DownloadButton"
-    ></ng-dhis2-ui-wrapper>
+    <div class="d2-dashboard__visualization-download-block">
+      <ng-dhis2-ui-wrapper
+        *ngIf="DownloadButton"
+        class="d-print-none"
+        [component]="DownloadButton"
+      ></ng-dhis2-ui-wrapper>
+    </div>
 
     <!-- Fullscreen section -->
     <ng-dhis2-ui-wrapper
