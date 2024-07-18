@@ -13,8 +13,19 @@ import { DashboardConfigService, DashboardService } from '../../services';
 import { D2DashboardSelectionState } from '../../store';
 import { DashboardSelectionActions } from '../../store/actions/dashboard-selection.actions';
 import { getDashboardSelectionById } from '../../store/selectors/dashboard-selection.selectors';
+import { CommonModule } from '@angular/common';
+import { CurrentDashboardHeaderComponent } from '../../components/current-dashboard-header/current-dashboard-header.component';
+import { DashboardSelectionSummaryComponent } from '../../components/dashboard-selection-summary/dashboard-selection-summary.component';
+import { DashboardItemsComponent } from '../../components/dashboard-items/dashboard-items.component';
 
 @Component({
+  standalone: true,
+  imports: [
+    CommonModule,
+    DashboardItemsComponent,
+    CurrentDashboardHeaderComponent,
+    DashboardSelectionSummaryComponent,
+  ],
   selector: 'd2-current-dashboard',
   templateUrl: './current-dashboard.component.html',
   styleUrls: ['./current-dashboard.component.scss'],

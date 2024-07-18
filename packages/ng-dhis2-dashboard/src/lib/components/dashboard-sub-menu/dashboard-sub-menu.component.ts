@@ -1,7 +1,11 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { DashboardMenuObject } from '../../models';
+import { CommonModule } from '@angular/common';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
+  standalone: true,
+  imports: [CommonModule, MatTooltipModule],
   selector: 'd2-dashboard-sub-menu',
   templateUrl: './dashboard-sub-menu.component.html',
   styleUrls: ['./dashboard-sub-menu.component.scss'],

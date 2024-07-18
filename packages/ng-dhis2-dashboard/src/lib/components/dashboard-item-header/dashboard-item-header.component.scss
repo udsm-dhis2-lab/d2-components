@@ -207,7 +207,6 @@
 .d2-dashboard__visualization-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
 }
 
 .d2-dashboard__visualization-action-icon {
@@ -234,6 +233,7 @@
   background-color: #fff;
   box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.12);
   border-radius: 3px;
+  border: solid 1px rgba(0, 0, 0, 0.12);
 
   button {
     border-style: none;
@@ -266,4 +266,58 @@
 ::ng-deep .d2-dashboard__visualization-type-button {
   border-style: none !important;
   background-color: #f1f9f9 !important;
+}
+
+::ng-deep .d2-dashboard__visualization-button {
+  border-style: none !important;
+  background-color: transparent !important;
+
+  &:hover {
+    background-color: #f1f9f9 !important;
+  }
+}
+
+.d2-dashboard__visualization-download-block {
+  position: relative;
+}
+
+::ng-deep .d2-dashboard__visualization-download-options {
+  position: absolute;
+  top: 30px;
+  padding: 4px;
+  right: 0;
+  min-width: 180px;
+  z-index: 1;
+
+  background-color: #fff;
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.12);
+  border: solid 1px rgba(0, 0, 0, 0.12);
+  border-radius: 3px;
+
+  button {
+    border-style: none;
+    cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.85);
+    height: 30px;
+    width: 30px;
+    border-radius: 50%;
+    text-align: center;
+    text-decoration: none;
+    display: flex;
+    -webkit-transition: all 0.2s ease-in-out;
+    -moz-transition: all 0.2s ease-in-out;
+    -o-transition: all 0.2s ease-in-out;
+    -ms-transition: all 0.2s ease-in-out;
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+      background-color: rgba(241, 241, 241, 0.6);
+    }
+
+    img {
+      height: 18px;
+      display: block;
+      margin: auto;
+    }
+  }
 }

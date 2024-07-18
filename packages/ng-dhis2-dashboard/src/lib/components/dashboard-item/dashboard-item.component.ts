@@ -16,8 +16,17 @@ import {
 import { BehaviorSubject, firstValueFrom, Observable } from 'rxjs';
 import { DashboardItemObject, VisualizationDataSelection } from '../../models';
 import { DashboardItemService, TrackerDashboardService } from '../../services';
+import { CommonModule } from '@angular/common';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { DashboardItemHeaderComponent } from '../dashboard-item-header/dashboard-item-header.component';
 
 @Component({
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatProgressSpinnerModule,
+    DashboardItemHeaderComponent,
+  ],
   selector: 'd2-dashboard-item',
   templateUrl: './dashboard-item.component.html',
   styleUrls: ['./dashboard-item.component.scss'],

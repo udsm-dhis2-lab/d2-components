@@ -2,6 +2,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
   name: 'summarizeSelection',
+  standalone: true,
 })
 export class SummarizeSelectionPipe implements PipeTransform {
   transform(
