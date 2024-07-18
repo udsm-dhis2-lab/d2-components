@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { EffectsModule } from '@ngrx/effects';
@@ -26,32 +26,24 @@ import { NgxPaginationModule } from 'ngx-pagination';
 import { ShortenNamePipe } from './pipes/shorten-name.pipe';
 import { DictionaryHeaderComponent } from './components/dictionary-header/dictionary-header.component';
 
-@NgModule({
-  imports: [
-    CommonModule,
-    HttpClientModule,
-    FormsModule,
-    NgxPaginationModule,
-    StoreModule.forFeature('dictionary', dictionaryReducer),
-    StoreModule.forFeature('indicatorsList', indicatorsListReducer),
-    StoreModule.forFeature('allIndicators', allIndicatorsRedcuer),
-    StoreModule.forFeature('indicatorGroups', indicatorGroupsReducer),
-    EffectsModule.forFeature([DictionaryEffects]),
-    EffectsModule.forFeature([IndicatorsEffects]),
-  ],
-
-  declarations: [
-    DictionaryListComponent,
-    DictionaryProgressComponent,
-    DictionaryHeaderComponent,
-    IndicatorsListComponent,
-    IndicatorPropertiesComponent,
-    SearchIndicatorGroupPipe,
-    FilterBySearchInputPipe,
-    FilterIndicatorsByGroupIdPipe,
-    ShortenNamePipe,
-  ],
-  exports: [DictionaryListComponent],
-  providers: [DatePipe, IndicatorsService],
-})
+@NgModule({ declarations: [
+        DictionaryListComponent,
+        DictionaryProgressComponent,
+        DictionaryHeaderComponent,
+        IndicatorsListComponent,
+        IndicatorPropertiesComponent,
+        SearchIndicatorGroupPipe,
+        FilterBySearchInputPipe,
+        FilterIndicatorsByGroupIdPipe,
+        ShortenNamePipe,
+    ],
+    exports: [DictionaryListComponent], imports: [CommonModule,
+        FormsModule,
+        NgxPaginationModule,
+        StoreModule.forFeature('dictionary', dictionaryReducer),
+        StoreModule.forFeature('indicatorsList', indicatorsListReducer),
+        StoreModule.forFeature('allIndicators', allIndicatorsRedcuer),
+        StoreModule.forFeature('indicatorGroups', indicatorGroupsReducer),
+        EffectsModule.forFeature([DictionaryEffects]),
+        EffectsModule.forFeature([IndicatorsEffects])], providers: [DatePipe, IndicatorsService, provideHttpClient(withInterceptorsFromDi())] })
 export class NgxDhis2DictionaryModule {}

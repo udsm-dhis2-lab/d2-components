@@ -5,7 +5,6 @@ import { CustomVisualizer } from './modules/custom/custom-visualizer';
 import { MapLayer } from './modules/map/layers/map-layer.model';
 import { TrackedEntityLayer } from './modules/map/layers/tracked-entity-layer.model';
 import { MapVisualizer } from './modules/map/map-visualizer';
-import { LegendSet } from './modules/map/models/legend-set.model';
 import { D2VisualizerMapControl } from './modules/map/models/map-control.model';
 import { MapDashboardExtensionItem } from './modules/map/models/map-dashboard-extension.model';
 import { MapDashboardItem } from './modules/map/models/map-dashboard-item.model';
@@ -15,9 +14,8 @@ import { TableConfiguration } from './modules/table/models/table-config.model';
 import { TableDashboardItem } from './modules/table/models/table-dashboard-item.model';
 import { TableUtil } from './modules/table/utils/table.util';
 import { getSelectionDimensionsFromFavorite } from './shared/helpers';
-import { Visualizer, VisualizerPlotOptions } from './shared/models';
+import { LegendSet, Visualizer, VisualizerPlotOptions } from './shared/models';
 import { VisualizationConfiguration } from './shared/models/visualization-configuration.model';
-import * as React from 'react';
 import {
   ChartType,
   VisualizationType,
@@ -354,9 +352,12 @@ export class D2Visualizer {
    * @returns
    */
   async draw(): Promise<any> {
-    const data = !this.trackedEntityInstances
-      ? this.dataAnalytics || (await this._getData())?._data
-      : undefined;
+    const data =
+      this.visualizationType !== 'MAP'
+        ? !this.trackedEntityInstances
+          ? this.dataAnalytics || (await this._getData())?._data
+          : undefined
+        : undefined;
 
     switch (this.visualizationType) {
       case 'CHART':
@@ -395,7 +396,8 @@ export class D2Visualizer {
         //   .setShowBoundary(this.d2VisualizerMapControl?.showMapBoundary)
         //   .setShowMapSummary(this.d2VisualizerMapControl?.showMapSummary)
         //   .draw();
-        const mapVisualizer = new MapVisualizer()
+
+        this.visualizer = new MapVisualizer()
           .setId(this.id)
           .setBaseMap(this.config?.config?.basemap);
 
@@ -406,15 +408,16 @@ export class D2Visualizer {
             'dimension'
           );
 
-          mapVisualizer.addLayer(
+          (this.visualizer as MapVisualizer).addLayer(
             new MapLayer()
               .setId(mapView.id)
               .setType(mapView.layer)
+              .setLegendSet(mapView.legendSet)
               .setDataSelections(dataSelections)
           );
         });
 
-        mapVisualizer.draw();
+        (this.visualizer as MapVisualizer).draw();
         return this;
       }
       case 'REPORT_TABLE':

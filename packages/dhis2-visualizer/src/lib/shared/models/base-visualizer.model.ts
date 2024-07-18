@@ -80,4 +80,6 @@ export class BaseVisualizer {
   download(downloadFormat: DownloadFormat) {
     const filename = this._config?.title || 'chart-data';
   }
+
+  dispose() {}
 }

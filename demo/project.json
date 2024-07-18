@@ -20,7 +20,11 @@
           "demo/src/assets",
           "demo/src/manifest.webapp"
         ],
-        "styles": ["demo/src/styles.scss"],
+        "styles": [
+          "demo/src/styles.scss",
+          "node_modules/mapbox-gl/dist/mapbox-gl.css",
+          "node_modules/mapbox-gl-style-switcher/styles.css"
+        ],
         "scripts": []
       },
       "configurations": {

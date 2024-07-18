@@ -4,18 +4,9 @@
   }}"
 >
   <div class="d2-dashboard__visualization-title-block">
-    <button
-      class="d2-dashboard__visualization-icon"
-      (click)="onToggleVisualizationType($event)"
-      [disabled]="disableVisualizationChange"
-      *ngIf="visualizationType"
-    >
-      <img [src]="visualizationType.icon" alt="visualization" />
-      <!-- <span class="d2-dashboard__visualization-type-label">{{
-        visualizationType.label
-      }}</span> -->
-      <!-- <mat-icon inline>expand_more</mat-icon> -->
-    </button>
+    <ng-dhis2-ui-wrapper
+      [component]="VisualizationOptionButton"
+    ></ng-dhis2-ui-wrapper>
     <div class="d2-dashboard__visualization-title">
       {{ visualizationTitle }}
     </div>
@@ -41,9 +32,6 @@
               ? 'd2-dashboard__visualization-type-icon-selected'
               : ''
           }}"
-          (click)="
-            onVisualizationTypeChange($event, visualizationTypeObject.type)
-          "
         >
           <img [src]="visualizationTypeObject.icon" alt="" />
           <div class="d2-dashboard__visualization-type-details">
@@ -61,38 +49,17 @@
 
   <div class="d2-dashboard__visualization-actions">
     <!-- Download section -->
-    <ng-container>
-      <button
-        [matTooltip]="'Download'"
-        [matMenuTriggerFor]="downloadMenu"
-        class="d-print-none d2-dashboard__visualization-action-icon mr-1"
-        *ngIf="downloadOptions.length > 0"
-      >
-        <mat-icon>download</mat-icon>
-      </button>
-      <mat-menu #downloadMenu="matMenu" xPosition="before">
-        <button
-          mat-menu-item
-          (click)="onDownload($event, downloadOption.format)"
-          *ngFor="let downloadOption of downloadOptions"
-        >
-          <span>{{ downloadOption.label }}</span>
-        </button>
-      </mat-menu>
-    </ng-container>
+    <ng-dhis2-ui-wrapper
+      *ngIf="DownloadButton"
+      class="d-print-none"
+      [component]="DownloadButton"
+    ></ng-dhis2-ui-wrapper>
 
     <!-- Fullscreen section -->
-    <ng-container>
-      <button
-        [matTooltip]="fullScreen ? 'Hide fullscreen' : 'View in fullscreen'"
-        class="d-print-none d2-dashboard__visualization-action-icon"
-        (click)="onFullScreenAction($event)"
-      >
-        <mat-icon>{{
-          fullScreen ? 'close_fullscreen' : 'open_in_full'
-        }}</mat-icon>
-      </button>
-    </ng-container>
+    <ng-dhis2-ui-wrapper
+      class="d-print-none"
+      [component]="FullScreenButton"
+    ></ng-dhis2-ui-wrapper>
   </div>
 
   <!-- <ng-container *ngIf="!hideChartTypes">
