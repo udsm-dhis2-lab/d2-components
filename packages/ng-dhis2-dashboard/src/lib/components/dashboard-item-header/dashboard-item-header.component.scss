@@ -18,6 +18,7 @@
   display: flex;
   align-items: center;
   width: calc(100% - 100px);
+  position: relative;
 }
 
 .d2-dashboard__visualization-icon {
@@ -47,8 +48,9 @@
 }
 
 .d2-dashboard__visualization-title {
+  margin-left: 8px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   white-space: nowrap;
   display: inline-block;
   overflow: hidden;
@@ -205,19 +207,63 @@
 .d2-dashboard__visualization-actions {
   display: flex;
   align-items: center;
+  gap: 4px;
 }
 
 .d2-dashboard__visualization-action-icon {
-  border: none;
+  border: none !important;
   border-radius: 5px;
   display: flex;
   align-items: center;
   background-color: #f1f9f9;
-  color: rgba(0,0,0,.7);
-  padding: 4px 8px;
-  mat-icon {
-    height: 13px;
-    width: 13px;
-    font-size: 13px;
+}
+
+::ng-deep .d2-dashboard__visualization-action-button {
+  // border: none !important;
+  background-color: transparent !important;
+}
+
+::ng-deep .d2-dashboard__visualization-type-list {
+  position: absolute;
+  top: 30px;
+  padding: 4px;
+  left: 0;
+  min-width: 164px;
+  z-index: 1;
+
+  background-color: #fff;
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.12);
+  border-radius: 3px;
+
+  button {
+    border-style: none;
+    cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.85);
+    height: 30px;
+    width: 30px;
+    border-radius: 50%;
+    text-align: center;
+    text-decoration: none;
+    display: flex;
+    -webkit-transition: all 0.2s ease-in-out;
+    -moz-transition: all 0.2s ease-in-out;
+    -o-transition: all 0.2s ease-in-out;
+    -ms-transition: all 0.2s ease-in-out;
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+      background-color: rgba(241, 241, 241, 0.6);
+    }
+
+    img {
+      height: 18px;
+      display: block;
+      margin: auto;
+    }
   }
+}
+
+::ng-deep .d2-dashboard__visualization-type-button {
+  border-style: none !important;
+  background-color: #f1f9f9 !important;
 }

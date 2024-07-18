@@ -1,4 +1,4 @@
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { APP_INITIALIZER, ModuleWithProviders, NgModule } from '@angular/core';
 import {
   AppShellConfig,
@@ -14,11 +14,8 @@ function initializeShell(
   return () => new AppShellConfigService(appShellConfig, httpClient);
 }
 
-@NgModule({
-  imports: [HttpClientModule],
-  declarations: [NgDhis2ShellComponent],
-  exports: [NgDhis2ShellComponent],
-})
+@NgModule({ declarations: [NgDhis2ShellComponent],
+    exports: [NgDhis2ShellComponent], imports: [], providers: [provideHttpClient(withInterceptorsFromDi())] })
 export class AppShellModule {
   static forRoot(config: AppShellConfig): ModuleWithProviders<AppShellModule> {
     return {

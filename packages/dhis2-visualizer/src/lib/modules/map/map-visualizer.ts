@@ -1,17 +1,20 @@
 import * as turf from '@turf/turf';
+import * as mapboxgl from 'mapbox-gl';
+
+import { flatten, uniqBy } from 'lodash';
 import {
   BaseVisualizer,
   Visualizer,
 } from '../../shared/models/base-visualizer.model';
 import { MapLayer } from './layers/map-layer.model';
-import { BaseMap } from './models';
+import { BaseMap, LegendControl } from './models';
 import { MapboxStyleSwitcherControl } from 'mapbox-gl-style-switcher';
-declare let mapboxgl: any;
 
 export class MapVisualizer extends BaseVisualizer implements Visualizer {
   basemap!: BaseMap;
   layers: MapLayer[] = [];
   zoom = 5;
+  map!: any;
 
   style =
     'https://api.maptiler.com/maps/eef16200-c4cc-4285-9370-c71ca24bb42d/style.json?key=CH1cYDfxBV9ZBu1lHGqh';
@@ -21,7 +24,7 @@ export class MapVisualizer extends BaseVisualizer implements Visualizer {
 
   constructor() {
     super();
-    mapboxgl.accessToken = this.accessToken;
+    (mapboxgl as any).accessToken = this.accessToken;
   }
 
   setBaseMap(basemap: BaseMap): MapVisualizer {
@@ -39,45 +42,149 @@ export class MapVisualizer extends BaseVisualizer implements Visualizer {
     return this;
   }
 
-  async getData() {
+  async loadLayers() {
     this.layers = await Promise.all(
       this.layers.map(async (layer: MapLayer) => {
-        await layer.getGeoFeatures();
-        await layer.getData();
+        await layer.loadFeatures();
         return layer;
       })
     );
   }
 
+  getValidFeatures(features: any[]) {
+    return features.filter(
+      (feature) =>
+        (feature?.geometry?.coordinates || [])[1] >= -90 &&
+        (feature?.geometry?.coordinates || [])[1] <= 90
+    );
+  }
+
   async draw() {
-    await this.getData();
+    await this.loadLayers();
 
     if (this.layers?.length > 0) {
-      console.log(this.layers[0].featureCollection);
-      const bbox = turf.bbox(this.layers[0].featureCollection);
+      const isPointGeometry = (
+        this.layers[0].featureCollection?.features || []
+      ).some((feature) => feature.geometry.type === 'Point');
 
-      const map = new mapboxgl.Map({
+      const featureCollection = isPointGeometry
+        ? turf.featureCollection(
+            this.getValidFeatures(
+              this.layers[0].featureCollection?.features || []
+            )
+          )
+        : this.layers[0].featureCollection;
+
+      const bbox = turf.bbox(featureCollection);
+
+      this.map = new mapboxgl.Map({
         container: this._id,
         style: this.style,
         zoom: this.zoom,
       });
 
-      map.fitBounds(bbox, { padding: 40 });
-      map.addControl(new mapboxgl.NavigationControl());
-      map.addControl(new MapboxStyleSwitcherControl());
+      this.map.fitBounds(bbox, { padding: 40 });
+      this.map.addControl(new mapboxgl.NavigationControl());
+      this.map.addControl(new MapboxStyleSwitcherControl());
 
-      map.on('load', () => {
+      this.map.on('load', () => {
         this.layers.forEach((layer: MapLayer) => {
-          map.addSource(layer.id, {
-            type: 'geojson',
+          this.map.addSource(layer.id, {
+            type: layer.sourceType,
+            cluster: true,
+            clusterMaxZoom: 14, // Max zoom to cluster points on
+            clusterRadius: 50, // Radius of each cluster when clustering points (defaults to 50),
+            clusterProperties: {
+              // Aggregate 'value' property for clusters
+              sum: ['+', ['get', 'value']],
+            },
             data: layer.featureCollection,
           });
 
-          map.addLayer({
+          // TODO: Refactor this code, not all layers will respond to this logic
+          const circleColors = flatten(
+            (layer.legendSet?.legends || [])
+              .sort((a, b) => a.startValue - b.startValue)
+              .map((legend, index) =>
+                index === 0 ? [legend.color] : [legend.startValue, legend.color]
+              )
+          );
+
+          console.log(circleColors);
+
+          if (layer.fillType !== 'line') {
+            this.map.addLayer({
+              id: 'clusters',
+              type: 'circle',
+              source: layer.id,
+              filter: ['has', 'sum'],
+              paint: {
+                'circle-color': ['step', ['get', 'sum'], ...circleColors],
+                'circle-radius': [
+                  'step',
+                  ['get', 'sum'],
+                  20,
+                  100,
+                  30,
+                  1000,
+                  40,
+                ],
+              },
+            });
+
+            this.map.addLayer({
+              id: `${layer.id}_clustered`,
+              type: 'symbol',
+              filter: ['has', 'sum'],
+              source: layer.id,
+              layout: {
+                'text-field': ['get', 'sum'],
+                'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+                'text-size': 12,
+              },
+            });
+          }
+
+          this.map.addLayer({
             id: layer.id,
-            type: 'line',
+            type: layer.fillType,
+            filter: ['!', ['has', 'sum']],
             source: layer.id,
+            paint: layer.paint,
+            layout: {},
           });
+
+          if (layer.fillType !== 'line') {
+            this.map.addLayer({
+              id: `${layer.id}_unclustered`,
+              type: 'symbol',
+              filter: ['!', ['has', 'sum']],
+              source: layer.id,
+              layout: {
+                'text-field': ['get', 'value'],
+                'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+                'text-size': 10,
+              },
+            });
+          }
+
+          // Add legend control
+          const legendTitle = layer.legendSet?.name;
+
+          const legends = (layer.legendSet?.legends || [])
+            .map((legend) => {
+              return {
+                useBackgroundColor: true,
+                backgroundColor: legend.color,
+                label: `${legend.name} (${legend.startValue} - ${legend.endValue})`,
+              };
+            })
+            .filter((legend) => legend.label);
+
+          this.map.addControl(
+            new LegendControl(legends, legendTitle),
+            'bottom-right'
+          );
         });
       });
 
@@ -96,6 +203,13 @@ export class MapVisualizer extends BaseVisualizer implements Visualizer {
       //   .setShowBoundary(this.d2VisualizerMapControl?.showMapBoundary)
       //   .setShowMapSummary(this.d2VisualizerMapControl?.showMapSummary)
       //   .draw();
+    }
+  }
+
+  override dispose(): void {
+    if (this.map) {
+      this.map.remove();
+      this.map = null;
     }
   }
 }

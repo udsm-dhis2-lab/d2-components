@@ -1,1 +1,1 @@
-export type MapLayerType = 'thematic' | 'boundary';
+export type MapLayerType = 'thematic' | 'boundary' | 'orgUnit';

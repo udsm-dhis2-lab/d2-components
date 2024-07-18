@@ -1,7 +1,7 @@
-import { VisualizationData } from '../../../shared/models';
+import { GeoJSONUtil, MapGeometryUtil } from '../utils';
+import { VisualizationData, LegendSet } from '../../../shared/models';
 import {
   DigitGroupSeparator,
-  LegendSet,
   MapLayerType,
   MapRenderingStrategy,
   TitleOption,
@@ -31,6 +31,8 @@ export class MapLayer {
   features!: GeoJSON[];
   data!: any;
   mapSourceData!: any;
+  fillType!: 'fill' | 'line' | 'circle';
+  sourceType = 'geojson';
 
   setId(id: string) {
     this.id = id;
@@ -47,7 +49,7 @@ export class MapLayer {
     return this;
   }
 
-  setSubTitleOption(subtitleOption: TitleOption) {
+  setSubtitleOption(subtitleOption: TitleOption) {
     this.subtitleOption = subtitleOption;
     return this;
   }
@@ -55,6 +57,30 @@ export class MapLayer {
   setType(type: MapLayerType) {
     this.layer = type;
     return this;
+  }
+
+  setFillType(fillType?: any) {
+    if (fillType) {
+      this.fillType = fillType;
+      return this;
+    }
+
+    switch (this.layer) {
+      case 'boundary':
+      case 'orgUnit': {
+        this.fillType = 'line';
+        return this;
+      }
+
+      default: {
+        const isPointGeometry = (this.features || []).some(
+          (feature) => feature.geometry.type === 'Point'
+        );
+
+        this.fillType = isPointGeometry ? 'circle' : 'fill';
+        return this;
+      }
+    }
   }
 
   setRenderingStrategy(renderingStrategy: MapRenderingStrategy) {
@@ -92,35 +118,85 @@ export class MapLayer {
     return this;
   }
 
-  setFeatures(features: GeoJSON[]): MapLayer {
-    this.features = features;
-    return this;
-  }
+  // setFeatures(features: GeoJSON[]): MapLayer {
+  //   this.features = features;
+  //   return this;
+  // }
 
-  async getGeoFeatures() {
+  async loadFeatures() {
     this.geoFeatures = await new MapGeoFeature()
       .setDataSelections(this.dataSelections)
       .get();
 
+    this.data = await new VisualizationData()
+      .setSelections(this.dataSelections)
+      .getAnalytics();
+
     this.setMapSourceData();
-    this.features = (this.geoFeatures || []).map((geoFeature) => {
-      return new GeoJSON()
-        .setType('Feature')
-        .setGeometry(
-          new MapGeometry()
-            .setType('Polygon')
-            .setCoordinates(JSON.parse(geoFeature.co))
+    this.features = (this.geoFeatures || [])
+      .map((geoFeature) => {
+        return GeoJSONUtil.getGeoJSON(
+          geoFeature,
+          this.data,
+          this.legendSet,
+          this.layer
         );
-    });
-    return this.geoFeatures;
+      })
+      .filter((geoJSON) => geoJSON) as GeoJSON[];
+    this.setFillType();
   }
 
-  async getData() {
-    this.data = (
-      await new VisualizationData()
-        .setSelections(this.dataSelections)
-        .getAnalytics()
-    )?._data;
+  get paint() {
+    switch (this.fillType) {
+      case 'line':
+      default:
+        return {
+          'line-color': '#000000',
+          'line-width': 1,
+        };
+
+      case 'fill':
+        return {
+          'fill-color': ['get', 'color'],
+          'fill-opacity': 0.75,
+        };
+
+      case 'circle': {
+        const pain = {
+          // TODO: This is for thematics
+          // 'circle-radius': ['/', ['get', 'value'], 10],
+          // 'circle-color': ['get', 'color'],
+          // TODO: This is for cluster
+          'circle-color': [
+            'step',
+            ['get', 'sum'],
+            '#51bbd6',
+            100,
+            '#f1f075',
+            1000,
+            '#f28cb1',
+          ],
+          'circle-radius': ['step', ['get', 'sum'], 20, 100, 30, 1000, 40],
+        };
+
+        return {
+          'circle-radius': ['step', ['get', 'value'], 20, 100, 30, 750, 40],
+          'circle-color': ['get', 'color'],
+        };
+      }
+    }
+  }
+
+  get layout() {
+    switch (this.fillType) {
+      case 'line':
+      default:
+        return {};
+      case 'circle':
+        return {
+          'text-field': '{sum}',
+        };
+    }
   }
 
   get featureCollection(): { type: 'FeatureCollection'; features: GeoJSON[] } {

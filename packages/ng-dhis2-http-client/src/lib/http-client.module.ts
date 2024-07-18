@@ -1,4 +1,4 @@
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { APP_INITIALIZER, ModuleWithProviders, NgModule } from '@angular/core';
 
 import {
@@ -11,9 +11,7 @@ export function initializeDb(indexDbServiceConfig: IndexDbServiceConfig) {
 }
 
 // @dynamic
-@NgModule({
-    imports: [HttpClientModule],
-})
+@NgModule({ imports: [], providers: [provideHttpClient(withInterceptorsFromDi())] })
 export class NgxDhis2HttpClientModule {
     static forRoot(config: IndexDbServiceConfig): ModuleWithProviders<NgxDhis2HttpClientModule> {
         return {
