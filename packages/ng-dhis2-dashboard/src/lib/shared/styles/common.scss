@@ -1,0 +1,82 @@
+.button {
+  display: inline-flex;
+  position: relative;
+  -webkit-box-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.6, 1) 0s;
+  color: rgb(33, 41, 52);
+  height: 32px;
+  padding: 0px 16px;
+  font-size: 14px;
+  line-height: 16px;
+  border: 1px solid rgb(160, 173, 186) !important;
+  background-color: rgb(249, 250, 251) !important;
+  text-decoration: none;
+  &:hover {
+    text-decoration: none;
+  }
+
+  mat-icon {
+    height: 16px;
+    width: 16px;
+    font-size: 16px;
+  }
+}
+
+.button-sm {
+  height: 24px;
+  padding: 0px 8px;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.button-lg {
+  height: 48px;
+  font-size: 18px;
+  padding: 0 24px;
+}
+
+.button-xl {
+  height: 64px;
+  font-size: 20px;
+  padding: 0 32px;
+}
+
+.button-primary {
+  //   border-color: mat-color($primary) !important;
+  //   background-color: mat-color($primary) !important;
+  color: #ffffff;
+}
+
+.button-warning {
+  //   border-color: mat-color($accent) !important;
+  //   background-color: mat-color($accent) !important;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.button-danger {
+  //   border-color: mat-color($warn) !important;
+  //   background-color: mat-color($warn) !important;
+  color: #fff;
+}
+
+.button-primary:disabled,
+.button-warning:disabled,
+.button-danger:disabled,
+.button:disabled {
+  background-color: #f0f1f5;
+  color: #777;
+  border: none !important;
+}
+
+.d2-dashboard__filter-dialog-label {
+  font-size: 20px;
+  font-weight: 600;
+}

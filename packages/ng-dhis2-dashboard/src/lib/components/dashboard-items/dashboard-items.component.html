@@ -1,0 +1,26 @@
+<div
+  class="d2-dashboard__current-dashboard-items-container"
+  id="d2_dashboard_items"
+>
+  <ktd-grid
+    [cols]="cols"
+    [rowHeight]="rowHeight"
+    [layout]="dashboardItemsLayout"
+    class="d2-dashboard__grid-container"
+  >
+    <ktd-grid-item
+      *ngFor="let dashboardItem of dashboardItems; trackBy: trackById"
+      [draggable]="false"
+      [resizable]="false"
+      [id]="dashboardItem.id"
+      class="d2-dashboard__dashboard-item dashboard-item-{{ dashboardItem.id }}"
+    >
+      <div class="d2-dashboard__dashboard-item-card">
+        <d2-dashboard-item
+          [dashboardItem]="dashboardItem"
+          [dataSelections]="dataSelections"
+        ></d2-dashboard-item>
+      </div>
+    </ktd-grid-item>
+  </ktd-grid>
+</div>

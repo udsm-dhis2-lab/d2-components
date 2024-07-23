@@ -1,0 +1,28 @@
+<h5>Header Bar component</h5>
+<ng-dhis2-ui-header-bar></ng-dhis2-ui-header-bar>
+
+<h5>Button component</h5>
+<ng-dhis2-ui-button [label]="'Button'" [primary]="true" [small]="true">
+  <div #ngDhis2UiContent>
+    <div>Button</div>
+  </div>
+</ng-dhis2-ui-button>
+
+<h5>Period selector component</h5>
+<ng-dhis2-ui-period-selector
+  [selectedPeriods]="selectedPeriods"
+  (selectPeriods)="onSelectPeriods($event)"
+></ng-dhis2-ui-period-selector>
+
+<h5>Organisation unit selector component</h5>
+<ng-dhis2-ui-org-unit-selector
+  [selectedOrgUnits]="selectedOrgUnits"
+  (selectOrgUnits)="onSelectOrgUnits($event)"
+></ng-dhis2-ui-org-unit-selector>
+
+<h5>Dictionary</h5>
+<ngx-dhis2-dictionary-list
+  [metadataIdentifiers]="[]"
+></ngx-dhis2-dictionary-list>
+
+<h5>Wrapper implementation</h5>

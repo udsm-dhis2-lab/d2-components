@@ -1,0 +1,29 @@
+.selection-summary-container {
+  display: flex;
+}
+
+.selection-summary-item {
+  display: flex;
+  margin-left: 15px;
+  justify-content: space-between;
+  background-color: #000000;
+  color: #ffffff;
+  font-size: 13px;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.selection-summary-item :first-child {
+  margin-left: 0;
+}
+
+.remove-selection-button {
+  text-decoration: underline;
+  margin-left: 16px;
+  cursor: pointer;
+  color: #ffffff;
+}
+
+.dimension-label {
+  margin-right: 8px;
+}

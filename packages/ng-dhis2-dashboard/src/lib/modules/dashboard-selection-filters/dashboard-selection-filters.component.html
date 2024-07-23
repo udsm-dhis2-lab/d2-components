@@ -1,0 +1,19 @@
+<div>
+  <ng-dhis2-ui-wrapper [component]="FilterButton"></ng-dhis2-ui-wrapper>
+
+  <!-- Period selector modal -->
+  <ng-dhis2-ui-period-selector-modal
+    *ngIf="$showPeriodSelector | async"
+    [selectedPeriods]="selectedPeriods"
+    (cancel)="onCancelPeriod()"
+    (confirm)="onSelectPeriod($event)"
+  ></ng-dhis2-ui-period-selector-modal>
+
+  <!-- Organisation unit selector modal -->
+  <ng-dhis2-ui-org-unit-selector-modal
+    *ngIf="$showOrgUnitSelector | async"
+    [selectedOrgUnits]="selectedOrgUnits"
+    (cancel)="onCancelOrgUnit()"
+    (confirm)="onSelectOrgUnit($event)"
+  ></ng-dhis2-ui-org-unit-selector-modal>
+</div>

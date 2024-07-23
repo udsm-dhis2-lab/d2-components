@@ -1,0 +1,18 @@
+<div class="selection-summary-container" *ngIf="globalSelection">
+  <div
+    class="selection-summary-item"
+    *ngFor="let dataSelection of globalSelection?.dataSelections"
+  >
+    <div class="dimension-label">
+      {{ dimensionLabels[dataSelection.dimension] || 'Dimension' }}:
+    </div>
+    <div>
+      {{ dataSelection.items | summarizeSelection: dataSelection.dimension }}
+    </div>
+    <a
+      (click)="onRemoveSelection($event, dataSelection.dimension)"
+      class="remove-selection-button"
+      >Remove</a
+    >
+  </div>
+</div>

@@ -1,0 +1,22 @@
+@import '../../shared/styles/common.scss';
+
+.d2-dashboard__current-dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.d2-dashboard__current-dashboard-title-container {
+  display: flex;
+  align-items: center;
+}
+
+.d2-dashboard__current-dashboard-title {
+  margin: 0 16px 0 0 !important;
+  font-weight: 600 !important;
+}
+
+.d2-dashboard__print-label {
+  margin-left: 8px;
+}

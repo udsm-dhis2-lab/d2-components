@@ -1,0 +1,11 @@
+<div
+  *ngIf="dashboardMenuItem"
+  [id]="dashboardMenuItem.id"
+  [ngClass]="{
+    'd2-dashboard__menu-item': true,
+    'd2-dashboard__menu-item-active': isCurrentDashboard
+  }"
+  (click)="onSetDashboard($event)"
+>
+  {{ dashboardMenuItem.name }}
+</div>
