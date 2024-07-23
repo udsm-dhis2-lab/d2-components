@@ -1,0 +1,91 @@
+.dictionary-list-container {
+}
+.dictionary-item-container {
+  border-bottom: solid thin #ececec;
+}
+.dictionary-title {
+  padding: 5px 10px 5px 10px;
+  cursor: pointer;
+}
+.dictionary-item-container:last-child {
+  border-bottom-style: none;
+}
+.dictionary-body {
+  border-top: solid thin #ececec;
+  padding: 10px;
+  padding-bottom: 30px;
+}
+.dictionary-description {
+  text-align: justify;
+}
+
+.table th,
+.table td {
+  padding: 0.45rem !important;
+}
+
+.indicator-btn {
+  background-color: #eee;
+  margin-right: 5px;
+  color: #222;
+  font-size: 1em;
+  display: inline-block;
+  font-weight: 400;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.1em 0.5em;
+  border-radius: 15px;
+  line-height: 1.5;
+  margin: 3px;
+}
+
+.active-item {
+  background-color: #086056;
+  color: #ffffff;
+  /* font-weight: 600; */
+}
+
+button:focus {
+  outline: none !important;
+}
+
+#searching-input {
+  outline: none !important;
+  border: none;
+  width: 10%;
+  margin-right: 4px;
+  height: 30px;
+  padding: 0.005rem 0.55rem;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #495057;
+  background-color: #fff;
+  background-clip: padding-box;
+  border-bottom: 1px solid #bebebe;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+#searching-input:focus {
+  outline: none !important;
+}
+
+.category {
+  color: rgb(255, 255, 255);
+  background-color: rgb(158, 158, 158);
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  border-radius: 50%;
+  height: 30px;
+  width: 30px;
+  margin-right: -4px;
+}

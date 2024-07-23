@@ -1,0 +1,54 @@
+@import '../../../lib/shared/styles/common.scss';
+.d2-dashboard__menu-container {
+  left: 0;
+  right: 0;
+  top: 0;
+  width: 100%;
+  position: sticky;
+  z-index: 1;
+  background-color: #fff;
+}
+
+::ng-deep .scroll-button {
+  padding: 8px 8px 11px !important;
+}
+
+::ng-deep .tab {
+  padding: 8px 16px 11px !important;
+}
+
+.d2-dashboard__menu {
+  display: flex;
+  justify-content: space-between;
+  padding-left: 8px;
+  padding-right: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.d2-dashboard__search {
+  margin-left: 8px;
+  margin-right: 16px;
+}
+
+.d2-dashboard__menu-list {
+  display: flex;
+}
+
+.d2-dashboard__menu-actions {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  button {
+    margin-left: 8px;
+  }
+}
+
+.d2-dashboard__search-label {
+  margin-left: 8px !important;
+}
+
+.d2-dashboard__search-input {
+  padding-left: 8px;
+  margin: 0 0 2px 0 !important;
+}

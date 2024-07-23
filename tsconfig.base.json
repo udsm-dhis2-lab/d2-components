@@ -17,7 +17,20 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@iapps/ng-dhis2-ui": ["ng-dhis2-ui/src/index.ts"]
+      "@iapps/d2-dashboard": ["packages/ng-dhis2-dashboard/src/index.ts"],
+      "@iapps/d2-visualizer": ["packages/dhis2-visualizer/src/index.ts"],
+      "@iapps/function-analytics": ["packages/dhis2-analytics/src/index.ts"],
+      "@iapps/ng-dhis2-shell": ["packages/ng-dhis2-shell/src/index.ts"],
+      "@iapps/ng-dhis2-ui": ["packages/ng-dhis2-ui/src/index.ts"],
+      "@iapps/ngx-dhis2-dictionary": [
+        "packages/ng-dhis2-dictionary/src/index.ts"
+      ],
+      "@iapps/ngx-dhis2-http-client": [
+        "packages/ng-dhis2-http-client/src/index.ts"
+      ],
+      "@iapps/period-utilities": [
+        "packages/dhis2-period-utilities/src/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "tmp"]

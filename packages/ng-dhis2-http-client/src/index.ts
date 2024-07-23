@@ -1,0 +1,10 @@
+export { NgxDhis2HttpClientService } from './lib/services/http-client.service';
+export { SystemInfoService } from './lib/services/system-info.service';
+export { ManifestService } from './lib/services/manifest.service';
+export { DataStoreService } from './lib/services/data-store.service';
+export { User } from './lib/models/user.model';
+export { Manifest } from './lib/models/manifest.model';
+export { SystemInfo } from './lib/models/system-info.model';
+export { HttpConfig } from './lib/models/http-config.model';
+export { ErrorMessage } from './lib/models/error-message.model';
+export { NgxDhis2HttpClientModule } from './lib/http-client.module';

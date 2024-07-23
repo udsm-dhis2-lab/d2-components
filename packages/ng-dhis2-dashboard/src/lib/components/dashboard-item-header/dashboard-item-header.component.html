@@ -1,0 +1,83 @@
+<div
+  class="d2-dashboard__visualization-header {{
+    fullScreen ? 'd2-dashboard__fullscreen-header' : ''
+  }}"
+>
+  <div class="d2-dashboard__visualization-title-block">
+    <ng-dhis2-ui-wrapper
+      [component]="VisualizationOptionButton"
+    ></ng-dhis2-ui-wrapper>
+    <div class="d2-dashboard__visualization-title">
+      {{ visualizationTitle }}
+    </div>
+  </div>
+
+  <div
+    class="d2-dashboard__visualization-types-container"
+    *ngIf="showVisualizationTypes"
+  >
+    <div class="d2-dashboard__visualization-types">
+      <button
+        class="d2-dashboard__visualization-type-close-btn"
+        [matTooltip]="'Close'"
+        (click)="onToggleVisualizationType($event)"
+      >
+        <mat-icon inline>close</mat-icon>
+      </button>
+      <ng-container *ngFor="let visualizationTypeObject of visualizationTypes">
+        <div
+          [matTooltip]="visualizationTypeObject.description"
+          class="d2-dashboard__visualization-type-icon {{
+            visualizationTypeObject.type === visualizationType?.type
+              ? 'd2-dashboard__visualization-type-icon-selected'
+              : ''
+          }}"
+        >
+          <img [src]="visualizationTypeObject.icon" alt="" />
+          <div class="d2-dashboard__visualization-type-details">
+            <div class="d2-dashboard__visualization-type-label">
+              {{ visualizationTypeObject.label }}
+            </div>
+            <div class="d2-dashboard__visualization-type-description">
+              {{ visualizationTypeObject.description }}
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <div class="d2-dashboard__visualization-actions">
+    <!-- Download section -->
+    <div class="d2-dashboard__visualization-download-block">
+      <ng-dhis2-ui-wrapper
+        *ngIf="DownloadButton"
+        class="d-print-none"
+        [component]="DownloadButton"
+      ></ng-dhis2-ui-wrapper>
+    </div>
+
+    <!-- Fullscreen section -->
+    <ng-dhis2-ui-wrapper
+      class="d-print-none"
+      [component]="FullScreenButton"
+    ></ng-dhis2-ui-wrapper>
+  </div>
+
+  <!-- <ng-container *ngIf="!hideChartTypes">
+    <ul class="chart-type-list animated fadeInRight">
+      <li *ngFor="let chartType of chartTypes">
+        <button
+          (click)="updateChartType(chartType.type, $event)"
+          title="{{ chartType.description }}"
+          [ngClass]="
+            currentChartType === chartType.type ? 'active-chart-type' : ''
+          "
+          [disabled]="currentChartType === chartType.type"
+        >
+          <img [src]="chartType.icon" class="chart-option-icon" alt="" />
+        </button>
+      </li>
+    </ul>
+  </ng-container> -->
+</div>
