@@ -1,43 +1,6 @@
-# ng-dhis2-ui
+# D2 components
 
-An angular wrapper library that provide access to the react based DHIS2 UI components in angular applications running in DHIS2 platform
-
-## Library installation
-
-`npm install @iapps/ng-dhis2-ui`
-
-This library wraps most of react based DHIS2 libraries. Following packages should be installed
-
-<!-- TODO: List of dependencies -->
-
-For HTTP request, the library has used [NgxDhis2HttpClient](https://www.npmjs.com/package/@iapps/ngx-dhis2-http-client). Please follow the instructions on how to install and configure
-
-**NOTE**: Under the hood the library uses react library, hence you will need to modify some your `tsconfig.json` under compilerOptions with the following
-
-```javascript
-  ........
-  "compilerOptions": {
-    "rootDir": ".",
-    "sourceMap": true,
-    "declaration": false,
-    "moduleResolution": "node",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "importHelpers": true,
-    "target": "es2015",
-    "module": "esnext",
-    "jsx": "react",
-    "esModuleInterop": true,
-    "lib": ["es2020", "dom"],
-    "skipLibCheck": true,
-    "skipDefaultLibCheck": true,
-    "baseUrl": ".",
-    "paths": {
-      "@iapps/ng-dhis2-ui": ["ng-dhis2-ui/src/index.ts"]
-    }
-  },
-  ......
-```
+Combination of different components/libraries to simplify the development of DHIS2 based application using Angular ecosystem
 
 ## Local development
 
@@ -45,7 +8,7 @@ If you want to collaborate to the codebase, to run the codebase locally;
 
 1. Clone the source code
 
-`git clone https://github.com/udsm-dhis2-lab/ng-dhis2-ui.git`
+`git clone https://github.com/udsm-dhis2-lab/d2-components.git`
 
 2. Install all needed dependencies
 
@@ -55,10 +18,18 @@ If you want to collaborate to the codebase, to run the codebase locally;
 
 3. You will be required to set up a proxy config file named `proxy-config.json`. You can simply copy `proxy-config.example.json` and modify your access credentials to DHIS2 instances to run the demo application.
 
-4. To run the demo app, in order to view and test the components `nx serve demo`
+4. To run the demo app, in order to view and test the components `npm run serve:demo` or `yarn serve:demo`
 
 ## Deployment
 
-- To build, run `npm run build:dhis2-ui`
-- To pack, run `npm run pack:dhis2-ui`
-- To publish to npm, run`npm run publish:dhis2-ui`. But you will be required to have access to `@iapps` npm namespace and have already logged in under your terminal. Run `npm login` to login with your terminal
+- To build, run `npm run build:<library name>` or `yarn build:<library name>`
+- To pack, run `npm run pack:<library name>` or `yarn pack:<library name>`
+- To publish to npm, run `npm run publish:<library name>` or `yarn publish:<library name>`. But you will be required to have access to `@iapps` npm namespace and have already logged in under your terminal. Run `npm login` to login with your terminal
+
+## Local deployment
+
+If you want to publish the library in you local registry, assuming you are using `verdaccio` run
+
+`npm run publish-local:<library name>` or `yarn publish-local:<library name>`
+
+For more information about installing `verddacio`, please visit https://verdaccio.org/
