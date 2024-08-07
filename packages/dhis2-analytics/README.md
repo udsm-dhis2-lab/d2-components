@@ -1,8 +1,6 @@
 # Function Analytics Library
 
-Javascript Library based on micro-service design pattern to support and improve the development of function indicators. Built with best practices in mind from the experience of writing function indicators with on [function maintenance app](https://play.dhis2.org/2.31.3/api/apps/Function-Maintanance-2/index.html#/).
-
-For details on function maintenance visit it's [source codes](https://github.com/hisptz/function-maintenance), for online documentations visit [https://hisptz.github.io/function-analytics/](https://hisptz.github.io/function-analytics/), visit it's [source codes here](https://github.com/hisptz/function-analytics).
+Javascript Library based on micro-service design pattern to support and improve the development of function indicators. Built with best practices in mind from the experience of writing function indicators.
 
 Function analytics makes it easy for developers to focus on the business logic of their functions indicator while also considering the best way to perform analytics operations with out of the box performance execution strategy.
 
@@ -136,5 +134,3 @@ Functions analytics microservice design has been implemented to run on both clie
 13. Allows easier stress and time-lag testing of functions in case of huge volume of selections, and anticipate impacts of functions long before they're put to production
 14. Potential support for code completion during development as entire library is right there for use(making development even easier)
 15. Room for porting of javascript implementation to postgres procedures and other language implementation that can be transpiled for execution in backend with any other technologies other than javascript
-
-For detailed documentation please visit the [documentation](https://hisptz.github.io/function-analytics/) page.
