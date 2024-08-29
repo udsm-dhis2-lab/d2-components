@@ -30,16 +30,16 @@ import { appRoutes } from './app.routes';
       models: {},
       namespace: '',
     }),
-    D2DashboardModule.forRoot({
-      useDataStore: true,
-      dataStoreNamespace: 'eidsr-dashboard',
-      rootUrl: 'dashboard',
-      selectionConfig: {
-        allowSelectionOnStartUp: false,
-        startUpPeriodType: 'Monthly',
-        periodConfig: { openFuturePeriods: 1, allowDateRangeSelection: false },
-      },
-    }),
+    // D2DashboardModule.forRoot({
+    //   useDataStore: true,
+    //   dataStoreNamespace: 'eidsr-dashboard',
+    //   rootUrl: 'dashboard',
+    //   selectionConfig: {
+    //     allowSelectionOnStartUp: false,
+    //     startUpPeriodType: 'Monthly',
+    //     periodConfig: { openFuturePeriods: 1, allowDateRangeSelection: false },
+    //   },
+    // }),
     StoreModule.forRoot({}),
     EffectsModule.forRoot([]),
   ],

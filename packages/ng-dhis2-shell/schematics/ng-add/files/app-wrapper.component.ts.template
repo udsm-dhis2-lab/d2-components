@@ -1,0 +1,15 @@
+import { ComponentPortal } from '@angular/cdk/portal';
+import { Component, OnInit } from '@angular/core';
+import { NgDhis2ShellWrapper } from '@iapps/ng-dhis2-shell';
+import {} from './app.component'
+
+@Component({
+  selector: 'app-root',
+  template: '<ng-dhis2-shell (shellHasLoaded)="onReady()"></ng-dhis2-shell>',
+  styleUrl: './app.component.scss',
+})
+export class AppWrapperComponent extends NgDhis2ShellWrapper {
+  override componentPortal: ComponentPortal<any> = new ComponentPortal(
+    AppComponent
+  );
+}
