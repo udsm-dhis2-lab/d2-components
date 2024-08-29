@@ -4,6 +4,7 @@ import {
   ElementRef,
   Output,
   EventEmitter,
+  NgZone,
 } from '@angular/core';
 import { DataProvider } from '@dhis2/app-runtime';
 import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
@@ -53,7 +54,8 @@ export class PeriodSelectorComponent extends ReactWrapperComponent {
 
   constructor(
     elementRef: ElementRef<HTMLElement>,
-    private httpClient: NgxDhis2HttpClientService
+    private httpClient: NgxDhis2HttpClientService,
+    private ngZone: NgZone
   ) {
     super(elementRef);
   }
@@ -70,7 +72,9 @@ export class PeriodSelectorComponent extends ReactWrapperComponent {
           <PeriodDimension
             selectedPeriods={this.selectedPeriods}
             onSelect={(selectionEvent: PeriodSelectionEvent) =>
-              this.onSelectItems(selectionEvent)
+              this.ngZone.run(() => {
+                this.onSelectItems(selectionEvent);
+              })
             }
             excludedPeriodTypes={excludedPeriodTypes}
             systemInfo={systemInfo}

@@ -3,6 +3,7 @@ import {
   ElementRef,
   EventEmitter,
   Input,
+  NgZone,
   Output,
 } from '@angular/core';
 import { Provider } from '@dhis2/app-runtime';
@@ -41,7 +42,8 @@ export class OrganisationUnitSelectorComponent extends ReactWrapperComponent {
 
   constructor(
     elementRef: ElementRef<HTMLElement>,
-    private httpClient: NgxDhis2HttpClientService
+    private httpClient: NgxDhis2HttpClientService,
+    private ngZone: NgZone
   ) {
     super(elementRef);
   }
@@ -62,7 +64,9 @@ export class OrganisationUnitSelectorComponent extends ReactWrapperComponent {
             hideLevelSelect={this.orgUnitSelectionConfig.hideLevelSelect}
             hideUserOrgUnits={this.orgUnitSelectionConfig.hideUserOrgUnits}
             onSelect={(selectionEvent: OrganisationUnitSelectionEvent) =>
-              this.onSelectItems(selectionEvent)
+              this.ngZone.run(() => {
+                this.onSelectItems(selectionEvent);
+              })
             }
             orgUnitGroupPromise={this.getOrgUnitGroups()}
             orgUnitLevelPromise={this.getOrgUnitLevels()}
