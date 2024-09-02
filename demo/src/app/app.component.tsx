@@ -38,6 +38,14 @@ export class AppComponent {
             this.onSelectPage(e);
           }}
         />
+        <MenuItem
+          label="Web SDK"
+          value="web-sdk"
+          className="menu-background"
+          onClick={(e: any) => {
+            this.onSelectPage(e);
+          }}
+        />
       </Menu>
     </div>
   );
