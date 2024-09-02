@@ -83,7 +83,7 @@
     "eslint-config-prettier": "^9.0.0",
     "jest": "29.7.0",
     "jest-environment-jsdom": "29.7.0",
-    "jest-environment-node": "^29.4.1",
+    "jest-environment-node": "^29.7.0",
     "jest-preset-angular": "14.1.1",
     "jsonc-eslint-parser": "^2.1.0",
     "jsonc-parser": "^3.3.1",
@@ -145,10 +145,10 @@
     "react-dom": "18.2.0",
     "react-query": "^3.39.3",
     "rxjs": "~7.8.0",
+    "storybook": "^8.2.8",
     "styled-jsx": "^5.1.2",
     "tslib": "^2.3.0",
-    "zone.js": "0.14.4",
-    "storybook": "^8.2.8"
+    "zone.js": "0.14.4"
   },
   "nx": {
     "includedScripts": []

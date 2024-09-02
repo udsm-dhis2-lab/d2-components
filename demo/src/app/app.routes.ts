@@ -18,4 +18,11 @@ export const appRoutes: Route[] = [
         (m) => m.ComponentsModule
       ),
   },
+  {
+    path: 'web-sdk',
+    loadComponent: () =>
+      import('./pages/web-sdk/web-sdk.component').then(
+        (m) => m.WebSdkComponent
+      ),
+  },
 ];
