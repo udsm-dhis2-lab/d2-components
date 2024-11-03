@@ -9,6 +9,7 @@ import * as _ from 'lodash';
 import { TableConfiguration } from '../../modules/table/models/table-config.model';
 import { CustomVisualizationTemplate } from '../../modules/custom/models/custom-visualization-template.model';
 import { DEFAULT_ORG_UNIT_SELECTIONS } from '../constants/default-data-selections.constant';
+import { LngLatLike } from 'mapbox-gl';
 
 export class VisualizationConfiguration {
   dataSelections: VisualizationDataSelection[];
@@ -231,7 +232,7 @@ export class VisualizationConfiguration {
     return this.config?.symbols;
   }
 
-  get mapCenter(): number[] {
+  get mapCenter(): LngLatLike {
     return this.config?.center;
   }
 

@@ -24,7 +24,6 @@ export class MapVisualizer extends BaseVisualizer implements Visualizer {
 
   constructor() {
     super();
-    (mapboxgl as any).accessToken = this.accessToken;
   }
 
   setBaseMap(basemap: BaseMap): MapVisualizer {
@@ -81,6 +80,7 @@ export class MapVisualizer extends BaseVisualizer implements Visualizer {
         container: this._id,
         style: this.style,
         zoom: this.zoom,
+        accessToken: this.accessToken,
       });
 
       this.map.fitBounds(bbox, { padding: 40 });

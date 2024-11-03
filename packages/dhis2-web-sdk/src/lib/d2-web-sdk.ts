@@ -3,7 +3,12 @@
 // license that can be found in the LICENSE file.
 
 import { AxiosDefaults } from 'axios';
-import { DataElementModule, OptionSetModule, ProgramModule } from './modules';
+import {
+  DataElementModule,
+  OptionSetModule,
+  ProgramModule,
+  OrganisationUnitModule,
+} from './modules';
 import { D2HttpClient, D2WebConfig } from './shared';
 
 export class D2Web {
@@ -44,5 +49,9 @@ export class D2Web {
 
   get optionSetModule(): OptionSetModule {
     return new OptionSetModule(this.#httpInstance);
+  }
+
+  get organisationUnitModule(): OrganisationUnitModule {
+    return new OrganisationUnitModule(this.#httpInstance);
   }
 }

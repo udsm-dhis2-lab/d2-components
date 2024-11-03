@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "serve:demo": "nx serve demo",
+    "local-registry": "nx run @ng-dhis2-ui/source:local-registry",
     "build:demo": "nx build demo && cd dist/demo && zip -r -D dhis2-ui-demo.zip .",
     "build:ng-dhis2-ui": "nx build ng-dhis2-ui",
     "pack:ng-dhis2-ui": "npm run build:ng-dhis2-ui && cd dist/packages/ng-dhis2-ui && npm pack",
