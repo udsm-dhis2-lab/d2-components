@@ -34,44 +34,52 @@ export class SingleValueVisualizer
     const renderingElement = document.getElementById(this._id);
 
     if (renderingElement) {
-      renderingElement?.replaceChildren();
-      renderingElement.innerHTML = `
-      <style>
-      #single-value-container-${this._id} {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-      }
-      #single-value-title-${this._id} {
-        font-size: 12px; 
-        color: #666;
-        line-height: 12px;
-        margin-bottom: 8px;
-      }
+      renderingElement.replaceChildren();
 
-      #single-value-filter-${this._id} {
-        font-size: 8px; 
-        color: #666;
-        line-height: 8px;
-        margin-bottom: 8px;
-      }
+      const svgNamespace = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(svgNamespace, 'svg');
+      svg.setAttribute('width', '100%');
+      svg.setAttribute('height', '100%');
+      svg.setAttribute('viewBox', '0 0 200 100'); // Set viewbox for responsive scaling
 
-      #single-value-${this._id} {
-        font-size: 2.5em;
-        font-weight: 300;
-        line-height: .8em;
-      }
-      </style>
-      <div id="single-value-container-${this._id}">
-        <div style="text-align: center">
-            <div id="single-value-title-${this._id}">${dataLabel}</div>
-            <div id="single-value-filter-${this._id}">${filterLabel}</div>
-            <div id="single-value-${
-              this._id
-            }">${VisualizerUtil.toCommaSeparated(value)}</div>
-        </div>
-      </div>`;
+      // Container for value and labels
+      const textGroup = document.createElementNS(svgNamespace, 'g');
+      textGroup.setAttribute('transform', 'translate(100, 50)'); // Centering the text
+
+      // Data Label
+      const titleText = document.createElementNS(svgNamespace, 'text');
+      titleText.setAttribute('y', '-20');
+      titleText.setAttribute('text-anchor', 'middle');
+      titleText.setAttribute('font-size', '12');
+      titleText.setAttribute('fill', '#666');
+      titleText.textContent = dataLabel;
+
+      // Filter Label
+      const filterText = document.createElementNS(svgNamespace, 'text');
+      filterText.setAttribute('y', '-4');
+      filterText.setAttribute('text-anchor', 'middle');
+      filterText.setAttribute('font-size', '8');
+      filterText.setAttribute('fill', '#666');
+      filterText.textContent = filterLabel;
+
+      // Value Text
+      const valueText = document.createElementNS(svgNamespace, 'text');
+      valueText.setAttribute('y', '36');
+      valueText.setAttribute('text-anchor', 'middle');
+      valueText.setAttribute('font-size', '2.5em');
+      valueText.setAttribute('font-weight', '300');
+      valueText.textContent = VisualizerUtil.toCommaSeparated(value);
+
+      // Append texts to the group
+      textGroup.appendChild(titleText);
+      textGroup.appendChild(filterText);
+      textGroup.appendChild(valueText);
+
+      // Append the group to the SVG
+      svg.appendChild(textGroup);
+
+      // Append the SVG to the rendering element
+      renderingElement.appendChild(svg);
     }
   }
 }
