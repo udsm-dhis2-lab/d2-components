@@ -291,7 +291,7 @@ export class TableUtil extends BaseVisualizer implements Visualizer {
       );
 
       if (renderingElement) {
-        const style = document.createElement('style');
+        const style = createElement('style');
         style.textContent = `
          .custom-table-container {
             overflow: auto;
@@ -350,9 +350,10 @@ export class TableUtil extends BaseVisualizer implements Visualizer {
             background-color: #c7d5e9;
           }
         `;
-        document.head.appendChild(style);
+
         renderingElement.replaceChildren();
         const tableHTML = this.getTableHTML(tableData);
+        tableHTML.appendChild(style);
         renderingElement.appendChild(tableHTML);
       }
     }
