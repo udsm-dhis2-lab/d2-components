@@ -40,17 +40,25 @@ export class SingleValueVisualizer
       const svg = document.createElementNS(svgNamespace, 'svg');
       svg.setAttribute('width', '100%');
       svg.setAttribute('height', '100%');
-      svg.setAttribute('viewBox', '0 0 200 100'); // Set viewbox for responsive scaling
+      svg.setAttribute('viewBox', '0 0 200 100');
 
-      // Container for value and labels
+      const rootFontSize =
+        parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+      const rem = (px: number) => `${(px / rootFontSize).toFixed(2)}rem`;
+
+      const titleFontSize = rem(12);
+      const filterFontSize = rem(8);
+
       const textGroup = document.createElementNS(svgNamespace, 'g');
-      textGroup.setAttribute('transform', 'translate(100, 50)'); // Centering the text
+
+      // Centering the text
+      textGroup.setAttribute('transform', 'translate(100, 50)');
 
       // Data Label
       const titleText = document.createElementNS(svgNamespace, 'text');
       titleText.setAttribute('y', '-20');
       titleText.setAttribute('text-anchor', 'middle');
-      titleText.setAttribute('font-size', '12');
+      titleText.setAttribute('font-size', `${titleFontSize}`);
       titleText.setAttribute('fill', '#666');
       titleText.textContent = dataLabel;
 
@@ -58,7 +66,7 @@ export class SingleValueVisualizer
       const filterText = document.createElementNS(svgNamespace, 'text');
       filterText.setAttribute('y', '-4');
       filterText.setAttribute('text-anchor', 'middle');
-      filterText.setAttribute('font-size', '8');
+      filterText.setAttribute('font-size', `${filterFontSize}`);
       filterText.setAttribute('fill', '#666');
       filterText.textContent = filterLabel;
 
