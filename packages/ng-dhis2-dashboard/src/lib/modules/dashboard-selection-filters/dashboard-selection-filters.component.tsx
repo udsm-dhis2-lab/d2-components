@@ -18,9 +18,12 @@ import {
   IconFilter16,
   MenuItem,
   spacers,
+  IconChevronDown16,
+  IconChevronUp16,
+  Button,
 } from '@dhis2/ui';
 import { keys } from 'lodash';
-import React from 'react';
+import React, { useState } from 'react';
 import {
   DashboardAdditionalFilter,
   DashboardSelectionConfig,
@@ -82,35 +85,71 @@ export class DashboardSelectionFiltersComponent {
     );
   }
 
-  FilterButton = () => (
-    <>
-      <DropdownButton
-        component={
-          <FlyoutMenu dense>
-            <MenuItem
-              icon={<IconClock16 />}
-              label="Period"
-              onClick={() => {
-                this.showPeriodSelector.set(true);
-              }}
-            />
-            <MenuItem
-              icon={<IconDimensionOrgUnit16 />}
-              label="Organisation unit"
-              onClick={() => {
-                this.showOrgUnitSelector.set(true);
-              }}
-            />
-          </FlyoutMenu>
-        }
-        name="dashboard-filters"
-        value="dashboard-filters"
+  FilterButton = () => {
+    const [showMenu, setShowMenu] = useState(false);
+    return (
+      <div
+        style={{
+          position: 'relative',
+        }}
       >
-        <IconFilter16 />
-        <span style={{ marginLeft: spacers.dp8 }}>Add filter</span>
-      </DropdownButton>
-    </>
-  );
+        <Button
+          icon={<IconFilter16 />}
+          onClick={() => {
+            setShowMenu(!showMenu);
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: spacers.dp8,
+            }}
+          >
+            <span>Add filter</span>
+
+            {showMenu ? (
+              <IconChevronUp16 style={{ height: 4 }} />
+            ) : (
+              <IconChevronDown16 />
+            )}
+          </div>
+        </Button>
+        {showMenu && (
+          <div
+            style={{
+              position: 'absolute',
+              top: 40,
+              left: 0,
+              width: 180,
+              right: 0,
+              zIndex: 1,
+            }}
+          >
+            <FlyoutMenu dense>
+              <MenuItem
+                icon={<IconClock16 />}
+                label="Period"
+                onClick={() => {
+                  setShowMenu(false);
+                  this.showPeriodSelector.set(true);
+                }}
+              />
+              <MenuItem
+                icon={<IconDimensionOrgUnit16 />}
+                label="Organisation unit"
+                onClick={() => {
+                  setShowMenu(false);
+                  this.showOrgUnitSelector.set(true);
+                }}
+              />
+            </FlyoutMenu>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   constructor(private dialog: MatDialog) {}
 
