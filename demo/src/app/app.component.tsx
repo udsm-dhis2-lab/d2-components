@@ -32,7 +32,7 @@ export class AppComponent {
         />
         <MenuItem
           label="Components"
-          value="components"
+          value="components/view"
           className="menu-background"
           onClick={(e: any) => {
             this.onSelectPage(e);
