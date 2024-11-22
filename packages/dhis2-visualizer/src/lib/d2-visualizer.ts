@@ -381,22 +381,6 @@ export class D2Visualizer {
         this.visualizer.draw();
         return this;
       case 'MAP': {
-        // return new MapUtil()
-        //   .setMapAnalytics(data as MapAnalytics)
-        //   .setGeofeature(this.geoFeatures as any)
-        //   .setLegendSet(this.legendSets)
-        //   .setMapDashboardItem(this.config.config)
-        //   .setMapDashboardExtensionItem(this.mapDashboardExtensionItem)
-        //   .setContainer(this.id)
-        //   .setStyle(this.layerStyle)
-        //   .setShowLegend(this.d2VisualizerMapControl?.showMapLegend)
-        //   .setShowLabel(this.d2VisualizerMapControl?.showMapLabel)
-        //   .setShowValue(this.d2VisualizerMapControl?.showMapValue)
-        //   .setShowMapTitle(this.d2VisualizerMapControl?.showMapTitle)
-        //   .setShowBoundary(this.d2VisualizerMapControl?.showMapBoundary)
-        //   .setShowMapSummary(this.d2VisualizerMapControl?.showMapSummary)
-        //   .draw();
-
         this.visualizer = new MapVisualizer()
           .setId(this.id)
           .setBaseMap(this.config?.config?.basemap);
