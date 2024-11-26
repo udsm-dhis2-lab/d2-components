@@ -14,4 +14,8 @@ export class MetaDataService {
       map((response: any) => response.indicators)
     );
   }
+
+  fetchIndicatorById(id: string) {
+    return this.http.get(`indicators/${id}`); 
+  }
 }
