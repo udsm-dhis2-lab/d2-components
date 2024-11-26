@@ -222,7 +222,7 @@ export class DashboardItemComponent implements OnInit, OnChanges {
     } else if (this.visualizationElement.msRequestFullscreen) {
       /* IE/Edge */
       this.visualizationElement.msRequestFullscreen();
-    }
+    } 
   }
 
   closeFullscreen() {
