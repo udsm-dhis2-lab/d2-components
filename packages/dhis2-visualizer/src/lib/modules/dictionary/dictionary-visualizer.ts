@@ -8,14 +8,15 @@ import {
 } from '../../shared/models/base-visualizer.model';
 
 export class DictionaryVisualizer extends BaseVisualizer implements Visualizer {
-  // Callback for fetching details of a selected indicator
+  // Callback for fetching details of a selected metadata
   onFetchDetails!: (id: string) => Promise<any>;
 
   draw(): void {
     const renderingElement = document.getElementById(this._id);
 
     if (renderingElement) {
-      renderingElement.replaceChildren(); // Clear existing content
+      // Clear existing content
+      renderingElement.replaceChildren(); 
 
       // Create main container
       const mainContainer = document.createElement('div');
@@ -28,10 +29,10 @@ export class DictionaryVisualizer extends BaseVisualizer implements Visualizer {
       listContainer.id = 'list-container';
 
       const listTitle = document.createElement('h4');
-      listTitle.textContent = 'Indicators List';
+      listTitle.textContent = 'Metadata List';
       listContainer.appendChild(listTitle);
 
-      // Create the list for indicators
+      // Create the list for metadata
       const itemList = document.createElement('ul');
       itemList.style.listStyleType = 'none';
       itemList.style.padding = '0';
@@ -53,14 +54,13 @@ export class DictionaryVisualizer extends BaseVisualizer implements Visualizer {
         listItem.onmouseleave = () =>
           (listItem.style.backgroundColor = 'white');
 
-        // On click, fetch details for the selected indicator
+        // On click, fetch details for the selected metadata
         listItem.onclick = async () => {
           try {
             console.log('List item clicked');
             if (this.onFetchDetails) {
               console.log('Fetching details for:', key);
               const details = await this.onFetchDetails(key); // Fetch details
-              console.log('Fetched details:', details); // Log details to check if they are correct
               this.showItemDetails(value as string, details); // Show details
             }
           } catch (error) {
