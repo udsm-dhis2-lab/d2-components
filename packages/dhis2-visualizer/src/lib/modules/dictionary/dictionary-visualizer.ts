@@ -11,104 +11,122 @@ export class DictionaryVisualizer extends BaseVisualizer implements Visualizer {
   // Callback for fetching details of a selected metadata
   onFetchDetails!: (id: string) => Promise<any>;
 
+
   draw(): void {
-    console.log('The draw method is running.');
     const renderingElement = document.getElementById(this._id);
-    console.log(this._id);
-    console.log(this._data?.metaData);
-  
-  
     if (renderingElement) {
       // Clear existing content
       renderingElement.replaceChildren();
-
-      // Create a paragraph element
-      const paragraph = document.createElement('p');
-      paragraph.textContent = 'I am working';
-      paragraph.style.fontSize = '16px'; // Optional: Adjust text size
-      paragraph.style.color = 'green'; // Optional: Add color
-
-      // Append the paragraph to the rendering element
-      renderingElement.appendChild(paragraph);
-
-      // // Create main container
-      // const mainContainer = document.createElement('div');
-      // mainContainer.style.display = 'flex';
-      // mainContainer.style.flexDirection = 'column';
-
-      // // Create list container and title
-      // const listContainer = document.createElement('div');
-      // listContainer.style.marginBottom = '1rem';
-      // listContainer.id = 'list-container';
-
-      // const listTitle = document.createElement('h4');
-      // listTitle.textContent = 'Metadata List';
-      // listContainer.appendChild(listTitle);
-
-      // // Create the list for metadata
-      // const itemList = document.createElement('ul');
-      // itemList.style.listStyleType = 'none';
-      // itemList.style.padding = '0';
-
-      // // Loop through dictionary and create list items
-      // for (const [key, value] of Object.entries(this._data.dictionary)) {
-      //   const listItem = document.createElement('li');
-      //   listItem.style.marginBottom = '0.5rem';
-      //   listItem.style.padding = '0.5rem';
-      //   listItem.style.border = '1px solid #ccc';
-      //   listItem.style.cursor = 'pointer';
-      //   listItem.style.borderRadius = '4px';
-      //   listItem.style.transition = 'background-color 0.3s';
-      //   listItem.textContent = value as string;
-
-      //   // Hover effects for list item
-      //   listItem.onmouseenter = () =>
-      //     (listItem.style.backgroundColor = '#f0f0f0');
-      //   listItem.onmouseleave = () =>
-      //     (listItem.style.backgroundColor = 'white');
-
-      //   // On click, fetch details for the selected metadata
-      //   listItem.onclick = async () => {
-      //     try {
-      //       console.log('List item clicked');
-      //       if (this.onFetchDetails) {
-      //         console.log('Fetching details for:', key);
-      //         const details = await this.onFetchDetails(key); // Fetch details
-      //         this.showItemDetails(value as string, details); // Show details
-      //       }
-      //     } catch (error) {
-      //       console.error('Error fetching details:', error);
-      //     }
-      //   };
-
-      //   itemList.appendChild(listItem);
-      // }
-
-      // listContainer.appendChild(itemList);
-
-      // // Create the container for displaying item details (hidden initially)
-      // const detailsContainer = document.createElement('div');
-      // detailsContainer.id = 'details-container';
-      // detailsContainer.style.padding = '1rem';
-      // detailsContainer.style.border = '1px solid #ccc';
-      // detailsContainer.style.borderRadius = '4px';
-      // detailsContainer.style.display = 'none';
-
-      // // Placeholder text for details container
-      // const placeholder = document.createElement('p');
-      // placeholder.textContent = 'Select an indicator to view details.';
-      // placeholder.style.textAlign = 'center';
-      // placeholder.style.color = '#666';
-      // detailsContainer.appendChild(placeholder);
-
-      // // Append both containers to the main container
-      // mainContainer.appendChild(listContainer);
-      // mainContainer.appendChild(detailsContainer);
-
-      // // Append the main container to the rendering element
-      // renderingElement.appendChild(mainContainer);
+  
+      // Create a container for the tabs
+      const tabsContainer = document.createElement('div');
+      tabsContainer.style.display = 'flex';
+      tabsContainer.style.marginBottom = '20px';
+      tabsContainer.style.cursor = 'pointer';
+  
+  
     }
   }
+  
+  
+  // draw(): void {
+  //   console.log('The draw method is running.');
+  //   const renderingElement = document.getElementById(this._id);
+  //   console.log(this._id);
+  //   console.log(this._data?.metaData);
+  
+  
+  //   if (renderingElement) {
+  //     // Clear existing content
+  //     renderingElement.replaceChildren();
+
+  //     // Create a paragraph element
+  //     const paragraph = document.createElement('p');
+  //     paragraph.textContent = 'I am working';
+  //     paragraph.style.fontSize = '16px'; // Optional: Adjust text size
+  //     paragraph.style.color = 'green'; // Optional: Add color
+
+  //     // Append the paragraph to the rendering element
+  //     renderingElement.appendChild(paragraph);
+
+  //     // // Create main container
+  //     // const mainContainer = document.createElement('div');
+  //     // mainContainer.style.display = 'flex';
+  //     // mainContainer.style.flexDirection = 'column';
+
+  //     // // Create list container and title
+  //     // const listContainer = document.createElement('div');
+  //     // listContainer.style.marginBottom = '1rem';
+  //     // listContainer.id = 'list-container';
+
+  //     // const listTitle = document.createElement('h4');
+  //     // listTitle.textContent = 'Metadata List';
+  //     // listContainer.appendChild(listTitle);
+
+  //     // // Create the list for metadata
+  //     // const itemList = document.createElement('ul');
+  //     // itemList.style.listStyleType = 'none';
+  //     // itemList.style.padding = '0';
+
+  //     // // Loop through dictionary and create list items
+  //     // for (const [key, value] of Object.entries(this._data.dictionary)) {
+  //     //   const listItem = document.createElement('li');
+  //     //   listItem.style.marginBottom = '0.5rem';
+  //     //   listItem.style.padding = '0.5rem';
+  //     //   listItem.style.border = '1px solid #ccc';
+  //     //   listItem.style.cursor = 'pointer';
+  //     //   listItem.style.borderRadius = '4px';
+  //     //   listItem.style.transition = 'background-color 0.3s';
+  //     //   listItem.textContent = value as string;
+
+  //     //   // Hover effects for list item
+  //     //   listItem.onmouseenter = () =>
+  //     //     (listItem.style.backgroundColor = '#f0f0f0');
+  //     //   listItem.onmouseleave = () =>
+  //     //     (listItem.style.backgroundColor = 'white');
+
+  //     //   // On click, fetch details for the selected metadata
+  //     //   listItem.onclick = async () => {
+  //     //     try {
+  //     //       console.log('List item clicked');
+  //     //       if (this.onFetchDetails) {
+  //     //         console.log('Fetching details for:', key);
+  //     //         const details = await this.onFetchDetails(key); // Fetch details
+  //     //         this.showItemDetails(value as string, details); // Show details
+  //     //       }
+  //     //     } catch (error) {
+  //     //       console.error('Error fetching details:', error);
+  //     //     }
+  //     //   };
+
+  //     //   itemList.appendChild(listItem);
+  //     // }
+
+  //     // listContainer.appendChild(itemList);
+
+  //     // // Create the container for displaying item details (hidden initially)
+  //     // const detailsContainer = document.createElement('div');
+  //     // detailsContainer.id = 'details-container';
+  //     // detailsContainer.style.padding = '1rem';
+  //     // detailsContainer.style.border = '1px solid #ccc';
+  //     // detailsContainer.style.borderRadius = '4px';
+  //     // detailsContainer.style.display = 'none';
+
+  //     // // Placeholder text for details container
+  //     // const placeholder = document.createElement('p');
+  //     // placeholder.textContent = 'Select an indicator to view details.';
+  //     // placeholder.style.textAlign = 'center';
+  //     // placeholder.style.color = '#666';
+  //     // detailsContainer.appendChild(placeholder);
+
+  //     // // Append both containers to the main container
+  //     // mainContainer.appendChild(listContainer);
+  //     // mainContainer.appendChild(detailsContainer);
+
+  //     // // Append the main container to the rendering element
+  //     // renderingElement.appendChild(mainContainer);
+  //   }
+  // }
 
   // // Show details for a selected item
   // showItemDetails(name: string, details: any): void {
