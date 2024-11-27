@@ -24,6 +24,10 @@ export class DictionaryVisualizer extends BaseVisualizer implements Visualizer {
       tabsContainer.style.marginBottom = '20px';
       tabsContainer.style.cursor = 'pointer';
   
+      // Get `dx` and `names` from the metadata
+      const dxArray = this._data?.metaData?.dx || [];
+      const namesMap = this._data?.metaData?.names || {};
+  
   
     }
   }
