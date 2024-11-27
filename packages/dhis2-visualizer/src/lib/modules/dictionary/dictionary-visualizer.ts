@@ -28,6 +28,15 @@ export class DictionaryVisualizer extends BaseVisualizer implements Visualizer {
       const dxArray = this._data?.metaData?.dx || [];
       const namesMap = this._data?.metaData?.names || {};
   
+     
+  
+      // Create tabs for each `dx` entry
+      dxArray.forEach((id: string) => {
+        const tabText = document.createElement('span');
+        tabText.textContent = namesMap[id] || id; // Use the name if available, fallback to the ID
+        tabText.style.padding = '5px 10px';
+        tabText.style.fontSize = '16px';
+        tabText.style.transition = 'border-bottom 0.3s';
   
     }
   }
