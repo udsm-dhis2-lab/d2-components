@@ -74,7 +74,24 @@ export class DictionaryVisualizer extends BaseVisualizer implements Visualizer {
           }
         };
   
-    
+        // Set unique ID for each tab text
+        tabText.id = id;
+  
+        // Append the tab text to the tabs container
+        tabsContainer.appendChild(tabText);
+      });
+  
+      // Append the tabs container to the rendering element
+      renderingElement.appendChild(tabsContainer);
+  
+      // Add a placeholder for the visualizer content
+      const visualizerContent = document.createElement('div');
+      visualizerContent.id = 'visualizer-content';
+      visualizerContent.textContent = 'Visualizer will render here.';
+      visualizerContent.style.border = '1px solid #ccc';
+      visualizerContent.style.padding = '20px';
+      visualizerContent.style.borderRadius = '4px';
+      renderingElement.appendChild(visualizerContent);
     }
   }
   
