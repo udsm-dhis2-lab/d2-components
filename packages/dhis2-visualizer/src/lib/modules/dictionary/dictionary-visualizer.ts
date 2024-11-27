@@ -39,6 +39,11 @@ export class DictionaryVisualizer extends BaseVisualizer implements Visualizer {
         tabText.style.fontSize = '16px';
         tabText.style.transition = 'border-bottom 0.3s';
   
+        // Hover effect
+        tabText.onmouseenter = () => (tabText.style.color = '#007bff');
+        tabText.onmouseleave = () => (tabText.style.color = ''); // Reset color when hover ends
+  
+  
     }
   }
   
