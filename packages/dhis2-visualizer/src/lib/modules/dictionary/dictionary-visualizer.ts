@@ -43,7 +43,38 @@ export class DictionaryVisualizer extends BaseVisualizer implements Visualizer {
         tabText.onmouseenter = () => (tabText.style.color = '#007bff');
         tabText.onmouseleave = () => (tabText.style.color = ''); // Reset color when hover ends
   
+        // Handle click to fetch details and set active tab
+        tabText.onclick = async () => {
+          // If tab is already selected, don't do anything
+          if (selectedTab === id) return;
   
+          // Reset the underline style for the previous tab
+          if (selectedTab !== null) {
+            const previousTab = tabsContainer.querySelector(`#${selectedTab}`);
+            if (previousTab && previousTab instanceof HTMLElement) {
+              previousTab.style.borderBottom = 'none'; // Remove the underline from the previous tab
+            }
+          }
+  
+          // Set current tab as selected
+          tabText.style.borderBottom = '2px solid #007bff'; // Add underline to the selected tab
+          tabText.style.color = '#007bff'; // Change text color for the selected tab
+          selectedTab = id;
+  
+          // Call the fetch details method
+          if (this.onFetchDetails) {
+            console.log(`Fetching details for: ${id}`);
+            try {
+              const details = await this.onFetchDetails(id);
+              console.log('Details fetched:', details);
+              // You can implement a method to display the details here if needed
+            } catch (error) {
+              console.error('Error fetching details:', error);
+            }
+          }
+        };
+  
+    
     }
   }
   
