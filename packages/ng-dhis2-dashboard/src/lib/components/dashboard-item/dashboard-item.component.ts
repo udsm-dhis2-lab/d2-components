@@ -158,7 +158,8 @@ export class DashboardItemComponent implements OnInit, OnChanges {
           .isTrackerVisualization
           ? await this._getTrackedEntityInstances()
           : undefined;
-
+        
+        //if(visualizationTy)
         this.visualizer = await new D2Visualizer()
           .setId(this.visualizationConfig?.id)
           .setConfig(this.visualizationConfig)
@@ -173,6 +174,11 @@ export class DashboardItemComponent implements OnInit, OnChanges {
           )
           .setProgram(trackedEntityInstanceResponse?.program as any)
           .draw();
+          console.log('visualizationConfig ',this.visualizationConfig);
+          console.log('this is the visualization id from visualizationConfig',this.visualizationConfig?.id);
+          console.log('dashboard item visualization id',this.dashboardItem?.visualization?.id); 
+          console.log('dashboard item ',this.dashboardItem); 
+          console.log(this.visualizer)
       } catch (error) {
         this._loading$.next(false);
         console.log(error);
@@ -180,7 +186,6 @@ export class DashboardItemComponent implements OnInit, OnChanges {
     }
     this._loading$.next(false);
   }
-
   onDownload(format: DownloadFormat) {
     this.visualizer.download(format);
   }
@@ -207,6 +212,7 @@ export class DashboardItemComponent implements OnInit, OnChanges {
 
   async onTypeChange(visualizationType: any) {
     this.visualizer.setChartType(visualizationType).setType(visualizationType);
+    console.log('i have been logged', visualizationType)
     await this.visualizer.draw();
   }
 

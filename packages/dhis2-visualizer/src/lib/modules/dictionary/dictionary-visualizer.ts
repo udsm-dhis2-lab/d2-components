@@ -12,142 +12,155 @@ export class DictionaryVisualizer extends BaseVisualizer implements Visualizer {
   onFetchDetails!: (id: string) => Promise<any>;
 
   draw(): void {
+    console.log('The draw method is running.');
     const renderingElement = document.getElementById(this._id);
-
+    console.log(this._id);
+    console.log(this._data?.metaData);
+  
+  
     if (renderingElement) {
       // Clear existing content
-      renderingElement.replaceChildren(); 
+      renderingElement.replaceChildren();
 
-      // Create main container
-      const mainContainer = document.createElement('div');
-      mainContainer.style.display = 'flex';
-      mainContainer.style.flexDirection = 'column';
+      // Create a paragraph element
+      const paragraph = document.createElement('p');
+      paragraph.textContent = 'I am working';
+      paragraph.style.fontSize = '16px'; // Optional: Adjust text size
+      paragraph.style.color = 'green'; // Optional: Add color
 
-      // Create list container and title
-      const listContainer = document.createElement('div');
-      listContainer.style.marginBottom = '1rem';
-      listContainer.id = 'list-container';
+      // Append the paragraph to the rendering element
+      renderingElement.appendChild(paragraph);
 
-      const listTitle = document.createElement('h4');
-      listTitle.textContent = 'Metadata List';
-      listContainer.appendChild(listTitle);
+      // // Create main container
+      // const mainContainer = document.createElement('div');
+      // mainContainer.style.display = 'flex';
+      // mainContainer.style.flexDirection = 'column';
 
-      // Create the list for metadata
-      const itemList = document.createElement('ul');
-      itemList.style.listStyleType = 'none';
-      itemList.style.padding = '0';
+      // // Create list container and title
+      // const listContainer = document.createElement('div');
+      // listContainer.style.marginBottom = '1rem';
+      // listContainer.id = 'list-container';
 
-      // Loop through dictionary and create list items
-      for (const [key, value] of Object.entries(this._data.dictionary)) {
-        const listItem = document.createElement('li');
-        listItem.style.marginBottom = '0.5rem';
-        listItem.style.padding = '0.5rem';
-        listItem.style.border = '1px solid #ccc';
-        listItem.style.cursor = 'pointer';
-        listItem.style.borderRadius = '4px';
-        listItem.style.transition = 'background-color 0.3s';
-        listItem.textContent = value as string;
+      // const listTitle = document.createElement('h4');
+      // listTitle.textContent = 'Metadata List';
+      // listContainer.appendChild(listTitle);
 
-        // Hover effects for list item
-        listItem.onmouseenter = () =>
-          (listItem.style.backgroundColor = '#f0f0f0');
-        listItem.onmouseleave = () =>
-          (listItem.style.backgroundColor = 'white');
+      // // Create the list for metadata
+      // const itemList = document.createElement('ul');
+      // itemList.style.listStyleType = 'none';
+      // itemList.style.padding = '0';
 
-        // On click, fetch details for the selected metadata
-        listItem.onclick = async () => {
-          try {
-            console.log('List item clicked');
-            if (this.onFetchDetails) {
-              console.log('Fetching details for:', key);
-              const details = await this.onFetchDetails(key); // Fetch details
-              this.showItemDetails(value as string, details); // Show details
-            }
-          } catch (error) {
-            console.error('Error fetching details:', error);
-          }
-        };
+      // // Loop through dictionary and create list items
+      // for (const [key, value] of Object.entries(this._data.dictionary)) {
+      //   const listItem = document.createElement('li');
+      //   listItem.style.marginBottom = '0.5rem';
+      //   listItem.style.padding = '0.5rem';
+      //   listItem.style.border = '1px solid #ccc';
+      //   listItem.style.cursor = 'pointer';
+      //   listItem.style.borderRadius = '4px';
+      //   listItem.style.transition = 'background-color 0.3s';
+      //   listItem.textContent = value as string;
 
-        itemList.appendChild(listItem);
-      }
+      //   // Hover effects for list item
+      //   listItem.onmouseenter = () =>
+      //     (listItem.style.backgroundColor = '#f0f0f0');
+      //   listItem.onmouseleave = () =>
+      //     (listItem.style.backgroundColor = 'white');
 
-      listContainer.appendChild(itemList);
+      //   // On click, fetch details for the selected metadata
+      //   listItem.onclick = async () => {
+      //     try {
+      //       console.log('List item clicked');
+      //       if (this.onFetchDetails) {
+      //         console.log('Fetching details for:', key);
+      //         const details = await this.onFetchDetails(key); // Fetch details
+      //         this.showItemDetails(value as string, details); // Show details
+      //       }
+      //     } catch (error) {
+      //       console.error('Error fetching details:', error);
+      //     }
+      //   };
 
-      // Create the container for displaying item details (hidden initially)
-      const detailsContainer = document.createElement('div');
-      detailsContainer.id = 'details-container';
-      detailsContainer.style.padding = '1rem';
-      detailsContainer.style.border = '1px solid #ccc';
-      detailsContainer.style.borderRadius = '4px';
-      detailsContainer.style.display = 'none';
+      //   itemList.appendChild(listItem);
+      // }
 
-      // Placeholder text for details container
-      const placeholder = document.createElement('p');
-      placeholder.textContent = 'Select an indicator to view details.';
-      placeholder.style.textAlign = 'center';
-      placeholder.style.color = '#666';
-      detailsContainer.appendChild(placeholder);
+      // listContainer.appendChild(itemList);
 
-      // Append both containers to the main container
-      mainContainer.appendChild(listContainer);
-      mainContainer.appendChild(detailsContainer);
+      // // Create the container for displaying item details (hidden initially)
+      // const detailsContainer = document.createElement('div');
+      // detailsContainer.id = 'details-container';
+      // detailsContainer.style.padding = '1rem';
+      // detailsContainer.style.border = '1px solid #ccc';
+      // detailsContainer.style.borderRadius = '4px';
+      // detailsContainer.style.display = 'none';
 
-      // Append the main container to the rendering element
-      renderingElement.appendChild(mainContainer);
+      // // Placeholder text for details container
+      // const placeholder = document.createElement('p');
+      // placeholder.textContent = 'Select an indicator to view details.';
+      // placeholder.style.textAlign = 'center';
+      // placeholder.style.color = '#666';
+      // detailsContainer.appendChild(placeholder);
+
+      // // Append both containers to the main container
+      // mainContainer.appendChild(listContainer);
+      // mainContainer.appendChild(detailsContainer);
+
+      // // Append the main container to the rendering element
+      // renderingElement.appendChild(mainContainer);
     }
   }
 
-  // Show details for a selected item
-  showItemDetails(name: string, details: any): void {
-    const detailsContainer = document.getElementById('details-container');
-    const listContainer = document.getElementById('list-container');
+  // // Show details for a selected item
+  // showItemDetails(name: string, details: any): void {
+  //   const detailsContainer = document.getElementById('details-container');
+  //   const listContainer = document.getElementById('list-container');
 
-    if (detailsContainer && listContainer) {
-      listContainer.style.display = 'none'; // Hide list
-      detailsContainer.style.display = 'block'; // Show details
-      detailsContainer.innerHTML = ''; // Clear any existing content
+  //   if (detailsContainer && listContainer) {
+  //     listContainer.style.display = 'none'; // Hide list
+  //     detailsContainer.style.display = 'block'; // Show details
+  //     detailsContainer.innerHTML = ''; // Clear any existing content
 
-      // Create a back button to return to the list
-      const backButton = document.createElement('button');
-      backButton.textContent = 'Back to List';
-      backButton.onclick = () => this.showList(); // Return to list view
-      detailsContainer.appendChild(backButton);
+  //     // Create a back button to return to the list
+  //     const backButton = document.createElement('button');
+  //     backButton.textContent = 'Back to List';
+  //     backButton.onclick = () => this.showList(); // Return to list view
+  //     detailsContainer.appendChild(backButton);
 
-      // Title for details
-      const detailsTitle = document.createElement('h2');
-      detailsTitle.textContent = `${name}`;
-      detailsTitle.style.color = 'blue';
-      detailsContainer.appendChild(detailsTitle);
+  //     // Title for details
+  //     const detailsTitle = document.createElement('h2');
+  //     detailsTitle.textContent = `${name}`;
+  //     detailsTitle.style.color = 'blue';
+  //     detailsContainer.appendChild(detailsTitle);
 
-      // Introduction Section
-      const introduction = document.createElement('p');
-      introduction.innerHTML = `${name} is a <strong>${details.indicatorType}</strong> indicator, described as <strong>${details.indicatorDescription}</strong>, measured by <strong>${details.numeratorDescription}</strong> to <strong>${details.denominatorDescription}</strong>.`;
-      detailsContainer.appendChild(introduction);
+  //     // Introduction Section
+  //     const introduction = document.createElement('p');
+  //     introduction.innerHTML = `${name} is a <strong>${details.indicatorType}</strong> indicator, described as <strong>${details.indicatorDescription}</strong>, measured by <strong>${details.numeratorDescription}</strong> to <strong>${details.denominatorDescription}</strong>.`;
+  //     detailsContainer.appendChild(introduction);
 
-      // Create a list for the details
-      const detailsList = document.createElement('ul');
-      detailsList.style.listStyleType = 'none';
-      detailsList.style.padding = '0';
+  //     // Create a list for the details
+  //     const detailsList = document.createElement('ul');
+  //     detailsList.style.listStyleType = 'none';
+  //     detailsList.style.padding = '0';
 
-      // Display each detail item
-      for (const [key, value] of Object.entries(details)) {
-        const detailItem = document.createElement('li');
-        detailItem.innerHTML = `<strong>${key}:</strong> ${value}`;
-        detailsList.appendChild(detailItem);
-      }
+  //     // Display each detail item
+  //     for (const [key, value] of Object.entries(details)) {
+  //       const detailItem = document.createElement('li');
+  //       detailItem.innerHTML = `<strong>${key}:</strong> ${value}`;
+  //       detailsList.appendChild(detailItem);
+  //     }
 
-      detailsContainer.appendChild(detailsList);
-    }
-  }
+  //     detailsContainer.appendChild(detailsList);
+  //   }
+  // }
 
-  // Show the list view again
-  showList(): void {
-    const detailsContainer = document.getElementById('details-container');
-    const listContainer = document.getElementById('list-container');
+  // // Show the list view again
+  // showList(): void {
+  //   const detailsContainer = document.getElementById('details-container');
+  //   const listContainer = document.getElementById('list-container');
 
-    if (detailsContainer && listContainer) {
-      detailsContainer.style.display = 'none'; // Hide details
-      listContainer.style.display = 'block'; // Show list
-    }
-  }
+  //   if (detailsContainer && listContainer) {
+  //     detailsContainer.style.display = 'none'; // Hide details
+  //     listContainer.style.display = 'block'; // Show list
+  //   }
+  // }
 }

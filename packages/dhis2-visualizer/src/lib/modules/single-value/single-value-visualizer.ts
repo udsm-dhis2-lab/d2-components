@@ -35,7 +35,6 @@ export class SingleValueVisualizer
 
     if (renderingElement) {
       renderingElement.replaceChildren();
-
       const svgNamespace = 'http://www.w3.org/2000/svg';
       const svg = document.createElementNS(svgNamespace, 'svg');
       svg.setAttribute('width', '100%');

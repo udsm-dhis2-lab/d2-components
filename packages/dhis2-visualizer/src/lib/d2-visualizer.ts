@@ -20,6 +20,7 @@ import {
   ChartType,
   VisualizationType,
 } from './shared/models/visualization-type.model';
+import { DictionaryVisualizer } from './modules/dictionary/dictionary-visualizer';
 
 export class D2Visualizer {
   dataSelections!: any[];
@@ -418,6 +419,9 @@ export class D2Visualizer {
         return this;
       case 'SINGLE_VALUE':
         new SingleValueVisualizer().setId(this.id).setData(data).draw();
+        return this;
+      case 'DICTIONARY':
+        new DictionaryVisualizer().setId(this.id).setData(data).draw();
         return this;
       case 'CUSTOM': {
         this.config.mergeDataSelections(this.dataSelections);

@@ -1350,6 +1350,7 @@ function getSanitizedChartObject(chartObject: any, chartConfiguration: any) {
       ),
     };
   });
+  console.log('i am a new series', newSeries );
 
   let categoryCount = 0;
   const newCategories = _.map(
@@ -1371,6 +1372,10 @@ function getSanitizedChartObject(chartObject: any, chartConfiguration: any) {
       return newCategory;
     }
   );
+  //new category
+  //are organization units which are below the axis : x - axis
+  console.log('I am a new category', newCategories);
+  console.log('i am a chart object', chartObject.xAxis);
 
   return {
     ...chartObject,
