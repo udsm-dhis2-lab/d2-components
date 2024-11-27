@@ -28,7 +28,8 @@ export class DictionaryVisualizer extends BaseVisualizer implements Visualizer {
       const dxArray = this._data?.metaData?.dx || [];
       const namesMap = this._data?.metaData?.names || {};
   
-     
+      // Track the selected tab
+      let selectedTab: string | null = null;
   
       // Create tabs for each `dx` entry
       dxArray.forEach((id: string) => {
