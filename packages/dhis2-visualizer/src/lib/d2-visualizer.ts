@@ -21,6 +21,7 @@ import {
   VisualizationType,
 } from './shared/models/visualization-type.model';
 import { DictionaryVisualizer } from './modules/dictionary/dictionary-visualizer';
+import { MetadataService } from './modules/dictionary/dictionary-visualizer.service';
 
 export class D2Visualizer {
   dataSelections!: any[];

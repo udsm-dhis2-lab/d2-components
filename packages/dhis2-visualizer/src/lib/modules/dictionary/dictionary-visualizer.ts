@@ -2,250 +2,500 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import {
-  BaseVisualizer,
-  Visualizer,
-} from '../../shared/models/base-visualizer.model';
+
+import { BaseVisualizer, Visualizer } from '../../shared/models/base-visualizer.model';
+import { MetadataService } from '../dictionary/dictionary-visualizer.service'; // Adjust the path as necessary
 
 export class DictionaryVisualizer extends BaseVisualizer implements Visualizer {
-  // Callback for fetching details of a selected metadata
-  onFetchDetails!: (id: string) => Promise<any>;
+  private metadataService: MetadataService;
 
+  constructor() {
+    super();
+    this.metadataService = new MetadataService(); 
+  }
+
+  onFetchMetaDataDetails!: (id: string) => Promise<any>;
 
   draw(): void {
     const renderingElement = document.getElementById(this._id);
     if (renderingElement) {
-      // Clear existing content
       renderingElement.replaceChildren();
-  
-      // Create a container for the tabs
+
       const tabsContainer = document.createElement('div');
       tabsContainer.style.display = 'flex';
       tabsContainer.style.marginBottom = '20px';
       tabsContainer.style.cursor = 'pointer';
-  
-      // Get `dx` and `names` from the metadata
+
       const dxArray = this._data?.metaData?.dx || [];
       const namesMap = this._data?.metaData?.names || {};
-  
-      // Track the selected tab
+
       let selectedTab: string | null = null;
-  
-      // Create tabs for each `dx` entry
+
       dxArray.forEach((id: string) => {
         const tabText = document.createElement('span');
-        tabText.textContent = namesMap[id] || id; // Use the name if available, fallback to the ID
+        tabText.textContent = namesMap[id] || id;
         tabText.style.padding = '5px 10px';
         tabText.style.fontSize = '16px';
         tabText.style.transition = 'border-bottom 0.3s';
-  
-        // Hover effect
+
         tabText.onmouseenter = () => (tabText.style.color = '#007bff');
-        tabText.onmouseleave = () => (tabText.style.color = ''); // Reset color when hover ends
-  
-        // Handle click to fetch details and set active tab
+        tabText.onmouseleave = () => (tabText.style.color = '');
+
         tabText.onclick = async () => {
-          // If tab is already selected, don't do anything
           if (selectedTab === id) return;
-  
-          // Reset the underline style for the previous tab
+
           if (selectedTab !== null) {
             const previousTab = tabsContainer.querySelector(`#${selectedTab}`);
             if (previousTab && previousTab instanceof HTMLElement) {
-              previousTab.style.borderBottom = 'none'; // Remove the underline from the previous tab
+              previousTab.style.borderBottom = 'none';
             }
           }
-  
-          // Set current tab as selected
-          tabText.style.borderBottom = '2px solid #007bff'; // Add underline to the selected tab
-          tabText.style.color = '#007bff'; // Change text color for the selected tab
+
+          tabText.style.borderBottom = '2px solid #007bff';
+          tabText.style.color = '#007bff';
           selectedTab = id;
-  
-          // Call the fetch details method
-          if (this.onFetchDetails) {
-            console.log(`Fetching details for: ${id}`);
-            try {
-              const details = await this.onFetchDetails(id);
-              console.log('Details fetched:', details);
-              // You can implement a method to display the details here if needed
-            } catch (error) {
-              console.error('Error fetching details:', error);
-            }
+
+          try {
+            const details = await this.metadataService.fetchMetadataById(id); // Use the manually instantiated service
+            console.log('Details fetched:', details);
+            this.displayDetails(details);
+          } catch (error) {
+            console.error('Error fetching details:', error);
           }
         };
-  
-        // Set unique ID for each tab text
+
         tabText.id = id;
-  
-        // Append the tab text to the tabs container
         tabsContainer.appendChild(tabText);
       });
-  
-      // Append the tabs container to the rendering element
+
       renderingElement.appendChild(tabsContainer);
-  
-      // Add a placeholder for the visualizer content
+
       const visualizerContent = document.createElement('div');
       visualizerContent.id = 'visualizer-content';
-      visualizerContent.textContent = 'Visualizer will render here.';
+      visualizerContent.textContent = 'Select metadata to get started.';
       visualizerContent.style.border = '1px solid #ccc';
       visualizerContent.style.padding = '20px';
       visualizerContent.style.borderRadius = '4px';
       renderingElement.appendChild(visualizerContent);
     }
   }
-  
-  
-  // draw(): void {
-  //   console.log('The draw method is running.');
-  //   const renderingElement = document.getElementById(this._id);
-  //   console.log(this._id);
-  //   console.log(this._data?.metaData);
-  
-  
-  //   if (renderingElement) {
-  //     // Clear existing content
-  //     renderingElement.replaceChildren();
 
-  //     // Create a paragraph element
-  //     const paragraph = document.createElement('p');
-  //     paragraph.textContent = 'I am working';
-  //     paragraph.style.fontSize = '16px'; // Optional: Adjust text size
-  //     paragraph.style.color = 'green'; // Optional: Add color
+  private displayDetails(details: any): void {
+    const visualizerContent = document.getElementById('visualizer-content');
+    if (visualizerContent) {
+      visualizerContent.replaceChildren();
 
-  //     // Append the paragraph to the rendering element
-  //     renderingElement.appendChild(paragraph);
+      if (details.indicatorType) {
+        const title = document.createElement('h4');
+        title.textContent = `${details.name}`;
+        visualizerContent.appendChild(title);
 
-  //     // // Create main container
-  //     // const mainContainer = document.createElement('div');
-  //     // mainContainer.style.display = 'flex';
-  //     // mainContainer.style.flexDirection = 'column';
+        const intro = document.createElement('p');
+        intro.textContent = `${details.name} is a ${details.indicatorType.name} indicator measured by ${details.numeratorDescription} to ${details.denominatorDescription}.`;
+        visualizerContent.appendChild(intro);
 
-  //     // // Create list container and title
-  //     // const listContainer = document.createElement('div');
-  //     // listContainer.style.marginBottom = '1rem';
-  //     // listContainer.id = 'list-container';
+        const uid = document.createElement('p');
+        uid.textContent = `Identified by: ${details.id}`;
+        visualizerContent.appendChild(uid);
 
-  //     // const listTitle = document.createElement('h4');
-  //     // listTitle.textContent = 'Metadata List';
-  //     // listContainer.appendChild(listTitle);
+        if (details.description) {
+          const description = document.createElement('p');
+          description.textContent = `Description: ${details.description}`;
+          visualizerContent.appendChild(description);
+        }
 
-  //     // // Create the list for metadata
-  //     // const itemList = document.createElement('ul');
-  //     // itemList.style.listStyleType = 'none';
-  //     // itemList.style.padding = '0';
+        const factsTitle = document.createElement('h4');
+        factsTitle.textContent = 'Indicator Facts';
+        visualizerContent.appendChild(factsTitle);
 
-  //     // // Loop through dictionary and create list items
-  //     // for (const [key, value] of Object.entries(this._data.dictionary)) {
-  //     //   const listItem = document.createElement('li');
-  //     //   listItem.style.marginBottom = '0.5rem';
-  //     //   listItem.style.padding = '0.5rem';
-  //     //   listItem.style.border = '1px solid #ccc';
-  //     //   listItem.style.cursor = 'pointer';
-  //     //   listItem.style.borderRadius = '4px';
-  //     //   listItem.style.transition = 'background-color 0.3s';
-  //     //   listItem.textContent = value as string;
+        const factsList = document.createElement('ul');
+        const uidItem = document.createElement('li');
+        uidItem.textContent = `UID: ${details.id}`;
+        factsList.appendChild(uidItem);
 
-  //     //   // Hover effects for list item
-  //     //   listItem.onmouseenter = () =>
-  //     //     (listItem.style.backgroundColor = '#f0f0f0');
-  //     //   listItem.onmouseleave = () =>
-  //     //     (listItem.style.backgroundColor = 'white');
+        if (details.numeratorDescription) {
+          const numeratorItem = document.createElement('li');
+          numeratorItem.textContent = `Numerator: ${details.numeratorDescription}`;
+          factsList.appendChild(numeratorItem);
+        }
 
-  //     //   // On click, fetch details for the selected metadata
-  //     //   listItem.onclick = async () => {
-  //     //     try {
-  //     //       console.log('List item clicked');
-  //     //       if (this.onFetchDetails) {
-  //     //         console.log('Fetching details for:', key);
-  //     //         const details = await this.onFetchDetails(key); // Fetch details
-  //     //         this.showItemDetails(value as string, details); // Show details
-  //     //       }
-  //     //     } catch (error) {
-  //     //       console.error('Error fetching details:', error);
-  //     //     }
-  //     //   };
+        if (details.denominatorDescription) {
+          const denominatorItem = document.createElement('li');
+          denominatorItem.textContent = `Denominator: ${details.denominatorDescription}`;
+          factsList.appendChild(denominatorItem);
+        }
 
-  //     //   itemList.appendChild(listItem);
-  //     // }
+        visualizerContent.appendChild(factsList);
 
-  //     // listContainer.appendChild(itemList);
+        const subtitle = document.createElement('p');
+        subtitle.textContent = 'Below are expressions computing numerator and denominator, and related sources.';
+        visualizerContent.appendChild(subtitle);
 
-  //     // // Create the container for displaying item details (hidden initially)
-  //     // const detailsContainer = document.createElement('div');
-  //     // detailsContainer.id = 'details-container';
-  //     // detailsContainer.style.padding = '1rem';
-  //     // detailsContainer.style.border = '1px solid #ccc';
-  //     // detailsContainer.style.borderRadius = '4px';
-  //     // detailsContainer.style.display = 'none';
+        const table = document.createElement('table');
+        table.style.borderCollapse = 'collapse';
+        table.style.width = '100%';
+        table.style.margin = '10px 0';
 
-  //     // // Placeholder text for details container
-  //     // const placeholder = document.createElement('p');
-  //     // placeholder.textContent = 'Select an indicator to view details.';
-  //     // placeholder.style.textAlign = 'center';
-  //     // placeholder.style.color = '#666';
-  //     // detailsContainer.appendChild(placeholder);
+        const headerRow = document.createElement('tr');
+        const headers = ['Expression', 'Formula', 'Sources'];
+        headers.forEach((headerText) => {
+          const th = document.createElement('th');
+          th.textContent = headerText;
+          th.style.border = '1px solid #ddd';
+          th.style.padding = '8px';
+          th.style.backgroundColor = '#f4f4f4';
+          th.style.textAlign = 'left';
+          headerRow.appendChild(th);
+        });
 
-  //     // // Append both containers to the main container
-  //     // mainContainer.appendChild(listContainer);
-  //     // mainContainer.appendChild(detailsContainer);
+        table.appendChild(headerRow);
 
-  //     // // Append the main container to the rendering element
-  //     // renderingElement.appendChild(mainContainer);
-  //   }
-  // }
+        const rows = [
+          {
+            label: 'Numerator',
+            value: details.numerator || '',
+            sources: details.numeratorSources || '',
+          },
+          {
+            label: 'Denominator',
+            value: details.denominator || '',
+            sources: details.denominatorSources || '',
+          },
+        ];
 
-  // // Show details for a selected item
-  // showItemDetails(name: string, details: any): void {
-  //   const detailsContainer = document.getElementById('details-container');
-  //   const listContainer = document.getElementById('list-container');
+        rows.forEach((row) => {
+          const tr = document.createElement('tr');
 
-  //   if (detailsContainer && listContainer) {
-  //     listContainer.style.display = 'none'; // Hide list
-  //     detailsContainer.style.display = 'block'; // Show details
-  //     detailsContainer.innerHTML = ''; // Clear any existing content
+          const tdLabel = document.createElement('td');
+          tdLabel.textContent = row.label;
+          tdLabel.style.border = '1px solid #ddd';
+          tdLabel.style.padding = '8px';
+          tr.appendChild(tdLabel);
 
-  //     // Create a back button to return to the list
-  //     const backButton = document.createElement('button');
-  //     backButton.textContent = 'Back to List';
-  //     backButton.onclick = () => this.showList(); // Return to list view
-  //     detailsContainer.appendChild(backButton);
+          const tdValue = document.createElement('td');
+          tdValue.textContent = row.value;
+          tdValue.style.border = '1px solid #ddd';
+          tdValue.style.padding = '8px';
+          tr.appendChild(tdValue);
 
-  //     // Title for details
-  //     const detailsTitle = document.createElement('h2');
-  //     detailsTitle.textContent = `${name}`;
-  //     detailsTitle.style.color = 'blue';
-  //     detailsContainer.appendChild(detailsTitle);
+          const tdSources = document.createElement('td');
+          tdSources.textContent = row.sources;
+          tdSources.style.border = '1px solid #ddd';
+          tdSources.style.padding = '8px';
+          tr.appendChild(tdSources);
 
-  //     // Introduction Section
-  //     const introduction = document.createElement('p');
-  //     introduction.innerHTML = `${name} is a <strong>${details.indicatorType}</strong> indicator, described as <strong>${details.indicatorDescription}</strong>, measured by <strong>${details.numeratorDescription}</strong> to <strong>${details.denominatorDescription}</strong>.`;
-  //     detailsContainer.appendChild(introduction);
+          table.appendChild(tr);
+        });
 
-  //     // Create a list for the details
-  //     const detailsList = document.createElement('ul');
-  //     detailsList.style.listStyleType = 'none';
-  //     detailsList.style.padding = '0';
+        visualizerContent.appendChild(table);
 
-  //     // Display each detail item
-  //     for (const [key, value] of Object.entries(details)) {
-  //       const detailItem = document.createElement('li');
-  //       detailItem.innerHTML = `<strong>${key}:</strong> ${value}`;
-  //       detailsList.appendChild(detailItem);
-  //     }
+        if (details.dataSets || details.programs) {
+          const dataSourcesTitle = document.createElement('h4');
+          dataSourcesTitle.textContent = 'Data Sources';
+          visualizerContent.appendChild(dataSourcesTitle);
 
-  //     detailsContainer.appendChild(detailsList);
-  //   }
-  // }
+          const dataSourcesList = document.createElement('ul');
 
-  // // Show the list view again
-  // showList(): void {
-  //   const detailsContainer = document.getElementById('details-container');
-  //   const listContainer = document.getElementById('list-container');
+          if (details.dataSets) {
+            const dataSetItem = document.createElement('li');
+            dataSetItem.textContent = `Data Sets: ${details.dataSets
+              .map((ds: any) => ds.name)
+              .join(', ')}`;
+            dataSourcesList.appendChild(dataSetItem);
+          }
 
-  //   if (detailsContainer && listContainer) {
-  //     detailsContainer.style.display = 'none'; // Hide details
-  //     listContainer.style.display = 'block'; // Show list
-  //   }
-  // }
+          if (details.programs) {
+            const programItem = document.createElement('li');
+            programItem.textContent = `Programs: ${details.programs
+              .map((p: any) => p.name)
+              .join(', ')}`;
+            dataSourcesList.appendChild(programItem);
+          }
+
+          visualizerContent.appendChild(dataSourcesList);
+        }
+      } else {
+        const defaultDisplay = document.createElement('p');
+        defaultDisplay.textContent = `Unsupported metadata type or insufficient details: ${JSON.stringify(
+          details,
+          null,
+          2
+        )}`;
+        visualizerContent.appendChild(defaultDisplay);
+      }
+    }
+  }
 }
+
+
+// import { Inject } from '@angular/core';
+// import {
+//   BaseVisualizer,
+//   Visualizer,
+// } from '../../shared/models/base-visualizer.model';
+// import { MetadataService } from '../dictionary/dictionary-visualizer.service'; // Adjust the import path as necessary
+// import { firstValueFrom } from 'rxjs';
+
+// export class DictionaryVisualizer extends BaseVisualizer implements Visualizer {
+//   constructor(private metadataService: MetadataService) {
+//     super();
+//   }
+
+//   // Callback for fetching details of a selected metadata
+//   onFetchMetaDataDetails!: (id: string) => Promise<any>;
+
+//   draw(): void {
+//     const renderingElement = document.getElementById(this._id);
+//     if (renderingElement) {
+//       // Clear existing content
+//       renderingElement.replaceChildren();
+
+//       // Create a container for the tabs
+//       const tabsContainer = document.createElement('div');
+//       tabsContainer.style.display = 'flex';
+//       tabsContainer.style.marginBottom = '20px';
+//       tabsContainer.style.cursor = 'pointer';
+
+//       // Get `dx` and `names` from the metadata
+//       const dxArray = this._data?.metaData?.dx || [];
+//       const namesMap = this._data?.metaData?.names || {};
+
+//       // Track the selected tab
+//       let selectedTab: string | null = null;
+
+//       // Create tabs for each `dx` entry
+//       dxArray.forEach((id: string) => {
+//         const tabText = document.createElement('span');
+//         tabText.textContent = namesMap[id] || id; // Use the name if available, fallback to the ID
+//         tabText.style.padding = '5px 10px';
+//         tabText.style.fontSize = '16px';
+//         tabText.style.transition = 'border-bottom 0.3s';
+
+//         // Hover effect
+//         tabText.onmouseenter = () => (tabText.style.color = '#007bff');
+//         tabText.onmouseleave = () => (tabText.style.color = ''); // Reset color when hover ends
+
+//         // Handle click to fetch details and set active tab
+//         tabText.onclick = async () => {
+//           // If tab is already selected, don't do anything
+//           if (selectedTab === id) return;
+
+//           // Reset the underline style for the previous tab
+//           if (selectedTab !== null) {
+//             const previousTab = tabsContainer.querySelector(`#${selectedTab}`);
+//             if (previousTab && previousTab instanceof HTMLElement) {
+//               previousTab.style.borderBottom = 'none'; // Remove the underline from the previous tab
+//             }
+//           }
+
+//           // Set current tab as selected
+//           tabText.style.borderBottom = '2px solid #007bff'; // Add underline to the selected tab
+//           tabText.style.color = '#007bff'; // Change text color for the selected tab
+//           selectedTab = id;
+
+//           // Fetch details using the MetadataService
+//           try {
+//             const details = await firstValueFrom(
+//               this.metadataService.fetchMetadataById(id)
+//             );
+//             console.log('Details fetched:', details);
+//             this.displayDetails(details); // Method to display details in the UI
+//           } catch (error) {
+//             console.error('Error fetching details:', error);
+//           }
+//         };
+
+//         // Set unique ID for each tab text
+//         tabText.id = id;
+
+//         // Append the tab text to the tabs container
+//         tabsContainer.appendChild(tabText);
+//       });
+
+//       // Append the tabs container to the rendering element
+//       renderingElement.appendChild(tabsContainer);
+
+//       // Add a placeholder for the visualizer content
+//       const visualizerContent = document.createElement('div');
+//       visualizerContent.id = 'visualizer-content';
+//       visualizerContent.textContent = 'Select metadata to get started.';
+//       visualizerContent.style.border = '1px solid #ccc';
+//       visualizerContent.style.padding = '20px';
+//       visualizerContent.style.borderRadius = '4px';
+//       renderingElement.appendChild(visualizerContent);
+//     }
+//   }
+
+//   /**
+//    * Display fetched details in the visualizer content area in a structured way.
+//    * @param details The metadata details to display.
+//    */
+//   private displayDetails(details: any): void {
+//     const visualizerContent = document.getElementById('visualizer-content');
+//     if (visualizerContent) {
+//       // Clear existing content
+//       visualizerContent.replaceChildren();
+
+//       // Example structured display for indicator details
+//       if (details.indicatorType) {
+//         // Title
+//         const title = document.createElement('h4');
+//         title.textContent = `${details.name}`;
+//         visualizerContent.appendChild(title);
+
+//         // Introduction
+//         const intro = document.createElement('p');
+//         intro.textContent = `${details.name} is a ${details.indicatorType.name} indicator measured by ${details.numeratorDescription} to ${details.denominatorDescription}.`;
+//         visualizerContent.appendChild(intro);
+
+//         // UID
+//         const uid = document.createElement('p');
+//         uid.textContent = `Identified by : ${details.id}`;
+//         visualizerContent.appendChild(uid);
+
+//         // Description
+//         if (details.description) {
+//           const description = document.createElement('p');
+//           description.textContent = `Description: ${details.description}`;
+//           visualizerContent.appendChild(description);
+//         }
+
+//         // Indicator Facts
+//         const factsTitle = document.createElement('h4');
+//         factsTitle.textContent = 'Indicator Facts';
+//         visualizerContent.appendChild(factsTitle);
+
+//         const factsList = document.createElement('ul');
+//         const uidItem = document.createElement('li');
+//         uidItem.textContent = `UID: ${details.id}`;
+//         factsList.appendChild(uidItem);
+
+//         if (details.numeratorDescription) {
+//           const numeratorItem = document.createElement('li');
+//           numeratorItem.textContent = `Numerator: ${details.numeratorDescription}`;
+//           factsList.appendChild(numeratorItem);
+//         }
+
+//         if (details.denominatorDescription) {
+//           const denominatorItem = document.createElement('li');
+//           denominatorItem.textContent = `Denominator: ${details.denominatorDescription}`;
+//           factsList.appendChild(denominatorItem);
+//         }
+
+//         visualizerContent.appendChild(factsList);
+
+//         // Title
+//         // const tableTitle = document.createElement('h4');
+//         // title.textContent = `Calculation Details`;
+//         // visualizerContent.appendChild(tableTitle);
+
+//         // Subtitle
+//         const subtitle = document.createElement('p');
+//         subtitle.textContent =
+//           'Below are expressions computing numerator and denominator, and related sources.';
+//         visualizerContent.appendChild(subtitle);
+
+//         // Create the calculation table
+//         const table = document.createElement('table');
+//         table.style.borderCollapse = 'collapse';
+//         table.style.width = '100%';
+//         table.style.margin = '10px 0';
+
+//         // Create the table header
+//         const headerRow = document.createElement('tr');
+
+//         const headers = ['Expression', 'Formula', 'Sources'];
+//         headers.forEach((headerText) => {
+//           const th = document.createElement('th');
+//           th.textContent = headerText;
+//           th.style.border = '1px solid #ddd';
+//           th.style.padding = '8px';
+//           th.style.backgroundColor = '#f4f4f4';
+//           th.style.textAlign = 'left';
+//           headerRow.appendChild(th);
+//         });
+
+//         table.appendChild(headerRow);
+
+//         // Add rows for numerator and denominator
+//         const rows = [
+//           {
+//             label: 'Numerator',
+//             value: details.numerator || '',
+//             sources: details.numeratorSources || '',
+//           },
+//           {
+//             label: 'Denominator',
+//             value: details.denominator || '',
+//             sources: details.denominatorSources || '',
+//           },
+//         ];
+
+//         rows.forEach((row) => {
+//           const tr = document.createElement('tr');
+
+//           const tdLabel = document.createElement('td');
+//           tdLabel.textContent = row.label;
+//           tdLabel.style.border = '1px solid #ddd';
+//           tdLabel.style.padding = '8px';
+//           tr.appendChild(tdLabel);
+
+//           const tdValue = document.createElement('td');
+//           tdValue.textContent = row.value;
+//           tdValue.style.border = '1px solid #ddd';
+//           tdValue.style.padding = '8px';
+//           tr.appendChild(tdValue);
+
+//           const tdSources = document.createElement('td');
+//           tdSources.textContent = row.sources;
+//           tdSources.style.border = '1px solid #ddd';
+//           tdSources.style.padding = '8px';
+//           tr.appendChild(tdSources);
+
+//           table.appendChild(tr);
+//         });
+
+//         // Append the table to the content
+//         visualizerContent.appendChild(table);
+
+//         // Data Sources
+//         if (details.dataSets || details.programs) {
+//           const dataSourcesTitle = document.createElement('h4');
+//           dataSourcesTitle.textContent = 'Data Sources';
+//           visualizerContent.appendChild(dataSourcesTitle);
+
+//           const dataSourcesList = document.createElement('ul');
+
+//           if (details.dataSets) {
+//             const dataSetItem = document.createElement('li');
+//             dataSetItem.textContent = `Data Sets: ${details.dataSets
+//               .map((ds: any) => ds.name)
+//               .join(', ')}`;
+//             dataSourcesList.appendChild(dataSetItem);
+//           }
+
+//           if (details.programs) {
+//             const programItem = document.createElement('li');
+//             programItem.textContent = `Programs: ${details.programs
+//               .map((p: any) => p.name)
+//               .join(', ')}`;
+//             dataSourcesList.appendChild(programItem);
+//           }
+
+//           visualizerContent.appendChild(dataSourcesList);
+//         }
+
+//         // Add other sections as needed
+//       } else {
+//         // Default display for unsupported metadata types
+//         const defaultDisplay = document.createElement('p');
+//         defaultDisplay.textContent = `Unsupported metadata type or insufficient details: ${JSON.stringify(
+//           details,
+//           null,
+//           2
+//         )}`;
+//         visualizerContent.appendChild(defaultDisplay);
+//       }
+//     }
+//   }
+// }

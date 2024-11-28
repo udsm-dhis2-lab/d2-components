@@ -19,6 +19,7 @@ import { DashboardItemService, TrackerDashboardService } from '../../services';
 import { CommonModule } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DashboardItemHeaderComponent } from '../dashboard-item-header/dashboard-item-header.component';
+import { MetadataService } from 'packages/dhis2-visualizer/src/lib/modules/dictionary/dictionary-visualizer.service';
 
 @Component({
   standalone: true,
@@ -118,7 +119,7 @@ export class DashboardItemComponent implements OnInit, OnChanges {
 
   constructor(
     private dashboardItemService: DashboardItemService,
-    private trackerDashboardService: TrackerDashboardService
+    private trackerDashboardService: TrackerDashboardService,
   ) {
     this._loading$ = new BehaviorSubject<boolean>(true);
     this.loading$ = this._loading$.asObservable();
@@ -160,6 +161,7 @@ export class DashboardItemComponent implements OnInit, OnChanges {
           : undefined;
         
         //if(visualizationTy)
+        //TODO: metadataService to be removed
         this.visualizer = await new D2Visualizer()
           .setId(this.visualizationConfig?.id)
           .setConfig(this.visualizationConfig)

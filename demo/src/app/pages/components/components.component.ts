@@ -8,7 +8,7 @@ import { firstValueFrom, lastValueFrom } from 'rxjs';
   selector: 'app-components',
   templateUrl: './components.component.html',
 })
-export class ComponentsComponent implements AfterViewInit {
+export class ComponentsComponent{
   selectedPeriods = [
     { id: 'THIS_MONTH', name: 'This month' },
     { id: 'LAST_MONTH', name: 'Last month' },
@@ -38,33 +38,33 @@ export class ComponentsComponent implements AfterViewInit {
     private cdRef: ChangeDetectorRef  // Inject ChangeDetectorRef to trigger change detection
   ) {}
 
-  ngAfterViewInit() {
-    this.metaDataService.fetchIndicators().subscribe(
-      (indicators) => {
-        this.indicators = indicators;
-        this.dictionaryData = {
-          dictionary: this.indicators.reduce<{ [key: string]: string }>((acc, indicator) => {
-            acc[indicator.id] = indicator.displayName;
-            return acc;
-          }, {}),
-        };
+  // ngAfterViewInit() {
+  //   this.metaDataService.fetchIndicators().subscribe(
+  //     (indicators) => {
+  //       this.indicators = indicators;
+  //       this.dictionaryData = {
+  //         dictionary: this.indicators.reduce<{ [key: string]: string }>((acc, indicator) => {
+  //           acc[indicator.id] = indicator.displayName;
+  //           return acc;
+  //         }, {}),
+  //       };
   
-        this.cdRef.detectChanges();
-        this.renderDictionaryVisualizer();
-      }
-    );
-  }
+  //       this.cdRef.detectChanges();
+  //       this.renderDictionaryVisualizer();
+  //     }
+  //   );
+  // }
   
-  renderDictionaryVisualizer() {
-    const dictionaryVisualizer = new DictionaryVisualizer();
-    dictionaryVisualizer['_data'] = this.dictionaryData;
-    dictionaryVisualizer['_id'] = 'dictionary-container';
+  // renderDictionaryVisualizer() {
+  //   const dictionaryVisualizer = new DictionaryVisualizer();
+  //   dictionaryVisualizer['_data'] = this.dictionaryData;
+  //   dictionaryVisualizer['_id'] = 'dictionary-container';
   
-    // Update onFetchDetails to use lastValueFrom instead of toPromise
-    dictionaryVisualizer.onFetchDetails = async (id: string) => {
-      return await firstValueFrom(this.metaDataService.fetchIndicatorById(id));
-    };
+  //   // Update onFetchDetails to use lastValueFrom instead of toPromise
+  //   dictionaryVisualizer.onFetchDetails = async (id: string) => {
+  //     return await firstValueFrom(this.metaDataService.fetchIndicatorById(id));
+  //   };
   
-    dictionaryVisualizer.draw();
-  }
+  //   dictionaryVisualizer.draw();
+  // }
 }
