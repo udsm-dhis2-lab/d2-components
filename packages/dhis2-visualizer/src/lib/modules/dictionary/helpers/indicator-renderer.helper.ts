@@ -71,12 +71,12 @@ export class IndicatorRenderer implements MetadataRenderer {
     const rows = [
       {
         label: 'Numerator',
-        value: details.numerator || '',
+        value: details.numeratorDescription || '',
         sources: details.numeratorSources || '',
       },
       {
         label: 'Denominator',
-        value: details.denominator || '',
+        value: details.denominatorDescription || '',
         sources: details.denominatorSources || '',
       },
     ];

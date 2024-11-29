@@ -19,9 +19,30 @@ export class MetadataService {
       if (href.includes('indicators')) {
         // Fetch metadata for indicators
         const indicatorsResponse = await axios.get(
-          `../../../api/indicators/${id}?fields=*,indicatorType[name]`
+         // `../../../api/indicators/${id}?fields=*,indicatorType[name]`
+          `../../../api/indicators/${id}.json?fields=:all,user[name,email,phoneNumber],displayName,lastUpdatedBy[id,name,phoneNumber,email],id,name,numeratorDescription,denominatorDescription,denominator,numerator,annualized,decimals,indicatorType[name],user[name],userGroupAccesses[*],userAccesses[*],attributeValues[value,attribute[name]],indicatorGroups[id,name,code,indicators[id,name]],legendSet[name,symbolizer,legends~size],dataSets[name]`
         );
-        return indicatorsResponse.data;
+       // return indicatorsResponse.data;
+       const indicatorData = indicatorsResponse.data;
+
+        // Fetch numerator expression meaning
+        const numeratorResponse = await axios.post(
+          `../../../api/indicators/expression/description/`, indicatorData.numerator
+        );
+        const numeratorDescription = numeratorResponse.data.message;
+
+        // Fetch denominator expression meaning
+        const denominatorResponse = await axios.post(
+          `../../../api/indicators/expression/description/`, indicatorData.denominator
+        );
+        const denominatorDescription = denominatorResponse.data.message;
+
+        // Add the fetched descriptions to the indicator data
+        return {
+          ...indicatorData,
+          numeratorExpressionMeaning: numeratorDescription,
+          denominatorExpressionMeaning: denominatorDescription,
+        };
       } else if (href.includes('programIndicators')) {
         // Fetch metadata for program indicators
         const programIndicatorsResponse = await axios.get(
@@ -36,6 +57,14 @@ export class MetadataService {
       // Handle and rethrow the error
       throw new Error(`Error fetching metadata: ${error.message}`);
     }
+  }
+
+  extractAllDataElementIds(expression: string): string[] {
+    const regex = /#{([\w\d]+)\./g;
+    const matches = [...expression.matchAll(regex)];
+    
+    // Map to extract the first capture group (data element IDs)
+    return matches.map(match => match[1]);
   }
 }
 
