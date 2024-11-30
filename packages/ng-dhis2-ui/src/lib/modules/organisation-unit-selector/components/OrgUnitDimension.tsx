@@ -39,6 +39,7 @@ const OrgUnitDimension = ({
   hideGroupSelect,
   hideLevelSelect,
   hideUserOrgUnits,
+  allowSingleSelection,
   warning,
   orgUnitGroupPromise,
   orgUnitLevelPromise,
@@ -49,6 +50,7 @@ const OrgUnitDimension = ({
   const dataEngine = useDataEngine();
 
   const onSelectItems = (selectedItem: any) => {
+    console.log('WE ARE SELECTING HERE', selectedItem);
     const { id, checked, displayName, path } = selectedItem;
     let result = [...selectedItems];
 
@@ -371,12 +373,14 @@ OrgUnitDimension.defaultProps = {
   hideGroupSelect: false,
   hideLevelSelect: false,
   hideUserOrgUnits: false,
+  allowSingleSelection: false,
 };
 
 OrgUnitDimension.propTypes = {
   hideGroupSelect: PropTypes.bool,
   hideLevelSelect: PropTypes.bool,
   hideUserOrgUnits: PropTypes.bool,
+  allowSingleSelection: PropTypes.bool,
   roots: PropTypes.arrayOf(PropTypes.string),
   selected: PropTypes.arrayOf(
     PropTypes.shape({

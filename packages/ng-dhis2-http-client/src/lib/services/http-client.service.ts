@@ -1,4 +1,8 @@
-import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  HttpHeaders,
+} from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of, throwError, zip } from 'rxjs';
 import { catchError, filter, map, mergeMap, switchMap } from 'rxjs/operators';
@@ -108,8 +112,8 @@ export class NgxDhis2HttpClientService {
 
     if (newHttpConfig.isExternalLink) {
       return httpOptions
-        ? this.httpClient.get(url, httpOptions)
-        : this.httpClient.get(url);
+        ? this.httpClient.get(encodeURI(url), httpOptions)
+        : this.httpClient.get(encodeURI(url));
     }
 
     if (
@@ -302,8 +306,8 @@ export class NgxDhis2HttpClientService {
     return this._getRootUrl(httpConfig).pipe(
       mergeMap((rootUrl) =>
         (httpOptions
-          ? this.httpClient.get(rootUrl + url, httpOptions)
-          : this.httpClient.get(rootUrl + url)
+          ? this.httpClient.get(encodeURI(rootUrl + url), httpOptions)
+          : this.httpClient.get(encodeURI(rootUrl + url))
         ).pipe(catchError(this._handleError))
       ),
       catchError(this._handleError)

@@ -16,7 +16,7 @@
   "default_locale": "en",
   "activities": {
     "dhis": {
-      "href": "../../../"
+      "href": "../../../api/v1/dhis2/"
     }
   },
   "authorities": []
