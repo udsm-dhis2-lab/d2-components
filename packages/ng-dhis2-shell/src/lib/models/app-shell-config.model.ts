@@ -35,7 +35,7 @@ export class AppShellConfigClass implements AppShellConfig {
 
   constructor(config: Partial<AppShellConfig>) {
     this.isDevMode = config?.isDevMode ?? true;
-    this.url = this.setUrl!(this.isDevMode, config?.url);
+    this.url = this.#setUrl(this.isDevMode, config?.url);
     this.appName = config?.appName;
     this.appVersion = config?.appVersion;
     this.apiVersion = config?.apiVersion;
@@ -43,7 +43,7 @@ export class AppShellConfigClass implements AppShellConfig {
     this.plugin = config?.plugin ?? false;
   }
 
-  private setUrl(isDevMode: boolean, url?: string) {
+  #setUrl(isDevMode: boolean, url?: string) {
     if (url) {
       return url;
     }
@@ -72,7 +72,7 @@ export class AppShellConfigService {
   async init(config: AppShellConfigClass) {
     const manifest = await firstValueFrom(this.getAppManifest());
 
-    let url: string | undefined;
+    let url = manifest?.activities?.dhis?.href;
     if (!config.isDevMode) {
       const systemInfo = await firstValueFrom(this.getSystemInfo());
       url = systemInfo ? (systemInfo['contextPath'] as string) : undefined;
