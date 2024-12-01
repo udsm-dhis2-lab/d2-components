@@ -1,10 +1,13 @@
 import { MetadataRenderer } from '../models/metadata-renderer.model';
+import moment from 'moment';
 
 export class IndicatorRenderer implements MetadataRenderer {
+
   draw(details: any, container: HTMLElement): void {
     container.replaceChildren();
     const title = document.createElement('h4');
     title.textContent = `${details.name}`;
+    title.style.color = 'blue';
     container.appendChild(title);
 
     const intro = document.createElement('p');
@@ -71,12 +74,12 @@ export class IndicatorRenderer implements MetadataRenderer {
     const rows = [
       {
         label: 'Numerator',
-        value: details.numeratorDescription || '',
+        value: details.numerator || '',
         sources: details.numeratorSources || '',
       },
       {
         label: 'Denominator',
-        value: details.denominatorDescription || '',
+        value: details.denominator || '',
         sources: details.denominatorSources || '',
       },
     ];
@@ -106,5 +109,15 @@ export class IndicatorRenderer implements MetadataRenderer {
     });
 
     container.appendChild(table);
+
+    const createdformattedDate = moment(details.created).format("MMMM DD, YYYY");
+    const lastUpdatedFormattedDate = moment(details.lastUpdated).format("MMMM DD, YYYY");
+    const accessibilitySharingSettingsTitle = document.createElement('h4');
+    accessibilitySharingSettingsTitle.textContent = 'Accessibility & Sharing settings';
+    container.appendChild(accessibilitySharingSettingsTitle);
+
+    const accessibilitySharingSettingsDescription = document.createElement('p');
+    accessibilitySharingSettingsDescription.textContent = `This indicator was first created on ${createdformattedDate} by ${details.createdBy.name} and last updated on ${lastUpdatedFormattedDate} by ${details.lastUpdatedBy.name}`;
+    container.appendChild(accessibilitySharingSettingsDescription);
   }
 }

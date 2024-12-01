@@ -19,23 +19,44 @@ export class MetadataService {
       if (href.includes('indicators')) {
         // Fetch metadata for indicators
         const indicatorsResponse = await axios.get(
-         // `../../../api/indicators/${id}?fields=*,indicatorType[name]`
+          // `../../../api/indicators/${id}?fields=*,indicatorType[name]`
           `../../../api/indicators/${id}.json?fields=:all,user[name,email,phoneNumber],displayName,lastUpdatedBy[id,name,phoneNumber,email],id,name,numeratorDescription,denominatorDescription,denominator,numerator,annualized,decimals,indicatorType[name],user[name],userGroupAccesses[*],userAccesses[*],attributeValues[value,attribute[name]],indicatorGroups[id,name,code,indicators[id,name]],legendSet[name,symbolizer,legends~size],dataSets[name]`
         );
-       // return indicatorsResponse.data;
-       const indicatorData = indicatorsResponse.data;
+        // return indicatorsResponse.data;
+        const indicatorData = indicatorsResponse.data;
 
         // Fetch numerator expression meaning
         const numeratorResponse = await axios.post(
-          `../../../api/indicators/expression/description/`, indicatorData.numerator
+          `../../../api/indicators/expression/description/`,
+          indicatorData.numerator
         );
         const numeratorDescription = numeratorResponse.data.message;
 
         // Fetch denominator expression meaning
         const denominatorResponse = await axios.post(
-          `../../../api/indicators/expression/description/`, indicatorData.denominator
+          `../../../api/indicators/expression/description/`,
+          indicatorData.denominator
         );
         const denominatorDescription = denominatorResponse.data.message;
+
+        const dataSetIdsFromNumerator = this.extractAllDataElementIds(
+          indicatorData.numerator
+        );
+
+        const dataSetIdsFromDenominator = this.extractAllDataElementIds(
+          indicatorData.denominator
+        );
+
+        console.log('dataSetIdsFromNumerator', dataSetIdsFromNumerator);
+        console.log('dataSetIdsFromDenominator', dataSetIdsFromDenominator);
+
+        const dataSetIdSourcesFromNumerator = await axios.get(
+          `../../../api/dataSets.json?fields=periodType,id,name,timelyDays,formType,created,expiryDays&filter=dataSetElements.dataElement.id:in:[${dataSetIdsFromNumerator}]&paging=false`
+        );
+
+        const dataSetIdSourcesDenominator = await axios.get(
+          `../../../api/dataSets.json?fields=periodType,id,name,timelyDays,formType,created,expiryDays&filter=dataSetElements.dataElement.id:in:[${dataSetIdsFromDenominator}]&paging=false`
+        );
 
         // Add the fetched descriptions to the indicator data
         return {
@@ -60,11 +81,10 @@ export class MetadataService {
   }
 
   extractAllDataElementIds(expression: string): string[] {
-    const regex = /#{([\w\d]+)\./g;
+    const regex = /R{([\w\d]+)\./g;
     const matches = [...expression.matchAll(regex)];
-    
+
     // Map to extract the first capture group (data element IDs)
-    return matches.map(match => match[1]);
+    return matches.map((match) => match[1]);
   }
 }
-
