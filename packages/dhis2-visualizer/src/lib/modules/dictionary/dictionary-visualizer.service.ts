@@ -67,7 +67,8 @@ export class MetadataService {
       } else if (href.includes('programIndicators')) {
         // Fetch metadata for program indicators
         const programIndicatorsResponse = await axios.get(
-          `../../../api/programIndicators/${id}?fields=*`
+        // `../../../api/programIndicators/${id}?fields=*`
+          `../../../api/programIndicators/${id}.json?fields=*,id,name,shortName,lastUpdated,analyticsPeriodBoundaries,created,userGroupAccesses[*],userAccesses[*],aggregationType,expression,filter,expiryDays,user[id,name,phoneNumber],lastUpdatedBy[id,name,phoneNumber],program[id,name,programIndicators[id,name]]`
         );
         return programIndicatorsResponse.data;
       } else {

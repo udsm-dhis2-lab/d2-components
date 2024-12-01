@@ -1,4 +1,5 @@
 import { MetadataRenderer } from '../models/metadata-renderer.model';
+import moment from 'moment';
 
 export class ProgramIndicatorRenderer implements MetadataRenderer {
   draw(details: any, container: HTMLElement): void {
@@ -36,6 +37,21 @@ export class ProgramIndicatorRenderer implements MetadataRenderer {
 
     container.appendChild(factsList);
 
+    const dataSourcesTitle = document.createElement('h4');
+    dataSourcesTitle.textContent = `Data sources (Datasets/Programs)`;
+    container.appendChild(dataSourcesTitle);
+
+    const dataSourcesSubtitle = document.createElement('p');
+    //TODO: check on the issue of checking whether the event is case or individual( {{eventBased_i.e._case_or_individual(if-applicable)}} )
+    dataSourcesSubtitle.textContent = `Indicator is captured from event based data collection with following program`;
+    container.appendChild(dataSourcesSubtitle);
+
+   const dataSourcesDescription = document.createElement('ul');
+   const programItem = document.createElement('li');
+   programItem.textContent = `${details.program.name} submitting records on every event(case or individual)`;
+   dataSourcesDescription.appendChild(programItem);
+   container.appendChild(dataSourcesDescription);
+
     const indicatorFactsTitle = document.createElement('h4');
     indicatorFactsTitle.textContent = 'Program Indicator Facts';
     container.appendChild(indicatorFactsTitle);
@@ -44,6 +60,14 @@ export class ProgramIndicatorRenderer implements MetadataRenderer {
     indicatorFactsSubTitle.textContent = 'Belongs to the following program groups of indicators';
     container.appendChild(indicatorFactsSubTitle);
 
-    
+    const createdformattedDate = moment(details.created).format("MMMM DD, YYYY");
+    const lastUpdatedFormattedDate = moment(details.lastUpdated).format("MMMM DD, YYYY");
+    const accessibilitySharingSettingsTitle = document.createElement('h4');
+    accessibilitySharingSettingsTitle.textContent = 'Accessibility & Sharing settings';
+    container.appendChild(accessibilitySharingSettingsTitle);
+
+    const accessibilitySharingSettingsDescription = document.createElement('p');
+    accessibilitySharingSettingsDescription.textContent = `This program indicator was first created on ${createdformattedDate} by ${details.createdBy.name} and last updated on ${lastUpdatedFormattedDate} by ${details.lastUpdatedBy.name}`;
+    container.appendChild(accessibilitySharingSettingsDescription);
   }
 }
