@@ -80,10 +80,12 @@ export class DashboardMenuService {
           loadingError: null,
         }));
 
-        this.#router.navigate([
-          config.rootUrl,
-          selectedDashboardSubMenu?.id || selectedDashboardMenu?.id,
-        ]);
+        if (selectedDashboardMenu || selectedDashboardSubMenu) {
+          this.#router.navigate([
+            config.rootUrl,
+            selectedDashboardSubMenu?.id || selectedDashboardMenu?.id,
+          ]);
+        }
       },
       error: (error) => {
         this.#dashboardMenuStore.update((state) => ({

@@ -1,6 +1,6 @@
 import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
-import { Injectable } from '@angular/core';
+import { computed, Injectable } from '@angular/core';
 import {
   MatSnackBar,
   MatSnackBarRef,
@@ -33,6 +33,8 @@ import {
 import { D2DashboardSelectionState } from '../store';
 import { DashboardSelectionActions } from '../store/actions/dashboard-selection.actions';
 import { DashboardConfigService } from './dashboard-config.service';
+import { DashboardMenuService } from './dashboard-menu.service';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 interface DashboardStore {
   currentDashboardMenu?: DashboardMenuObject;
@@ -44,6 +46,8 @@ interface DashboardStore {
   };
   startUpDataSelections: any;
 }
+
+interface DashboardState {}
 
 @Injectable()
 export class DashboardService {
@@ -59,7 +63,8 @@ export class DashboardService {
     private _snackBarRef: MatSnackBarRef<TextOnlySnackBar>,
     private overlay: Overlay,
     private dashboardConfigService: DashboardConfigService,
-    private dashboardSelectionStore: Store<D2DashboardSelectionState>
+    private dashboardSelectionStore: Store<D2DashboardSelectionState>,
+    private dashboardMenuService: DashboardMenuService
   ) {
     const config: DashboardConfig = this.dashboardConfigService.getConfig();
     this._dashboardStore$ = new BehaviorSubject({
@@ -70,7 +75,21 @@ export class DashboardService {
     this._dashboardStoreObservable$ = this._dashboardStore$.asObservable();
   }
 
+  currentDashboard = computed(() => {
+    return (
+      this.dashboardMenuService.currentDashboardSubMenu()?.id ||
+      this.dashboardMenuService.currentDashboardSubMenu()?.id
+    );
+  });
+
+  currentDashboard$ = toObservable(this.currentDashboard);
+
   getCurrentDashboard(id: string): Observable<DashboardObject | undefined> {
+    console.log(
+      'CURRENT DASHBOARD',
+      this.dashboardMenuService.currentDashboardMenu(),
+      this.dashboardMenuService.currentDashboardSubMenu()
+    );
     const config: DashboardConfig = this.dashboardConfigService.getConfig();
     this._detachOverlay();
     this._attachOverlay();

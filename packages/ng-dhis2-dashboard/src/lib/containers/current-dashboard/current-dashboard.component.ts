@@ -46,6 +46,10 @@ export class CurrentDashboardComponent implements OnInit {
   ngOnInit() {
     this.selectionConfig = this.dashboardConfig.getConfig()?.selectionConfig;
 
+    this.dashboardService.currentDashboard$.subscribe((dashboard) => {
+      console.log('DASHBOARD', dashboard);
+    });
+
     this.currentDashboard$ = this.activatedRoute.params.pipe(
       switchMap(({ id }) => {
         this.loading = true;
