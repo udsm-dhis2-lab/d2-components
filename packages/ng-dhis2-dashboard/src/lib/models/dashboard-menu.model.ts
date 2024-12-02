@@ -24,7 +24,9 @@ export class DashboardMenu {
     );
 
     if (selectedDashboardMenu) {
-      return { selectedDashboardMenu };
+      return {
+        selectedDashboardMenu,
+      };
     }
 
     const dashboardSubMenus = flatten(
@@ -36,7 +38,12 @@ export class DashboardMenu {
     );
 
     return {
-      selectedDashboardMenu: selectedDashboardMenu || dashboardMenus[0],
+      selectedDashboardMenu: (dashboardMenus || []).filter((dashboardMenu) =>
+        dashboardMenu.subMenus?.find(
+          (dashboardSubMenu) =>
+            dashboardSubMenu?.id === selectedDashboardSubMenu?.id
+        )
+      )[0],
       selectedDashboardSubMenu,
     };
   }

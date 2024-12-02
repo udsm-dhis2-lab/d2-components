@@ -17,6 +17,7 @@
   "activities": {
     "dhis": {
       "href": "../../../api/v1/dhis2/"
+      //"href": "../../../api/v1/dhis2/"
     }
   },
   "authorities": []

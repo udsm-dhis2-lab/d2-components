@@ -9,10 +9,19 @@ import {
 import { Router } from '@angular/router';
 import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
 import { Period } from '@iapps/period-utilities';
-import { BehaviorSubject, firstValueFrom, Observable, of, tap } from 'rxjs';
-import { catchError, distinctUntilChanged, map, take } from 'rxjs/operators';
+import { Store } from '@ngrx/store';
+import {
+  BehaviorSubject,
+  catchError,
+  distinctUntilChanged,
+  firstValueFrom,
+  map,
+  Observable,
+  of,
+  take,
+  tap,
+} from 'rxjs';
 import { DashboardLoaderComponent } from '../components/dashboard-loader/dashboard-loader.component';
-import { DIMENSION_LABELS } from '../constants/selection-dimension-label.constant';
 import {
   Dashboard,
   DashboardConfig,
@@ -21,14 +30,9 @@ import {
   DashboardSelectionConfig,
   VisualizationDataSelection,
 } from '../models';
-import {
-  GlobalSelection,
-  IGlobalSelection,
-} from '../models/global-selection.model';
-import { DashboardConfigService } from './dashboard-config.service';
-import { Store } from '@ngrx/store';
 import { D2DashboardSelectionState } from '../store';
 import { DashboardSelectionActions } from '../store/actions/dashboard-selection.actions';
+import { DashboardConfigService } from './dashboard-config.service';
 
 interface DashboardStore {
   currentDashboardMenu?: DashboardMenuObject;
