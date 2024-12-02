@@ -21,7 +21,6 @@ import { d2DashboardMaterialModules } from './shared';
 import {
   d2DashboardEffects,
   d2DashboardFeature,
-  d2DashboardMenuFeature,
   d2DashboardSelectionFeature,
 } from './store';
 
@@ -34,7 +33,6 @@ import {
     NgxPrintModule,
     ReactWrapperModule,
     ...d2DashboardMaterialModules,
-    StoreModule.forFeature(d2DashboardMenuFeature),
     StoreModule.forFeature(d2DashboardFeature),
     StoreModule.forFeature(d2DashboardSelectionFeature),
     EffectsModule.forFeature(d2DashboardEffects),

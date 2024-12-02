@@ -19,6 +19,14 @@ export class DashboardMenu {
     selectedDashboardMenu: DashboardMenuObject;
     selectedDashboardSubMenu?: DashboardMenuObject;
   } {
+    if (!dashboardMenuIdFromUrl) {
+      const selectedDashboardMenu = (dashboardMenus || [])[0];
+      return {
+        selectedDashboardMenu,
+        selectedDashboardSubMenu: (selectedDashboardMenu?.subMenus || [])[0],
+      };
+    }
+
     const selectedDashboardMenu = dashboardMenus.find(
       (dashboardMenuItem) => dashboardMenuItem.id === dashboardMenuIdFromUrl
     );
