@@ -1,8 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
 import { select, Store } from '@ngrx/store';
 
-import { catchError, Observable, of, switchMap, tap } from 'rxjs';
+import { CommonModule } from '@angular/common';
+import { isUndefined } from 'lodash';
+import { catchError, filter, Observable, of, switchMap, tap } from 'rxjs';
+import { CurrentDashboardHeaderComponent } from '../../components/current-dashboard-header/current-dashboard-header.component';
+import { DashboardItemsComponent } from '../../components/dashboard-items/dashboard-items.component';
+import { DashboardSelectionSummaryComponent } from '../../components/dashboard-selection-summary/dashboard-selection-summary.component';
 import {
   DashboardObject,
   DashboardSelectionConfig,
@@ -13,10 +17,6 @@ import { DashboardConfigService, DashboardService } from '../../services';
 import { D2DashboardSelectionState } from '../../store';
 import { DashboardSelectionActions } from '../../store/actions/dashboard-selection.actions';
 import { getDashboardSelectionById } from '../../store/selectors/dashboard-selection.selectors';
-import { CommonModule } from '@angular/common';
-import { CurrentDashboardHeaderComponent } from '../../components/current-dashboard-header/current-dashboard-header.component';
-import { DashboardSelectionSummaryComponent } from '../../components/dashboard-selection-summary/dashboard-selection-summary.component';
-import { DashboardItemsComponent } from '../../components/dashboard-items/dashboard-items.component';
 
 @Component({
   standalone: true,
@@ -38,7 +38,6 @@ export class CurrentDashboardComponent implements OnInit {
   selectionConfig?: DashboardSelectionConfig;
   constructor(
     private dashboardService: DashboardService,
-    private activatedRoute: ActivatedRoute,
     private dashboardConfig: DashboardConfigService,
     private dashboardSelectionStore: Store<D2DashboardSelectionState>
   ) {}
@@ -46,12 +45,9 @@ export class CurrentDashboardComponent implements OnInit {
   ngOnInit() {
     this.selectionConfig = this.dashboardConfig.getConfig()?.selectionConfig;
 
-    this.dashboardService.currentDashboard$.subscribe((dashboard) => {
-      console.log('DASHBOARD', dashboard);
-    });
-
-    this.currentDashboard$ = this.activatedRoute.params.pipe(
-      switchMap(({ id }) => {
+    this.currentDashboard$ = this.dashboardService.currentDashboardId$.pipe(
+      filter((dashboard) => !isUndefined(dashboard)),
+      switchMap((id) => {
         this.loading = true;
         this.globalSelection$ = this.dashboardSelectionStore.pipe(
           select(getDashboardSelectionById(id))

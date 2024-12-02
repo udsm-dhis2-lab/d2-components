@@ -75,21 +75,16 @@ export class DashboardService {
     this._dashboardStoreObservable$ = this._dashboardStore$.asObservable();
   }
 
-  currentDashboard = computed(() => {
+  currentDashboardId = computed(() => {
     return (
       this.dashboardMenuService.currentDashboardSubMenu()?.id ||
       this.dashboardMenuService.currentDashboardSubMenu()?.id
     );
   });
 
-  currentDashboard$ = toObservable(this.currentDashboard);
+  currentDashboardId$ = toObservable(this.currentDashboardId);
 
   getCurrentDashboard(id: string): Observable<DashboardObject | undefined> {
-    console.log(
-      'CURRENT DASHBOARD',
-      this.dashboardMenuService.currentDashboardMenu(),
-      this.dashboardMenuService.currentDashboardSubMenu()
-    );
     const config: DashboardConfig = this.dashboardConfigService.getConfig();
     this._detachOverlay();
     this._attachOverlay();
