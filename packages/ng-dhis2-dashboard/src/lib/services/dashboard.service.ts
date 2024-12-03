@@ -78,7 +78,7 @@ export class DashboardService {
   currentDashboardId = computed(() => {
     return (
       this.dashboardMenuService.currentDashboardSubMenu()?.id ||
-      this.dashboardMenuService.currentDashboardSubMenu()?.id
+      this.dashboardMenuService.currentDashboardMenu()?.id
     );
   });
 

@@ -3,7 +3,16 @@ import { select, Store } from '@ngrx/store';
 
 import { CommonModule } from '@angular/common';
 import { isUndefined } from 'lodash';
-import { catchError, filter, Observable, of, switchMap, tap } from 'rxjs';
+import {
+  catchError,
+  distinctUntilChanged,
+  filter,
+  Observable,
+  of,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 import { CurrentDashboardHeaderComponent } from '../../components/current-dashboard-header/current-dashboard-header.component';
 import { DashboardItemsComponent } from '../../components/dashboard-items/dashboard-items.component';
 import { DashboardSelectionSummaryComponent } from '../../components/dashboard-selection-summary/dashboard-selection-summary.component';
