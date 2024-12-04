@@ -31,7 +31,7 @@ import { appRoutes } from './app.routes';
       namespace: '',
     }),
     D2DashboardModule.forRoot({
-      useDataStore: true,
+      useDataStore: false,
       dataStoreNamespace: 'eidsr-dashboard',
       rootUrl: 'dashboard',
       selectionConfig: {

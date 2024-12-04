@@ -175,7 +175,11 @@ export class DashboardService {
       },
     });
 
-    this.router.navigate([config.rootUrl, currentDashboardMenu.id]);
+    this.router.navigate([
+      config.rootUrl,
+      'dhis-dashboard-view',
+      currentDashboardMenu.id,
+    ]);
   }
 
   getCurrentDashboardId(): Observable<string | undefined> {
