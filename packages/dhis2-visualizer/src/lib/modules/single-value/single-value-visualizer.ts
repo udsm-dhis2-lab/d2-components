@@ -46,8 +46,18 @@ export class SingleValueVisualizer
         parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
       const rem = (px: number) => `${(px / rootFontSize).toFixed(2)}rem`;
 
-      const titleFontSize = rem(12);
-      const filterFontSize = rem(8);
+      const titleFontSizePx = 12;
+      const filterFontSizePx = 8;
+      const valueFontSizePx = 32;
+
+      const titleFontSize = rem(titleFontSizePx);
+      const filterFontSize = rem(filterFontSizePx);
+      const valueFontSize = rem(valueFontSizePx);
+
+      const renderingWidth =
+        renderingElement.getBoundingClientRect().width - 12;
+      const charWidth = 12 * 0.6;
+      const maxCharsPerLine = Math.floor(renderingWidth / charWidth);
 
       const textGroup = document.createElementNS(svgNamespace, 'g');
 
@@ -60,23 +70,42 @@ export class SingleValueVisualizer
       titleText.setAttribute('text-anchor', 'middle');
       titleText.setAttribute('font-size', `${titleFontSize}`);
       titleText.setAttribute('fill', '#666');
-      titleText.textContent = dataLabel;
+
+      const wrappedTitle = this.wrapText(dataLabel, maxCharsPerLine);
+      wrappedTitle.forEach((line, index) => {
+        const tspan = document.createElementNS(svgNamespace, 'tspan');
+        tspan.setAttribute('x', '0');
+        tspan.setAttribute('dy', index === 0 ? '0' : '1.2em');
+        tspan.textContent = line;
+        titleText.appendChild(tspan);
+      });
+
+      const titleHeight = wrappedTitle.length * titleFontSizePx;
 
       // Filter Label
       const filterText = document.createElementNS(svgNamespace, 'text');
-      filterText.setAttribute('y', '-4');
+      filterText.setAttribute('y', `${titleHeight - 16}`);
       filterText.setAttribute('text-anchor', 'middle');
       filterText.setAttribute('font-size', `${filterFontSize}`);
       filterText.setAttribute('fill', '#666');
-      filterText.textContent = filterLabel;
 
+      const wrappedFilter = this.wrapText(filterLabel, maxCharsPerLine);
+      wrappedFilter.forEach((line, index) => {
+        const tspan = document.createElementNS(svgNamespace, 'tspan');
+        tspan.setAttribute('x', '0');
+        tspan.setAttribute('dy', index === 0 ? '0' : '1.2em');
+        tspan.textContent = line;
+        filterText.appendChild(tspan);
+      });
+
+      const filterHeight = wrappedFilter.length * filterFontSizePx;
       // Value Text
       const valueText = document.createElementNS(svgNamespace, 'text');
-      valueText.setAttribute('y', '36');
+      valueText.setAttribute('y', `${titleHeight + filterHeight + 10}`);
       valueText.setAttribute('text-anchor', 'middle');
-      valueText.setAttribute('font-size', '2.5em');
+      valueText.setAttribute('font-size', valueFontSize);
       valueText.setAttribute('font-weight', '300');
-      valueText.textContent = VisualizerUtil.toCommaSeparated(value);
+      valueText.textContent = VisualizerUtil.toSpaceSeparated(value);
 
       // Append texts to the group
       textGroup.appendChild(titleText);
@@ -89,5 +118,26 @@ export class SingleValueVisualizer
       // Append the SVG to the rendering element
       renderingElement.appendChild(svg);
     }
+  }
+
+  wrapText(text: string, maxChars: number): string[] {
+    const words = text.split(' ');
+    const lines: string[] = [];
+    let currentLine = '';
+
+    words.forEach((word) => {
+      if ((currentLine + word).length <= maxChars) {
+        currentLine += `${word} `;
+      } else {
+        lines.push(currentLine.trim());
+        currentLine = `${word} `;
+      }
+    });
+
+    if (currentLine) {
+      lines.push(currentLine.trim());
+    }
+
+    return lines;
   }
 }
