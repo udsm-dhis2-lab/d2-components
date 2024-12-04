@@ -1,6 +1,6 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
-import { map, Observable, of, switchMap, tap, zip } from 'rxjs';
+import { firstValueFrom, map, Observable, of, switchMap, tap, zip } from 'rxjs';
 import { DashboardConfig, DashboardMenu, DashboardMenuObject } from '../models';
 import { DashboardConfigService } from './dashboard-config.service';
 import { userAuthorizedDashboards } from '../utilities/access-control.util';
@@ -67,7 +67,7 @@ export class DashboardMenuService {
         const { selectedDashboardMenu, selectedDashboardSubMenu } =
           DashboardMenu.getCurrentDashboardMenu(
             dashboardMenus,
-            splitedUrl[splitedUrl.indexOf(config.rootUrl) + 1]
+            splitedUrl[splitedUrl.indexOf('dhis-dashboard-view') + 1]
           );
 
         this.#dashboardMenuStore.update((state) => ({
@@ -83,6 +83,7 @@ export class DashboardMenuService {
         if (selectedDashboardMenu || selectedDashboardSubMenu) {
           this.#router.navigate([
             config.rootUrl,
+            'dhis-dashboard-view',
             selectedDashboardSubMenu?.id || selectedDashboardMenu?.id,
           ]);
         }
@@ -119,8 +120,8 @@ export class DashboardMenuService {
   findMenuList(config: DashboardConfig): Observable<DashboardMenuObject[]> {
     return (
       config?.useDataStore
-        ? this._findAllFromDataStore(config)
-        : this._findAllFromApi()
+        ? this.#findAllFromDataStore(config)
+        : this.#findAllFromApi()
     ).pipe(
       map((res: any) => {
         return (res?.dashboards || []).map(
@@ -144,6 +145,7 @@ export class DashboardMenuService {
 
     this.#router.navigate([
       config.rootUrl,
+      'dhis-dashboard-view',
       selectedDashboardSubMenu?.id || selectedDashboardMenu.id,
     ]);
   }
@@ -158,11 +160,11 @@ export class DashboardMenuService {
     this.#router.navigate([config.rootUrl, selectedDashboardSubMenu.id]);
   }
 
-  private _findAllFromApi() {
+  #findAllFromApi() {
     return this.httpClient.get('dashboards.json?fields=id,name&paging=false');
   }
 
-  private _findAllFromDataStore(config: DashboardConfig) {
+  #findAllFromDataStore(config: DashboardConfig) {
     return this.httpClient.me().pipe(
       switchMap((user) => {
         return zip(
