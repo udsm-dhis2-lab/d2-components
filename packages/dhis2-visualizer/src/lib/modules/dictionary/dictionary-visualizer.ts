@@ -45,7 +45,7 @@ export class DictionaryVisualizer extends BaseVisualizer implements Visualizer {
 
     // Content container for the selected tab
     const contentContainer = document.createElement('div');
-    contentContainer.style.maxHeight = '400px';
+    contentContainer.style.maxHeight = '75vh';
     contentContainer.style.overflowY = 'auto';
     contentContainer.style.padding = '0 10px 10px';
     renderingElement.appendChild(contentContainer);
