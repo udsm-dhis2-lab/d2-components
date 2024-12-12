@@ -160,6 +160,34 @@ export class ProgramIndicatorRenderer implements MetadataRenderer {
 
     container.appendChild(indicatorFactsTable);
 
+    const relatedIndicatorsTitle = document.createElement('h4');
+    relatedIndicatorsTitle.textContent = 'Related Indicators';
+    container.appendChild(relatedIndicatorsTitle);
+
+    const relatedIndicatorsSubTitle = document.createElement('p');
+    relatedIndicatorsSubTitle.textContent = 'Below are set of indicators using program indicator as numerator or denominator in their calculations.';
+    container.appendChild(relatedIndicatorsSubTitle);
+
+    const relatedIndicatorsTable = document.createElement('table');
+    relatedIndicatorsTable.style.borderCollapse = 'collapse';
+    relatedIndicatorsTable.style.width = '100%';
+    relatedIndicatorsTable.style.margin = '10px 0';
+
+    const relatedIndicatorsTableHeaderRow = document.createElement('tr');
+    const relatedIndicatorsTableHeaders = ['#', 'Name', 'Numerator','Denominator','Type','Description'];
+    relatedIndicatorsTableHeaders.forEach((header) => {
+    const relatedIndicatorsTableth = document.createElement('th');
+    relatedIndicatorsTableth.textContent = header;
+    relatedIndicatorsTableth.style.border = '1px solid #ddd';
+    relatedIndicatorsTableth.style.padding = '8px';
+    relatedIndicatorsTableth.style.backgroundColor = '#f4f4f4';
+    relatedIndicatorsTableth.style.textAlign = 'left';
+    relatedIndicatorsTableHeaderRow.appendChild(relatedIndicatorsTableth)
+    });
+    relatedIndicatorsTable.appendChild(relatedIndicatorsTableHeaderRow);
+    container.appendChild(relatedIndicatorsTable);
+   
+
     const calculationDetailsTitle = document.createElement('h4');
     calculationDetailsTitle.textContent = 'Calculation details';
     container.appendChild(calculationDetailsTitle);

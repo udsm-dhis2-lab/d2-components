@@ -112,6 +112,8 @@ export class MetadataService {
             }
           );
         }
+
+        const programIndicatorInNumerator = await axios.get(`${apiUrl}indicators.json?filter=numerator:like:${programIndicatorData .id}&fields=name,numerator,denominator,description,indicatorType[name]`);
         const dataElementsInPogramIndicator = await axios.get(
           `${apiUrl}dataElements.json?filter=id:in:[${expressionDescription},${filterDescription}]&paging=false&
           fields=id,name,zeroIsSignificant,aggregationType,domainType,valueType,
