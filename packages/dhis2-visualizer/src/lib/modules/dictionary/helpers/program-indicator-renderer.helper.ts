@@ -4,10 +4,10 @@ import moment from 'moment';
 export class ProgramIndicatorRenderer implements MetadataRenderer {
   formatString(str: string) {
     return str
-        .replace(/_/g, ' ') // Replace underscores with spaces
-        .toLowerCase() // Convert the entire string to lowercase first
-        .replace(/\b\w/, (char) => char.toUpperCase()); // Capitalize only the first letter
-}
+      .replace(/_/g, ' ') // Replace underscores with spaces
+      .toLowerCase() // Convert the entire string to lowercase first
+      .replace(/\b\w/, (char) => char.toUpperCase()); // Capitalize only the first letter
+  }
 
   draw(details: any, container: HTMLElement): void {
     container.replaceChildren();
@@ -106,16 +106,16 @@ export class ProgramIndicatorRenderer implements MetadataRenderer {
 
     indicatorFactsTable.appendChild(indicatorFactsHeaderRow);
 
-    //const indicatorFactsrows = details.indicatorGroups;
-    type IndicatorFactRow = {
-      name: string;
-      indicators: any[]; 
-    };
-    
-    const indicatorFactsrows: IndicatorFactRow[] = [];
+    const indicatorFactsrows = details.programIndicatorGroups;
+    // type IndicatorFactRow = {
+    //   name: string;
+    //   indicators: any[];
+    // };
+
+    // const indicatorFactsrows: IndicatorFactRow[] = [];
 
     indicatorFactsrows.forEach(
-      (row: { name: string; indicators: any[] }, index: number) => {
+      (row: { name: string; programIndicators: any[] }, index: number) => {
         const indicatorFactstr = document.createElement('tr');
         const tdIndex = document.createElement('td');
         tdIndex.textContent = (index + 1).toString();
@@ -139,9 +139,9 @@ export class ProgramIndicatorRenderer implements MetadataRenderer {
         const tdIndicators = document.createElement('td');
 
         // Check if `indicators` is an array and has data
-        if (Array.isArray(row.indicators) && row.indicators.length > 0) {
+        if (Array.isArray(row.programIndicators) && row.programIndicators.length > 0) {
           const ul = document.createElement('ul'); // Create a <ul> element
-          row.indicators.forEach((indicator) => {
+          row.programIndicators.forEach((indicator) => {
             const li = document.createElement('li'); // Create a <li> for each indicator
             li.textContent = indicator.name; // Set the name as the content of the <li>
             ul.appendChild(li); // Append the <li> to the <ul>
@@ -165,7 +165,8 @@ export class ProgramIndicatorRenderer implements MetadataRenderer {
     container.appendChild(relatedIndicatorsTitle);
 
     const relatedIndicatorsSubTitle = document.createElement('p');
-    relatedIndicatorsSubTitle.textContent = 'Below are set of indicators using program indicator as numerator or denominator in their calculations.';
+    relatedIndicatorsSubTitle.textContent =
+      'Below are set of indicators using program indicator as numerator or denominator in their calculations.';
     container.appendChild(relatedIndicatorsSubTitle);
 
     const relatedIndicatorsTable = document.createElement('table');
@@ -174,19 +175,69 @@ export class ProgramIndicatorRenderer implements MetadataRenderer {
     relatedIndicatorsTable.style.margin = '10px 0';
 
     const relatedIndicatorsTableHeaderRow = document.createElement('tr');
-    const relatedIndicatorsTableHeaders = ['#', 'Name', 'Numerator','Denominator','Type','Description'];
+    const relatedIndicatorsTableHeaders = [
+      '#',
+      'Name',
+      'Numerator',
+      'Denominator',
+      'Type',
+      'Description',
+    ];
     relatedIndicatorsTableHeaders.forEach((header) => {
-    const relatedIndicatorsTableth = document.createElement('th');
-    relatedIndicatorsTableth.textContent = header;
-    relatedIndicatorsTableth.style.border = '1px solid #ddd';
-    relatedIndicatorsTableth.style.padding = '8px';
-    relatedIndicatorsTableth.style.backgroundColor = '#f4f4f4';
-    relatedIndicatorsTableth.style.textAlign = 'left';
-    relatedIndicatorsTableHeaderRow.appendChild(relatedIndicatorsTableth)
+      const relatedIndicatorsTableth = document.createElement('th');
+      relatedIndicatorsTableth.textContent = header;
+      relatedIndicatorsTableth.style.border = '1px solid #ddd';
+      relatedIndicatorsTableth.style.padding = '8px';
+      relatedIndicatorsTableth.style.backgroundColor = '#f4f4f4';
+      relatedIndicatorsTableth.style.textAlign = 'left';
+      relatedIndicatorsTableHeaderRow.appendChild(relatedIndicatorsTableth);
     });
     relatedIndicatorsTable.appendChild(relatedIndicatorsTableHeaderRow);
-    container.appendChild(relatedIndicatorsTable);
+
    
+    const relatedIndicatorsTableRows = details.indicatorsWithProgramIndicators;
+  
+    relatedIndicatorsTableRows.forEach((row: { name: string; numerator: string; denominator: string; indicatorType: { name: string; } ;description: string; }, index: number) => {
+      const relatedIndicatorsTableRow = document.createElement('tr');
+      const relatedIndicatorsTableIndex = document.createElement('td');
+      relatedIndicatorsTableIndex.textContent = `${index + 1}`;
+      relatedIndicatorsTableIndex.style.border = '1px solid #ddd';
+      relatedIndicatorsTableIndex.style.padding = '8px';
+      relatedIndicatorsTableRow.appendChild(relatedIndicatorsTableIndex);
+
+      const relatedIndicatorsTableName = document.createElement('td');
+      relatedIndicatorsTableName.textContent = row.name;
+      relatedIndicatorsTableName.style.border = '1px solid #ddd';
+      relatedIndicatorsTableName.style.padding = '8px';
+      relatedIndicatorsTableRow.appendChild(relatedIndicatorsTableName);
+
+      const relatedIndicatorsTableNumerator = document.createElement('td');
+      relatedIndicatorsTableNumerator.textContent = row.numerator;
+      relatedIndicatorsTableNumerator.style.border = '1px solid #ddd';
+      relatedIndicatorsTableNumerator.style.padding = '8px';
+      relatedIndicatorsTableRow.appendChild(relatedIndicatorsTableNumerator);
+
+      const relatedIndicatorsTableDenominator = document.createElement('td');
+      relatedIndicatorsTableDenominator.textContent = row.denominator;
+      relatedIndicatorsTableDenominator.style.border = '1px solid #ddd';
+      relatedIndicatorsTableDenominator.style.padding = '8px';
+      relatedIndicatorsTableRow.appendChild(relatedIndicatorsTableDenominator);
+
+      const relatedIndicatorsTableType = document.createElement('td');
+      relatedIndicatorsTableType.textContent = row.indicatorType.name;
+      relatedIndicatorsTableType.style.border = '1px solid #ddd';
+      relatedIndicatorsTableType.style.padding = '8px';
+      relatedIndicatorsTableRow.appendChild(relatedIndicatorsTableType);
+
+      const relatedIndicatorsDescription = document.createElement('td');
+      relatedIndicatorsDescription.textContent = row.description;
+      relatedIndicatorsDescription.style.border = '1px solid #ddd';
+      relatedIndicatorsDescription.style.padding = '8px';
+      relatedIndicatorsTableRow.appendChild(relatedIndicatorsDescription);
+      relatedIndicatorsTable.appendChild(relatedIndicatorsTableRow);
+    });
+   
+    container.appendChild(relatedIndicatorsTable);
 
     const calculationDetailsTitle = document.createElement('h4');
     calculationDetailsTitle.textContent = 'Calculation details';
@@ -283,20 +334,20 @@ export class ProgramIndicatorRenderer implements MetadataRenderer {
     const tdFilter = document.createElement('td');
     const filterToggleButton = document.createElement('button');
     let isFilterVisible = true; // Start with `filterDescription`
-    
+
     const updateFilterContent = () => {
       // Update the text content based on visibility flag
       tdFilter.textContent = isFilterVisible
         ? details.filterDescription
         : details.filter;
-    
+
       // Check if details.filter exists, and only show the button if it does
       if (details.filter) {
         filterToggleButton.style.marginLeft = '10px';
         filterToggleButton.textContent = isFilterVisible
           ? 'Show Filter'
           : 'Show Filter Description';
-    
+
         // Append the button only if details.filter exists
         if (!tdFilter.contains(filterToggleButton)) {
           tdFilter.appendChild(filterToggleButton);
@@ -308,15 +359,15 @@ export class ProgramIndicatorRenderer implements MetadataRenderer {
         }
       }
     };
-    
+
     filterToggleButton.onclick = () => {
       isFilterVisible = !isFilterVisible; // Toggle the visibility flag
       updateFilterContent();
     };
-    
+
     // Initialize content and attach button
     updateFilterContent();
-    
+
     tdFilter.style.border = '1px solid #ddd';
     tdFilter.style.padding = '8px';
     tr.appendChild(tdFilter);
@@ -446,117 +497,121 @@ export class ProgramIndicatorRenderer implements MetadataRenderer {
 
     dataElementsTable.appendChild(dataElementsHeaderRow);
 
-    //const dataElementrows = details.dataElementsInPogramIndicator;
-    type DataElementRow = {
-      id?: string; 
-      name?: string;
-    };
-    
-    const dataElementrows: DataElementRow[] = [];
-  
-   
-    dataElementrows.forEach(
-      (row: any, index: number) => {
-        const dataElementTr = document.createElement('tr');
-        const tdDataElementIndex = document.createElement('td');
-        tdDataElementIndex.textContent = (index + 1).toString();
-        tdDataElementIndex.style.border = '1px solid #ddd';
-        tdDataElementIndex.style.padding = '8px';
-        dataElementTr.appendChild(tdDataElementIndex);
+    const dataElementrows = details.dataElementsInPogramIndicator;
+    // type DataElementRow = {
+    //   id?: string;
+    //   name?: string;
+    // };
 
-        const tdDataElementName = document.createElement('td');
-        tdDataElementName.textContent = row.name;
-        tdDataElementName.style.border = '1px solid #ddd';
-        tdDataElementName.style.padding = '8px';
-        dataElementTr.appendChild(tdDataElementName);
-        
-        const tdDataElementExpression = document.createElement('td');
-        //TODO: find the right code to show
-    if (details.dataElementsFromNumerator.includes(row.id)) {
-      tdDataElementExpression.textContent = 'Numerator';
-    } else if (details.dataElementsFromDenominator.includes(row.id)) {
-      tdDataElementExpression.textContent = 'Denominator';
-    } else {
-      tdDataElementExpression.textContent = ''; // Empty if not found in either
-    }
-        tdDataElementExpression.style.border = '1px solid #ddd';
-        tdDataElementExpression.style.padding = '8px';
-        dataElementTr.appendChild(tdDataElementExpression);
+    // const dataElementrows: DataElementRow[] = [];
 
-        const tdDataElementAggregationType = document.createElement('td');
-        tdDataElementAggregationType.textContent = row.aggregationType;
-        tdDataElementAggregationType.style.border = '1px solid #ddd';
-        tdDataElementAggregationType.style.padding = '8px';
-        dataElementTr.appendChild(tdDataElementAggregationType);
+    dataElementrows.forEach((row: any, index: number) => {
+      const dataElementTr = document.createElement('tr');
+      const tdDataElementIndex = document.createElement('td');
+      tdDataElementIndex.textContent = (index + 1).toString();
+      tdDataElementIndex.style.border = '1px solid #ddd';
+      tdDataElementIndex.style.padding = '8px';
+      dataElementTr.appendChild(tdDataElementIndex);
 
-        const tdDataElementValueType = document.createElement('td');
-        tdDataElementValueType.textContent = row.valueType;
-        tdDataElementValueType.style.border = '1px solid #ddd';
-        tdDataElementValueType.style.padding = '8px';
-        dataElementTr.appendChild(tdDataElementValueType);
+      const tdDataElementName = document.createElement('td');
+      tdDataElementName.textContent = row.name;
+      tdDataElementName.style.border = '1px solid #ddd';
+      tdDataElementName.style.padding = '8px';
+      dataElementTr.appendChild(tdDataElementName);
 
-       const tdDataElementZeroSignificance = document.createElement('td');
-        tdDataElementZeroSignificance.textContent = row.zeroIsSignificant;
-        tdDataElementZeroSignificance.style.border = '1px solid #ddd';
-        tdDataElementZeroSignificance.style.padding = '8px';
-        dataElementTr.appendChild(tdDataElementZeroSignificance);
+      const tdDataElementExpression = document.createElement('td');
 
-        const tdDataElementCategories = document.createElement('td');
+      //TODO: More clarification on this
+      // if (details.dataElementsFromNumerator.includes(row.id)) {
+      //   tdDataElementExpression.textContent = 'Numerator';
+      // } else if (details.dataElementsFromDenominator.includes(row.id)) {
+      //   tdDataElementExpression.textContent = 'Denominator';
+      // } else {
+      //   tdDataElementExpression.textContent = ''; // Empty if not found in either
+      // }
+      tdDataElementExpression.textContent = '';
+      tdDataElementExpression.style.border = '1px solid #ddd';
+      tdDataElementExpression.style.padding = '8px';
+      dataElementTr.appendChild(tdDataElementExpression);
 
-          const ul = document.createElement('ul'); 
-          row.categoryCombo.categoryOptionCombos?.[0]?.categoryOptions?.[0]?.categories?.forEach((category: { name: string; }) => {
-            const li = document.createElement('li'); 
-            li.textContent = category.name; 
-            ul.appendChild(li); 
-          });
-          // row.categoryCombo.categoryOptionCombos?.forEach((combo: { categoryOptions: { categories: { name: string; }[]; }[]; }) => {
-          //   combo.categoryOptions?.forEach((option: { categories: { name: string; }[]; }) => {
-          //     option.categories?.forEach((category: { name: string; }) => {
-          //       const li = document.createElement('li'); // Create a <li> for each category
-          //       li.textContent = category.name; // Set the category name as the list item's content
-          //       ul.appendChild(li); // Append the <li> to the <ul>
-          //     });
-          //   });
-          // });
-          tdDataElementCategories.appendChild(ul); 
-     
+      const tdDataElementAggregationType = document.createElement('td');
+      tdDataElementAggregationType.textContent = row.aggregationType;
+      tdDataElementAggregationType.style.border = '1px solid #ddd';
+      tdDataElementAggregationType.style.padding = '8px';
+      dataElementTr.appendChild(tdDataElementAggregationType);
 
-        tdDataElementCategories.style.border = '1px solid #ddd';
-        tdDataElementCategories.style.padding = '8px';
-        dataElementTr.appendChild(tdDataElementCategories);
+      const tdDataElementValueType = document.createElement('td');
+      tdDataElementValueType.textContent = row.valueType;
+      tdDataElementValueType.style.border = '1px solid #ddd';
+      tdDataElementValueType.style.padding = '8px';
+      dataElementTr.appendChild(tdDataElementValueType);
 
-        const tdDataElementsDataSets = document.createElement('td');
+      const tdDataElementZeroSignificance = document.createElement('td');
+      tdDataElementZeroSignificance.textContent = row.zeroIsSignificant;
+      tdDataElementZeroSignificance.style.border = '1px solid #ddd';
+      tdDataElementZeroSignificance.style.padding = '8px';
+      dataElementTr.appendChild(tdDataElementZeroSignificance);
 
-       
-          const tdDataElementsDataSetsul = document.createElement('ul'); 
-          row.dataSetElements.forEach((dataSetElement: { dataSet: { name: string; }; }) => {
-            const li = document.createElement('li'); 
-            li.textContent = dataSetElement.dataSet.name; 
-            tdDataElementsDataSetsul.appendChild(li); 
-          });
-          tdDataElementsDataSets.appendChild(tdDataElementsDataSetsul); 
+      const tdDataElementCategories = document.createElement('td');
 
-        tdDataElementsDataSets.style.border = '1px solid #ddd';
-        tdDataElementsDataSets.style.padding = '8px';
-        dataElementTr.appendChild(tdDataElementsDataSets);
+      const ul = document.createElement('ul');
+      row.categoryCombo.categoryOptionCombos?.[0]?.categoryOptions?.[0]?.categories?.forEach(
+        (category: { name: string }) => {
+          const li = document.createElement('li');
+          li.textContent = category.name;
+          ul.appendChild(li);
+        }
+      );
+      // row.categoryCombo.categoryOptionCombos?.forEach((combo: { categoryOptions: { categories: { name: string; }[]; }[]; }) => {
+      //   combo.categoryOptions?.forEach((option: { categories: { name: string; }[]; }) => {
+      //     option.categories?.forEach((category: { name: string; }) => {
+      //       const li = document.createElement('li'); // Create a <li> for each category
+      //       li.textContent = category.name; // Set the category name as the list item's content
+      //       ul.appendChild(li); // Append the <li> to the <ul>
+      //     });
+      //   });
+      // });
+      tdDataElementCategories.appendChild(ul);
 
-        const tdDataElementsgroups = document.createElement('td');
+      tdDataElementCategories.style.border = '1px solid #ddd';
+      tdDataElementCategories.style.padding = '8px';
+      dataElementTr.appendChild(tdDataElementCategories);
 
-          const tdDataElementsgroupsul = document.createElement('ul'); 
-          row.dataElementGroups.forEach((dataSetGroup: { name: string; dataElements:number}) => {
-            const li = document.createElement('li'); 
-            li.textContent = `${dataSetGroup.name}: with other ${(dataSetGroup.dataElements -1).toString()} data elements`;; // Set the name as the content of the <li>
-            tdDataElementsgroupsul.appendChild(li); 
-          });
-          tdDataElementsgroups.appendChild(tdDataElementsgroupsul); 
-  
-        tdDataElementsgroups.style.border = '1px solid #ddd';
-        tdDataElementsgroups.style.padding = '8px';
-        dataElementTr.appendChild(tdDataElementsgroups);
-        dataElementsTable.appendChild(dataElementTr);
-      }
-    );
-    
+      const tdDataElementsDataSets = document.createElement('td');
+
+      const tdDataElementsDataSetsul = document.createElement('ul');
+      row.dataSetElements.forEach(
+        (dataSetElement: { dataSet: { name: string } }) => {
+          const li = document.createElement('li');
+          li.textContent = dataSetElement.dataSet.name;
+          tdDataElementsDataSetsul.appendChild(li);
+        }
+      );
+      tdDataElementsDataSets.appendChild(tdDataElementsDataSetsul);
+
+      tdDataElementsDataSets.style.border = '1px solid #ddd';
+      tdDataElementsDataSets.style.padding = '8px';
+      dataElementTr.appendChild(tdDataElementsDataSets);
+
+      const tdDataElementsgroups = document.createElement('td');
+
+      const tdDataElementsgroupsul = document.createElement('ul');
+      row.dataElementGroups.forEach(
+        (dataSetGroup: { name: string; dataElements: number }) => {
+          const li = document.createElement('li');
+          li.textContent = `${dataSetGroup.name}: with other ${(
+            dataSetGroup.dataElements - 1
+          ).toString()} data elements`; // Set the name as the content of the <li>
+          tdDataElementsgroupsul.appendChild(li);
+        }
+      );
+      tdDataElementsgroups.appendChild(tdDataElementsgroupsul);
+
+      tdDataElementsgroups.style.border = '1px solid #ddd';
+      tdDataElementsgroups.style.padding = '8px';
+      dataElementTr.appendChild(tdDataElementsgroups);
+      dataElementsTable.appendChild(dataElementTr);
+    });
 
     // const tdDataElementsDataSets = document.createElement('td');
 
@@ -579,7 +634,6 @@ export class ProgramIndicatorRenderer implements MetadataRenderer {
     //   }
     // );
 
-
     // const tdDataElementsgroups = document.createElement('td');
 
     //     // Check if `indicators` is an array and has data
@@ -600,9 +654,47 @@ export class ProgramIndicatorRenderer implements MetadataRenderer {
     //     dataElementTr.appendChild(tdDataElementsgroups);
     //   }
     // );
-    
+
     container.appendChild(dataElementsTable);
-    
+
+    const programIndicatorsTitle = document.createElement('h4');
+    programIndicatorsTitle.textContent = 'Program Indicators in indicator';
+    container.appendChild(programIndicatorsTitle);
+
+    const programIndicatorsSubtitle = document.createElement('p');
+    programIndicatorsSubtitle.textContent = 'The following is the summary of the program indicators used in calculations:';
+    container.appendChild(programIndicatorsSubtitle);
+
+    const programIndicatorsTable = document.createElement('table');
+    programIndicatorsTable.style.borderCollapse = 'collapse';
+    programIndicatorsTable.style.width = '100%';
+    programIndicatorsTable.style.margin = '10px 0';
+
+    const programIndicatorsHeaderRow = document.createElement('tr');
+    const programIndicatorsHeaders = [
+      '#',
+      'Name',
+      'Expression part',
+      'Filter',
+      'Aggregation Type',
+      'Analytics Type',
+      'Period Boundaries',
+      'Legends',
+      'Groups',
+    ];
+    programIndicatorsHeaders.forEach((headerText) => {
+      const programIndicatorsTableth = document.createElement('th');
+      programIndicatorsTableth.textContent = headerText;
+      programIndicatorsTableth.style.border = '1px solid #ddd';
+      programIndicatorsTableth.style.padding = '8px';
+      programIndicatorsTableth.style.backgroundColor = '#f4f4f4';
+      programIndicatorsTableth.style.textAlign = 'left';
+      programIndicatorsHeaderRow.appendChild(programIndicatorsTableth);
+    });
+
+    programIndicatorsTable.appendChild(dataElementsHeaderRow);
+    container.appendChild(programIndicatorsTable);
+
 
     const accessibilitySharingSettingsDescription = document.createElement('p');
     accessibilitySharingSettingsDescription.textContent = `This program indicator was first created on ${createdformattedDate} by ${details.createdBy.name} and last updated on ${lastUpdatedFormattedDate} by ${details.lastUpdatedBy.name}`;

@@ -53,18 +53,16 @@ export class MetadataService {
           indicatorData.denominator
         );
 
-
         const dataSetIdSourcesFromNumerator = await axios.get(
           `${apiUrl}dataSets.json?fields=periodType,id,name,timelyDays,formType,created,expiryDays&filter=dataSetElements.dataElement.id:in:[${dataSetIdsFromNumerator}]&paging=false`
         );
-      
+
         const dataSetIdSourcesDenominator = await axios.get(
           `${apiUrl}dataSets.json?fields=periodType,id,name,timelyDays,formType,created,expiryDays&filter=dataSetElements.dataElement.id:in:[${dataSetIdsFromDenominator}]&paging=false`
         );
-       
 
         const dataElementsInIndicator = await axios.get(
-        `${apiUrl}dataElements.json?filter=id:in:[${dataSetIdsFromNumerator},${dataSetIdsFromDenominator}]&paging=false&
+          `${apiUrl}dataElements.json?filter=id:in:[${dataSetIdsFromNumerator},${dataSetIdsFromDenominator}]&paging=false&
         fields=id,name,zeroIsSignificant,aggregationType,domainType,valueType,
         categoryCombo[id,name,categoryOptionCombos[id,name,categoryOptions[id,name,categories[id,name]]]],
         dataSetElements[dataSet[id,name,periodType]],dataElementGroups[id,name,dataElements~size]`
@@ -86,7 +84,7 @@ export class MetadataService {
         // Fetch metadata for program indicators
         const programIndicatorsResponse = await axios.get(
           // `../../../api/programIndicators/${id}?fields=*`
-          `${apiUrl}programIndicators/${id}.json?fields=:all,id,name,shortName,lastUpdated,analyticsPeriodBoundaries,created,userGroupAccesses[*],userAccesses[*],aggregationType,expression,filter,expiryDays,user[id,name,phoneNumber],lastUpdatedBy[id,name,phoneNumber],program[id,name,programIndicators[id,name]]`
+          `${apiUrl}programIndicators/${id}.json?fields=:all,id,name,shortName,lastUpdated,analyticsPeriodBoundaries,created,userGroupAccesses[*],userAccesses[*],aggregationType,expression,filter,expiryDays,user[id,name,phoneNumber],lastUpdatedBy[id,name,phoneNumber],program[id,name,programIndicators[id,name]],programIndicatorGroups[id,name,code,programIndicators[id,name]],legendSet[name,symbolizer,legends~size]`
         );
 
         const programIndicatorData = programIndicatorsResponse.data;
@@ -100,9 +98,9 @@ export class MetadataService {
             },
           }
         );
-      let  filterDescription:any;
+        let filterDescription: any;
         if (programIndicatorData.filter) {
-           filterDescription = await axios.post(
+          filterDescription = await axios.post(
             `${apiUrl}29/programIndicators/filter/description`,
             programIndicatorData.filter,
             {
@@ -113,20 +111,67 @@ export class MetadataService {
           );
         }
 
-        const programIndicatorInNumerator = await axios.get(`${apiUrl}indicators.json?filter=numerator:like:${programIndicatorData .id}&fields=name,numerator,denominator,description,indicatorType[name]`);
-        const programIndicatorDenominator = await axios.get(`${apiUrl}indicators.json?filter=numerator:like:${programIndicatorData .id}&fields=name,numerator,denominator,description,indicatorType[name]`);
+        const programIndicatorInNumerator = await axios.get(
+          `${apiUrl}indicators.json?filter=numerator:like:${programIndicatorData.id}&fields=name,numerator,denominator,description,indicatorType[name]`
+        );
+        console.log('program in num', programIndicatorInNumerator);
+        const programIndicatorInDenominator = await axios.get(
+          `${apiUrl}indicators.json?filter=denominator:like:${programIndicatorData.id}&fields=name,numerator,denominator,description,indicatorType[name]`
+        );
+
+        // const numeratorExpressionDescription = await axios.post(
+        //   `${apiUrl}29/indicators/expression/description`,
+        //   programIndicatorData.expression,
+        //   {
+        //     headers: {
+        //       'Content-Type': 'text/plain',
+        //     },
+        //   }
+        // );
+
+        // const denominatorExpressionDescription = await axios.post(
+        //   `${apiUrl}29/indicators/expression/description`,
+        //   programIndicatorData.expression,
+        //   {
+        //     headers: {
+        //       'Content-Type': 'text/plain',
+        //     },
+        //   }
+        // );
+
+        const programIndicatorFilter =
+          programIndicatorData.filter !== undefined
+            ? programIndicatorData.filter
+            : '';
+        const dataElementsFromFilter = this.extractDataElements(
+          programIndicatorFilter
+        );
+        const dataElementsFromExpression = this.extractDataElements(
+          programIndicatorData.expression
+        );
+        const dataElementsIds = [
+          // "LIn6LQ8jN39", "Skar5x9Wrcy", "iceY1WOYHah"
+          ...dataElementsFromExpression,
+          ...dataElementsFromFilter,
+        ];
+        console.log('data element ids', dataElementsIds);
+
         const dataElementsInPogramIndicator = await axios.get(
-          `${apiUrl}dataElements.json?filter=id:in:[${expressionDescription},${filterDescription}]&paging=false&
-          fields=id,name,zeroIsSignificant,aggregationType,domainType,valueType,
-          categoryCombo[id,name,categoryOptionCombos[id,name,categoryOptions[id,name,categories[id,name]]]],
-          dataSetElements[dataSet[id,name,periodType]],dataElementGroups[id,name,dataElements~size]`
-          );
-  
+          `${apiUrl}dataElements.json?filter=id:in:[${dataElementsIds}]&paging=false&fields=id,name,zeroIsSignificant,aggregationType,domainType,valueType,categoryCombo[id,name,categoryOptionCombos[id,name,categoryOptions[id,name,categories[id,name]]]],dataSetElements[dataSet[id,name,periodType]],dataElementGroups[id,name,dataElements~size]`
+        );
+        //console.log('data elements from program',this.extractDataElements("(#{mlDzRw3ibhE.uochSI2xLGI} =='B53 -  Malaria, parasitologically conﬁrmed' || #{mlDzRw3ibhE.uochSI2xLGI} =='B54 -  Other and unspeciﬁed malaria') && (#{mlDzRw3ibhE.A0q2I8nTWcV} !='B53 -  Malaria, parasitologically conﬁrmed' && #{mlDzRw3ibhE.A0q2I8nTWcV} !='B54 -  Other and unspeciﬁed malaria') "))
         return {
           ...programIndicatorData,
           programIndicatorExpression: expressionDescription.data.description,
-          filterDescription: programIndicatorData.filter? filterDescription.data.description: '',
-          dataElementsInPogramIndicator: dataElementsInPogramIndicator,
+          filterDescription: programIndicatorData.filter
+            ? filterDescription.data.description
+            : '',
+          dataElementsInPogramIndicator:
+            dataElementsInPogramIndicator.data.dataElements,
+          indicatorsWithProgramIndicators: [
+            ...programIndicatorInNumerator.data.indicators,
+            ...programIndicatorInDenominator.data.indicators,
+          ],
         };
       } else {
         throw new Error(`Unsupported type in href: ${href}`);
@@ -143,11 +188,18 @@ export class MetadataService {
     // Map to extract the first capture group (data element IDs)
     return matches.map((match) => match[1]);
   }
+
+  // Regular expression to match and extract the data element IDs
+  regex = /#{[A-Za-z0-9]{11}\.([A-Za-z0-9]{11})}/g;
+
+  // Function to extract data elements from a string
+  extractDataElements(input: string): string[] {
+    const matches = [...input.matchAll(this.regex)];
+    return matches.map((match) => match[1]);
+  }
 }
 
-
 // http://41.59.227.69/tland-upgrade/api/dataElements.json?filter=id:in:[zUVxutsJ6eR,B9q04d4HYUi,ATqlMZypG0h]&paging=false&fields=id,name,zeroIsSignificant,aggregationType,domainType,valueType,categoryCombo[id,name,categoryOptionCombos[id,name,categoryOptions[id,name,categories[id,name]]]],dataSetElements[dataSet[id,name,periodType]],dataElementGroups[id,name,dataElements~size]
-
 
 // import axios from 'axios';
 
