@@ -473,82 +473,214 @@ export class IndicatorRenderer implements MetadataRenderer {
     programIndicatorsTable.appendChild(programIndicatorsHeaderRow);
 
     const programIndicatorRows = details.programIndicatorsInIndicator;
-    
-    programIndicatorRows.forEach((row: { name: string; expression: string; filter: string; aggregationType: string; analyticsType: string; analyticsPeriodBoundaries: { analyticsPeriodBoundaryType: string; }[]; programIndicatorGroups: { name: string; }[]; }, index: number ) => {
-      const programIndicatorTr = document.createElement('tr');
-      const tdprogramIndicatorIndex = document.createElement('td');
-      tdprogramIndicatorIndex.textContent = (index + 1).toString();
-      tdprogramIndicatorIndex.style.border = '1px solid #ddd';
-      tdprogramIndicatorIndex.style.padding = '8px';
-      programIndicatorTr.appendChild(tdprogramIndicatorIndex);
 
-      const tdprogramIndicatorName = document.createElement('td');
-      tdprogramIndicatorName.textContent = row.name;
-      tdprogramIndicatorName.style.border = '1px solid #ddd';
-      tdprogramIndicatorName.style.padding = '8px';
-      programIndicatorTr.appendChild(tdprogramIndicatorName);
+    programIndicatorRows.forEach(
+      (
+        row: {
+          name: string;
+          expression: string;
+          filter: string;
+          aggregationType: string;
+          analyticsType: string;
+          analyticsPeriodBoundaries: { analyticsPeriodBoundaryType: string }[];
+          programIndicatorGroups: { name: string }[];
+        },
+        index: number
+      ) => {
+        const programIndicatorTr = document.createElement('tr');
+        const tdprogramIndicatorIndex = document.createElement('td');
+        tdprogramIndicatorIndex.textContent = (index + 1).toString();
+        tdprogramIndicatorIndex.style.border = '1px solid #ddd';
+        tdprogramIndicatorIndex.style.padding = '8px';
+        programIndicatorTr.appendChild(tdprogramIndicatorIndex);
 
-      const tdprogramIndicatorExpression = document.createElement('td');
-      tdprogramIndicatorExpression.textContent = row.expression;
-      tdprogramIndicatorExpression.style.border = '1px solid #ddd';
-      tdprogramIndicatorExpression.style.padding = '8px';
-      programIndicatorTr.appendChild(tdprogramIndicatorExpression);
+        const tdprogramIndicatorName = document.createElement('td');
+        tdprogramIndicatorName.textContent = row.name;
+        tdprogramIndicatorName.style.border = '1px solid #ddd';
+        tdprogramIndicatorName.style.padding = '8px';
+        programIndicatorTr.appendChild(tdprogramIndicatorName);
 
-      const tdprogramIndicatorFilter = document.createElement('td');
-      tdprogramIndicatorFilter.textContent = row.filter;
-      tdprogramIndicatorFilter.style.border = '1px solid #ddd';
-      tdprogramIndicatorFilter.style.padding = '8px';
-      programIndicatorTr.appendChild(tdprogramIndicatorFilter);
+        const tdprogramIndicatorExpression = document.createElement('td');
+        tdprogramIndicatorExpression.textContent = row.expression;
+        tdprogramIndicatorExpression.style.border = '1px solid #ddd';
+        tdprogramIndicatorExpression.style.padding = '8px';
+        programIndicatorTr.appendChild(tdprogramIndicatorExpression);
 
-      const tdprogramIndicatorAggregation = document.createElement('td');
-      tdprogramIndicatorAggregation.textContent = row.aggregationType;
-      tdprogramIndicatorAggregation.style.border = '1px solid #ddd';
-      tdprogramIndicatorAggregation.style.padding = '8px';
-      programIndicatorTr.appendChild(tdprogramIndicatorAggregation);
+        const tdprogramIndicatorFilter = document.createElement('td');
+        tdprogramIndicatorFilter.textContent = row.filter;
+        tdprogramIndicatorFilter.style.border = '1px solid #ddd';
+        tdprogramIndicatorFilter.style.padding = '8px';
+        programIndicatorTr.appendChild(tdprogramIndicatorFilter);
 
-      const tdprogramIndicatorAnalytics = document.createElement('td');
-      tdprogramIndicatorAnalytics.textContent = row.analyticsType;
-      tdprogramIndicatorAnalytics.style.border = '1px solid #ddd';
-      tdprogramIndicatorAnalytics.style.padding = '8px';
-      programIndicatorTr.appendChild(tdprogramIndicatorAnalytics);
+        const tdprogramIndicatorAggregation = document.createElement('td');
+        tdprogramIndicatorAggregation.textContent = row.aggregationType;
+        tdprogramIndicatorAggregation.style.border = '1px solid #ddd';
+        tdprogramIndicatorAggregation.style.padding = '8px';
+        programIndicatorTr.appendChild(tdprogramIndicatorAggregation);
 
-      const tdProgramIndicatorPeriod = document.createElement('td');
+        const tdprogramIndicatorAnalytics = document.createElement('td');
+        tdprogramIndicatorAnalytics.textContent = row.analyticsType;
+        tdprogramIndicatorAnalytics.style.border = '1px solid #ddd';
+        tdprogramIndicatorAnalytics.style.padding = '8px';
+        programIndicatorTr.appendChild(tdprogramIndicatorAnalytics);
 
-      const tdProgramIndicatorPeriodul = document.createElement('ul');
-      console.log('analytic periods', row.filter);
-      row.analyticsPeriodBoundaries.forEach((analyticsPeriodBoundary: { analyticsPeriodBoundaryType: string; }) => {
-        const li = document.createElement('li');
-        li.textContent = analyticsPeriodBoundary.analyticsPeriodBoundaryType;
-        tdProgramIndicatorPeriodul.appendChild(li);
-      });
-      tdProgramIndicatorPeriod.appendChild(tdProgramIndicatorPeriodul);
+        const tdProgramIndicatorPeriod = document.createElement('td');
 
-      tdProgramIndicatorPeriod.style.border = '1px solid #ddd';
-      tdProgramIndicatorPeriod.style.padding = '8px';
-      programIndicatorTr.appendChild(tdProgramIndicatorPeriod);
-     
-      // TODO: follow up on what to put on legends
-      const tdProgramIndicatorLegends = document.createElement('td');
-      tdProgramIndicatorLegends.textContent = 'none';
-      tdProgramIndicatorLegends.style.border = '1px solid #ddd';
-      tdProgramIndicatorLegends.style.padding = '8px';
-      programIndicatorTr.appendChild(tdProgramIndicatorLegends);
+        const tdProgramIndicatorPeriodul = document.createElement('ul');
+        console.log('analytic periods', row.filter);
+        row.analyticsPeriodBoundaries.forEach(
+          (analyticsPeriodBoundary: {
+            analyticsPeriodBoundaryType: string;
+          }) => {
+            const li = document.createElement('li');
+            li.textContent =
+              analyticsPeriodBoundary.analyticsPeriodBoundaryType;
+            tdProgramIndicatorPeriodul.appendChild(li);
+          }
+        );
+        tdProgramIndicatorPeriod.appendChild(tdProgramIndicatorPeriodul);
 
-      const tdProgramIndicatorGroups = document.createElement('td');
-      const tdProgramIndicatorGroupsUl = document.createElement('ul');
-      row.programIndicatorGroups.forEach((group: { name: string; }) => {
-        const li = document.createElement('li');
-        li.textContent = group.name;
-        tdProgramIndicatorGroupsUl.appendChild(li);
-      });
-      tdProgramIndicatorGroups.appendChild(tdProgramIndicatorGroupsUl);
-      tdProgramIndicatorGroups.style.border = '1px solid #ddd';
-      tdProgramIndicatorGroups.style.padding = '8px';
-      programIndicatorTr.appendChild(tdProgramIndicatorGroups);
-      programIndicatorsTable.appendChild(programIndicatorTr);
-    });
+        tdProgramIndicatorPeriod.style.border = '1px solid #ddd';
+        tdProgramIndicatorPeriod.style.padding = '8px';
+        programIndicatorTr.appendChild(tdProgramIndicatorPeriod);
+
+        // TODO: follow up on what to put on legends
+        const tdProgramIndicatorLegends = document.createElement('td');
+        tdProgramIndicatorLegends.textContent = 'none';
+        tdProgramIndicatorLegends.style.border = '1px solid #ddd';
+        tdProgramIndicatorLegends.style.padding = '8px';
+        programIndicatorTr.appendChild(tdProgramIndicatorLegends);
+
+        const tdProgramIndicatorGroups = document.createElement('td');
+        const tdProgramIndicatorGroupsUl = document.createElement('ul');
+        row.programIndicatorGroups.forEach((group: { name: string }) => {
+          const li = document.createElement('li');
+          li.textContent = group.name;
+          tdProgramIndicatorGroupsUl.appendChild(li);
+        });
+        tdProgramIndicatorGroups.appendChild(tdProgramIndicatorGroupsUl);
+        tdProgramIndicatorGroups.style.border = '1px solid #ddd';
+        tdProgramIndicatorGroups.style.padding = '8px';
+        programIndicatorTr.appendChild(tdProgramIndicatorGroups);
+        programIndicatorsTable.appendChild(programIndicatorTr);
+      }
+    );
     container.appendChild(programIndicatorsTable);
-    
+
+    // datasets/reporting rates section
+    const dataSetsTitle = document.createElement('h4');
+    dataSetsTitle.textContent = 'Datasets (Reporting rates) in indicator';
+    container.appendChild(dataSetsTitle);
+
+    const dataSetsSubTitle = document.createElement('p');
+    dataSetsSubTitle.textContent =
+      'The following is the summary of the datasets (reporting rates) used in calculations:';
+    container.appendChild(dataSetsSubTitle);
+
+    const dataSetsTable = document.createElement('table');
+    dataSetsTable.style.borderCollapse = 'collapse';
+    dataSetsTable.style.width = '100%';
+    dataSetsTable.style.margin = '10px 0';
+
+    const dataSetsTableHeaderRow = document.createElement('tr');
+    const dataSetsTableHeaders = [
+      '#',
+      'Name',
+      'Description',
+      'Timely Submission',
+      'Expiry days',
+      'Period type',
+      'Assigned orgunits',
+      'Data elements',
+      'Legends',
+    ];
+
+    dataSetsTableHeaders.forEach((headerText) => {
+      const dataSetsTableHeaderTh = document.createElement('th');
+      dataSetsTableHeaderTh.textContent = headerText;
+      dataSetsTableHeaderTh.style.border = '1px solid #ddd';
+      dataSetsTableHeaderTh.style.padding = '8px';
+      dataSetsTableHeaderTh.style.backgroundColor = '#f4f4f4';
+      dataSetsTableHeaderTh.style.textAlign = 'left';
+      dataSetsTableHeaderRow.appendChild(dataSetsTableHeaderTh);
+    });
+
+    dataSetsTable.appendChild(dataSetsTableHeaderRow);
+
+    const dataSetsTableRows = details.dataSetsInIndicator;
+    console.log('datasets', dataSetsTableRows );
+
+    dataSetsTableRows.forEach((row: { name: string; description: string; timelyDays: string; expiryDays: string; periodType: string; organisationUnits: { name: string; }[]; dataSetElements: { dataElement: { name: string; }; }[]; }, index: number) => {
+      const dataSetsTr = document.createElement('tr');
+      const tddataSetsIndex = document.createElement('td');
+      tddataSetsIndex.textContent = (index + 1).toString();
+      tddataSetsIndex.style.border = '1px solid #ddd';
+      tddataSetsIndex.style.padding = '8px';
+      dataSetsTr.appendChild(tddataSetsIndex);
+
+      const tdDataSetName = document.createElement('td');
+      tdDataSetName.textContent = row.name;
+      tdDataSetName.style.border = '1px solid #ddd';
+      tdDataSetName.style.padding = '8px';
+      dataSetsTr.appendChild(tdDataSetName);
+
+      const tdDataSetDescription = document.createElement('td');
+      tdDataSetDescription.textContent = row.description;
+      tdDataSetDescription.style.border = '1px solid #ddd';
+      tdDataSetDescription.style.padding = '8px';
+      dataSetsTr.appendChild(tdDataSetDescription);
+
+      const tdDataSetTimelySubmission = document.createElement('td');
+      tdDataSetTimelySubmission.textContent = row.timelyDays;
+      tdDataSetTimelySubmission.style.border = '1px solid #ddd';
+      tdDataSetTimelySubmission.style.padding = '8px';
+      dataSetsTr.appendChild(tdDataSetTimelySubmission);
+
+      const tdDataSetExpiryDays = document.createElement('td');
+      tdDataSetExpiryDays.textContent = row.expiryDays;
+      tdDataSetExpiryDays.style.border = '1px solid #ddd';
+      tdDataSetExpiryDays.style.padding = '8px';
+      dataSetsTr.appendChild(tdDataSetExpiryDays);
+
+      const tdDataSetPeriodType = document.createElement('td');
+      tdDataSetPeriodType.textContent = row.periodType;
+      tdDataSetPeriodType.style.border = '1px solid #ddd';
+      tdDataSetPeriodType.style.padding = '8px';
+      dataSetsTr.appendChild(tdDataSetPeriodType);
+
+      const tdDataSetOrgUnits = document.createElement('td');
+      const tdDataSetOrgUnitsUl = document.createElement('ul');
+      row.organisationUnits.forEach((orgUnit: { name: string }) => {
+        const li = document.createElement('li');
+        li.textContent = orgUnit.name;
+        tdDataSetOrgUnitsUl.appendChild(li);
+      });
+      tdDataSetOrgUnits.appendChild(tdDataSetOrgUnitsUl);
+      tdDataSetOrgUnits.style.border = '1px solid #ddd';
+      tdDataSetOrgUnits.style.padding = '8px';
+      dataSetsTr.appendChild(tdDataSetOrgUnits);
+
+      const tdDataSetDataElements = document.createElement('td');
+      const tdDataSetDataElementsUl = document.createElement('ul');
+      row.dataSetElements.forEach((dataSetElement: { dataElement: { name: string; }; }) => {
+       const li = document.createElement('li');
+       li.textContent = dataSetElement.dataElement.name;
+       tdDataSetDataElementsUl.appendChild(li);
+      });
+      tdDataSetDataElements.appendChild(tdDataSetDataElementsUl);
+      tdDataSetDataElements.style.border = '1px solid #ddd';
+      tdDataSetDataElements.style.padding = '8px';
+      dataSetsTr.appendChild(tdDataSetDataElements);
+
+      const tdDataSetExpiryLegends = document.createElement('td');
+      tdDataSetExpiryLegends.textContent = 'none';
+      tdDataSetExpiryLegends.style.border = '1px solid #ddd';
+      tdDataSetExpiryLegends.style.padding = '8px';
+      dataSetsTr.appendChild(tdDataSetExpiryLegends);
+      dataSetsTable.appendChild(dataSetsTr);
+    });
+
+    container.appendChild(dataSetsTable);
 
     const accessibilitySharingSettingsTitle = document.createElement('h4');
     accessibilitySharingSettingsTitle.textContent =

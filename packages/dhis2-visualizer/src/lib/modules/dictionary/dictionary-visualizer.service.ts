@@ -18,7 +18,7 @@ export class MetadataService {
       if (href.includes('indicators')) {
         const indicatorsResponse = await axios.get(
           // `../../../api/indicators/${id}?fields=*,indicatorType[name]`
-          `${apiUrl}indicators/${id}.json?fields=:all,user[name,email,phoneNumber],displayName,lastUpdatedBy[id,name,phoneNumber,email],id,name,numeratorDescription,denominatorDescription,denominator,numerator,annualized,decimals,indicatorType[name],user[name],userGroupAccesses[*],userAccesses[*],attributeValues[value,attribute[name]],indicatorGroups[id,name,code,indicators[id,name]],legendSet[name,symbolizer,legends~size],dataSets[name]`
+          `${apiUrl}indicators/${id}.json?fields=:all,user[name,email,phoneNumber],displayName,lastUpdatedBy[id,name,phoneNumber,email],id,name,numeratorDescription,denominatorDescription,denominator,numerator,annualized,decimals,indicatorType[name],user[name],userGroupAccesses[*],userAccesses[*],attributeValues[value,attribute[name]],indicatorGroups[id,name,code,indicators[id,name]],legendSet[name,symbolizer,legends~size]]`
         );
 
         const indicatorData = indicatorsResponse.data;
@@ -64,8 +64,8 @@ export class MetadataService {
         );
 
         console.log('prg',this.extractProgramIndicators("I{DrrU5I4BAnX}fjndcjnsdjdjddsnnI{PrrU5I4BAnX}"));
-        const progIndicatorInNumerator = this.extractProgramIndicators("I{DrrU5I4BAnX}fjndcjnsdjdjddsnnI");
-        const progIndicatorInDenominator = this.extractProgramIndicators("I{KObo3uMOENz}fjndcjnsdjdjddsnnI{SfjkipcnJhI}");
+        const progIndicatorInNumerator = this.extractProgramIndicators(indicatorData.numerator);
+        const progIndicatorInDenominator = this.extractProgramIndicators(indicatorData.denominator);
         const programIndicators = [...progIndicatorInDenominator, ...progIndicatorInNumerator];
 
         const programIndicatorsInIndicator = await axios.get(
@@ -79,9 +79,18 @@ export class MetadataService {
         dataSetElements[dataSet[id,name,periodType]],dataElementGroups[id,name,dataElements~size]`
         );
 
+        const dataSetIds = [...indicatorData.dataSets.map((dataSet: { id: any; }) => dataSet.id)];
+        console.log('data set ids', dataSetIds);
+
+        const dataSetsInIndicator = await axios.get(
+          `${apiUrl}dataSets.json?filter=id:in:[${dataSetIds}]&fields=*,organisationUnits[id,name],dataSetElements[dataElement[id,name]`
+        );
+
+        //,dataSets[*,organisationUnits[id,name],dataSetElements[dataElement[id,name]]
+
         const dataElements = dataElementsInIndicator.data.dataElements;
        
-        console.log(indicatorData.denominator);
+        console.log('dataset',indicatorData.dataSets);
         // Add the fetched descriptions to the indicator data
         return {
           ...indicatorData,
@@ -91,6 +100,7 @@ export class MetadataService {
           dataElementsFromNumerator: dataSetIdsFromNumerator,
           dataElementsFromDenominator: dataSetIdsFromDenominator,
           programIndicatorsInIndicator: programIndicatorsInIndicator.data.programIndicators,
+          dataSetsInIndicator: dataSetsInIndicator.data.dataSets,
         };
       } else if (href.includes('programIndicators')) {
         // Fetch metadata for program indicators
