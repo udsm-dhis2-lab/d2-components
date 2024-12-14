@@ -657,45 +657,6 @@ export class ProgramIndicatorRenderer implements MetadataRenderer {
 
     container.appendChild(dataElementsTable);
 
-    const programIndicatorsTitle = document.createElement('h4');
-    programIndicatorsTitle.textContent = 'Program Indicators in indicator';
-    container.appendChild(programIndicatorsTitle);
-
-    const programIndicatorsSubtitle = document.createElement('p');
-    programIndicatorsSubtitle.textContent = 'The following is the summary of the program indicators used in calculations:';
-    container.appendChild(programIndicatorsSubtitle);
-
-    const programIndicatorsTable = document.createElement('table');
-    programIndicatorsTable.style.borderCollapse = 'collapse';
-    programIndicatorsTable.style.width = '100%';
-    programIndicatorsTable.style.margin = '10px 0';
-
-    const programIndicatorsHeaderRow = document.createElement('tr');
-    const programIndicatorsHeaders = [
-      '#',
-      'Name',
-      'Expression part',
-      'Filter',
-      'Aggregation Type',
-      'Analytics Type',
-      'Period Boundaries',
-      'Legends',
-      'Groups',
-    ];
-    programIndicatorsHeaders.forEach((headerText) => {
-      const programIndicatorsTableth = document.createElement('th');
-      programIndicatorsTableth.textContent = headerText;
-      programIndicatorsTableth.style.border = '1px solid #ddd';
-      programIndicatorsTableth.style.padding = '8px';
-      programIndicatorsTableth.style.backgroundColor = '#f4f4f4';
-      programIndicatorsTableth.style.textAlign = 'left';
-      programIndicatorsHeaderRow.appendChild(programIndicatorsTableth);
-    });
-
-    programIndicatorsTable.appendChild(dataElementsHeaderRow);
-    container.appendChild(programIndicatorsTable);
-
-
     const accessibilitySharingSettingsDescription = document.createElement('p');
     accessibilitySharingSettingsDescription.textContent = `This program indicator was first created on ${createdformattedDate} by ${details.createdBy.name} and last updated on ${lastUpdatedFormattedDate} by ${details.lastUpdatedBy.name}`;
     container.appendChild(accessibilitySharingSettingsDescription);

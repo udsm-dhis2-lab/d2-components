@@ -53,6 +53,8 @@ export class MetadataService {
           indicatorData.denominator
         );
 
+        const dataElementsFromIndicator = [...dataSetIdsFromNumerator, ...dataSetIdsFromDenominator];
+
         const dataSetIdSourcesFromNumerator = await axios.get(
           `${apiUrl}dataSets.json?fields=periodType,id,name,timelyDays,formType,created,expiryDays&filter=dataSetElements.dataElement.id:in:[${dataSetIdsFromNumerator}]&paging=false`
         );
@@ -61,15 +63,24 @@ export class MetadataService {
           `${apiUrl}dataSets.json?fields=periodType,id,name,timelyDays,formType,created,expiryDays&filter=dataSetElements.dataElement.id:in:[${dataSetIdsFromDenominator}]&paging=false`
         );
 
+        console.log('prg',this.extractProgramIndicators("I{DrrU5I4BAnX}fjndcjnsdjdjddsnnI{PrrU5I4BAnX}"));
+        const progIndicatorInNumerator = this.extractProgramIndicators("I{DrrU5I4BAnX}fjndcjnsdjdjddsnnI");
+        const progIndicatorInDenominator = this.extractProgramIndicators("I{KObo3uMOENz}fjndcjnsdjdjddsnnI{SfjkipcnJhI}");
+        const programIndicators = [...progIndicatorInDenominator, ...progIndicatorInNumerator];
+
+        const programIndicatorsInIndicator = await axios.get(
+          `${apiUrl}programIndicators.json?filter=id:in:[${programIndicators}]&fields=*,programIndicatorGroups[id,name]`
+        );
+
         const dataElementsInIndicator = await axios.get(
-          `${apiUrl}dataElements.json?filter=id:in:[${dataSetIdsFromNumerator},${dataSetIdsFromDenominator}]&paging=false&
+          `${apiUrl}dataElements.json?filter=id:in:[${dataElementsFromIndicator}]&paging=false&
         fields=id,name,zeroIsSignificant,aggregationType,domainType,valueType,
         categoryCombo[id,name,categoryOptionCombos[id,name,categoryOptions[id,name,categories[id,name]]]],
         dataSetElements[dataSet[id,name,periodType]],dataElementGroups[id,name,dataElements~size]`
         );
 
         const dataElements = dataElementsInIndicator.data.dataElements;
-
+       
         console.log(indicatorData.denominator);
         // Add the fetched descriptions to the indicator data
         return {
@@ -79,6 +90,7 @@ export class MetadataService {
           dataElementsList: dataElements,
           dataElementsFromNumerator: dataSetIdsFromNumerator,
           dataElementsFromDenominator: dataSetIdsFromDenominator,
+          programIndicatorsInIndicator: programIndicatorsInIndicator.data.programIndicators,
         };
       } else if (href.includes('programIndicators')) {
         // Fetch metadata for program indicators
@@ -197,6 +209,16 @@ export class MetadataService {
     const matches = [...input.matchAll(this.regex)];
     return matches.map((match) => match[1]);
   }
+
+   // Regular expression to match and extract the data element IDs
+   regexProgram = /I\{([A-Za-z0-9]{11})\}/g;
+
+
+   // Function to extract data elements from a string
+   extractProgramIndicators(input: string): string[] {
+     const matches = [...input.matchAll(this.regexProgram)];
+     return matches.map((match) => match[1]);
+   }
 }
 
 // http://41.59.227.69/tland-upgrade/api/dataElements.json?filter=id:in:[zUVxutsJ6eR,B9q04d4HYUi,ATqlMZypG0h]&paging=false&fields=id,name,zeroIsSignificant,aggregationType,domainType,valueType,categoryCombo[id,name,categoryOptionCombos[id,name,categoryOptions[id,name,categories[id,name]]]],dataSetElements[dataSet[id,name,periodType]],dataElementGroups[id,name,dataElements~size]
