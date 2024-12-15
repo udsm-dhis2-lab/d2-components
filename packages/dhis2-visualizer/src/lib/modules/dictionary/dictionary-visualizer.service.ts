@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 
 export class MetadataService {
@@ -106,7 +107,7 @@ export class MetadataService {
         // Fetch metadata for program indicators
         const programIndicatorsResponse = await axios.get(
           // `../../../api/programIndicators/${id}?fields=*`
-          `${apiUrl}programIndicators/${id}.json?fields=:all,id,name,shortName,lastUpdated,analyticsPeriodBoundaries,created,userGroupAccesses[*],userAccesses[*],aggregationType,expression,filter,expiryDays,user[id,name,phoneNumber],lastUpdatedBy[id,name,phoneNumber],program[id,name,programIndicators[id,name]],programIndicatorGroups[id,name,code,programIndicators[id,name]],legendSet[name,symbolizer,legends~size]`
+          `${apiUrl}programIndicators/${id}.json?fields=:all,id,name,shortName,lastUpdated,analyticsPeriodBoundaries,created,userGroupAccesses[*],userAccesses[*],aggregationType,expression,filter,expiryDays,user[id,name,phoneNumber],lastUpdatedBy[id,name,phoneNumber],createdBy[id,name],programIndicatorGroups[id,name,code,programIndicators[id,name]],legendSet[name,symbolizer,legends~size]`
         );
 
         const programIndicatorData = programIndicatorsResponse.data;
@@ -243,46 +244,45 @@ export class MetadataService {
 //    */
 //   async fetchMetadataById(id: string): Promise<any> {
 //     const apiUrl = '../../../api/';
-//     try {
-//       const identifiableResponse = await axios.get(
-//         `${apiUrl}identifiableObjects/${id}`
-//       );
 
+//     try {
+//       // Fetch initial indicator metadata
+//       const identifiableResponse = await axios.get(`${apiUrl}identifiableObjects/${id}`);
 //       const href: string = identifiableResponse.data?.href || '';
 
 //       if (href.includes('indicators')) {
 //         const indicatorsResponse = await axios.get(
-//           `${apiUrl}indicators/${id}.json?fields=:all,user[name,email,phoneNumber],displayName,lastUpdatedBy[id,name,phoneNumber,email],id,name,numeratorDescription,denominatorDescription,denominator,numerator,annualized,decimals,indicatorType[name],user[name],userGroupAccesses[*],userAccesses[*],attributeValues[value,attribute[name]],indicatorGroups[id,name,code,indicators[id,name]],legendSet[name,symbolizer,legends~size],dataSets[name]`
+//           `${apiUrl}indicators/${id}.json?fields=:all,user[name,email,phoneNumber],displayName,lastUpdatedBy[id,name,phoneNumber,email],id,name,numeratorDescription,denominatorDescription,denominator,numerator,annualized,decimals,indicatorType[name],user[name],userGroupAccesses[*],userAccesses[*],attributeValues[value,attribute[name]],indicatorGroups[id,name,code,indicators[id,name]],legendSet[name,symbolizer,legends~size]]`
 //         );
 
 //         const indicatorData = indicatorsResponse.data;
 
-//         const dataSetIdsFromNumerator = this.extractAllDataElementIds(
-//           indicatorData.numerator
-//         );
+//         // Extract numerator and denominator data elements
+//         const dataSetIdsFromNumerator = this.extractAllDataElementIds(indicatorData.numerator);
+//         const dataSetIdsFromDenominator = this.extractAllDataElementIds(indicatorData.denominator);
+//         const dataElementsFromIndicator = [...dataSetIdsFromNumerator, ...dataSetIdsFromDenominator];
 
-//         const dataSetIdsFromDenominator = this.extractAllDataElementIds(
-//           indicatorData.denominator
-//         );
+//         // Extract program indicators
+//         const progIndicatorInNumerator = this.extractProgramIndicators(indicatorData.numerator);
+//         const progIndicatorInDenominator = this.extractProgramIndicators(indicatorData.denominator);
+//         const programIndicators = [...progIndicatorInDenominator, ...progIndicatorInNumerator];
 
-//         // Use Promise.all to fetch data concurrently
+//         // Parallelize all required calls
 //         const [
 //           numeratorDescriptionResponse,
 //           denominatorDescriptionResponse,
-//           dataSetIdSourcesFromNumeratorResponse,
+//           dataSetIdSourcesNumeratorResponse,
 //           dataSetIdSourcesDenominatorResponse,
-//           dataElementsInIndicatorResponse
+//           programIndicatorsInIndicatorResponse,
+//           dataElementsInIndicatorResponse,
+//           dataSetsInIndicatorResponse,
 //         ] = await Promise.all([
-//           axios.post(
-//             `${apiUrl}29/indicators/expression/description`,
-//             indicatorData.numerator,
-//             { headers: { 'Content-Type': 'text/plain' } }
-//           ),
-//           axios.post(
-//             `${apiUrl}29/indicators/expression/description`,
-//             indicatorData.denominator,
-//             { headers: { 'Content-Type': 'text/plain' } }
-//           ),
+//           axios.post(`${apiUrl}29/indicators/expression/description`, indicatorData.numerator, {
+//             headers: { 'Content-Type': 'text/plain' },
+//           }),
+//           axios.post(`${apiUrl}29/indicators/expression/description`, indicatorData.denominator, {
+//             headers: { 'Content-Type': 'text/plain' },
+//           }),
 //           axios.get(
 //             `${apiUrl}dataSets.json?fields=periodType,id,name,timelyDays,formType,created,expiryDays&filter=dataSetElements.dataElement.id:in:[${dataSetIdsFromNumerator}]&paging=false`
 //           ),
@@ -290,18 +290,26 @@ export class MetadataService {
 //             `${apiUrl}dataSets.json?fields=periodType,id,name,timelyDays,formType,created,expiryDays&filter=dataSetElements.dataElement.id:in:[${dataSetIdsFromDenominator}]&paging=false`
 //           ),
 //           axios.get(
-//             `${apiUrl}dataElements.json?filter=id:in:[${dataSetIdsFromNumerator},${dataSetIdsFromDenominator}]&paging=false&fields=id,name,zeroIsSignificant,aggregationType,domainType,valueType,categoryCombo[id,name,categoryOptionCombos[id,name,categoryOptions[id,name,categories[id,name]]]],dataSetElements[dataSet[id,name,periodType]],dataElementGroups[id,name,dataElements~size]`
+//             `${apiUrl}programIndicators.json?filter=id:in:[${programIndicators}]&fields=*,programIndicatorGroups[id,name]`
+//           ),
+//           axios.get(
+//             `${apiUrl}dataElements.json?filter=id:in:[${dataElementsFromIndicator}]&paging=false&fields=id,name,zeroIsSignificant,aggregationType,domainType,valueType,categoryCombo[id,name,categoryOptionCombos[id,name,categoryOptions[id,name,categories[id,name]]]],dataSetElements[dataSet[id,name,periodType]],dataElementGroups[id,name,dataElements~size]`
+//           ),
+//           axios.get(
+//             `${apiUrl}dataSets.json?filter=id:in:[${indicatorData.dataSets.map((ds: { id: any }) => ds.id)}]&fields=*,organisationUnits[id,name],dataSetElements[dataElement[id,name]]`
 //           ),
 //         ]);
 
-//         // Extract data from responses
+//         // Extract necessary data from responses
 //         const numeratorDescription = numeratorDescriptionResponse.data.description;
 //         const denominatorDescription = denominatorDescriptionResponse.data.description;
-//         const dataSetIdSourcesFromNumerator = dataSetIdSourcesFromNumeratorResponse.data;
-//         const dataSetIdSourcesDenominator = dataSetIdSourcesDenominatorResponse.data;
+//         const dataSetIdSourcesNumerator = dataSetIdSourcesNumeratorResponse.data.dataSets;
+//         const dataSetIdSourcesDenominator = dataSetIdSourcesDenominatorResponse.data.dataSets;
+//         const programIndicatorsInIndicator = programIndicatorsInIndicatorResponse.data.programIndicators;
 //         const dataElements = dataElementsInIndicatorResponse.data.dataElements;
+//         const dataSetsInIndicator = dataSetsInIndicatorResponse.data.dataSets;
 
-//         // Add the fetched descriptions to the indicator data
+//         // Return the aggregated result
 //         return {
 //           ...indicatorData,
 //           numeratorExpressionMeaning: numeratorDescription,
@@ -309,61 +317,8 @@ export class MetadataService {
 //           dataElementsList: dataElements,
 //           dataElementsFromNumerator: dataSetIdsFromNumerator,
 //           dataElementsFromDenominator: dataSetIdsFromDenominator,
+//           programIndicatorsInIndicator,
+//           dataSetsInIndicator,
 //         };
-//       } else if (href.includes('programIndicators')) {
-//         // Fetch metadata for program indicators
-//         const programIndicatorsResponse = await axios.get(
-//           `${apiUrl}programIndicators/${id}.json?fields=:all,id,name,shortName,lastUpdated,analyticsPeriodBoundaries,created,userGroupAccesses[*],userAccesses[*],aggregationType,expression,filter,expiryDays,user[id,name,phoneNumber],lastUpdatedBy[id,name,phoneNumber],program[id,name,programIndicators[id,name]]`
-//         );
-
-//         const programIndicatorData = programIndicatorsResponse.data;
-
-//         const expressionDescription = await axios.post(
-//           `${apiUrl}29/programIndicators/expression/description`,
-//           programIndicatorData.expression,
-//           {
-//             headers: {
-//               'Content-Type': 'text/plain',
-//             },
-//           }
-//         );
-//         let filterDescription: any;
-//         if (programIndicatorData.filter) {
-//           filterDescription = await axios.post(
-//             `${apiUrl}29/programIndicators/filter/description`,
-//             programIndicatorData.filter,
-//             {
-//               headers: {
-//                 'Content-Type': 'text/plain',
-//               },
-//             }
-//           );
-//         }
-//         const dataElementsInPogramIndicator = await axios.get(
-//           `${apiUrl}dataElements.json?filter=id:in:[${expressionDescription},${filterDescription}]&paging=false&fields=id,name,zeroIsSignificant,aggregationType,domainType,valueType,categoryCombo[id,name,categoryOptionCombos[id,name,categoryOptions[id,name,categories[id,name]]]],dataSetElements[dataSet[id,name,periodType]],dataElementGroups[id,name,dataElements~size]`
-//         );
-
-//         return {
-//           ...programIndicatorData,
-//           programIndicatorExpression: expressionDescription.data.description,
-//           filterDescription: programIndicatorData.filter
-//             ? filterDescription.data.description
-//             : '',
-//           dataElementsInPogramIndicator: dataElementsInPogramIndicator,
-//         };
-//       } else {
-//         throw new Error(`Unsupported type in href: ${href}`);
 //       }
-//     } catch (error: any) {
-//       throw new Error(`Error fetching metadata: ${error.message}`);
 //     }
-//   }
-
-//   extractAllDataElementIds(expression: string): string[] {
-//     const regex = /R{([\w\d]+)\./g;
-//     const matches = [...expression.matchAll(regex)];
-
-//     // Map to extract the first capture group (data element IDs)
-//     return matches.map((match) => match[1]);
-//   }
-// }
