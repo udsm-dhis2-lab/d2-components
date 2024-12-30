@@ -49,7 +49,7 @@ export class WeeklyPeriodInstance {
   }
 
   getStartingWeek(futurePeriodOffset: number, year?: number) {
-    const currentWeek = this.calendar.geCurrentWeek() + futurePeriodOffset;
+    const currentWeek = this.calendar.getCurrentWeek() + futurePeriodOffset;
     const weekNumber = currentWeek > 52 ? currentWeek - 52 : currentWeek;
     if (year) {
       if (year === this.calendar.getCurrentYear()) {
