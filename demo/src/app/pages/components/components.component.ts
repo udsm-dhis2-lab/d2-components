@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { OrganisationUnitSelectionConfig } from '@iapps/ng-dhis2-ui';
 import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
+import { Period } from '@iapps/period-utilities';
 
 @Component({
   selector: 'app-components',
@@ -38,5 +39,9 @@ export class ComponentsComponent {
       .subscribe((res) => {
         console.log(res);
       });
+
+    const periodInstance = new Period().setType('Weekly').get();
+
+    console.log('PERIOD LIST', periodInstance.list());
   }
 }
