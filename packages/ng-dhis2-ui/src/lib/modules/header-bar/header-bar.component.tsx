@@ -9,8 +9,9 @@ import { HeaderBar } from './utils/header-bar';
 import { ReactWrapperComponent } from '../react-wrapper';
 
 @Component({
-  selector: 'ng-dhis2-ui-header-bar',
-  template: `<ng-container></ng-container>`,
+    selector: 'ng-dhis2-ui-header-bar',
+    template: `<ng-container></ng-container>`,
+    standalone: false
 })
 export class HeaderBarComponent extends ReactWrapperComponent {
   constructor(

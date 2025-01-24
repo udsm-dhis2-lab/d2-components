@@ -31,15 +31,16 @@ type PeriodSelectionEvent = {
 };
 
 @Component({
-  selector: 'ng-dhis2-ui-period-selector',
-  template: `<ng-container></ng-container>`,
-  styles: [
-    `
+    selector: 'ng-dhis2-ui-period-selector',
+    template: `<ng-container></ng-container>`,
+    styles: [
+        `
       ::ng-deep .content-container {
         z-index: 0 !important;
       }
     `,
-  ],
+    ],
+    standalone: false
 })
 export class PeriodSelectorComponent extends ReactWrapperComponent {
   @Input() selectedPeriods: any[] = [];

@@ -1,8 +1,9 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-  name: 'filterBySearchInput',
-  pure: false,
+    name: 'filterBySearchInput',
+    pure: false,
+    standalone: false
 })
 export class FilterBySearchInputPipe implements PipeTransform {
   transform(indicators: any[], searchingText: any): any {

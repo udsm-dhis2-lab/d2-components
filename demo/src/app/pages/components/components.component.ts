@@ -4,8 +4,9 @@ import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
 import { Period } from '@iapps/period-utilities';
 
 @Component({
-  selector: 'app-components',
-  templateUrl: './components.component.html',
+    selector: 'app-components',
+    templateUrl: './components.component.html',
+    standalone: false
 })
 export class ComponentsComponent {
   httpClient = inject(NgxDhis2HttpClientService);

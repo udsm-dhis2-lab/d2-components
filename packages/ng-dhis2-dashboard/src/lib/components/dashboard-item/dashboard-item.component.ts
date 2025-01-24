@@ -21,7 +21,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DashboardItemHeaderComponent } from '../dashboard-item-header/dashboard-item-header.component';
 
 @Component({
-  standalone: true,
   imports: [
     CommonModule,
     MatProgressSpinnerModule,
@@ -62,16 +61,17 @@ export class DashboardItemComponent implements OnInit, OnChanges {
   }
 
   get isChart(): boolean {
-    return (
-      (this.dashboardItem?.visualization?.type || this.dashboardItem.type) ===
-      ('CHART' ||
-        'LINE' ||
-        'COLUMN' ||
-        'BAR' ||
-        'DOTTED' ||
-        'PIE' ||
-        'STACKED_BAR' ||
-        'STACKED_COLUMN')
+    return [
+      'CHART',
+      'LINE',
+      'COLUMN',
+      'BAR',
+      'DOTTED',
+      'PIE',
+      'STACKED_BAR',
+      'STACKED_COLUMN',
+    ].includes(
+      this.dashboardItem?.visualization?.type || this.dashboardItem.type
     );
   }
 

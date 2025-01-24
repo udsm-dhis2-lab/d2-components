@@ -40,6 +40,7 @@ type OrganisationUnitSelectionEvent = {
       }
     `,
   ],
+  standalone: false,
 })
 export class OrganisationUnitSelectorModalComponent extends ReactWrapperComponent {
   @Input() selectedOrgUnits: any[] = [];
@@ -73,7 +74,12 @@ export class OrganisationUnitSelectorModalComponent extends ReactWrapperComponen
     this.component = () => {
       const [selected, setSelected] = useState(this.selectedOrgUnits);
       return (
-        <Provider config={config}>
+        <Provider
+          config={config}
+          plugin={false}
+          parentAlertsAdd={undefined}
+          showAlertsInPlugin={false}
+        >
           {
             <Modal position="middle" large>
               <ModalTitle>Organisation unit</ModalTitle>

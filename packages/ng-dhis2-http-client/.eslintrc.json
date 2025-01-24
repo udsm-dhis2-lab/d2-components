@@ -24,7 +24,8 @@
             "prefix": "ng-dhis2-ui",
             "style": "kebab-case"
           }
-        ]
+        ],
+        "@angular-eslint/prefer-standalone": "off"
       }
     },
     {

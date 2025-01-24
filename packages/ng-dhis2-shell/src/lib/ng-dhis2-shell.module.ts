@@ -4,10 +4,11 @@ import {
   withInterceptorsFromDi,
 } from '@angular/common/http';
 import {
-  APP_INITIALIZER,
   InjectionToken,
   ModuleWithProviders,
   NgModule,
+  inject,
+  provideAppInitializer,
 } from '@angular/core';
 import {
   AppShellConfig,
@@ -59,12 +60,12 @@ export class AppShellModule {
       ngModule: AppShellModule,
       providers: [
         { provide: AppShellConfigClass, useValue: config },
-        {
-          provide: APP_INITIALIZER,
-          useFactory: initializeShell,
-          deps: [AppShellConfigClass, HttpClient],
-          multi: true,
-        },
+        provideAppInitializer(() => {
+          return initializeShell(
+            inject(AppShellConfigClass),
+            inject(HttpClient)
+          )() as unknown as Promise<void>;
+        }),
       ],
     };
   }

@@ -25,11 +25,12 @@ import {
 import { IndicatorGroupsState } from '../../store/state/indicators.state';
 
 @Component({
-  // tslint:disable-next-line:component-selector
-  selector: 'ngx-dhis2-dictionary-list',
-  templateUrl: './dictionary-list.component.html',
-  styleUrls: ['./dictionary-list.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    // tslint:disable-next-line:component-selector
+    selector: 'ngx-dhis2-dictionary-list',
+    templateUrl: './dictionary-list.component.html',
+    styleUrls: ['./dictionary-list.component.css'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class DictionaryListComponent implements OnInit {
   @Input() metadataIdentifiers!: Array<string>;

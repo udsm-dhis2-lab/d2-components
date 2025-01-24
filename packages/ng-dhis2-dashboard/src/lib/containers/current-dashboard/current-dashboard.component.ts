@@ -28,16 +28,15 @@ import { DashboardSelectionActions } from '../../store/actions/dashboard-selecti
 import { getDashboardSelectionById } from '../../store/selectors/dashboard-selection.selectors';
 
 @Component({
-  standalone: true,
-  imports: [
-    CommonModule,
-    DashboardItemsComponent,
-    CurrentDashboardHeaderComponent,
-    DashboardSelectionSummaryComponent,
-  ],
-  selector: 'd2-current-dashboard',
-  templateUrl: './current-dashboard.component.html',
-  styleUrls: ['./current-dashboard.component.scss'],
+    imports: [
+        CommonModule,
+        DashboardItemsComponent,
+        CurrentDashboardHeaderComponent,
+        DashboardSelectionSummaryComponent,
+    ],
+    selector: 'd2-current-dashboard',
+    templateUrl: './current-dashboard.component.html',
+    styleUrls: ['./current-dashboard.component.scss']
 })
 export class CurrentDashboardComponent implements OnInit {
   currentDashboard$?: Observable<DashboardObject | undefined>;

@@ -15,7 +15,8 @@ import * as ReactDOM from 'react-dom/client';
 (window as any).React = React;
 
 @Directive({
-  selector: 'ng-dhis2-ui-wrapper',
+    selector: 'ng-dhis2-ui-wrapper',
+    standalone: false
 })
 export class ReactWrapperComponent
   implements OnChanges, OnDestroy, AfterViewInit

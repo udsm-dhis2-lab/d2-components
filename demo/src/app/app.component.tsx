@@ -5,9 +5,10 @@ import React from 'react';
 import { Fn } from '@iapps/function-analytics';
 
 @Component({
-  selector: 'ng-dhis2-ui-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
+    selector: 'ng-dhis2-ui-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.scss'],
+    standalone: false
 })
 export class AppComponent {
   constructor(private router: Router) {

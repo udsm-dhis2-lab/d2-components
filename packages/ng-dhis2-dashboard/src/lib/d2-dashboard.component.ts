@@ -6,12 +6,11 @@ import { DashboardMenuObject } from './models';
 import { DashboardMenuService } from './services';
 
 @Component({
-  // eslint-disable-next-line @angular-eslint/component-selector
-  selector: 'd2-dashboard',
-  standalone: true,
-  imports: [CommonModule, RouterModule, DashboardMenuComponent],
-  templateUrl: './d2-dashboard.component.html',
-  styleUrls: ['./d2-dashboard.component.scss'],
+    // eslint-disable-next-line @angular-eslint/component-selector
+    selector: 'd2-dashboard',
+    imports: [CommonModule, RouterModule, DashboardMenuComponent],
+    templateUrl: './d2-dashboard.component.html',
+    styleUrls: ['./d2-dashboard.component.scss']
 })
 export class D2DashboardComponent implements OnInit {
   dashboardMenuFacade: DashboardMenuService;

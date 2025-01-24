@@ -7,11 +7,10 @@ import { CommonModule } from '@angular/common';
 import { SummarizeSelectionPipe } from '../../pipes/summarize-selection.pipe';
 
 @Component({
-  standalone: true,
-  imports: [CommonModule, SummarizeSelectionPipe],
-  selector: 'd2-dashboard-selection-summary',
-  templateUrl: './dashboard-selection-summary.component.html',
-  styleUrls: ['./dashboard-selection-summary.component.scss'],
+    imports: [CommonModule, SummarizeSelectionPipe],
+    selector: 'd2-dashboard-selection-summary',
+    templateUrl: './dashboard-selection-summary.component.html',
+    styleUrls: ['./dashboard-selection-summary.component.scss']
 })
 export class DashboardSelectionSummaryComponent {
   @Input() globalSelection?: IGlobalSelection;

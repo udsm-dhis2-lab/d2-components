@@ -16,17 +16,16 @@ import {
 import { DashboardSelectionFiltersComponent } from '../../modules/dashboard-selection-filters/dashboard-selection-filters.component';
 
 @Component({
-  standalone: true,
-  imports: [
-    CommonModule,
-    MatIconModule,
-    NgxPrintModule,
-    DashboardSelectionFiltersComponent,
-  ],
-  selector: 'd2-current-dashboard-header',
-  templateUrl: './current-dashboard-header.component.html',
-  styleUrls: ['./current-dashboard-header.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [
+        CommonModule,
+        MatIconModule,
+        NgxPrintModule,
+        DashboardSelectionFiltersComponent,
+    ],
+    selector: 'd2-current-dashboard-header',
+    templateUrl: './current-dashboard-header.component.html',
+    styleUrls: ['./current-dashboard-header.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CurrentDashboardHeaderComponent {
   @Input() dashboard!: Partial<DashboardObject>;

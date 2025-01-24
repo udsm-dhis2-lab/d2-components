@@ -4,10 +4,9 @@ import { DataElement } from '@iapps/d2-web-sdk';
 import { d2Web } from '@iapps/ng-dhis2-shell';
 
 @Component({
-  selector: 'app-web-sdk',
-  templateUrl: './web-sdk.component.html',
-  standalone: true,
-  imports: [CommonModule],
+    selector: 'app-web-sdk',
+    templateUrl: './web-sdk.component.html',
+    imports: [CommonModule]
 })
 export class WebSdkComponent {
   d2 = d2Web;
