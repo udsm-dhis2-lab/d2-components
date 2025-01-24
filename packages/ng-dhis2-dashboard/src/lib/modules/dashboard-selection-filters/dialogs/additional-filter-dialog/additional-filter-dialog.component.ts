@@ -12,11 +12,10 @@ import { DashboardAdditionalFilter } from '../../../../../lib/models';
 import { DashboardSelectionFilterService } from '../../services/dashboard-selection-filter.service';
 
 @Component({
-  standalone: true,
-  imports: [CommonModule, MatDialogModule, MatSelectionList, MatListModule],
-  selector: 'd2-additional-filter-dialog',
-  templateUrl: './additional-filter-dialog.component.html',
-  styleUrls: ['./additional-filter-dialog.component.css'],
+    imports: [CommonModule, MatDialogModule, MatSelectionList, MatListModule],
+    selector: 'd2-additional-filter-dialog',
+    templateUrl: './additional-filter-dialog.component.html',
+    styleUrls: ['./additional-filter-dialog.component.css']
 })
 export class AdditionalFilterDialogComponent implements OnInit {
   filterSelection$!: Observable<DashboardAdditionalFilter | null>;

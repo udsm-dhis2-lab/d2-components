@@ -13,9 +13,10 @@ import * as indicators from '../../store/actions/indicators.actions';
 import { DictionaryState } from '../../store/reducers/dictionary.reducer';
 
 @Component({
-  selector: 'app-indicators-list',
-  templateUrl: './indicators-list.component.html',
-  styleUrls: ['./indicators-list.component.css'],
+    selector: 'app-indicators-list',
+    templateUrl: './indicators-list.component.html',
+    styleUrls: ['./indicators-list.component.css'],
+    standalone: false
 })
 export class IndicatorsListComponent implements OnInit {
   // @Input() indicators: any;

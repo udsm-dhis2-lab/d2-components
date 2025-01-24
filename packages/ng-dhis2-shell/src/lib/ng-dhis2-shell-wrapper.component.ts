@@ -9,7 +9,8 @@ import {
 import { of, mergeMap, throwError, retry, Observable, delay } from 'rxjs';
 
 @Directive({
-  selector: 'ng-dhis2-shell-wrapper',
+    selector: 'ng-dhis2-shell-wrapper',
+    standalone: false
 })
 export abstract class NgDhis2ShellWrapper implements AfterViewInit {
   private host!: DomPortalOutlet;

@@ -26,6 +26,7 @@ type OrganisationUnitSelectionEvent = {
 @Component({
   selector: 'ng-dhis2-ui-org-unit-selector',
   template: '<ng-container><ng-container>',
+  standalone: false,
 })
 export class OrganisationUnitSelectorComponent extends ReactWrapperComponent {
   @Input() selectedOrgUnits: any[] = [];
@@ -56,7 +57,12 @@ export class OrganisationUnitSelectorComponent extends ReactWrapperComponent {
     const config = await this.getAppConfig();
 
     this.component = () => (
-      <Provider config={config}>
+      <Provider
+        config={config}
+        plugin={false}
+        parentAlertsAdd={undefined}
+        showAlertsInPlugin={false}
+      >
         {
           <OrgUnitDimension
             selected={this.selectedOrgUnits}

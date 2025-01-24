@@ -1,7 +1,8 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-  name: 'filterDashboardBy',
+    name: 'filterDashboardBy',
+    standalone: false
 })
 export class FilterDashboardByPipe implements PipeTransform {
   transform(

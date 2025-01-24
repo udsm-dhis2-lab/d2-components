@@ -21,11 +21,10 @@ import { ReactWrapperModule } from '@iapps/ng-dhis2-ui';
 import React, { useState } from 'react';
 
 @Component({
-  standalone: true,
-  imports: [CommonModule, ReactWrapperModule, MatTooltipModule, MatIconModule],
-  selector: 'd2-dashboard-item-header',
-  templateUrl: './dashboard-item-header.component.html',
-  styleUrls: ['./dashboard-item-header.component.scss'],
+    imports: [CommonModule, ReactWrapperModule, MatTooltipModule, MatIconModule],
+    selector: 'd2-dashboard-item-header',
+    templateUrl: './dashboard-item-header.component.html',
+    styleUrls: ['./dashboard-item-header.component.scss']
 })
 export class DashboardItemHeaderComponent {
   @Input() fullScreen!: boolean;

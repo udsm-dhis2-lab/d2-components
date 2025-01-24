@@ -687,53 +687,53 @@ export class PeriodInstance {
   getSixMonthlyAprilPeriods(year: number) {
     const months = this.getMonthWithYears(this._monthNames, year + 1, -9);
 
-    return (
-      chunk([...months.slice(3), ...months.slice(0, 3)] || [], 6) || []
-    ).map((sixMonthApril, sixMonthAprilIndex) => {
-      const id = this.getSixMonthlyPeriodId(
-        year,
-        sixMonthAprilIndex + 1,
-        'April'
-      );
+    return (chunk([...months.slice(3), ...months.slice(0, 3)], 6) || []).map(
+      (sixMonthApril, sixMonthAprilIndex) => {
+        const id = this.getSixMonthlyPeriodId(
+          year,
+          sixMonthAprilIndex + 1,
+          'April'
+        );
 
-      const month = (sixMonthAprilIndex + 1) * 6 - 2;
-      const nextEndMonth = month + 5;
-      const endMonth = nextEndMonth > 12 ? nextEndMonth - 12 : nextEndMonth;
+        const month = (sixMonthAprilIndex + 1) * 6 - 2;
+        const nextEndMonth = month + 5;
+        const endMonth = nextEndMonth > 12 ? nextEndMonth - 12 : nextEndMonth;
 
-      return {
-        id,
-        startDate: this.getDate(year, month, 1),
-        endDate: this.getDate(
-          nextEndMonth > 12 ? year + 1 : year,
-          endMonth,
-          this._calendar.getDaysInMonth(year, endMonth) as number
-        ),
-        type: 'SixMonthlyApril',
-        name: this.getPeriodNameByRange(
-          head(sixMonthApril || []),
-          last(sixMonthApril || []),
-          year
-        ),
-        daily: this.getChildrenPeriods(
+        return {
           id,
-          'SixMonthlyApril',
-          'Daily',
-          this._preferences
-        ),
-        weekly: this.getChildrenPeriods(
-          id,
-          'SixMonthlyApril',
-          'Weekly',
-          this._preferences
-        ),
-        monthly: this.getChildrenPeriods(
-          id,
-          'SixMonthlyApril',
-          'Monthly',
-          this._preferences
-        ),
-      };
-    });
+          startDate: this.getDate(year, month, 1),
+          endDate: this.getDate(
+            nextEndMonth > 12 ? year + 1 : year,
+            endMonth,
+            this._calendar.getDaysInMonth(year, endMonth) as number
+          ),
+          type: 'SixMonthlyApril',
+          name: this.getPeriodNameByRange(
+            head(sixMonthApril || []),
+            last(sixMonthApril || []),
+            year
+          ),
+          daily: this.getChildrenPeriods(
+            id,
+            'SixMonthlyApril',
+            'Daily',
+            this._preferences
+          ),
+          weekly: this.getChildrenPeriods(
+            id,
+            'SixMonthlyApril',
+            'Weekly',
+            this._preferences
+          ),
+          monthly: this.getChildrenPeriods(
+            id,
+            'SixMonthlyApril',
+            'Monthly',
+            this._preferences
+          ),
+        };
+      }
+    );
   }
 
   getSixMonthlyNovemberPeriods(year: number) {

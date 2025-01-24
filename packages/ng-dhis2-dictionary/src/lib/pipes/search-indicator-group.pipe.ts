@@ -1,7 +1,8 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-  name: 'searchIndicatorGroup',
+    name: 'searchIndicatorGroup',
+    standalone: false
 })
 export class SearchIndicatorGroupPipe implements PipeTransform {
   transform(indicatorGroups: any[], searchingTextForGroups: any): any {

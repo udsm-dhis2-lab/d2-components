@@ -2,7 +2,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { SlicePipe } from '@angular/common';
 
 @Pipe({
-  name: 'shortenName'
+    name: 'shortenName',
+    standalone: false
 })
 export class ShortenNamePipe implements PipeTransform {
 

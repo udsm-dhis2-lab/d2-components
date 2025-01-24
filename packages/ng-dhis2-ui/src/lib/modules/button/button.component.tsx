@@ -6,8 +6,9 @@ import React from 'react';
 import * as ReactDOM from 'react-dom/client';
 
 @Component({
-  selector: 'ng-dhis2-ui-button',
-  template: '<ng-content></ng-content>',
+    selector: 'ng-dhis2-ui-button',
+    template: '<ng-content></ng-content>',
+    standalone: false
 })
 export class ButtonComponent extends ReactWrapperComponent {
   @Input() label!: string;

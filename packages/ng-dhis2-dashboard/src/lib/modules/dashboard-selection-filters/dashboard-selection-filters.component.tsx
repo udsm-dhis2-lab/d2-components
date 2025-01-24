@@ -40,18 +40,17 @@ import {
 import { DashboardSelectionFilterService } from './services/dashboard-selection-filter.service';
 
 @Component({
-  standalone: true,
-  imports: [
-    CommonModule,
-    AdditionalFilterDialogComponent,
-    OrganisationUnitSelectorModule,
-    PeriodSelectorModule,
-    ReactWrapperModule,
-  ],
-  providers: [DashboardSelectionFilterService],
-  selector: 'd2-dashboard-selection-filters',
-  templateUrl: './dashboard-selection-filters.component.html',
-  styleUrls: ['./dashboard-selection-filters.component.scss'],
+    imports: [
+        CommonModule,
+        AdditionalFilterDialogComponent,
+        OrganisationUnitSelectorModule,
+        PeriodSelectorModule,
+        ReactWrapperModule,
+    ],
+    providers: [DashboardSelectionFilterService],
+    selector: 'd2-dashboard-selection-filters',
+    templateUrl: './dashboard-selection-filters.component.html',
+    styleUrls: ['./dashboard-selection-filters.component.scss']
 })
 export class DashboardSelectionFiltersComponent {
   @Input() dataSelections!: VisualizationDataSelection[];

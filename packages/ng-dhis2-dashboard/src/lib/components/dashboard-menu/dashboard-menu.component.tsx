@@ -15,16 +15,15 @@ import { DashboardSubMenuComponent } from '../dashboard-sub-menu/dashboard-sub-m
 import { MatDividerModule } from '@angular/material/divider';
 
 @Component({
-  standalone: true,
-  imports: [
-    CommonModule,
-    ReactWrapperModule,
-    DashboardSubMenuComponent,
-    MatDividerModule,
-  ],
-  selector: 'd2-dashboard-menu',
-  templateUrl: './dashboard-menu.component.html',
-  styleUrls: ['./dashboard-menu.component.scss'],
+    imports: [
+        CommonModule,
+        ReactWrapperModule,
+        DashboardSubMenuComponent,
+        MatDividerModule,
+    ],
+    selector: 'd2-dashboard-menu',
+    templateUrl: './dashboard-menu.component.html',
+    styleUrls: ['./dashboard-menu.component.scss']
 })
 export class DashboardMenuComponent implements AfterViewInit {
   @Input() dashboardMenuItems!: DashboardMenuObject[];

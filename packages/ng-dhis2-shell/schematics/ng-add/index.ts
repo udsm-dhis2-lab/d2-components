@@ -19,7 +19,7 @@ import {
   InsertChange,
 } from '@schematics/angular/utility/change';
 import { join, normalize } from 'path';
-import * as prettier from 'prettier';
+// import * as prettier from 'prettier';
 
 import {
   addPackageJsonDependency,
@@ -492,11 +492,11 @@ function formatFile(tree: Tree, filePath: string): void {
     );
   }
 
-  const formatted = prettier.format(fileContent, {
-    parser: 'typescript',
-    singleQuote: true,
-    trailingComma: 'all',
-  });
+  // const formatted = prettier.format(fileContent, {
+  //   parser: 'typescript',
+  //   singleQuote: true,
+  //   trailingComma: 'all',
+  // });
 
-  tree.overwrite(filePath, formatted);
+  // tree.overwrite(filePath, formatted);
 }
