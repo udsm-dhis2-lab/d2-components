@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 import { AxiosDefaults } from 'axios';
 export class D2WebConfig {
-  baseUrl!: string;
+  baseUrl?: string;
   locale?: string;
   httpClientConfig?: Partial<AxiosDefaults>;
 

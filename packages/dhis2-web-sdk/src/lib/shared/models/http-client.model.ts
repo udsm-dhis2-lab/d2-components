@@ -14,7 +14,23 @@ export class D2HttpClient {
 
   async get(url: string): Promise<D2HttpResponse> {
     try {
-      const response = await this.#axiosInstance.get(`api/${url}`);
+      const response = await this.#axiosInstance.get(`../../../api/${url}`);
+
+      return new D2HttpResponse(response as unknown as Record<string, unknown>);
+    } catch (error) {
+      return new D2HttpResponse(error as unknown as Record<string, unknown>);
+    }
+  }
+
+  async post(
+    url: string,
+    data: Record<string, unknown>
+  ): Promise<D2HttpResponse> {
+    try {
+      const response = await this.#axiosInstance.post(
+        `../../../api/${url}`,
+        data
+      );
 
       return new D2HttpResponse(response as unknown as Record<string, unknown>);
     } catch (error) {

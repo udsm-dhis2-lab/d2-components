@@ -34,12 +34,12 @@ export class ProgramModule {
     return new ProgramStageDataElementQuery(this.httpClient);
   }
 
-  get programRule(): ProgramRuleActionQuery {
-    return new ProgramRuleActionQuery(this.httpClient);
+  get programRule(): ProgramRuleQuery {
+    return new ProgramRuleQuery(this.httpClient);
   }
 
-  get programRuleAction(): ProgramRuleQuery {
-    return new ProgramRuleQuery(this.httpClient);
+  get programRuleAction(): ProgramRuleActionQuery {
+    return new ProgramRuleActionQuery(this.httpClient);
   }
 
   get programRuleVariable(): ProgramRuleVariableQuery {

@@ -9,13 +9,22 @@ import {
   IdentifiableObject,
 } from '../../../shared';
 
-export type ProgramRuleField = IdentifiableField | 'condition';
+export type ProgramRuleField =
+  | IdentifiableField
+  | 'condition'
+  | 'program'
+  | 'programRuleActions';
 
 export class ProgramRule extends IdentifiableObject<ProgramRule> {
   static resourceName = 'programRules';
   static singularResourceName = 'programRule';
-  // TODO: Use class reflection
-  static fields: ProgramRuleField[] = [...IDENTIFIABLE_FIELDS, 'condition'];
+
+  static fields: ProgramRuleField[] = [
+    ...IDENTIFIABLE_FIELDS,
+    'condition',
+    'program',
+    'programRuleActions',
+  ];
 
   condition!: string;
   program!: any;

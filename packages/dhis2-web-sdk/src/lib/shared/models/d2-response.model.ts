@@ -33,10 +33,12 @@ export class D2Response<T extends BaseIdentifiable> {
   }
 
   getData(dataResponse: Record<string, unknown>, model: IBaseIdentifiable) {
-    const data = dataResponse[model.resourceName];
+    const data = isPlainObject(dataResponse)
+      ? dataResponse[model.resourceName] || dataResponse
+      : dataResponse;
 
-    if (!data && isPlainObject(dataResponse)) {
-      return new (model as any)(dataResponse);
+    if (isPlainObject(data)) {
+      return new (model as any)(data);
     }
 
     return isArray(data)
