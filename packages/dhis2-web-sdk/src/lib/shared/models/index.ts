@@ -13,3 +13,5 @@ export * from './http-client.model';
 export * from './pager.model';
 export * from './d2-response.model';
 export * from './relationship-direction.model';
+export * from './http-response.model';
+export * from './http-client-config.model';

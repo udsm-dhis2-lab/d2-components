@@ -4,17 +4,22 @@
 
 import { AxiosDefaults } from 'axios';
 import {
+  D2EngineModule,
   DataElementModule,
   OptionSetModule,
   ProgramModule,
-  OrganisationUnitModule,
+  TrackerModule,
 } from './modules';
 import { D2HttpClient, D2WebConfig } from './shared';
+
+export interface D2Window extends Window {
+  d2Web: D2Web;
+}
 
 export class D2Web {
   private static instance: D2Web;
   #config!: D2WebConfig;
-  #httpInstance!: D2HttpClient;
+  httpInstance!: D2HttpClient;
   private constructor() {}
 
   public static getInstance(config: D2WebConfig): D2Web {
@@ -23,6 +28,8 @@ export class D2Web {
       instance.setConfig(config);
       instance.setHttpInstance(config.httpClientConfig as AxiosDefaults);
       D2Web.instance = instance;
+
+      (window as unknown as D2Window).d2Web = instance;
     }
     return D2Web.instance;
   }
@@ -32,7 +39,7 @@ export class D2Web {
   }
 
   setHttpInstance(httpConfig: AxiosDefaults): void {
-    this.#httpInstance = new D2HttpClient(httpConfig);
+    this.httpInstance = new D2HttpClient(httpConfig);
   }
 
   get config(): D2WebConfig {
@@ -40,18 +47,22 @@ export class D2Web {
   }
 
   get programModule(): ProgramModule {
-    return new ProgramModule(this.#httpInstance);
+    return new ProgramModule(this.httpInstance);
   }
 
   get dataElementModule(): DataElementModule {
-    return new DataElementModule(this.#httpInstance);
+    return new DataElementModule(this.httpInstance);
   }
 
   get optionSetModule(): OptionSetModule {
-    return new OptionSetModule(this.#httpInstance);
+    return new OptionSetModule(this.httpInstance);
   }
 
-  get organisationUnitModule(): OrganisationUnitModule {
-    return new OrganisationUnitModule(this.#httpInstance);
+  get engineModule(): D2EngineModule {
+    return new D2EngineModule();
+  }
+
+  get trackerModule(): TrackerModule {
+    return new TrackerModule(this.httpInstance);
   }
 }
