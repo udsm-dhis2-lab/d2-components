@@ -28,6 +28,18 @@ export class ComponentsComponent {
     console.log(periods);
   }
 
+  tableColumns = [
+    { label: "Name", key: "name" },
+    { label: "Age", key: "age" },
+    { label: "Country", key: "country" },
+  ];
+  
+  tableData = [
+    { name: "John Doe", age: 28, country: "Tanzania" },
+    { name: "Jane Smith", age: 34, country: "Kenya" },
+  ];
+  
+
   onSelectOrgUnits(orgUnits: any) {
     this.selectedOrgUnits = orgUnits;
 
