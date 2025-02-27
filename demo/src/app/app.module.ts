@@ -33,7 +33,7 @@ import { appRoutes } from './app.routes';
     D2DashboardModule.forRoot({
       rootUrl: 'dashboard',
       useDataStore: true,
-      dataStoreNamespace: 'afyamsafiri-dashboard',
+      dataStoreNamespace: 'eidsr-dashboard',
       selectionConfig: {
         allowSelectionOnStartUp: false,
         startUpPeriodType: 'Monthly',
