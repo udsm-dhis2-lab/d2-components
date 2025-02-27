@@ -40,7 +40,12 @@
     "pack:ng-dhis2-dictionary": "nx build ng-dhis2-dictionary && cd dist/packages/ng-dhis2-dictionary && npm pack",
     "link:ng-dhis2-dictionary": "nx build ng-dhis2-dictionary && cd dist/packages/ng-dhis2-dictionary && npm link",
     "publish:ng-dhis2-dictionary": "nx build ng-dhis2-dictionary && cd dist/packages/ng-dhis2-dictionary && npm publish --access public",
-    "publish-local:ng-dhis2-dictionary": "nx build ng-dhis2-dictionary && cd dist/packages/ng-dhis2-dictionary && npm publish --access public --registry http://localhost:4873/"
+    "publish-local:ng-dhis2-dictionary": "nx build ng-dhis2-dictionary && cd dist/packages/ng-dhis2-dictionary && npm publish --access public --registry http://localhost:4873/",
+    "build:dhis2-web-sdk": "nx build d2-web-sdk",
+    "pack:dhis2-web-sdk": "nx build d2-web-sdk && cd dist/packages/dhis2-web-sdk && npm pack",
+    "link:dhis2-web-sdk": "nx build d2-web-sdk && cd dist/packages/dhis2-web-sdk && npm link",
+    "publish:dhis2-web-sdk": "nx build d2-web-sdk && cd dist/packages/dhis2-web-sdk && npm publish --access public",
+    "publish-local:dhis2-web-sdk": "nx build d2-web-sdk && cd dist/packages/dhis2-web-sdk && npm publish --access public --registry http://localhost:4873/"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "19.0.7",

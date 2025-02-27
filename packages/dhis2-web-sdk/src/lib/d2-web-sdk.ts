@@ -20,6 +20,7 @@ export class D2Web {
   private static instance: D2Web;
   #config!: D2WebConfig;
   httpInstance!: D2HttpClient;
+  organisationUnitModule: any;
   private constructor() {}
 
   public static getInstance(config: D2WebConfig): D2Web {

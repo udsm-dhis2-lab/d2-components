@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
-import { Period } from '@iapps/period-utilities';
+import { Period, PeriodType } from '@iapps/period-utilities';
 import { catchError, map, Observable, of, switchMap, zip } from 'rxjs';
 import { VisualizationDataSelection } from '../models';
 import { DashboardConfigService } from './dashboard-config.service';
@@ -51,20 +51,28 @@ export class TrackerDashboardService {
       ({ dimension }) => dimension === 'pe'
     )?.items || [])[0];
 
-    if (periodSelection) {
-      const splitedStartDate = (periodSelection.startDate || '').split('-');
+    const selectedPeriodInstance = periodSelection?.id
+      ? new Period()
+          .setPreferences({ openFuturePeriods: 2 }) // TODO: Find best way to manage this
+          .getById(periodSelection?.id)
+      : undefined;
+
+    if (selectedPeriodInstance) {
+      const splitedStartDate = (selectedPeriodInstance.startDate || '').split(
+        '-'
+      );
 
       const startDate =
         splitedStartDate[0].length < 4
           ? splitedStartDate.reverse().join('-')
-          : periodSelection.startDate;
+          : selectedPeriodInstance.startDate;
 
-      const splitedEndDate = (periodSelection.endDate || '').split('-');
+      const splitedEndDate = (selectedPeriodInstance.endDate || '').split('-');
 
       const endDate =
         splitedEndDate[0].length < 4
           ? splitedEndDate.reverse().join('-')
-          : periodSelection.endDate;
+          : selectedPeriodInstance.endDate;
 
       return {
         ...periodSelection,
