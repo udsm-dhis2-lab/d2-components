@@ -29,6 +29,14 @@
 
 <h5>Wrapper implementation</h5>
 
-<app-line-list-table [programId]="'piWUQa85ell'" [orgUnit]="'m0frOspS7JY'"></app-line-list-table>
+<app-line-list-table 
+[programId]="'piWUQa85ell'" 
+[orgUnit]="'m0frOspS7JY'" 
+[actionOptions]="[
+    { label: 'View', onClick: onView },
+    { label: 'Edit', onClick: onEdit },
+    { label: 'Delete', destructive: true, onClick: onDelete }
+  ]"
+></app-line-list-table>
 
 <!-- <app-line-list-table [programId]="'A3olldDSHQg'" [orgUnit]="'m0frOspS7JY'" [programStageId]="'PXsALJ60dF3'"></app-line-list-table> -->

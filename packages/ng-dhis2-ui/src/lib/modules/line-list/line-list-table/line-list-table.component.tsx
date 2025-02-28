@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import {
   Button,
   DataTable,
@@ -17,9 +17,8 @@ import {
   Popper,
   FlyoutMenu,
 } from '@dhis2/ui';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { LineListService } from '../services/line-list.service';
-import { set } from 'lodash';
 import { DropdownMenu, DropdownMenuOption } from '../components/dropdown-menu';
 
 @Component({
@@ -32,34 +31,35 @@ export class LineListTableComponent {
   @Input() programId!: string;
   @Input() orgUnit!: string;
   @Input() programStageId?: string;
+  @Input() actionOptions?: DropdownMenuOption[]; // New input for action options
 
   constructor(private lineListService: LineListService) {}
 
   Table = () => {
     const [columns, setColumns] = useState<{ label: string; key: string }[]>([]);
     const [data, setData] = useState([]);
-  
+
     useEffect(() => {
       this.lineListService
         .getLineListData(this.programId, this.orgUnit, this.programStageId)
         .subscribe((response) => {
           let newColumns: { label: string; key: string }[] = [];
-  
+
           if (this.programStageId) {
             newColumns = response.dataValues.map((dv: any) => ({
               label: dv.dataElement,
               key: dv.dataElement,
             }));
-  
-            let newData = response.map((event: any) => {
+
+            let dataElementData = response.map((event: any) => {
               let row: any = { event: event.event };
               event.dataValues.forEach((dv: any) => {
                 row[dv.dataElement] = dv.value;
               });
               return row;
             });
-  
-            setData(newData);
+
+            setData(dataElementData);
           } else if (response.trackedEntityInstances) {
             newColumns = response.trackedEntityInstances[0]?.attributes.map(
               (attr: any) => ({
@@ -67,49 +67,50 @@ export class LineListTableComponent {
                 key: attr.attribute,
               })
             );
-  
-            let newData = response.trackedEntityInstances.map((tei: any) => {
+
+            let attributeData = response.trackedEntityInstances.map((tei: any) => {
               let row: any = { trackedEntityInstance: tei.trackedEntityInstance };
               tei.attributes.forEach((attr: any) => {
                 row[attr.attribute] = attr.value;
               });
               return row;
             });
-  
-            setData(newData);
+
+            setData(attributeData);
           } else if (response.events) {
             newColumns = response.events[0]?.dataValues.map((dv: any) => ({
               label: dv.dataElement,
               key: dv.dataElement,
             }));
-  
-            let newData = response.events.map((event: any) => {
+
+            let dataElementData = response.events.map((event: any) => {
               let row: any = { event: event.event };
               event.dataValues.forEach((dv: any) => {
                 row[dv.dataElement] = dv.value;
               });
               return row;
             });
-  
-            setData(newData);
+
+            setData(dataElementData);
           }
-  
-          setColumns([...newColumns, { label: "Actions", key: "actions" }]);
+
+          // Conditionally add the "Actions" column only if actionOptions are provided
+          if (this.actionOptions && this.actionOptions.length > 0) {
+            setColumns([...newColumns, { label: "Actions", key: "actions" }]);
+          } else {
+            setColumns(newColumns);
+          }
         });
-    }, []);
-  
-    // Define the dropdown options for each row
-    const getDropdownOptions = (row: any): DropdownMenuOption[] => [
-      {
-        label: "View",
-        onClick: () => console.log("View", row),
-      },
-      {
-        label: "Edit",
-        onClick: () => console.log("Edit", row),
-      },
-    ];
-  
+    }, [this.actionOptions]); // Add actionOptions as a dependency to re-run if it changes
+
+    // Use the actionOptions from @Input, or fallback to an empty array
+    const getDropdownOptions = (row: any): DropdownMenuOption[] => {
+      return (this.actionOptions || []).map((option) => ({
+        ...option,
+        onClick: () => option.onClick?.(row), // Pass row data to the original onClick
+      }));
+    };
+
     return (
       <DataTable>
         <TableHead>
@@ -129,7 +130,7 @@ export class LineListTableComponent {
                   {col.key === "actions" ? (
                     <DropdownMenu
                       dropdownOptions={getDropdownOptions(row)}
-                      onClick={(option) => option.onClick?.(row)} // Pass row data to the option's onClick
+                      onClick={(option) => option.onClick?.()}
                     />
                   ) : (
                     row[col.key]
@@ -142,7 +143,10 @@ export class LineListTableComponent {
       </DataTable>
     );
   };
-  // Table = () => {
+}
+
+
+ // Table = () => {
   //   const [columns, setColumns] = useState<{ label: string; key: string }[]>([]);
   //   const [data, setData] = useState([]);
   //   useEffect(() => {
@@ -230,4 +234,3 @@ export class LineListTableComponent {
   //     </DataTable>
   //   );
   // };
-}
