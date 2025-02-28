@@ -38,7 +38,8 @@ export class ComponentsComponent {
     { name: "John Doe", age: 28, country: "Tanzania" },
     { name: "Jane Smith", age: 34, country: "Kenya" },
   ];
-  
+  //event program = A3olldDSHQg
+  //program stage= AFdwWJ6LpRT
   onView(row: any) {
     console.log('View', row);
   }
