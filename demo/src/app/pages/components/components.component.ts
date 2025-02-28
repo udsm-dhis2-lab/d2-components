@@ -39,6 +39,17 @@ export class ComponentsComponent {
     { name: "Jane Smith", age: 34, country: "Kenya" },
   ];
   
+  onView(row: any) {
+    console.log('View', row);
+  }
+
+  onEdit(row: any) {
+    console.log('Edit', row);
+  }
+
+  onDelete(row: any) {
+    console.log('Delete', row);
+  }
 
   onSelectOrgUnits(orgUnits: any) {
     this.selectedOrgUnits = orgUnits;

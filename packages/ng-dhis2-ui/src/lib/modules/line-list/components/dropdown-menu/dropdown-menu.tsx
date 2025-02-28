@@ -84,7 +84,6 @@ export const DropdownMenu = (props: {
   const ref = useRef();
   const [visible, setVisible] = useState(false);
   const { dropdownOptions, onClick } = props;
-
   return (
     <div ref={ref as any} style={{ display: "inline-block" }}>
       <Button
