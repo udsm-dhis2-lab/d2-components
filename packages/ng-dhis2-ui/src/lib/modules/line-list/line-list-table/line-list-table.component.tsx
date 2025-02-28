@@ -1,4 +1,3 @@
-// src/app/line-list-table.component.ts
 import { Component, Input } from '@angular/core';
 import {
   DataTable,
@@ -37,13 +36,22 @@ export class LineListTableComponent {
     const [columns, setColumns] = useState<ColumnDefinition[]>([]);
     const [data, setData] = useState<TableRow[]>([]);
 
+    // TODO: Refactor the following column and data generation logic into a utils file (e.g., src/utils/line-list-utils.ts).
+    //       Extract functions like:
+    //       - buildDataElementMap: Create a map of data element IDs to names from metadata.
+    //       - getProgramStageData: Generate columns and data for programStageId case.
+    //       - getTrackedEntityData: Generate columns and data for trackedEntityInstances case.
+    //       - getEventData: Generate columns and data for events case (without programStageId).
+    //       - addActionsColumn: Conditionally add "Actions" column based on actionOptions.
+    //       -remove index from data and make index column dynamic
+    //       This will improve readability and reusability.
+
     useEffect(() => {
       this.lineListService
         .getLineListData(this.programId, this.orgUnit, this.programStageId)
         .subscribe((response: LineListResponse) => {
           console.log('this is the response', response.metadata);
-          let entityColumns: ColumnDefinition[] = [];
-          let indexedData: TableRow[] = [];
+          let entityColumns: ColumnDefinition[] = []; 
 
           if (this.programStageId) {
             const dataElementMap: Record<string, string> = {};
@@ -52,7 +60,7 @@ export class LineListTableComponent {
                 dataElementMap[psde.dataElement.id] = psde.dataElement.name;
               });
             });
-
+            
             const events = (response.data as EventsResponse).events;
             const allDataElements = new Set<string>();
             events.forEach((event) => {
@@ -64,9 +72,9 @@ export class LineListTableComponent {
             entityColumns = Array.from(allDataElements).map((dataElementId) => ({
               label: dataElementMap[dataElementId] || dataElementId,
               key: dataElementId,
-            }));
+            })); 
 
-            indexedData = events.map((event, idx) => {
+            let indexeDataElementsData: TableRow[] = events.map((event, idx) => {
               let row: TableRow = { event: event.event, index: idx + 1 };
               allDataElements.forEach((dataElementId) => {
                 row[dataElementId] = '';
@@ -77,8 +85,8 @@ export class LineListTableComponent {
               return row;
             });
 
-            setData(indexedData);
-            console.log('These are the columns:', entityColumns, indexedData);
+            setData(indexeDataElementsData);
+           
           } else if ('trackedEntityInstances' in response.data) {
             const teis = (response.data as TrackedEntityInstancesResponse).trackedEntityInstances;
             const allAttributes = new Set<string>();
@@ -98,7 +106,7 @@ export class LineListTableComponent {
               };
             });
 
-            indexedData = teis.map((tei, idx) => {
+            let indexedAttributesData: TableRow[] = teis.map((tei, idx) => {
               let row: TableRow = { trackedEntityInstance: tei.trackedEntityInstance, index: idx + 1 };
               allAttributes.forEach((attrId) => {
                 row[attrId] = '';
@@ -109,7 +117,7 @@ export class LineListTableComponent {
               return row;
             });
 
-            setData(indexedData);
+            setData(indexedAttributesData);
           } else if ('events' in response.data) {
             const dataElementMap: Record<string, string> = {};
             response.metadata.programStages.forEach((stage) => {
@@ -131,7 +139,7 @@ export class LineListTableComponent {
               key: dataElement,
             }));
 
-            indexedData = events.map((event, idx) => {
+            let indexedDataElementsData: TableRow[] = events.map((event, idx) => {
               let row: TableRow = { event: event.event, index: idx + 1 };
               uniqueDataElements.forEach((dataElement) => {
                 row[dataElement] = '';
@@ -141,9 +149,7 @@ export class LineListTableComponent {
               });
               return row;
             });
-
-            console.log('these are the data elements', indexedData);
-            setData(indexedData);
+            setData(indexedDataElementsData);
           }
 
           const finalColumns: ColumnDefinition[] = [
@@ -153,7 +159,6 @@ export class LineListTableComponent {
               ? [{ label: 'Actions', key: 'actions' }]
               : []),
           ];
-
           setColumns(finalColumns);
         });
     }, [this.programId, this.orgUnit, this.programStageId, this.actionOptions]);
