@@ -46,20 +46,40 @@ export class LineListTableComponent {
           let newColumns: { label: string; key: string }[] = [];
 
           if (this.programStageId) {
-            newColumns = response.dataValues.map((dv: any) => ({
-              label: dv.dataElement,
-              key: dv.dataElement,
-            }));
+            // newColumns = response.dataValues.map((dv: any) => ({
+            //   label: dv.dataElement,
+            //   key: dv.dataElement,
+            // }));
 
-            let dataElementData = response.map((event: any) => {
-              let row: any = { event: event.event };
-              event.dataValues.forEach((dv: any) => {
-                row[dv.dataElement] = dv.value;
+            // let dataElementData = response.map((event: any) => {
+            //   let row: any = { event: event.event };
+            //   event.dataValues.forEach((dv: any) => {
+            //     row[dv.dataElement] = dv.value;
+            //   });
+            //   return row;
+            // });
+
+            // setData(dataElementData);
+            
+              // Get columns from the first event (if it exists)
+              let newColumns =
+                response.events.length > 0
+                  ? response.events[0].dataValues.map((dv: any) => ({
+                      label: dv.dataElement,
+                      key: dv.dataElement,
+                    }))
+                  : [];
+            
+              // Map over events to construct data rows
+              let dataElementData = response.events.map((event: any) => {
+                let row: any = { event: event.event };
+                event.dataValues.forEach((dv: any) => {
+                  row[dv.dataElement] = dv.value;
+                });
+                return row;
               });
-              return row;
-            });
-
-            setData(dataElementData);
+              setData(dataElementData);
+            console.log('these are the columns', newColumns, dataElementData);
           } else if (response.trackedEntityInstances) {
             newColumns = response.trackedEntityInstances[0]?.attributes.map(
               (attr: any) => ({
