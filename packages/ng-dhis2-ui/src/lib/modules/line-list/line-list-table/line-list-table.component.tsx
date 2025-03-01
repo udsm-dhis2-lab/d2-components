@@ -21,6 +21,13 @@ import {
   TrackedEntityInstancesResponse,
   Pager,
 } from '../models/line-list.models';
+import { 
+  buildDataElementMap,
+  getProgramStageData,
+  getTrackedEntityData,
+  getEventData,
+  addActionsColumn 
+} from '../utils/line-list-utils';
 
 @Component({
   selector: 'app-line-list-table',
@@ -36,19 +43,6 @@ export class LineListTableComponent {
 
   constructor(private lineListService: LineListService) {}
 
-  pagination = () => {
-    return (
-      <Pagination
-        page={2}
-        pageCount={10}
-        pageSize={50}
-        total={430}
-        hidePageSizeSelect
-        hidePageSummary
-      />
-    );
-  };
-
   LineList = () => {
     const [columns, setColumns] = useState<ColumnDefinition[]>([]);
     const [data, setData] = useState<TableRow[]>([]);
@@ -59,16 +53,6 @@ export class LineListTableComponent {
       pageCount: 1,
     });
     const paginationRef = useRef<HTMLDivElement>(null);
-
-    // TODO: Refactor the following column and data generation logic into a utils file (e.g., src/utils/line-list-utils.ts).
-    //       Extract functions like:
-    //       - buildDataElementMap: Create a map of data element IDs to names from metadata.
-    //       - getProgramStageData: Generate columns and data for programStageId case.
-    //       - getTrackedEntityData: Generate columns and data for trackedEntityInstances case.
-    //       - getEventData: Generate columns and data for events case (without programStageId).
-    //       - addActionsColumn: Conditionally add "Actions" column based on actionOptions.
-    //       -remove index from data and make index column dynamic
-    //      This will improve readability and reusability.
 
     useEffect(() => {
       setTimeout(() => {
@@ -115,183 +99,32 @@ export class LineListTableComponent {
         .subscribe((response: LineListResponse) => {
           let entityColumns: ColumnDefinition[] = [];
           let responsePager: Pager;
+          let entityData: TableRow[] = [];
 
           if (this.programStageId) {
-            const events = (response.data as EventsResponse).events;
             responsePager = (response.data as EventsResponse).pager;
-            const allDataElements = new Set<string>();
-            events.forEach((event) => {
-              event.dataValues.forEach((dv) =>
-                allDataElements.add(dv.dataElement)
-              );
-            });
-            entityColumns = Array.from(allDataElements).map(
-              (dataElementId) => ({
-                label:
-                  response.metadata.programStages[0].programStageDataElements.find(
-                    (psde) => psde.dataElement.id === dataElementId
-                  )?.dataElement.name || dataElementId,
-                key: dataElementId,
-              })
-            );
-            let dataElementsData: TableRow[] = events.map((event, idx) => {
-              let row: TableRow = {
-                event: event.event,
-                index: (pager.page - 1) * pager.pageSize + idx + 1,
-              };
-              allDataElements.forEach(
-                (dataElementId) => (row[dataElementId] = '')
-              );
-              event.dataValues.forEach(
-                (dv) => (row[dv.dataElement] = dv.value)
-              );
-              return row;
-            });
-            setData(dataElementsData);
+            const { columns, data } = getProgramStageData(response, this.programStageId, pager);
+            entityColumns = columns;
+            entityData = data;
           } else if ('trackedEntityInstances' in response.data) {
-            // const teis = (response.data as TrackedEntityInstancesResponse)
-            //   .trackedEntityInstances;
-            // responsePager = (response.data as TrackedEntityInstancesResponse)
-            //   .pager;
-            // const allAttributes = new Set<string>();
-            // teis.forEach((tei) => {
-            //   tei.attributes.forEach((attr) =>
-            //     allAttributes.add(attr.attribute)
-            //   );
-            // });
-            // entityColumns = Array.from(allAttributes).map((attrId) => {
-            //   const foundAttribute = teis
-            //     .flatMap((tei) => tei.attributes)
-            //     .find((attr) => attr.attribute === attrId);
-            //   return {
-            //     label: foundAttribute?.displayName || attrId,
-            //     key: attrId,
-            //   };
-            // });
-            // let attributesData = teis.map((tei, idx) => {
-            //   let row: TableRow = {
-            //     trackedEntityInstance: tei.trackedEntityInstance,
-            //     index: (pager.page - 1) * pager.pageSize + idx + 1,
-            //   };
-            //   allAttributes.forEach((attrId) => (row[attrId] = ''));
-            //   tei.attributes.forEach(
-            //     (attr) => (row[attr.attribute] = attr.value)
-            //   );
-            //   return row;
-            // });
-            // setData(attributesData);
-            const teis = (response.data as TrackedEntityInstancesResponse)
-              .trackedEntityInstances;
-            responsePager = (response.data as TrackedEntityInstancesResponse)
-              .pager;
-
-            const allAttributes = new Set<string>();
-
-            teis.forEach((tei) => {
-              // Find the enrollment for the given programId
-              const matchingEnrollment = tei.enrollments.find(
-                (enrollment) => enrollment.program === this.programId
-              );
-
-              // Get attributes from the enrollment or fallback to TEI-level attributes
-              const attributes = matchingEnrollment
-                ? matchingEnrollment.attributes
-                : tei.attributes;
-
-              // Collect unique attribute IDs
-              attributes.forEach((attr) =>
-                allAttributes.add(attr.attribute)
-              );
-            });
-
-            entityColumns = Array.from(allAttributes).map((attrId) => {
-              const foundAttribute = teis
-                .flatMap((tei) => {
-                  const matchingEnrollment = tei.enrollments.find(
-                    (enrollment) => enrollment.program === this.programId
-                  );
-                  return matchingEnrollment
-                    ? matchingEnrollment.attributes
-                    : tei.attributes;
-                })
-                .find((attr) => attr.attribute === attrId);
-
-              return {
-                label: foundAttribute?.displayName || attrId,
-                key: attrId,
-              };
-            });
-
-            let attributesData = teis.map((tei, idx) => {
-              let row: TableRow = {
-                trackedEntityInstance: tei.trackedEntityInstance,
-                index:
-                  (responsePager.page - 1) * responsePager.pageSize + idx + 1,
-              };
-
-              // Initialize all attribute columns with empty strings
-              allAttributes.forEach((attrId) => (row[attrId] = ''));
-
-              // Get attributes from the correct enrollment or fallback to TEI attributes
-              const matchingEnrollment = tei.enrollments.find(
-                (enrollment) => enrollment.program === this.programId
-              );
-              const attributesToUse = matchingEnrollment
-                ? matchingEnrollment.attributes
-                : tei.attributes;
-
-              // Populate row with attribute values
-              attributesToUse.forEach(
-                (attr) => (row[attr.attribute] = attr.value)
-              );
-
-              return row;
-            });
-
-            setData(attributesData);
+            responsePager = (response.data as TrackedEntityInstancesResponse).pager;
+            const { columns, data } = getTrackedEntityData(response, this.programId, pager);
+            entityColumns = columns;
+            entityData = data;
           } else {
-            const events = (response.data as EventsResponse).events;
             responsePager = (response.data as EventsResponse).pager;
-            const uniqueDataElements = new Set<string>();
-            events.forEach((event) => {
-              event.dataValues.forEach((dv) =>
-                uniqueDataElements.add(dv.dataElement)
-              );
-            });
-            entityColumns = Array.from(uniqueDataElements).map(
-              (dataElement) => ({
-                label:
-                  response.metadata.programStages[0].programStageDataElements.find(
-                    (psde) => psde.dataElement.id === dataElement
-                  )?.dataElement.name || dataElement,
-                key: dataElement,
-              })
-            );
-            let dataElementsData = events.map((event, idx) => {
-              let row: TableRow = {
-                event: event.event,
-                index: (pager.page - 1) * pager.pageSize + idx + 1,
-              };
-              uniqueDataElements.forEach(
-                (dataElement) => (row[dataElement] = '')
-              );
-              event.dataValues.forEach(
-                (dv) => (row[dv.dataElement] = dv.value)
-              );
-              return row;
-            });
-            setData(dataElementsData);
+            const { columns, data } = getEventData(response, pager);
+            entityColumns = columns;
+            entityData = data;
           }
 
-          const finalColumns: ColumnDefinition[] = [
-            { label: '#', key: 'index' },
-            ...entityColumns,
-            ...(this.actionOptions && this.actionOptions.length > 0
-              ? [{ label: 'Actions', key: 'actions' }]
-              : []),
-          ];
+          const finalColumns: ColumnDefinition[] = addActionsColumn(
+            [{ label: '#', key: 'index' }, ...entityColumns],
+            this.actionOptions
+          );
 
           setColumns(finalColumns);
+          setData(entityData);
           setPager(responsePager);
         });
     }, [
@@ -367,6 +200,373 @@ export class LineListTableComponent {
     );
   };
 }
+
+
+
+// import { Component, Input } from '@angular/core';
+// import {
+//   DataTable,
+//   TableHead,
+//   DataTableRow,
+//   DataTableColumnHeader,
+//   TableBody,
+//   DataTableCell,
+//   Pagination,
+//   TableFoot,
+// } from '@dhis2/ui';
+// import React, { useEffect, useRef, useState } from 'react';
+// import { LineListService } from '../services/line-list.service';
+// import { DropdownMenu, DropdownMenuOption } from '../components/dropdown-menu';
+// import {
+//   LineListResponse,
+//   ColumnDefinition,
+//   TableRow,
+//   EventsResponse,
+//   TrackedEntityInstancesResponse,
+//   Pager,
+// } from '../models/line-list.models';
+
+// @Component({
+//   selector: 'app-line-list-table',
+//   templateUrl: './line-list-table.component.html',
+//   styleUrls: ['./line-list-table.component.scss'],
+//   standalone: false,
+// })
+// export class LineListTableComponent {
+//   @Input() programId!: string;
+//   @Input() orgUnit!: string;
+//   @Input() programStageId?: string;
+//   @Input() actionOptions?: DropdownMenuOption[];
+
+//   constructor(private lineListService: LineListService) {}
+
+//   LineList = () => {
+//     const [columns, setColumns] = useState<ColumnDefinition[]>([]);
+//     const [data, setData] = useState<TableRow[]>([]);
+//     const [pager, setPager] = useState<Pager>({
+//       page: 1,
+//       pageSize: 10,
+//       total: 0,
+//       pageCount: 1,
+//     });
+//     const paginationRef = useRef<HTMLDivElement>(null);
+
+//     // TODO: Refactor the following column and data generation logic into a utils file (e.g., src/utils/line-list-utils.ts).
+//     //       Extract functions like:
+//     //       - buildDataElementMap: Create a map of data element IDs to names from metadata.
+//     //       - getProgramStageData: Generate columns and data for programStageId case.
+//     //       - getTrackedEntityData: Generate columns and data for trackedEntityInstances case.
+//     //       - getEventData: Generate columns and data for events case (without programStageId).
+//     //       - addActionsColumn: Conditionally add "Actions" column based on actionOptions.
+//     //       -remove index from data and make index column dynamic
+//     //      This will improve readability and reusability.
+
+//     useEffect(() => {
+//       setTimeout(() => {
+//         const paginationContainer = document.querySelector(
+//           '[data-test="dhis2-uiwidgets-pagination"]'
+//         ) as HTMLElement;
+
+//         if (paginationContainer) {
+//           paginationContainer.style.setProperty('display', 'flex', 'important');
+//           paginationContainer.style.setProperty(
+//             'flex-direction',
+//             'row',
+//             'important'
+//           );
+//           paginationContainer.style.setProperty(
+//             'justify-content',
+//             'space-between',
+//             'important'
+//           );
+//           paginationContainer.style.setProperty(
+//             'align-items',
+//             'center',
+//             'important'
+//           );
+//         }
+//       }, 1000);
+
+//       if (paginationRef.current) {
+//         paginationRef.current.style.setProperty('display', 'flex', 'important');
+//         paginationRef.current.style.setProperty(
+//           'flex-direction',
+//           'row',
+//           'important'
+//         );
+//       }
+//       this.lineListService
+//         .getLineListData(
+//           this.programId,
+//           this.orgUnit,
+//           this.programStageId,
+//           pager.page,
+//           pager.pageSize
+//         )
+//         .subscribe((response: LineListResponse) => {
+//           let entityColumns: ColumnDefinition[] = [];
+//           let responsePager: Pager;
+
+//           if (this.programStageId) {
+//             const events = (response.data as EventsResponse).events;
+//             responsePager = (response.data as EventsResponse).pager;
+//             const allDataElements = new Set<string>();
+//             events.forEach((event) => {
+//               event.dataValues.forEach((dv) =>
+//                 allDataElements.add(dv.dataElement)
+//               );
+//             });
+            
+//             const stageFromMetaData = response.metadata.programStages.find(
+//               (stage) => stage.id === this.programStageId
+//             );
+
+//             if (!stageFromMetaData) {
+//               throw new Error(`Program stage with ID ${this.programStageId} not found`);
+//             }
+
+//             entityColumns = Array.from(allDataElements).map(
+//               (dataElementId) => ({
+//                 label:
+//                   stageFromMetaData.programStageDataElements.find(
+//                     (psde) => psde.dataElement.id === dataElementId
+//                   )?.dataElement.name || dataElementId,
+//                 key: dataElementId,
+//               })
+//             );
+//             let dataElementsData: TableRow[] = events.map((event, idx) => {
+//               let row: TableRow = {
+//                 event: event.event,
+//                 index: (pager.page - 1) * pager.pageSize + idx + 1,
+//               };
+//               allDataElements.forEach(
+//                 (dataElementId) => (row[dataElementId] = '')
+//               );
+//               event.dataValues.forEach(
+//                 (dv) => (row[dv.dataElement] = dv.value)
+//               );
+//               return row;
+//             });
+//             setData(dataElementsData);
+//           } else if ('trackedEntityInstances' in response.data) {
+//             // const teis = (response.data as TrackedEntityInstancesResponse)
+//             //   .trackedEntityInstances;
+//             // responsePager = (response.data as TrackedEntityInstancesResponse)
+//             //   .pager;
+//             // const allAttributes = new Set<string>();
+//             // teis.forEach((tei) => {
+//             //   tei.attributes.forEach((attr) =>
+//             //     allAttributes.add(attr.attribute)
+//             //   );
+//             // });
+//             // entityColumns = Array.from(allAttributes).map((attrId) => {
+//             //   const foundAttribute = teis
+//             //     .flatMap((tei) => tei.attributes)
+//             //     .find((attr) => attr.attribute === attrId);
+//             //   return {
+//             //     label: foundAttribute?.displayName || attrId,
+//             //     key: attrId,
+//             //   };
+//             // });
+//             // let attributesData = teis.map((tei, idx) => {
+//             //   let row: TableRow = {
+//             //     trackedEntityInstance: tei.trackedEntityInstance,
+//             //     index: (pager.page - 1) * pager.pageSize + idx + 1,
+//             //   };
+//             //   allAttributes.forEach((attrId) => (row[attrId] = ''));
+//             //   tei.attributes.forEach(
+//             //     (attr) => (row[attr.attribute] = attr.value)
+//             //   );
+//             //   return row;
+//             // });
+//             // setData(attributesData);
+//             const teis = (response.data as TrackedEntityInstancesResponse)
+//               .trackedEntityInstances;
+//             responsePager = (response.data as TrackedEntityInstancesResponse)
+//               .pager;
+
+//             const allAttributes = new Set<string>();
+
+//             teis.forEach((tei) => {
+//               // Find the enrollment for the given programId
+//               const matchingEnrollment = tei.enrollments.find(
+//                 (enrollment) => enrollment.program === this.programId
+//               );
+
+//               // Get attributes from the enrollment or fallback to TEI-level attributes
+//               const attributes = matchingEnrollment
+//                 ? matchingEnrollment.attributes
+//                 : tei.attributes;
+
+//               // Collect unique attribute IDs
+//               attributes.forEach((attr) =>
+//                 allAttributes.add(attr.attribute)
+//               );
+//             });
+
+//             entityColumns = Array.from(allAttributes).map((attrId) => {
+//               const foundAttribute = teis
+//                 .flatMap((tei) => {
+//                   const matchingEnrollment = tei.enrollments.find(
+//                     (enrollment) => enrollment.program === this.programId
+//                   );
+//                   return matchingEnrollment
+//                     ? matchingEnrollment.attributes
+//                     : tei.attributes;
+//                 })
+//                 .find((attr) => attr.attribute === attrId);
+
+//               return {
+//                 label: foundAttribute?.displayName || attrId,
+//                 key: attrId,
+//               };
+//             });
+
+//             let attributesData = teis.map((tei, idx) => {
+//               let row: TableRow = {
+//                 trackedEntityInstance: tei.trackedEntityInstance,
+//                 index:
+//                   (responsePager.page - 1) * responsePager.pageSize + idx + 1,
+//               };
+
+//               // Initialize all attribute columns with empty strings
+//               allAttributes.forEach((attrId) => (row[attrId] = ''));
+
+//               // Get attributes from the correct enrollment or fallback to TEI attributes
+//               const matchingEnrollment = tei.enrollments.find(
+//                 (enrollment) => enrollment.program === this.programId
+//               );
+//               const attributesToUse = matchingEnrollment
+//                 ? matchingEnrollment.attributes
+//                 : tei.attributes;
+
+//               // Populate row with attribute values
+//               attributesToUse.forEach(
+//                 (attr) => (row[attr.attribute] = attr.value)
+//               );
+
+//               return row;
+//             });
+
+//             setData(attributesData);
+//           } else {
+//             const events = (response.data as EventsResponse).events;
+//             responsePager = (response.data as EventsResponse).pager;
+//             const uniqueDataElements = new Set<string>();
+//             events.forEach((event) => {
+//               event.dataValues.forEach((dv) =>
+//                 uniqueDataElements.add(dv.dataElement)
+//               );
+//             });
+//             entityColumns = Array.from(uniqueDataElements).map(
+//               (dataElement) => ({
+//                 label:
+//                   response.metadata.programStages[0].programStageDataElements.find(
+//                     (psde) => psde.dataElement.id === dataElement
+//                   )?.dataElement.name || dataElement,
+//                 key: dataElement,
+//               })
+//             );
+//             let dataElementsData = events.map((event, idx) => {
+//               let row: TableRow = {
+//                 event: event.event,
+//                 index: (pager.page - 1) * pager.pageSize + idx + 1,
+//               };
+//               uniqueDataElements.forEach(
+//                 (dataElement) => (row[dataElement] = '')
+//               );
+//               event.dataValues.forEach(
+//                 (dv) => (row[dv.dataElement] = dv.value)
+//               );
+//               return row;
+//             });
+//             setData(dataElementsData);
+//           }
+
+//           const finalColumns: ColumnDefinition[] = [
+//             { label: '#', key: 'index' },
+//             ...entityColumns,
+//             ...(this.actionOptions && this.actionOptions.length > 0
+//               ? [{ label: 'Actions', key: 'actions' }]
+//               : []),
+//           ];
+
+//           setColumns(finalColumns);
+//           setPager(responsePager);
+//         });
+//     }, [
+//       pager.page,
+//       pager.pageSize,
+//     ]);
+
+//     const getDropdownOptions = (row: TableRow): DropdownMenuOption[] => {
+//       return (this.actionOptions || []).map((option) => ({
+//         ...option,
+//         onClick: () => option.onClick?.(row),
+//       }));
+//     };
+
+//     return (
+//       <div>
+//         <DataTable>
+//           <TableHead>
+//             <DataTableRow>
+//               {columns.map((col) => (
+//                 <DataTableColumnHeader key={col.key}>
+//                   {col.label}
+//                 </DataTableColumnHeader>
+//               ))}
+//             </DataTableRow>
+//           </TableHead>
+//           <TableBody>
+//             {data.map((row) => (
+//               <DataTableRow key={row.index}>
+//                 {columns.map((col) => (
+//                   <DataTableCell key={col.key}>
+//                     {col.key === 'actions' ? (
+//                       <DropdownMenu
+//                         dropdownOptions={getDropdownOptions(row)}
+//                         onClick={(option) => option.onClick?.()}
+//                       />
+//                     ) : (
+//                       row[col.key]
+//                     )}
+//                   </DataTableCell>
+//                 ))}
+//               </DataTableRow>
+//             ))}
+//           </TableBody>
+//           <TableFoot>
+//             <DataTableRow>
+//               <DataTableCell colSpan={columns.length}>
+//                 <div>
+//                   <Pagination
+//                     page={pager.page}
+//                     pageCount={pager.pageCount}
+//                     pageSize={pager.pageSize}
+//                     total={pager.total}
+//                     onPageChange={(page: number) =>
+//                       setPager((prev) => ({ ...prev, page }))
+//                     }
+//                     onPageSizeChange={(pageSize: string) => {
+//                       const newPageSize = Number(pageSize);
+//                       setPager((prev) => ({
+//                         ...prev,
+//                         page: 1,
+//                         pageSize: newPageSize,
+//                       }));
+//                     }}
+//                     pageSizes={['5', '10', '20', '50']}
+//                   />
+//                 </div>
+//               </DataTableCell>
+//             </DataTableRow>
+//           </TableFoot>
+//         </DataTable>
+//       </div>
+//     );
+//   };
+// }
 
 // import { Component, Input } from '@angular/core';
 // import {
