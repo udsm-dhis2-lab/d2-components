@@ -295,10 +295,6 @@ export class LineListTableComponent {
           setPager(responsePager);
         });
     }, [
-      this.programId,
-      this.orgUnit,
-      this.programStageId,
-      this.actionOptions,
       pager.page,
       pager.pageSize,
     ]);
