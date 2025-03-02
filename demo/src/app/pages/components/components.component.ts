@@ -28,6 +28,30 @@ export class ComponentsComponent {
     console.log(periods);
   }
 
+  tableColumns = [
+    { label: "Name", key: "name" },
+    { label: "Age", key: "age" },
+    { label: "Country", key: "country" },
+  ];
+  
+  tableData = [
+    { name: "John Doe", age: 28, country: "Tanzania" },
+    { name: "Jane Smith", age: 34, country: "Kenya" },
+  ];
+  //event program = A3olldDSHQg
+  //program stage= AFdwWJ6LpRT
+  onView(row: any) {
+    console.log('View', row);
+  }
+
+  onEdit(row: any) {
+    console.log('Edit', row);
+  }
+
+  onDelete(row: any) {
+    console.log('Delete', row);
+  }
+
   onSelectOrgUnits(orgUnits: any) {
     this.selectedOrgUnits = orgUnits;
 

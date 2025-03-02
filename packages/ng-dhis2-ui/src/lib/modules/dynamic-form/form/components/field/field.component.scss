@@ -1,0 +1,38 @@
+.field-btn {
+  width: 100% !important;
+}
+
+.for-checkbox-btns {
+  margin-bottom: 15px;
+}
+
+// .mat-form-field-appearance-legacy .mat-form-field-wrapper {
+//   padding-bottom: 1em;
+//   background-color: #fff;
+// }
+
+// .mat-form-field-appearance-legacy .mat-form-field-underline {
+//   background-color: #fff;
+// }
+
+// textarea {
+//   margin-top: 6px;
+//   background-color: #fff;
+// }
+
+.mat-form-field-underline {
+  display: none !important;
+}
+
+::ng-deep .mat-checkbox-layout {
+  white-space: normal !important;
+  text-align: left;
+}
+
+::ng-deep ngx-mat-datetime-picker-overlay-container {
+  z-index: 1000 !important;
+}
+
+::ng-deep ngx-mat-datetime-picker {
+  z-index: 1000 !important;
+}
