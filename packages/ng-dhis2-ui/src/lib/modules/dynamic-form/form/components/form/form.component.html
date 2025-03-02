@@ -1,0 +1,21 @@
+<form [formGroup]="form" class="{{ configuration().directionClassName }}">
+ <!-- form name -->
+  <div class="form-name"><h2>{{configuration().formName}}</h2></div>
+  <div
+    *ngFor="let field of sanitizedFields"
+    class="form-field-{{ configuration().direction }}"
+  >
+    <field
+      [field]="field"
+      [fieldConfig]="configuration().fieldConfig"
+      [form]="form"
+      [fieldClass]="fieldClass"
+      [dataEntities]="dataEntities"
+      [programRuleActions]="programRuleActions"
+      [isCheckBoxButton]="shouldRenderAsCheckBoxesButton"
+      (fieldUpdate)="onFieldUpdate($event, field)"
+      (emitNumberOfCountries)="emitNumberOfCountries($event)"
+      (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+    ></field>
+  </div>
+</form>

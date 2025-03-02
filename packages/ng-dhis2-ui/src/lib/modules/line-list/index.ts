@@ -1,2 +1,2 @@
 export * from './line-list-table.module';
-export * from './line-list-table/line-list-table.component';
+export * from './containers/line-list.component';

@@ -1,0 +1,120 @@
+<ng-container *ngIf="formMetaData()">
+  <ng-container *ngFor="let formSection of formMetaData().sections">
+    @if(formSection?.name; as sectionName) {
+    <div class="pt-3 pb-3 font-weight-bold text-left">
+      {{ sectionName }}
+    </div>
+    }
+    <div class="p-2">
+      <ng-container *ngIf="formSection">
+        <div class="row" *ngFor="let fieldGroup of formSection?.fieldGroups">
+          <ng-container *ngIf="formGroups[fieldGroup.id] as formGroup">
+            <div
+              *ngIf="fieldGroup.name && !fieldGroup.repeatableStage"
+              class="col-12"
+            >
+              <div class="pt-2 pb-3 font-weight-bold text-left">
+                {{ fieldGroup?.name }}
+              </div>
+            </div>
+            <div class="col-12" *ngIf="fieldGroup.fields">
+              <!-- Single stage form section -->
+              <ng-container *ngIf="!fieldGroup.repeatableStage">
+                <form
+                  *ngIf="fieldGroup.fields.length > 0"
+                  [fields]="fieldGroup.fields"
+                  [form]="formGroup"
+                  [dataEntities]="dataValueEntities()"
+                  [programRuleActions]="ruleActions"
+                  [isFormHorizontal]="fieldGroup.isFormHorizontal || false"
+                  (formUpdate)="onFormUpdate($event, fieldGroup.id)"
+                ></form>
+              </ng-container>
+
+              <!-- Repeatable stage form section -->
+              <ng-container *ngIf="fieldGroup.repeatableStage">
+                @if(fieldGroup.repeatDependentField) {
+
+                <ng-container *ngIf="fieldGroup.repeatDependentField">
+                  <ng-container
+                    *ngIf="{
+                      numberOfRows:
+                        dataValueEntities()[fieldGroup.repeatDependentField]
+                    } as dataParams"
+                  >
+                    <repeatable-form
+                      *ngIf="
+                        dataParams.numberOfRows &&
+                        dataParams.numberOfRows !== '0'
+                      "
+                      [fieldGroup]="fieldGroup"
+                      [dataEntities]="dataValueEntities()"
+                      [form]="formGroup"
+                      [program]="formSection.program || ''"
+                      [programStage]="fieldGroup.repeatableStage"
+                      [programRuleActions]="ruleActions"
+                      [numberOfRows]="+dataParams.numberOfRows"
+                      [repeatDependentField]="
+                        fieldGroup.repeatDependentField || ''
+                      "
+                      [events]="dataValueEntities()[fieldGroup.dataKey!]"
+                      (repeatableStageUpdate)="
+                        onUpdateRepeatableStage($event, fieldGroup)
+                      "
+                    ></repeatable-form
+                  ></ng-container>
+                </ng-container>
+                } @else { Normal event form }
+              </ng-container>
+            </div>
+          </ng-container>
+        </div>
+      </ng-container>
+    </div>
+  </ng-container>
+
+  <div class="flex gap-2 m-2">
+    <button mat-stroked-button (click)="onCancel($event)">
+      {{ 'cancel' }}
+    </button>
+    <button
+      mat-flat-button
+      color="primary"
+      [disabled]="inValid"
+      (click)="onSubmit($event)"
+      *ngIf="!isLab || isLabResulst"
+    >
+      <div *ngIf="isloading" class="p-1">
+        <!-- <mat-spinner diameter="30" strokeWidth="2"></mat-spinner> -->
+      </div>
+      <span *ngIf="!loading()">{{ 'submit'  }}</span>
+      <div class="p-1" *ngIf="loading()">
+        <!-- <mat-spinner diameter="30" strokeWidth="2"></mat-spinner> -->
+      </div>
+    </button>
+    <button
+      mat-flat-button
+      color="primary"
+      [disabled]="inValid"
+      (click)="onSubmit($event)"
+      *ngIf="isLab && !isLabResulst"
+    >
+      <span *ngIf="!loading()">{{ 'Save & Add sample' }}</span>
+      <div class="p-1" *ngIf="loading()">
+        <!-- <mat-spinner diameter="30" strokeWidth="2"></mat-spinner> -->
+      </div>
+    </button>
+    <button
+      mat-flat-button
+      color="primary"
+      [disabled]="inValid"
+      (click)="onSubmit($event)"
+      *ngIf="isLab && !isLabResulst"
+    >
+      <span *ngIf="!loading()">{{ 'Save & Exit'  }}</span>
+      <div class="p-1" *ngIf="loading()">
+        <!-- <mat-spinner diameter="30" strokeWidth="2"></mat-spinner> -->
+      </div>
+    </button>
+  </div>
+</ng-container>
