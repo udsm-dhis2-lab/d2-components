@@ -35,7 +35,7 @@ async function initializeWedSDK(
     const config = await firstValueFrom(appShellConfig.getConfig());
 
     if (window) {
-      (window as any).d2Web = D2Web.getInstance(
+      (window as any).d2Web = await D2Web.initialize(
         new D2WebConfig({
           baseUrl: config.url,
         })
