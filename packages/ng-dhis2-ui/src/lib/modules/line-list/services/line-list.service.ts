@@ -1,5 +1,3 @@
-// // src/services/line-list.service.ts
-// src/services/line-list.service.ts
 import { Injectable } from '@angular/core';
 import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
 import { Observable } from 'rxjs';

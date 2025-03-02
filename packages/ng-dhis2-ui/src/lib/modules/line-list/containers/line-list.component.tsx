@@ -30,9 +30,9 @@ import {
 } from '../utils/line-list-utils';
 
 @Component({
-  selector: 'app-line-list-table',
-  templateUrl: './line-list-table.component.html',
-  styleUrls: ['./line-list-table.component.scss'],
+  selector: 'app-line-list',
+  templateUrl: './line-list.component.html',
+  styleUrls: ['./line-list.component.scss'],
   standalone: false,
 })
 export class LineListTableComponent {
