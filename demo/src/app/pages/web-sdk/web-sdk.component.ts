@@ -12,13 +12,12 @@ export class WebSdkComponent {
   d2 = d2Web;
 
   async ngOnInit() {
+    console.log(this.d2.appManifest);
     const programResponse = await this.d2.programModule.program
       .select(['id', 'name'])
       .get();
 
     console.log(programResponse);
-
-    console.log(this.d2.appManifest);
 
     // const organisationUnitResponse =
     //   await this.d2.organisationUnitModule.organisationUnit.get();

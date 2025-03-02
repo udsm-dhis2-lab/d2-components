@@ -24,8 +24,11 @@ function initializeShell(
   httpClient: HttpClient
 ) {
   const configService = new AppShellConfigService(appShellConfig, httpClient);
-  initializeWedSDK(configService);
-  return () => configService;
+
+  return async () => {
+    await initializeWedSDK(configService);
+    return configService;
+  };
 }
 
 async function initializeWedSDK(
