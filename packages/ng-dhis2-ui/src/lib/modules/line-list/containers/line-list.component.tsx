@@ -22,7 +22,6 @@ import {
   Pager,
 } from '../models/line-list.models';
 import { 
-  buildDataElementMap,
   getProgramStageData,
   getTrackedEntityData,
   getEventData,

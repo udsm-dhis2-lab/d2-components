@@ -1,19 +1,6 @@
 // src/utils/line-list-utils.ts
 import { LineListResponse, ColumnDefinition, TableRow, EventsResponse, TrackedEntityInstancesResponse } from '../models/line-list.models';
 
-export const buildDataElementMap = (metadata: any, programStageId: string | undefined) => {
-  if (programStageId) {
-    const stageFromMetaData = metadata.programStages.find(
-      (stage: any) => stage.id === programStageId
-    );
-    if (!stageFromMetaData) {
-      throw new Error(`Program stage with ID ${programStageId} not found`);
-    }
-    return stageFromMetaData.programStageDataElements;
-  }
-  return metadata.programStages[0].programStageDataElements;
-};
-
 export const getProgramStageData = (
   response: LineListResponse, 
   programStageId: string, 
