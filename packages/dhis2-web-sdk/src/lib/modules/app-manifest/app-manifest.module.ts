@@ -15,8 +15,6 @@ export class AppManifestModule {
         useRootUrl: true,
       });
 
-      console.log(manifestResponse);
-
       manifest = (manifestResponse.data as unknown as Manifest) || null;
     } catch (error) {
       console.warn(
