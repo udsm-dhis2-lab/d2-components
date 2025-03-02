@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { SharedDhis2UiModule } from '../../shared/shared.module';
-import { LineListTableComponent } from './line-list-table/line-list-table.component';
+import { LineListTableComponent } from './containers/line-list.component';
 import { ReactWrapperModule } from '@iapps/ng-dhis2-ui';
 import { LineListService } from './services/line-list.service';
 @NgModule({
