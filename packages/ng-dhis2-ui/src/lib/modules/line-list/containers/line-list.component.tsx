@@ -41,6 +41,8 @@ export class LineListTableComponent {
   @Input() programStageId?: string;
   @Input() actionOptions?: DropdownMenuOption[];
   @Input() attributeFilters?: AttributeFilter[];
+  @Input() startDate?: string;
+  @Input() endDate?: string;
 
   constructor(private lineListService: LineListService) {}
 
@@ -97,6 +99,8 @@ export class LineListTableComponent {
           pager.page,
           pager.pageSize,
           this.attributeFilters,
+          this.startDate,
+          this.endDate
         )
         .subscribe((response: LineListResponse) => {
           let entityColumns: ColumnDefinition[] = [];

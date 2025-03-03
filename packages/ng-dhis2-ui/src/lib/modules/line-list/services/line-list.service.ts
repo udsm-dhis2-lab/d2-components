@@ -26,11 +26,14 @@ export class LineListService {
     orgUnit: string,
     page: number,
     pageSize: number,
-    filters: AttributeFilter[] = []
+    filters: AttributeFilter[] = [],
+    startDate?: string,
+    endDate?: string,
   ): Observable<TrackedEntityInstancesResponse> {
     const filterParams = buildFilters(filters);
+    const dateFilter = startDate && endDate ? `&startDate=${startDate}&endDate=${endDate}` : '';
     return this.httpClient.get(
-      `trackedEntityInstances.json?program=${programId}&ou=${orgUnit}&page=${page}&pageSize=${pageSize}&fields=trackedEntityInstance,attributes[*],enrollments[*]&totalPages=true&${filterParams}`
+      `trackedEntityInstances.json?program=${programId}&ou=${orgUnit}&page=${page}&pageSize=${pageSize}&fields=trackedEntityInstance,attributes[*],enrollments[*]&totalPages=true&${filterParams}${dateFilter}`
     );
   }
 
@@ -62,7 +65,9 @@ export class LineListService {
     programStageId?: string,
     page: number = 1,
     pageSize: number = 10,
-    filters: AttributeFilter[] = []
+    filters: AttributeFilter[] = [],
+    startDate?: string,
+    endDate?: string
   ): Observable<LineListResponse> {
     return this.getProgramMetadata(programId).pipe(
       switchMap((programMetadata: ProgramMetadata) => {
@@ -76,7 +81,7 @@ export class LineListService {
         }
 
         if (programMetadata.programType === 'WITH_REGISTRATION') {
-          return this.getTrackedEntityInstances(programId, orgUnit, page, pageSize, filters).pipe(
+          return this.getTrackedEntityInstances(programId, orgUnit, page, pageSize, filters, startDate, endDate).pipe(
             map((teis: TrackedEntityInstancesResponse) => ({
               metadata: programMetadata,
               data: teis,
