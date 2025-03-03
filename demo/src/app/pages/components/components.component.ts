@@ -40,12 +40,7 @@ export class ComponentsComponent {
   ];
   //event program = A3olldDSHQg
   //program stage= AFdwWJ6LpRT
-  // [attributeFilters]="[
-  //   { attribute: 'nfpxRnc5Rsg', operator: 'eq', value: 'A99' },
-  //   { attribute: 'vZ6Eb7SovWK', operator: 'gt', value: 3 },
-  //   { attribute: 'aukU9PbQpZs', operator: 'eq', value: 'Closed' },
-  //   { attribute: 'jI43wrfikTb', operator: 'eq', value: 'true' },
-  //   ]"
+ 
 
 
 
