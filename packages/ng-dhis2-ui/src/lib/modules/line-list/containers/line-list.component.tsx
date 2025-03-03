@@ -27,6 +27,7 @@ import {
   getEventData,
   addActionsColumn 
 } from '../utils/line-list-utils';
+import { AttributeFilter } from '../models/attribute-filter.model';
 
 @Component({
   selector: 'app-line-list',
@@ -39,6 +40,7 @@ export class LineListTableComponent {
   @Input() orgUnit!: string;
   @Input() programStageId?: string;
   @Input() actionOptions?: DropdownMenuOption[];
+  @Input() attributeFilters?: AttributeFilter[];
 
   constructor(private lineListService: LineListService) {}
 
@@ -93,7 +95,8 @@ export class LineListTableComponent {
           this.orgUnit,
           this.programStageId,
           pager.page,
-          pager.pageSize
+          pager.pageSize,
+          this.attributeFilters,
         )
         .subscribe((response: LineListResponse) => {
           let entityColumns: ColumnDefinition[] = [];
@@ -130,6 +133,9 @@ export class LineListTableComponent {
       pager.page,
       pager.pageSize,
     ]);
+
+    console.log('columns', columns);
+    console.log('data', data);
 
     const getDropdownOptions = (row: TableRow): DropdownMenuOption[] => {
       return (this.actionOptions || []).map((option) => ({
