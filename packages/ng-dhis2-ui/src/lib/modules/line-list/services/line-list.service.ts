@@ -8,6 +8,8 @@ import {
   TrackedEntityInstancesResponse,
   LineListResponse,
 } from '../models/line-list.models';
+import { buildFilters } from '../utils/filter-builder';
+import { AttributeFilter } from '../models/attribute-filter.model';
 
 @Injectable()
 export class LineListService {
@@ -23,10 +25,12 @@ export class LineListService {
     programId: string,
     orgUnit: string,
     page: number,
-    pageSize: number
+    pageSize: number,
+    filters: AttributeFilter[] = []
   ): Observable<TrackedEntityInstancesResponse> {
+    const filterParams = buildFilters(filters);
     return this.httpClient.get(
-      `trackedEntityInstances.json?program=${programId}&ou=${orgUnit}&page=${page}&pageSize=${pageSize}&fields=trackedEntityInstance,attributes[*],enrollments[*]&totalPages=true`
+      `trackedEntityInstances.json?program=${programId}&ou=${orgUnit}&page=${page}&pageSize=${pageSize}&fields=trackedEntityInstance,attributes[*],enrollments[*]&totalPages=true&${filterParams}`
     );
   }
 
@@ -34,7 +38,7 @@ export class LineListService {
     programId: string,
     orgUnit: string,
     page: number,
-    pageSize: number
+    pageSize: number,
   ): Observable<EventsResponse> {
     return this.httpClient.get(
       `events.json?program=${programId}&orgUnit=${orgUnit}&page=${page}&pageSize=${pageSize}&fields=event,programStage,dataValues[dataElement,value]&totalPages=true`
@@ -45,7 +49,7 @@ export class LineListService {
     programStageId: string,
     orgUnit: string,
     page: number,
-    pageSize: number
+    pageSize: number,
   ): Observable<EventsResponse> {
     return this.httpClient.get(
       `events.json?programStage=${programStageId}&orgUnit=${orgUnit}&page=${page}&pageSize=${pageSize}&fields=event,dataValues[dataElement,value]&totalPages=true`
@@ -57,7 +61,8 @@ export class LineListService {
     orgUnit: string = '',
     programStageId?: string,
     page: number = 1,
-    pageSize: number = 10
+    pageSize: number = 10,
+    filters: AttributeFilter[] = []
   ): Observable<LineListResponse> {
     return this.getProgramMetadata(programId).pipe(
       switchMap((programMetadata: ProgramMetadata) => {
@@ -71,7 +76,7 @@ export class LineListService {
         }
 
         if (programMetadata.programType === 'WITH_REGISTRATION') {
-          return this.getTrackedEntityInstances(programId, orgUnit, page, pageSize).pipe(
+          return this.getTrackedEntityInstances(programId, orgUnit, page, pageSize, filters).pipe(
             map((teis: TrackedEntityInstancesResponse) => ({
               metadata: programMetadata,
               data: teis,
