@@ -56,8 +56,8 @@ export const ContextMenu = (params: {
                 label={dropDownOption.label}
                 icon={dropDownOption.icon}
                 onClick={() => {
-                  onMenuClick(dropDownOption);
-                  onClose();
+                 // onMenuClick(dropDownOption);
+                  //onClose();
                 }}
                 dense
               />
