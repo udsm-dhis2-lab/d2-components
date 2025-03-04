@@ -1,5 +1,11 @@
 // src/app/line-list-table.component.ts
-import { Component, Input } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import {
   DataTable,
   TableHead,
@@ -21,11 +27,11 @@ import {
   TrackedEntityInstancesResponse,
   Pager,
 } from '../models/line-list.models';
-import { 
+import {
   getProgramStageData,
   getTrackedEntityData,
   getEventData,
-  addActionsColumn 
+  addActionsColumn,
 } from '../utils/line-list-utils';
 import { AttributeFilter } from '../models/attribute-filter.model';
 
@@ -43,6 +49,38 @@ export class LineListTableComponent {
   @Input() attributeFilters?: AttributeFilter[];
   @Input() startDate?: string;
   @Input() endDate?: string;
+  @Output() actionSelected = new EventEmitter<{
+    action: string;
+    row: TableRow;
+  }>();
+  private reactStateUpdaters: any = null;
+
+  setReactStateUpdaters = (updaters: any) => {
+    this.reactStateUpdaters = updaters;
+  };
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (this.reactStateUpdaters) {
+      if (changes['programId']) {
+        this.reactStateUpdaters.setProgramIdState(this.programId);
+      }
+      if (changes['orgUnit']) {
+        this.reactStateUpdaters.setOrgUnitState(this.orgUnit);
+      }
+      if (changes['programStageId']) {
+        this.reactStateUpdaters.setProgramStageIdState(this.programStageId);
+      }
+      if (changes['attributeFilters']) {
+        this.reactStateUpdaters.setAttributeFiltersState(this.attributeFilters);
+      }
+      if (changes['startDate']) {
+        this.reactStateUpdaters.setStartDateState(this.startDate);
+      }
+      if (changes['endDate']) {
+        this.reactStateUpdaters.setEndDateState(this.endDate);
+      }
+    }
+  }
 
   constructor(private lineListService: LineListService) {}
 
@@ -56,6 +94,36 @@ export class LineListTableComponent {
       pageCount: 1,
     });
     const paginationRef = useRef<HTMLDivElement>(null);
+    const [programIdState, setProgramIdState] = useState<string>(
+      this.programId
+    );
+    const [orgUnitState, setOrgUnitState] = useState<string>(this.orgUnit);
+    const [programStageIdState, setProgramStageIdState] = useState<
+      string | undefined
+    >(this.programStageId);
+    const [attributeFiltersState, setAttributeFiltersState] = useState<
+      AttributeFilter[] | undefined
+    >(this.attributeFilters);
+    const [startDateState, setStartDateState] = useState<string | undefined>(
+      this.startDate
+    );
+    const [endDateState, setEndDateState] = useState<string | undefined>(
+      this.endDate
+    );
+
+    // Store updaters in refs for Angular to access
+    const updateRefs = useRef({
+      setProgramIdState,
+      setOrgUnitState,
+      setProgramStageIdState,
+      setAttributeFiltersState,
+      setStartDateState,
+      setEndDateState,
+    });
+
+    useEffect(() => {
+      this.setReactStateUpdaters?.(updateRefs.current);
+    }, []);
 
     useEffect(() => {
       setTimeout(() => {
@@ -109,12 +177,21 @@ export class LineListTableComponent {
 
           if (this.programStageId) {
             responsePager = (response.data as EventsResponse).pager;
-            const { columns, data } = getProgramStageData(response, this.programStageId, pager);
+            const { columns, data } = getProgramStageData(
+              response,
+              this.programStageId,
+              pager
+            );
             entityColumns = columns;
             entityData = data;
           } else if ('trackedEntityInstances' in response.data) {
-            responsePager = (response.data as TrackedEntityInstancesResponse).pager;
-            const { columns, data } = getTrackedEntityData(response, this.programId, pager);
+            responsePager = (response.data as TrackedEntityInstancesResponse)
+              .pager;
+            const { columns, data } = getTrackedEntityData(
+              response,
+              this.programId,
+              pager
+            );
             entityColumns = columns;
             entityData = data;
           } else {
@@ -128,23 +205,36 @@ export class LineListTableComponent {
             [{ label: '#', key: 'index' }, ...entityColumns],
             this.actionOptions
           );
-
-          setColumns(finalColumns);
-          setData(entityData);
-          setPager(responsePager);
+          console.log('hey');
+          setColumns(...[finalColumns]);
+          setData(...[entityData]);
+          setPager(...[responsePager]);
+          console.log('columns', columns);
+          console.log('data', data);
         });
     }, [
+      programIdState,
+      orgUnitState,
+      programStageIdState,
+      attributeFiltersState,
+      startDateState,
+      endDateState,
       pager.page,
       pager.pageSize,
     ]);
 
-    console.log('columns', columns);
-    console.log('data', data);
+    useEffect(() => {
+      console.log('Updated Columns:', columns);
+      console.log('Updated Data:', data);
+    }, [columns, data]);
 
     const getDropdownOptions = (row: TableRow): DropdownMenuOption[] => {
       return (this.actionOptions || []).map((option) => ({
         ...option,
-        onClick: () => option.onClick?.(row),
+        onClick: () => {
+          option.onClick?.(row);
+          this.actionSelected.emit({ action: option.label, row });
+        },
       }));
     };
 
@@ -180,7 +270,8 @@ export class LineListTableComponent {
           </TableBody>
           <TableFoot>
             <DataTableRow>
-              <DataTableCell colSpan={columns.length}>
+              {/* <DataTableCell colSpan={columns.length}> */}
+              <DataTableCell colSpan={columns.length.toString()}>
                 <div>
                   <Pagination
                     page={pager.page}
@@ -190,7 +281,7 @@ export class LineListTableComponent {
                     onPageChange={(page: number) =>
                       setPager((prev) => ({ ...prev, page }))
                     }
-                    onPageSizeChange={(pageSize: string) => {
+                    onPageSizeChange={(pageSize: number) => {
                       const newPageSize = Number(pageSize);
                       setPager((prev) => ({
                         ...prev,
@@ -209,8 +300,6 @@ export class LineListTableComponent {
     );
   };
 }
-
-
 
 // import { Component, Input } from '@angular/core';
 // import {
@@ -325,7 +414,7 @@ export class LineListTableComponent {
 //                 allDataElements.add(dv.dataElement)
 //               );
 //             });
-            
+
 //             const stageFromMetaData = response.metadata.programStages.find(
 //               (stage) => stage.id === this.programStageId
 //             );
