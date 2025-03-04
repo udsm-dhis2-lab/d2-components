@@ -73,6 +73,7 @@ export class AppShellConfigService {
     const manifest = await firstValueFrom(this.getAppManifest());
 
     let url = manifest?.activities?.dhis?.href;
+
     if (!config.isDevMode) {
       const systemInfo = await firstValueFrom(this.getSystemInfo());
       url = systemInfo ? (systemInfo['contextPath'] as string) : undefined;

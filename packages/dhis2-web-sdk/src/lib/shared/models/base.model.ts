@@ -7,14 +7,9 @@ export class IBaseSDKModel {
 
 export class BaseSDKModel<T extends IBaseSDKModel> {
   [attribute: string]: unknown;
-  // #propertyMetadata: Record<string, unknown>;
   constructor(model: Partial<T>) {
     Object.keys(model).forEach((key) => {
       this[key] = model[key];
     });
-  }
-
-  static getProperties() {
-    return (this as any)._propertyMetadata;
   }
 }

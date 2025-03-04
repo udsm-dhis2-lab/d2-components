@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import {
   ButtonModule,
   HeaderBarModule,
+  LineListModule,
   OrganisationUnitSelectorModule,
   PeriodSelectorModule,
 } from '@iapps/ng-dhis2-ui';
@@ -22,6 +23,7 @@ import { NgxDhis2DictionaryModule } from '@iapps/ngx-dhis2-dictionary';
     PeriodSelectorModule,
     OrganisationUnitSelectorModule,
     NgxDhis2DictionaryModule,
+    LineListModule,
   ],
 })
 export class ComponentsModule {}

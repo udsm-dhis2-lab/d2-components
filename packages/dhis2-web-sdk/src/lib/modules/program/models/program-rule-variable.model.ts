@@ -28,6 +28,6 @@ export class ProgramRuleVariable extends IdentifiableObject<ProgramRuleVariable>
   ];
   programRuleVariableSourceType!: string;
   useCodeForOptionSet?: boolean;
-  dataElement?: string;
-  trackedEntityAttribute?: string;
+  dataElement?: any;
+  trackedEntityAttribute?: any;
 }
