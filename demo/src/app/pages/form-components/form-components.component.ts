@@ -1,12 +1,32 @@
 import { Component } from '@angular/core';
+import { FormField, FormFieldModule, FormUtil } from '@iapps/ng-dhis2-ui';
 
 @Component({
+  // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'app-form-components',
   templateUrl: './form-components.component.html',
-  // styles: [':host{display:contents}'], // Makes component host as if it was not there, can offer less css headaches. Use @HostBinding class approach for easier overrides.
-  // host: { class: 'contents' },
+  imports: [FormFieldModule],
 })
 export class FormComponentsComponent {
-  // @HostBinding('class') protected readonly class = 'contents'; // Makes component host as if it was not there, can offer less css headaches. Assumes .contents{display:contents} css class exits
-  // constructor() {}
+  fields = [
+    new FormField<string>({
+      id: 'name',
+      code: 'name',
+      key: 'name',
+      label: 'Name',
+      controlType: 'textbox',
+      type: 'text',
+      required: true,
+    }),
+    new FormField<string>({
+      id: 'Is new item',
+      code: 'newItem',
+      key: 'newItem',
+      label: 'Is new item',
+      controlType: 'checkbox',
+      required: true,
+    }),
+  ];
+
+  form = FormUtil.getFormGroup(this.fields, {});
 }

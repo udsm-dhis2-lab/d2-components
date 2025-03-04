@@ -1,0 +1,16 @@
+<div>
+  <div
+    *ngFor="let repeatableEvent of repeatableEvents; let i = index"
+    class="card p-3 mb-2"
+  >
+    <div class="font-weight-bold h6">{{ fieldGroup().name }}: #{{ i + 1 }}</div>
+    <ng-dhis2-ui-form
+      [fields]="fieldGroup().fields || []"
+      [form]="repeatableEvent.form"
+      [programRuleActions]="programRuleActions"
+      [dataEntities]="repeatableEvent"
+      [isFormHorizontal]="true"
+      (formUpdate)="onFormUpdate($event, i)"
+    />
+  </div>
+</div>
