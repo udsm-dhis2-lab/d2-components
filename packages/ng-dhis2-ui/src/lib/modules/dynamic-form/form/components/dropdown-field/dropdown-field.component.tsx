@@ -19,6 +19,7 @@ import { Field, FieldConfig } from '../../../form-models/models';
   selector: 'dropdown-field',
   templateUrl: '../../shared/htmls/base-field.component.html',
   styleUrls: ['./dropdown-field.component.scss'],
+  standalone: false,
 })
 export class DropdownFieldComponent {
   field = input.required<Field<string>>();

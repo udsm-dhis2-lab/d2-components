@@ -25,4 +25,11 @@ export const appRoutes: Route[] = [
         (m) => m.WebSdkComponent
       ),
   },
+  {
+    path: 'form-components',
+    loadComponent: () =>
+      import('./pages/form-components/form-components.component').then(
+        (m) => m.FormComponentsComponent
+      ),
+  },
 ];

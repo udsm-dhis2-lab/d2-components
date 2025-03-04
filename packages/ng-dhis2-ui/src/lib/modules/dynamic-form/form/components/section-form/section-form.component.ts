@@ -8,9 +8,10 @@ import {
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { FormUtil } from '../../utils';
-import {  IFormFieldGroup,
+import {
+  IFormFieldGroup,
   IFormMetadata,
-   } from '../../../form-models/interfaces';
+} from '../../../form-models/interfaces';
 import { FormValue } from '../../../form-models/models';
 import { ProgramRuleEngine } from '@iapps/d2-web-sdk';
 // import { ProgramRuleEngine } from '@eoc/d2-web-sdk';
@@ -18,6 +19,7 @@ import { ProgramRuleEngine } from '@iapps/d2-web-sdk';
 @Component({
   selector: 'section-form',
   templateUrl: './section-form.component.html',
+  standalone: false,
 })
 export class SectionFormComponent implements OnInit {
   loading = input<boolean>();

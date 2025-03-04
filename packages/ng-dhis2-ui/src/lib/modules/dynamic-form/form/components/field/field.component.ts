@@ -20,6 +20,7 @@ import { Field, FieldConfig } from '../../../form-models/models';
   selector: 'field',
   templateUrl: './field.component.html',
   styleUrls: ['./field.component.scss'],
+  standalone: false,
 })
 export class FieldComponent implements OnInit, OnChanges, OnDestroy {
   @Input() field!: Field<string>;

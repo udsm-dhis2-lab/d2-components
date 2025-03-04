@@ -18,6 +18,7 @@ import { Field, FieldConfig } from '../../../form-models/models';
 @Component({
   selector: 'checkbox',
   templateUrl: '../../shared/htmls/base-field.component.html',
+  standalone: false,
 })
 export class CheckboxComponent {
   field = input.required<Field<string>>();

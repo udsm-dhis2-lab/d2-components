@@ -11,15 +11,18 @@ import {
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { head } from 'lodash';
-import {   Field,
+import {
+  Field,
   FieldsData,
   FormConfig,
-  FormValue, } from '../../../form-models/models';
+  FormValue,
+} from '../../../form-models/models';
 
 @Component({
   selector: 'form',
   templateUrl: './form.component.html',
   styleUrls: ['./form.component.scss'],
+  standalone: false,
 })
 export class FormComponent implements OnChanges {
   formConfig = input<FormConfig>();
