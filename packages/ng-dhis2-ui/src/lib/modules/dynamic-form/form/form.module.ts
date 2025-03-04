@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ReactWrapperModule } from '@iapps/ng-dhis2-ui';
+import { ReactWrapperModule } from '../../react-wrapper';
 import { formPipes } from './pipes';
 import { CommonModule } from '@angular/common';
 import { fieldComponents } from './components';

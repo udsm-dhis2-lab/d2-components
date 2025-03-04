@@ -11,11 +11,11 @@ import { range } from 'lodash';
 import { IFormFieldGroup } from '../../../form-models/interfaces';
 import { Field, FormValue } from '../../../form-models/models';
 
-
 @Component({
   selector: 'repeatable-form',
   templateUrl: './repeatable-form.component.html',
   styleUrls: ['./repeatable-form.component.scss'],
+  standalone: false,
 })
 export class RepeatableFormComponent implements OnInit {
   @Input() formObject!: any;
@@ -76,7 +76,6 @@ export class RepeatableFormComponent implements OnInit {
 
     this.repeatableStageUpdate.emit(this.repeatableData);
   }
-
 
   onFormUpdate(formValue: FormValue, eventIndex: number): void {
     this.repeatableData = { ...this.repeatableData, [eventIndex]: formValue };

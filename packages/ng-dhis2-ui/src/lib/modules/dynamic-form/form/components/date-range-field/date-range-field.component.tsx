@@ -6,29 +6,30 @@ import {
   Output,
   signal,
   WritableSignal,
-} from "@angular/core";
-import { FormGroup } from "@angular/forms";
-import { IconArrowRight16 } from "@dhis2/ui";
-import React from "react";
+} from '@angular/core';
+import { FormGroup } from '@angular/forms';
+import { IconArrowRight16 } from '@dhis2/ui';
+import React from 'react';
 //import { DateField, FieldConfig } from "src/app/libs/form-models/models";
 import { DateField, FieldConfig } from '../../../form-models/models';
-import { FormUtil } from "../../utils";
+import { FormUtil } from '../../utils';
 
 @Component({
-  selector: "date-range-field",
-  templateUrl: "./date-range-field.component.html",
-  styleUrls: ["./date-range-field.component.scss"],
+  selector: 'date-range-field',
+  templateUrl: './date-range-field.component.html',
+  styleUrls: ['./date-range-field.component.scss'],
+  standalone: false,
 })
 export class DateRangeFieldComponent implements OnInit {
   NextIcon = () => <IconArrowRight16 />;
   fieldConfig = input(
     new FieldConfig({
-      inputWidth: "200px",
+      inputWidth: '200px',
       hideLabel: true,
     }),
     {
       transform: (config: FieldConfig) =>
-        new FieldConfig({ ...config, inputWidth: "200px" }),
+        new FieldConfig({ ...config, inputWidth: '200px' }),
     }
   );
   dateRangeLabel = input<{ startDate: string; endDate: string }>();
@@ -45,17 +46,17 @@ export class DateRangeFieldComponent implements OnInit {
   ngOnInit(): void {
     this.startDateField = signal(
       new DateField({
-        label: this.dateRangeLabel()?.startDate || "Start date",
-        key: "startDate",
-        id: "startDate",
+        label: this.dateRangeLabel()?.startDate || 'Start date',
+        key: 'startDate',
+        id: 'startDate',
       })
     );
 
     this.endDateField = signal(
       new DateField({
-        label: this.dateRangeLabel()?.endDate || "End date",
-        key: "endDate",
-        id: "endDate",
+        label: this.dateRangeLabel()?.endDate || 'End date',
+        key: 'endDate',
+        id: 'endDate',
       })
     );
 
@@ -68,12 +69,12 @@ export class DateRangeFieldComponent implements OnInit {
   onDateChange(dateType: string) {
     const value = this.form.get(dateType)?.value;
     switch (dateType) {
-      case "startDate":
+      case 'startDate':
         this.endDateField.set(
           new DateField({ ...this.endDateField(), min: value })
         );
         break;
-      case "endDate":
+      case 'endDate':
         this.startDateField.set(
           new DateField({ ...this.startDateField(), max: value })
         );
@@ -84,8 +85,8 @@ export class DateRangeFieldComponent implements OnInit {
     }
 
     this.dateChange.emit({
-      startDate: this.form.get("startDate")?.value,
-      endDate: this.form.get("endDate")?.value,
+      startDate: this.form.get('startDate')?.value,
+      endDate: this.form.get('endDate')?.value,
     });
   }
 }
