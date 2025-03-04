@@ -24,8 +24,11 @@ function initializeShell(
   httpClient: HttpClient
 ) {
   const configService = new AppShellConfigService(appShellConfig, httpClient);
-  initializeWedSDK(configService);
-  return () => configService;
+
+  return async () => {
+    await initializeWedSDK(configService);
+    return configService;
+  };
 }
 
 async function initializeWedSDK(
@@ -35,7 +38,7 @@ async function initializeWedSDK(
     const config = await firstValueFrom(appShellConfig.getConfig());
 
     if (window) {
-      (window as any).d2Web = D2Web.getInstance(
+      (window as any).d2Web = await D2Web.initialize(
         new D2WebConfig({
           baseUrl: config.url,
         })

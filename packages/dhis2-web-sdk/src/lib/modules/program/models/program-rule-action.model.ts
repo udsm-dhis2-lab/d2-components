@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+import { DataElement } from '../../data-element';
 import {
   IDENTIFIABLE_FIELDS,
   IdentifiableField,
   IdentifiableObject,
 } from '../../../shared';
+import { TrackedEntityAttribute } from '../models';
 
 export type ProgramRuleActionField =
   | IdentifiableField
@@ -40,7 +42,7 @@ export class ProgramRuleAction extends IdentifiableObject<ProgramRuleAction> {
   displayContent?: string;
   programRuleActionType!: string;
   evaluationTime?: string;
-  dataElement?: string;
-  trackedEntityAttribute?: string;
+  dataElement?: Partial<DataElement>;
+  trackedEntityAttribute?: Partial<TrackedEntityAttribute>;
   programRule!: any;
 }

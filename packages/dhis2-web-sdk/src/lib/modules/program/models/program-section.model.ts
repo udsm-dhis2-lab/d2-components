@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import { TrackedEntityAttribute } from './tracked-entity-attribute.model';
 import {
   IDENTIFIABLE_FIELDS,
   IdentifiableField,
   IdentifiableObject,
 } from '../../../shared';
-import { tr } from 'date-fns/locale';
+import { TrackedEntityAttribute } from './tracked-entity-attribute.model';
 
 export type ProgramSectionField =
   | IdentifiableField

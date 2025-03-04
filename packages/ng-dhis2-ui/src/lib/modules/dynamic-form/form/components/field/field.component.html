@@ -1,0 +1,80 @@
+<ng-container *ngIf="field">
+  @switch (field.controlType) { @case ('textbox') {
+  <text-field
+    [field]="field"
+    [fieldConfig]="fieldConfig"
+    [(form)]="form"
+    [value]="value()"
+    (update)="onValueChange()"
+    (immediateUpdate)="onImmediateChange($event)"
+  ></text-field>
+  } @case ('date') {
+  <text-field
+    [field]="field"
+    [fieldConfig]="fieldConfig"
+    [(form)]="form"
+    [value]="value()"
+    (update)="onValueChange()"
+    (immediateUpdate)="onImmediateChange($event)"
+  ></text-field>
+  <!-- <date-field
+    [field]="field"
+    [fieldConfig]="fieldConfig"
+    [(form)]="form"
+    [value]="value()"
+    (update)="onValueChange()"
+  ></date-field> -->
+  } @case('dropdown') {
+  <dropdown-field
+    [field]="field"
+    [fieldConfig]="fieldConfig"
+    [(form)]="form"
+    [value]="value()"
+    (update)="onValueChange()"
+  ></dropdown-field>
+  } @case('textarea') {
+  <text-area-field
+    [field]="field"
+    [fieldConfig]="fieldConfig"
+    [(form)]="form"
+    [value]="value()"
+    (update)="onValueChange()"
+  ></text-area-field>
+  } @case ('transfer') {
+  <transfer-field
+    [field]="field"
+    [fieldConfig]="fieldConfig"
+    [(form)]="form"
+    [value]="value()"
+    (update)="onValueChange()"
+  >
+  </transfer-field>
+  } @case ('checkbox') {
+  <checkbox
+    [field]="field"
+    [fieldConfig]="fieldConfig"
+    [(form)]="form"
+    [value]="value()"
+    (update)="onValueChange()"
+  ></checkbox>
+  } @case ('file') {
+  <file-field
+    [field]="field"
+    [fieldConfig]="fieldConfig"
+    [(form)]="form"
+    [value]="value()"
+    (update)="onValueChange()"
+    (immediateUpdate)="onImmediateChange($event)"
+  ></file-field>
+  } @default {
+  <div>default</div>
+  <text-field
+    [field]="field"
+    [fieldConfig]="fieldConfig"
+    [(form)]="form"
+    [value]="value()"
+    (update)="onValueChange()"
+    (immediateUpdate)="onImmediateChange($event)"
+  ></text-field>
+  }}
+</ng-container>

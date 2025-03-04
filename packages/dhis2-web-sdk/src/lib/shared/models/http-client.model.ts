@@ -4,6 +4,7 @@
 
 import axios, { AxiosDefaults, AxiosInstance } from 'axios';
 import { D2HttpResponse } from './http-response.model';
+import { D2HttpRequestConfig } from './d2-http-request-config.model';
 
 export class D2HttpClient {
   #axiosInstance!: AxiosInstance;
@@ -12,13 +13,45 @@ export class D2HttpClient {
     this.#axiosInstance = axios.create(config);
   }
 
-  async get(url: string): Promise<D2HttpResponse> {
+  async get(
+    url: string,
+    config?: D2HttpRequestConfig
+  ): Promise<D2HttpResponse> {
     try {
-      const response = await this.#axiosInstance.get(`api/${url}`);
+      const response = await this.#axiosInstance.get(
+        `${this.#getBaseUrl(config)}/${url}`
+      );
 
       return new D2HttpResponse(response as unknown as Record<string, unknown>);
     } catch (error) {
       return new D2HttpResponse(error as unknown as Record<string, unknown>);
     }
+  }
+
+  async post(
+    url: string,
+    data: Record<string, unknown>,
+    config?: D2HttpRequestConfig
+  ): Promise<D2HttpResponse> {
+    try {
+      const response = await this.#axiosInstance.post(
+        `../../../api/${url}`,
+        data
+      );
+
+      return new D2HttpResponse(response as unknown as Record<string, unknown>);
+    } catch (error) {
+      return new D2HttpResponse(error as unknown as Record<string, unknown>);
+    }
+  }
+
+  #getBaseUrl(config?: D2HttpRequestConfig): string {
+    const baseUrl = '../../..';
+
+    if (config?.useRootUrl) {
+      return baseUrl;
+    }
+
+    return `${baseUrl}/api`;
   }
 }

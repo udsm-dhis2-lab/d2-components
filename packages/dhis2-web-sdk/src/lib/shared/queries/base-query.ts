@@ -9,6 +9,7 @@ import {
   IBaseIdentifiable,
   JunctionOperator,
   Pager,
+  QueryCondition,
   QueryFilter,
   QueryModel,
   RelationshipDirection,
@@ -17,35 +18,48 @@ import { DhisUrlGenerator } from '../utils';
 
 export class BaseQuery<T extends BaseIdentifiable, U> {
   filters: QueryFilter[] = [];
-  #id?: string;
+  id?: string;
   fields!: U[];
-  #resourceName!: string;
-  #singularResourceName!: string;
-  #pagination: Pager = new Pager();
-  #junctionOperator?: JunctionOperator;
+  resourceName!: string;
+  singularResourceName!: string;
+  pagination: Pager = new Pager();
+  junctionOperator?: JunctionOperator;
 
   constructor(
     protected identifiable: IBaseIdentifiable,
     protected httpClient: D2HttpClient
   ) {
     this.fields = identifiable.fields;
-    this.#resourceName = identifiable.resourceName;
-    this.#singularResourceName = identifiable.singularResourceName;
+    this.resourceName = identifiable.resourceName;
+    this.singularResourceName = identifiable.singularResourceName;
   }
 
-  select(fields: U[]): BaseQuery<T, U> {
+  select(fields: U[]) {
     this.fields = fields;
     return this;
   }
 
-  paginate(pagination: Pager): BaseQuery<T, U> {
-    this.#pagination = pagination;
+  paginate(pagination: Pager) {
+    this.pagination = pagination;
     return this;
   }
 
-  byId(id: string): BaseQuery<T, U> {
-    this.#id = id;
+  byId(id: string) {
+    this.id = id;
     this.filters = [];
+    return this;
+  }
+
+  where(params: { attribute: U; value: string }) {
+    this.filters = [
+      ...this.filters,
+      new QueryFilter({
+        attribute: params.attribute as string,
+        value: params.value as string,
+        condition: QueryCondition.Equal,
+      }),
+    ];
+
     return this;
   }
 
@@ -58,30 +72,30 @@ export class BaseQuery<T extends BaseIdentifiable, U> {
       ...this.fields,
       `${
         relationshipDirection === 'ToMany'
-          ? modelQuery.#resourceName
-          : modelQuery.#singularResourceName
+          ? modelQuery.resourceName
+          : modelQuery.singularResourceName
       }[${modelQuery.fields?.join(',')}]` as any,
     ];
     return this;
   }
 
-  #query(): QueryModel<U> {
+  query(): QueryModel<U> {
     return new QueryModel({
       resourceName: this.identifiable.resourceName,
-      id: this.#id,
+      id: this.id,
       fields: this.fields,
       filters: this.filters,
-      pagination: this.#pagination,
-      junctionOperator: this.#junctionOperator,
+      pagination: this.pagination,
+      junctionOperator: this.junctionOperator,
     });
   }
 
-  #dhisUrl(): string {
-    return DhisUrlGenerator.generate<U>(this.#query());
+  dhisUrl(): string {
+    return DhisUrlGenerator.generate<U>(this.query());
   }
 
   async get(): Promise<D2Response<T>> {
-    const response = await this.httpClient.get(this.#dhisUrl());
+    const response = await this.httpClient.get(this.dhisUrl());
     return new D2Response<T>(response, this.identifiable);
   }
 }
