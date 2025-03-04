@@ -44,7 +44,7 @@ export class LineListService {
     pageSize: number,
   ): Observable<EventsResponse> {
     return this.httpClient.get(
-      `events.json?program=${programId}&orgUnit=${orgUnit}&page=${page}&pageSize=${pageSize}&fields=event,programStage,dataValues[dataElement,value]&totalPages=true`
+      `events.json?program=${programId}&orgUnit=${orgUnit}&page=${page}&pageSize=${pageSize}&fields=*&totalPages=true`
     );
   }
 
@@ -55,7 +55,7 @@ export class LineListService {
     pageSize: number,
   ): Observable<EventsResponse> {
     return this.httpClient.get(
-      `events.json?programStage=${programStageId}&orgUnit=${orgUnit}&page=${page}&pageSize=${pageSize}&fields=event,dataValues[dataElement,value]&totalPages=true`
+      `events.json?programStage=${programStageId}&orgUnit=${orgUnit}&page=${page}&pageSize=${pageSize}&fields=*&totalPages=true`
     );
   }
 
