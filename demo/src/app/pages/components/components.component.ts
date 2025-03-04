@@ -79,21 +79,21 @@ export class ComponentsComponent implements OnInit {
       this.deleteRow(event.row);
     } else if (event.action === 'Edit') {
       this.editRow(event.row);
+    } else if(event.action === 'View') {
+      this.onView(event.row);
     }
   }
   
   deleteRow(row: TableRow) {
     console.log('Deleting row:', row);
-    // Add API call or logic to delete row
   }
   
   editRow(row: TableRow) {
     console.log('Editing row:', row);
-    // Add logic to edit row
   }
 
   onView(row: any) {
-    console.log('View', row);
+    console.log('Viewing row', row);
   }
 
   onEdit(row: any) {

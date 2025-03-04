@@ -33,9 +33,9 @@
   [programId]="programId"
   [orgUnit]="orgUnit"
   [actionOptions]="[
-    { label: 'View', onClick: onView },
-    { label: 'Edit', onClick: onEdit },
-    { label: 'Delete', destructive: true, onClick: onDelete }
+    { label: 'View'},
+    { label: 'Edit'},
+    { label: 'Delete', destructive: true}
   ]"
   (actionSelected)="onActionSelected($event)"
   [attributeFilters]="[

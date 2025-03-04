@@ -128,39 +128,23 @@ export class LineListTableComponent {
     }, []);
 
     useEffect(() => {
-      setTimeout(() => {
-        const paginationContainer = document.querySelector(
-          '[data-test="dhis2-uiwidgets-pagination"]'
-        ) as HTMLElement;
-
-        if (paginationContainer) {
-          paginationContainer.style.setProperty('display', 'flex', 'important');
-          paginationContainer.style.setProperty(
-            'flex-direction',
-            'row',
-            'important'
-          );
-          paginationContainer.style.setProperty(
-            'justify-content',
-            'space-between',
-            'important'
-          );
-          paginationContainer.style.setProperty(
-            'align-items',
-            'center',
-            'important'
-          );
-        }
-      }, 1000);
-
-      if (paginationRef.current) {
-        paginationRef.current.style.setProperty('display', 'flex', 'important');
-        paginationRef.current.style.setProperty(
-          'flex-direction',
-          'row',
-          'important'
-        );
+      if (!loading) {
+        setTimeout(() => {
+          const paginationContainer = document.querySelector(
+            '[data-test="dhis2-uiwidgets-pagination"]'
+          ) as HTMLElement;
+    
+          if (paginationContainer) {
+            paginationContainer.style.display = 'flex';
+            paginationContainer.style.flexDirection = 'row';
+            paginationContainer.style.justifyContent = 'space-between';
+            paginationContainer.style.alignItems = 'center';
+          }
+        }, 500); // Short delay to ensure styles apply after data renders
       }
+    }, [loading]); 
+
+    useEffect(() => {
       setLoading(true);
       this.lineListService
         .getLineListData(
