@@ -2,12 +2,11 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { SharedDhis2UiModule } from '../../shared/shared.module';
 import { LineListTableComponent } from './containers/line-list.component';
-import { ReactWrapperModule } from '@iapps/ng-dhis2-ui';
 import { LineListService } from './services/line-list.service';
 @NgModule({
   declarations: [LineListTableComponent],
   exports: [LineListTableComponent],
-  imports: [CommonModule, SharedDhis2UiModule, ReactWrapperModule,],
-  providers: [LineListService], 
+  imports: [CommonModule, SharedDhis2UiModule],
+  providers: [LineListService],
 })
 export class LineListModule {}
