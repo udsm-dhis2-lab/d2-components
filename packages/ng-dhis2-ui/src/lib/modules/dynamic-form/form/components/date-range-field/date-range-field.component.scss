@@ -1,0 +1,21 @@
+// Copyright 2024 UDSM DHIS2 Lab. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+.date-range-container {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.date-range-next-icon-container {
+  align-items: end;
+  display: flex;
+  flex-grow: 0;
+  height: 40px;
+  position: relative;
+}
+
+.date-range-icon-no-label {
+  height: 16px;
+}
+

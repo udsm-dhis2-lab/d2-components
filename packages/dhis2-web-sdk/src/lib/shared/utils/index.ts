@@ -3,3 +3,4 @@
 // license that can be found in the LICENSE file.
 export * from './query-filter.util';
 export * from './dhis-url-generator.util';
+export * from './generate-uid.util';

@@ -10,7 +10,7 @@ export class DhisUrlGenerator {
       return '';
     }
 
-    let url = query.resourceName;
+    const url = query.resourceName;
     const fieldParams = query.fields.join(',');
 
     if (query.id) {

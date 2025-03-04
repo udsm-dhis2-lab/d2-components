@@ -14,6 +14,7 @@ import {
 import { TrackedEntityAttribute } from './tracked-entity-attribute.model';
 import { DataElement } from '../../data-element';
 import { flatten } from 'lodash';
+import { ProgramRule } from './program-rule.model';
 
 export type ProgramField =
   | IdentifiableField
@@ -89,6 +90,7 @@ export class Program extends IdentifiableObject<Program> {
   programRuleVariables?: ProgramRuleVariable[];
   programStages?: ProgramStage[];
   programSections?: ProgramSection[];
+  programRules?: ProgramRule[];
 
   constructor(program: Partial<Program>) {
     super(program);
@@ -111,6 +113,19 @@ export class Program extends IdentifiableObject<Program> {
         (programTrackedEntityAttribute) =>
           programTrackedEntityAttribute.searchable ||
           programTrackedEntityAttribute?.trackedEntityAttribute?.unique
+      )
+      .map(
+        (programTrackedEntityAttribute) =>
+          programTrackedEntityAttribute.trackedEntityAttribute
+      )
+      .filter((trackedEntityAttribute) => trackedEntityAttribute);
+  }
+
+  get reservedTrackedEntityAttributes(): TrackedEntityAttribute[] {
+    return (this.programTrackedEntityAttributes || [])
+      .filter(
+        (programTrackedEntityAttribute) =>
+          programTrackedEntityAttribute.trackedEntityAttribute?.generated
       )
       .map(
         (programTrackedEntityAttribute) =>
