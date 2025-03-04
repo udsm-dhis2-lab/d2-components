@@ -9,6 +9,10 @@ export class D2HttpResponseStatus extends BaseSDKModel<D2HttpResponseStatus> {
   status!: number;
   statusText!: string;
   message?: any;
+
+  get isSuccess(): boolean {
+    return this.status >= 200 && this.status < 300;
+  }
 }
 
 export class D2HttpResponse {

@@ -75,6 +75,7 @@ export class Period {
 
   getById(id: string): PeriodInterface | undefined {
     this._type = deducePeriodTypeFromId(id);
+
     this._year = getPeriodYearFromId(id) as number;
 
     const periodList = this.get().list();

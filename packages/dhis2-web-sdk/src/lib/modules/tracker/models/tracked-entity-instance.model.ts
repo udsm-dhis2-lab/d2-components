@@ -1,0 +1,411 @@
+import { camelCase, isEmpty } from 'lodash';
+import {
+  AttributeUtil,
+  EnrollmentUtil,
+  TrackedEntityInstanceUtil,
+  TrackerRelationshipUtil,
+} from '../utils';
+import { Attribute, AttributeEntity } from './attribute.model';
+import { Enrollment, IEnrollment } from './enrollment.model';
+import { DHIS2Event, IDHIS2Event } from './event.model';
+import { TrackerRelationship } from './tracker-relationship.model';
+import { format } from 'date-fns';
+import { BaseTrackerSDKModel } from './base.model';
+
+export interface ProgramOwner {
+  ownerOrgUnit: string;
+  program: string;
+  trackedEntityInstance: string;
+}
+
+export interface TrackerDataEntities {
+  [key: string]: string | number;
+  enrollmentDate: string;
+  orgUnit: string;
+}
+
+export interface TrackedEntityInstanceObject {
+  created?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  orgUnit: string;
+  createdAtClient?: string;
+  trackedEntity: string;
+  trackedEntityInstance?: string;
+  lastUpdated?: string;
+  trackedEntityType: string;
+  lastUpdatedAtClient?: string;
+  inactive?: boolean;
+  deleted?: boolean;
+  featureType?: string;
+  programOwners?: ProgramOwner[];
+  enrollments: IEnrollment[];
+  relationships?: any[];
+  attributes?: Attribute[];
+  relatedEntities?: TrackerRelationship[];
+}
+
+interface TrackerFieldProperty {
+  id: string;
+  type: 'ATTRIBUTE' | 'DATA_ELEMENT';
+  generated?: boolean;
+}
+
+export interface ITrackedEntityInstance {
+  program: string;
+  attributes: Attribute[];
+  enrollments: IEnrollment[];
+  latestEnrollment: Enrollment;
+  enrollmentDate: string;
+  createdAt: string;
+  updatedAt: string;
+  trackedEntityType: string;
+  trackedEntity: string;
+  trackedEntityInstance?: string;
+  _events: any[];
+  ownerOrgUnit: string;
+  orgUnit: string;
+  orgUnitName: string;
+  relatedEntities?: TrackerRelationship[];
+  metaData?: Record<string, unknown>;
+  fields?: Record<string, TrackerFieldProperty>;
+  get attributeEntities(): AttributeEntity;
+  get dataEntities(): Record<string, any>;
+  get reportEntities(): Record<string, string>;
+  spreadAttributes?: (attributes: any) => void;
+  setAttributeValue?: (attribute: string, value: string, code?: string) => void;
+  setEnrollment?: (enrollment: IEnrollment) => void;
+  setEnrollmentDate?: (enrollmentDate: string) => void;
+  setIncidentDate?: (incidentDate: string) => void;
+  getEventByStage?: (programStage: string) => void;
+  setEvent?: (event: IDHIS2Event) => void;
+  setOrgUnit?: (orgUnit: string) => void;
+  setProgramStageData?: (
+    programStage: string,
+    data: Record<string, any>
+  ) => void;
+  getEventsByProgramStage?: (programStage: string) => IDHIS2Event[];
+  getRelatedEntitiesByType?: (relationshipType: string) => string[];
+  setRelationship?: (relationship: TrackerRelationship) => void;
+  toObject?: () => TrackedEntityInstanceObject;
+}
+
+export class TrackedEntityInstance
+  extends BaseTrackerSDKModel<ITrackedEntityInstance>
+  implements ITrackedEntityInstance
+{
+  program!: string;
+  attributes!: Attribute[];
+  enrollments!: IEnrollment[];
+  latestEnrollment!: Enrollment;
+  enrollmentDate!: string;
+  updatedAt!: string;
+  createdAt!: string;
+  trackedEntityType!: string;
+  trackedEntity!: string;
+  trackedEntityInstance?: string;
+  _events!: DHIS2Event[];
+  ownerOrgUnit!: string;
+  orgUnit!: string;
+  orgUnitName!: string;
+  relatedEntities?: TrackerRelationship[];
+  fields?: Record<string, TrackerFieldProperty>;
+  [key: string]: any;
+
+  protected _attributes!: Attribute[];
+  protected _enrollments!: Enrollment[];
+  protected _latestEnrollment!: Enrollment;
+
+  constructor(
+    trackedEntityInstanceObject?: Partial<TrackedEntityInstanceObject>
+  ) {
+    super(trackedEntityInstanceObject);
+    if (!isEmpty(this)) {
+      this.ownerOrgUnit = this.orgUnit;
+      this.trackedEntity = this.trackedEntityInstance || this.trackedEntity;
+
+      this.enrollments = EnrollmentUtil.getEnrollments(
+        this.enrollments || [
+          EnrollmentUtil.generate({
+            date: new Date().toISOString(),
+            program: this.program,
+            trackedEntity: this.trackedEntity,
+            trackedEntityType: this.trackedEntityType,
+            orgUnit: this.orgUnit,
+          }),
+        ],
+        { program: this.program, trackedEntityType: this.trackedEntityType }
+      );
+
+      this.latestEnrollment = EnrollmentUtil.getLatestEnrollment(
+        this.enrollments.filter(
+          (enrollment) => enrollment.program === this.program
+        ) || []
+      ) as Enrollment;
+
+      // Spread event data values as standalone attributes of the class
+      (
+        Object.keys(this.latestEnrollment?.programStageEvents || {}) || []
+      ).forEach((stageKey) => {
+        const stageEvent = ((this.latestEnrollment?.programStageEvents || {})[
+          stageKey
+        ]?.events || [])[0];
+
+        Object.keys(stageEvent?.dataValueEntities || {}).forEach(
+          (dataValueKey) => {
+            this[dataValueKey] = stageEvent[dataValueKey];
+          }
+        );
+      });
+
+      // Spread enrollment data values as standalone attributes of the class
+      Object.keys(this.latestEnrollment || {}).forEach((key) => {
+        this[key] = (this.latestEnrollment as any)[key];
+      });
+
+      this.orgUnitName = this.latestEnrollment?.orgUnitName as string;
+      // this.attributes = trackedEntityInstanceObject?.['attributes'] || [];
+      this.relatedEntities = TrackerRelationshipUtil.getRelationships(
+        this['relationships'] || [],
+        this.trackedEntity as string
+      );
+
+      this.spreadAttributes!(this.attributes || []);
+    }
+  }
+
+  get attributeEntities(): AttributeEntity {
+    return AttributeUtil.getAttributeEntities(this.attributes);
+  }
+
+  get dataEntities(): Record<string, any> {
+    return { ...this.attributeEntities };
+  }
+
+  get reportEntities(): Record<string, string> {
+    return {
+      orgUnit: this.orgUnit,
+      orgUnitName: this.orgUnitName,
+      enrollmentDate: this.enrollmentDate,
+      incidentDate: this['incidentDate'],
+    };
+  }
+
+  spreadAttributes?(attributes: any[]) {
+    attributes.forEach((attribute) => {
+      if (attribute.code) {
+        this[camelCase(attribute.code)] = attribute.value;
+      } else {
+        this[attribute.attribute] = attribute.value;
+      }
+    });
+  }
+
+  setOrgUnit?(orgUnit: string) {
+    this.orgUnit = orgUnit;
+    if (this.latestEnrollment) {
+      this.latestEnrollment.orgUnit = orgUnit;
+    }
+  }
+
+  setAttributeValue(attribute: string, value: string, code?: string) {
+    this.attributes = AttributeUtil.setAttributeValue(
+      this.attributes,
+      attribute,
+      value,
+      code
+    );
+    if (this.spreadAttributes)
+      this.spreadAttributes([{ attribute, code, value }]);
+  }
+
+  setEnrollment(enrollment: IEnrollment) {
+    enrollment.attributes = this.attributes;
+    const availableEnrollment = (this.enrollments || []).find(
+      (enrollmentItem) => enrollmentItem.enrollment === enrollment.enrollment
+    );
+
+    const enrollmentIndex = (this.enrollments || []).indexOf(
+      availableEnrollment as IEnrollment
+    );
+
+    if (enrollmentIndex !== -1) {
+      this.enrollments[enrollmentIndex] = enrollment;
+    } else {
+      this.enrollments.push(enrollment);
+    }
+
+    this.enrollments = EnrollmentUtil.sortEnrollments(this.enrollments);
+
+    this.latestEnrollment = EnrollmentUtil.getLatestEnrollment(
+      this.enrollments
+    ) as Enrollment;
+  }
+
+  setRelationship?(relationship: TrackerRelationship) {
+    const availableRelatedEntity = (this.relatedEntities || []).find(
+      (relatedEntity) =>
+        relatedEntity.relationship === relationship.relationship
+    );
+    const relatedEntityIndex = (this.relatedEntities || []).indexOf(
+      availableRelatedEntity as TrackerRelationship
+    );
+
+    this.relatedEntities =
+      relatedEntityIndex !== -1
+        ? [
+            ...(this.relatedEntities || []).slice(0, relatedEntityIndex),
+            relationship,
+            ...(this.relatedEntities || []).slice(relatedEntityIndex + 1),
+          ]
+        : [...(this.relatedEntities || []), relationship];
+  }
+
+  setEnrollmentDate(enrollmentDate: string) {
+    if (this.latestEnrollment) {
+      this.latestEnrollment.enrolledAt = enrollmentDate;
+      this.latestEnrollment.enrollmentDate = enrollmentDate;
+    }
+  }
+
+  setIncidentDate?(incidentDate: string) {
+    if (this.latestEnrollment) {
+      this.latestEnrollment.occurredAt = incidentDate;
+      this.latestEnrollment.incidentDate = incidentDate;
+    }
+  }
+
+  complete() {
+    if (this.latestEnrollment) {
+      this.latestEnrollment.status = 'COMPLETED';
+    }
+  }
+
+  getEventByStage?(programStage: string) {
+    return (
+      this._events.find((event) => event.programStage === programStage) || {
+        dataValues: [],
+        programStage,
+      }
+    );
+  }
+
+  setEvent(event: IDHIS2Event) {
+    if (this.latestEnrollment) {
+      this.latestEnrollment.setEvent(event);
+    }
+  }
+
+  setProgramStageData(programStage: string, data: Record<string, any>) {
+    if (this.latestEnrollment) {
+      this.latestEnrollment.setProgramStageData(programStage, data as any);
+    }
+  }
+
+  getEventsByProgramStage(programStage: string): IDHIS2Event[] {
+    if (this.latestEnrollment) {
+      return this.latestEnrollment.getEventsByProgramStage(programStage);
+    }
+    return [];
+  }
+
+  getRelatedEntitiesByType?(relationshipType: string) {
+    return (this.relatedEntities || [])
+      .filter(
+        (relatedEntity) => relatedEntity.relationshipType === relationshipType
+      )
+      .map((relatedEntity) => relatedEntity.trackedEntityInstance);
+  }
+
+  updateDataValues?(dataValueEntities: Record<string, any>) {
+    const dataValueKeys = Object.keys(dataValueEntities);
+
+    dataValueKeys.forEach((key) => {
+      const dataValue = dataValueEntities[key];
+      if (dataValue.attribute) {
+        if (this.setAttributeValue)
+          this.setAttributeValue(
+            dataValue.attribute,
+            dataValue.value,
+            dataValue.code
+          );
+      } else if (dataValue.dataElement) {
+        //TODO: Add implementation to add stage data
+      }
+    });
+  }
+
+  setDataValue(
+    dataElement: string,
+    value: string,
+    programStage: string,
+    eventId?: string
+  ) {
+    if (this.latestEnrollment) {
+      this.latestEnrollment.setDataValue(
+        dataElement,
+        value,
+        programStage,
+        eventId
+      );
+    }
+  }
+
+  // TODO: Make this dynamic so in the future user does not have to supply attribute type
+  toReadable(attributeName: string, attributeType: 'DATE' | 'BOOLEAN') {
+    switch (attributeType) {
+      case 'DATE': {
+        try {
+          return format(new Date(this[attributeName]), 'MMMM dd, yyyy');
+        } catch (_e) {
+          return this[attributeName];
+        }
+      }
+      case 'BOOLEAN': {
+        try {
+          return JSON.parse(this[attributeName].toLowerCase());
+        } catch (_e) {
+          return this[attributeName];
+        }
+      }
+      default:
+        return this[attributeName];
+    }
+  }
+
+  toObject?(options?: {
+    skipAttributes?: boolean;
+  }): TrackedEntityInstanceObject {
+    if (this.latestEnrollment) {
+      this.setEnrollment(this.latestEnrollment);
+    }
+
+    return {
+      trackedEntity: this.trackedEntity,
+      trackedEntityType: this.trackedEntityType,
+      orgUnit: this?.orgUnit,
+      enrollments: this.enrollments
+        .map((enrollment) =>
+          enrollment.toObject ? enrollment.toObject() : null
+        )
+        .filter(
+          (enrollment) => enrollment?.program === this.program
+        ) as IEnrollment[],
+      attributes: options?.skipAttributes
+        ? []
+        : AttributeUtil.sanitizeAttributes(this.attributes),
+      relationships: (this.relatedEntities || []).map((relatedEntity) =>
+        relatedEntity.toObject()
+      ),
+    };
+  }
+
+  toTrackedEntity(): Partial<TrackedEntityInstanceObject> {
+    return {
+      trackedEntity: this.trackedEntity,
+      trackedEntityType: this.trackedEntityType,
+      orgUnit: this.orgUnit,
+      attributes: this.attributes,
+    };
+  }
+}

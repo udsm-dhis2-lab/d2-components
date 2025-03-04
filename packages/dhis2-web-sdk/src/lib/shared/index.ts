@@ -3,4 +3,4 @@
 // license that can be found in the LICENSE file.
 export * from './models';
 export * from './queries';
-export * from './decorators';
+export * from './utils';

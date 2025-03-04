@@ -338,7 +338,6 @@ export class LineListTableComponent extends ReactWrapperComponent {
 //                 allDataElements.add(dv.dataElement)
 //               );
 //             });
-
 //             const stageFromMetaData = response.metadata.programStages.find(
 //               (stage) => stage.id === this.programStageId
 //             );
