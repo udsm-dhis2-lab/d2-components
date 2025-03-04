@@ -15,6 +15,7 @@ import {
   DataTableCell,
   Pagination,
   TableFoot,
+  CircularLoader
 } from '@dhis2/ui';
 import React, { useEffect, useRef, useState } from 'react';
 import { LineListService } from '../services/line-list.service';
@@ -110,6 +111,7 @@ export class LineListTableComponent {
     const [endDateState, setEndDateState] = useState<string | undefined>(
       this.endDate
     );
+    const [loading, setLoading] = useState<boolean>(false);
 
     // Store updaters in refs for Angular to access
     const updateRefs = useRef({
@@ -159,6 +161,7 @@ export class LineListTableComponent {
           'important'
         );
       }
+      setLoading(true);
       this.lineListService
         .getLineListData(
           this.programId,
@@ -205,6 +208,7 @@ export class LineListTableComponent {
             [{ label: '#', key: 'index' }, ...entityColumns],
             this.actionOptions
           );
+          setLoading(false);
           console.log('hey');
           setColumns(...[finalColumns]);
           setData(...[entityData]);
@@ -223,11 +227,6 @@ export class LineListTableComponent {
       pager.pageSize,
     ]);
 
-    useEffect(() => {
-      console.log('Updated Columns:', columns);
-      console.log('Updated Data:', data);
-    }, [columns, data]);
-
     const getDropdownOptions = (row: TableRow): DropdownMenuOption[] => {
       return (this.actionOptions || []).map((option) => ({
         ...option,
@@ -240,7 +239,10 @@ export class LineListTableComponent {
 
     return (
       <div>
-        <DataTable>
+      {loading? (
+       <CircularLoader medium/>
+      ):
+       ( <DataTable>
           <TableHead>
             <DataTableRow>
               {columns.map((col) => (
@@ -295,7 +297,7 @@ export class LineListTableComponent {
               </DataTableCell>
             </DataTableRow>
           </TableFoot>
-        </DataTable>
+        </DataTable>)}
       </div>
     );
   };
