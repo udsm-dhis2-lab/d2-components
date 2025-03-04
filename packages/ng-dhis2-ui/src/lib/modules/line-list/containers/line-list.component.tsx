@@ -1,5 +1,4 @@
-// src/app/line-list-table.component.ts
-import { Component, Input } from '@angular/core';
+import { Component, inject, Input } from '@angular/core';
 import {
   DataTable,
   TableHead,
@@ -21,21 +20,23 @@ import {
   TrackedEntityInstancesResponse,
   Pager,
 } from '../models/line-list.models';
-import { 
+import {
   getProgramStageData,
   getTrackedEntityData,
   getEventData,
-  addActionsColumn 
+  addActionsColumn,
 } from '../utils/line-list-utils';
 import { AttributeFilter } from '../models/attribute-filter.model';
+import { ReactWrapperComponent } from '../../react-wrapper';
+import * as ReactDOM from 'react-dom/client';
 
 @Component({
   selector: 'app-line-list',
-  templateUrl: './line-list.component.html',
+  template: '<ng-content></ng-content>',
   styleUrls: ['./line-list.component.scss'],
   standalone: false,
 })
-export class LineListTableComponent {
+export class LineListTableComponent extends ReactWrapperComponent {
   @Input() programId!: string;
   @Input() orgUnit!: string;
   @Input() programStageId?: string;
@@ -44,7 +45,7 @@ export class LineListTableComponent {
   @Input() startDate?: string;
   @Input() endDate?: string;
 
-  constructor(private lineListService: LineListService) {}
+  lineListService = inject(LineListService);
 
   LineList = () => {
     const [columns, setColumns] = useState<ColumnDefinition[]>([]);
@@ -109,12 +110,21 @@ export class LineListTableComponent {
 
           if (this.programStageId) {
             responsePager = (response.data as EventsResponse).pager;
-            const { columns, data } = getProgramStageData(response, this.programStageId, pager);
+            const { columns, data } = getProgramStageData(
+              response,
+              this.programStageId,
+              pager
+            );
             entityColumns = columns;
             entityData = data;
           } else if ('trackedEntityInstances' in response.data) {
-            responsePager = (response.data as TrackedEntityInstancesResponse).pager;
-            const { columns, data } = getTrackedEntityData(response, this.programId, pager);
+            responsePager = (response.data as TrackedEntityInstancesResponse)
+              .pager;
+            const { columns, data } = getTrackedEntityData(
+              response,
+              this.programId,
+              pager
+            );
             entityColumns = columns;
             entityData = data;
           } else {
@@ -133,10 +143,7 @@ export class LineListTableComponent {
           setData(entityData);
           setPager(responsePager);
         });
-    }, [
-      pager.page,
-      pager.pageSize,
-    ]);
+    }, [pager.page, pager.pageSize]);
 
     console.log('columns', columns);
     console.log('data', data);
@@ -208,9 +215,15 @@ export class LineListTableComponent {
       </div>
     );
   };
+
+  override async ngAfterViewInit() {
+    if (!this.elementRef) throw new Error('No element ref');
+    this.reactDomRoot = ReactDOM.createRoot(this.elementRef.nativeElement);
+
+    this.component = this.LineList;
+    this.render();
+  }
 }
-
-
 
 // import { Component, Input } from '@angular/core';
 // import {
@@ -325,7 +338,7 @@ export class LineListTableComponent {
 //                 allDataElements.add(dv.dataElement)
 //               );
 //             });
-            
+
 //             const stageFromMetaData = response.metadata.programStages.find(
 //               (stage) => stage.id === this.programStageId
 //             );
