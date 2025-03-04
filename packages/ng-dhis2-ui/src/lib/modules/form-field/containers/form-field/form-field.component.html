@@ -1,0 +1,80 @@
+<ng-container *ngIf="field()">
+  @switch (field().controlType) { @case ('textbox') {
+
+  <ng-dhis2-ui-text-field
+    [field]="field()"
+    [fieldConfig]="fieldConfig"
+    [(form)]="form"
+    [value]="value()"
+    (update)="onValueChange()"
+    (immediateUpdate)="onImmediateChange($event)"
+  />
+  } @case ('date') {
+  <ng-dhis2-ui-text-field
+    [field]="field()"
+    [fieldConfig]="fieldConfig"
+    [(form)]="form"
+    [value]="value()"
+    (update)="onValueChange()"
+    (immediateUpdate)="onImmediateChange($event)"
+  />
+  <!-- <date-field
+    [field]="field"
+    [fieldConfig]="fieldConfig"
+    [(form)]="form"
+    [value]="value()"
+    (update)="onValueChange()"
+  ></date-field> -->
+  } @case('dropdown') {
+  <ng-dhis2-ui-dropdown-field
+    [field]="field()"
+    [fieldConfig]="fieldConfig"
+    [(form)]="form"
+    [value]="value()"
+    (update)="onValueChange()"
+  />
+  } @case('textarea') {
+  <ng-dhis2-ui-text-area-field
+    [field]="field()"
+    [fieldConfig]="fieldConfig"
+    [(form)]="form"
+    [value]="value()"
+    (update)="onValueChange()"
+  />
+  } @case ('transfer') {
+  <ng-dhis2-ui-transfer-field
+    [field]="field()"
+    [fieldConfig]="fieldConfig"
+    [(form)]="form"
+    [value]="value()"
+    (update)="onValueChange()"
+  />
+  } @case ('checkbox') {
+  <ng-dhis2-ui-checkbox
+    [field]="field()"
+    [fieldConfig]="fieldConfig"
+    [(form)]="form"
+    [value]="value()"
+    (update)="onValueChange()"
+  />
+  } @case ('file') {
+  <ng-dhis2-ui-file-field
+    [field]="field()"
+    [fieldConfig]="fieldConfig"
+    [(form)]="form"
+    [value]="value()"
+    (update)="onValueChange()"
+    (immediateUpdate)="onImmediateChange($event)"
+  />
+  } @default {
+  <div>default</div>
+  <ng-dhis2-ui-text-field
+    [field]="field()"
+    [fieldConfig]="fieldConfig"
+    [(form)]="form"
+    [value]="value()"
+    (update)="onValueChange()"
+    (immediateUpdate)="onImmediateChange($event)"
+  />
+  }}
+</ng-container>

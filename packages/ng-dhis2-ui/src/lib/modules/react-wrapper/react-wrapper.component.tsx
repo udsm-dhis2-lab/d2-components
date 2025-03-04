@@ -18,9 +18,7 @@ import * as ReactDOM from 'react-dom/client';
   selector: 'ng-dhis2-ui-wrapper',
   standalone: false,
 })
-export class ReactWrapperComponent
-  implements OnChanges, OnDestroy, AfterViewInit
-{
+export class ReactWrapperComponent implements OnDestroy, AfterViewInit {
   @Input() props?: ComponentProps<any>;
   @Input() component!: any;
 
@@ -33,10 +31,6 @@ export class ReactWrapperComponent
     if (!this.elementRef) throw new Error('No element ref');
     this.reactDomRoot = ReactDOM.createRoot(this.elementRef.nativeElement);
     this.render();
-  }
-
-  ngOnChanges(): void {
-    // if (this.elementRef) this.render();
   }
 
   ngOnDestroy() {
