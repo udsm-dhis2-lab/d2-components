@@ -4,9 +4,9 @@ import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
 import { Period } from '@iapps/period-utilities';
 
 @Component({
-    selector: 'app-components',
-    templateUrl: './components.component.html',
-    standalone: false
+  selector: 'app-components',
+  templateUrl: './components.component.html',
+  standalone: false,
 })
 export class ComponentsComponent {
   httpClient = inject(NgxDhis2HttpClientService);
@@ -29,25 +29,17 @@ export class ComponentsComponent {
   }
 
   tableColumns = [
-    { label: "Name", key: "name" },
-    { label: "Age", key: "age" },
-    { label: "Country", key: "country" },
+    { label: 'Name', key: 'name' },
+    { label: 'Age', key: 'age' },
+    { label: 'Country', key: 'country' },
   ];
-  
+
   tableData = [
-    { name: "John Doe", age: 28, country: "Tanzania" },
-    { name: "Jane Smith", age: 34, country: "Kenya" },
+    { name: 'John Doe', age: 28, country: 'Tanzania' },
+    { name: 'Jane Smith', age: 34, country: 'Kenya' },
   ];
   //event program = A3olldDSHQg
   //program stage= AFdwWJ6LpRT
-  // [attributeFilters]="[
-  //   { attribute: 'nfpxRnc5Rsg', operator: 'eq', value: 'A99' },
-  //   { attribute: 'vZ6Eb7SovWK', operator: 'gt', value: 3 },
-  //   { attribute: 'aukU9PbQpZs', operator: 'eq', value: 'Closed' },
-  //   { attribute: 'jI43wrfikTb', operator: 'eq', value: 'true' },
-  //   ]"
-
-
 
   onView(row: any) {
     console.log('View', row);
