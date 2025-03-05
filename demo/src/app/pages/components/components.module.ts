@@ -6,6 +6,7 @@ import {
   ButtonModule,
   HeaderBarModule,
   LineListModule,
+  DataTableUIModule,
   OrganisationUnitSelectorModule,
   PeriodSelectorModule,
 } from '@iapps/ng-dhis2-ui';
@@ -24,6 +25,7 @@ import { NgxDhis2DictionaryModule } from '@iapps/ngx-dhis2-dictionary';
     OrganisationUnitSelectorModule,
     NgxDhis2DictionaryModule,
     LineListModule,
+    DataTableUIModule
   ],
 })
 export class ComponentsModule {}

@@ -30,6 +30,16 @@
 <h5>Wrapper implementation</h5>
 
 <app-line-list
+  [programId]="'FO8K8HiXrga'"
+  [orgUnit]="'xrku9x3XnV9'"
+  [actionOptions]="[
+    { label: 'View', onClick: onView },
+    { label: 'Edit', onClick: onEdit },
+    { label: 'Delete', destructive: true, onClick: onDelete }
+  ]"
+></app-line-list>
+
+<app-line-list
   [programId]="'piWUQa85ell'"
   [orgUnit]="'m0frOspS7JY'"
   [actionOptions]="[
@@ -45,4 +55,41 @@
   ]"
   [startDate]="'2024-03-01'"
   [endDate]="'2025-02-28'"
+  (actionSelected)="onActionSelected($event)"
 ></app-line-list>
+
+<app-data-table-ui
+  [data]="[
+    {
+      name: 'Item A',
+      description: 'Description of A',
+      shortName: 'A',
+      section: 'Section 1',
+      index: 1
+    },
+    {
+      name: 'Item B',
+      description: 'Description of B',
+      shortName: 'B',
+      section: 'Section 2',
+      index: 2
+    }
+  ]"
+  [columnDefinitions]="[
+    { column: 'name', display: 'Name', index: '0', visible: true },
+    {
+      column: 'description',
+      display: 'Description',
+      index: '1',
+      visible: true
+    },
+    { column: 'shortName', display: 'Short Name', index: '2', visible: true },
+  ]"
+  [actionOptions]="[
+    { label: 'View', onClick: onView },
+    { label: 'Edit', onClick: onView },
+    { label: 'Delete', destructive: true, onClick: onView }
+  ]"
+  (actionSelected)="onActionSelected($event)"
+>
+</app-data-table-ui>
