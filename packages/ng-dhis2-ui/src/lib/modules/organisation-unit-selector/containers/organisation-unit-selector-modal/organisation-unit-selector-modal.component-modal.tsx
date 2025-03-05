@@ -25,7 +25,7 @@ import {
   OrganisationUnitSelectionUsageType,
 } from '../../models';
 
-type OrganisationUnitSelectionEvent = {
+type OrganisationUnitSelectionEvent = { 
   dimensionId: string;
   items: Record<string, unknown>[];
 };

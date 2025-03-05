@@ -15,50 +15,28 @@ import {
 import { D2Window } from '../../../d2-web-sdk';
 
 export class BaseTrackerQuery<T extends TrackedEntityInstance> {
-  #orgUnit?: string;
-  #ouMode: 'ALL' | 'DESCENDANTS' | 'SELECTED' = 'ALL';
-  #program?: string;
-  #trackedEntityType?: string;
-  #filters?: TrackerQueryFilter[];
-  #fields?: string;
-  #enrollmentEnrolledAfter?: string;
-  #enrollmentEnrolledBefore?: string;
-  #trackedEntity?: string;
+  protected orgUnit?: string;
+  protected ouMode: 'ALL' | 'DESCENDANTS' | 'SELECTED' = 'ALL';
+  protected program?: string;
+  protected trackedEntityType?: string;
+  protected filters?: TrackerQueryFilter[];
+  protected fields?: string;
+  protected enrollmentEnrolledAfter?: string;
+  protected enrollmentEnrolledBefore?: string;
+  protected trackedEntity?: string;
   event?: string;
-  #pager = new Pager();
+  protected pager = new Pager();
   [key: string]: unknown;
   instance!: T;
-  constructor(
-    protected identifiable: ITrackedEntityInstance,
-    protected httpClient: D2HttpClient
-  ) {
-    this.instance = new (identifiable as any)();
-    this.setProgram(this.instance.program);
-    this.setTrackedEntityType(this.instance.trackedEntityType);
-  }
-
-  byId(id: string): BaseTrackerQuery<T> {
-    // TODO: This is a hack to make sure attribute ID is dynamically set, find best way around this
-    (this.instance as any).id = id;
-    const attributeProperty = (this.instance.fields || {})['id'];
-
-    if (!attributeProperty) {
-      return this;
-    }
-
-    this.setFilters([
-      new TrackerQueryFilter()
-        .setAttribute(attributeProperty.id)
-        .setCondition('EQ' as any)
-        .setValue(id),
-    ]);
-
-    return this;
+  identifiable: ITrackedEntityInstance;
+  constructor(protected httpClient: D2HttpClient) {
+    this.identifiable =
+      TrackedEntityInstance as unknown as ITrackedEntityInstance;
   }
 
   setOrgUnit(orgUnitValue: string | string[]): BaseTrackerQuery<T> {
     if (orgUnitValue) {
-      this.#orgUnit =
+      this.orgUnit =
         typeof orgUnitValue === 'object'
           ? orgUnitValue.join(';')
           : (orgUnitValue as string);
@@ -68,12 +46,12 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
   }
 
   setOuMode(ouMode: 'ALL' | 'DESCENDANTS' | 'SELECTED'): BaseTrackerQuery<T> {
-    this.#ouMode = ouMode;
+    this.ouMode = ouMode;
     return this;
   }
 
   setProgram(program: string): BaseTrackerQuery<T> {
-    this.#program = program;
+    this.program = program;
     return this;
   }
 
@@ -83,7 +61,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
   ): BaseTrackerQuery<T> {
     switch (dateType) {
       case 'ENROLLED_ON':
-        this.#enrollmentEnrolledAfter = startDate;
+        this.enrollmentEnrolledAfter = startDate;
         break;
 
       default:
@@ -99,7 +77,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
   ): BaseTrackerQuery<T> {
     switch (dateType) {
       case 'ENROLLED_ON':
-        this.#enrollmentEnrolledBefore = endDate;
+        this.enrollmentEnrolledBefore = endDate;
         break;
 
       default:
@@ -109,27 +87,27 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
     return this;
   }
   setTrackedEntity(trackedEntity: string): BaseTrackerQuery<T> {
-    this.#trackedEntity = trackedEntity;
+    this.trackedEntity = trackedEntity;
     return this;
   }
 
   setTrackedEntityType(trackedEntityType: string): BaseTrackerQuery<T> {
-    this.#trackedEntityType = trackedEntityType;
+    this.trackedEntityType = trackedEntityType;
     return this;
   }
 
   setFilters(filters: TrackerQueryFilter[]): BaseTrackerQuery<T> {
-    this.#filters = filters;
+    this.filters = filters;
     return this;
   }
 
   setFields(fields: string): BaseTrackerQuery<T> {
-    this.#fields = fields;
+    this.fields = fields;
     return this;
   }
 
   setPagination(pagination: Pager): BaseTrackerQuery<T> {
-    this.#pager = pagination;
+    this.pager = pagination;
     return this;
   }
 
@@ -180,22 +158,26 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
     return [];
   }
   async get(): Promise<D2TrackerResponse<T>> {
-    const response = await this.httpClient.get(
-      new TrackerUrlGenerator({
-        program: this.#program,
-        trackedEntityType: this.#trackedEntityType,
-        orgUnit: this.#orgUnit,
-        ouMode: this.#ouMode,
-        filters: this.#filters,
-        fields: this.#fields,
-        enrollmentEnrolledAfter: this.#enrollmentEnrolledAfter,
-        enrollmentEnrolledBefore: this.#enrollmentEnrolledBefore,
-        trackedEntity: this.#trackedEntity,
-        pager: this.#pager,
-      }).generate()
-    );
+    const response = await this.fetchData();
 
     return new D2TrackerResponse<T>(response, this.identifiable);
+  }
+
+  protected async fetchData() {
+    return await this.httpClient.get(
+      new TrackerUrlGenerator({
+        program: this.program,
+        trackedEntityType: this.trackedEntityType,
+        orgUnit: this.orgUnit,
+        ouMode: this.ouMode,
+        filters: this.filters,
+        fields: this.fields,
+        enrollmentEnrolledAfter: this.enrollmentEnrolledAfter,
+        enrollmentEnrolledBefore: this.enrollmentEnrolledBefore,
+        trackedEntity: this.trackedEntity,
+        pager: this.pager,
+      }).generate()
+    );
   }
 
   async #saveSelectedEvent(): Promise<D2TrackerResponse<T>> {
@@ -205,7 +187,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
 
     if (selectedEvent) {
       const response = new D2HttpResponse({});
-      new D2TrackerResponse<T>(response, this.identifiable);
+      return new D2TrackerResponse<T>(response, this.identifiable);
     }
 
     const data = await this.httpClient.post('tracker?async=false', {
@@ -242,7 +224,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
       const d2 = (window as unknown as D2Window).d2Web;
       const metaDataResponse = await Promise.all([
         d2.programModule.program
-          .byId(this.instance.program)
+          .byId(this.program as string)
           .with(
             d2.programModule.programStage
               .with(d2.programModule.programStageSection)
@@ -291,7 +273,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
         d2.programModule.programRule
           .where({
             attribute: 'program.id' as any,
-            value: this.instance.program,
+            value: this.program as string,
           })
           .with(
             d2.programModule.programRuleAction
@@ -322,6 +304,3 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
     }
   }
 }
-
-
-//action_plan_query.ts
