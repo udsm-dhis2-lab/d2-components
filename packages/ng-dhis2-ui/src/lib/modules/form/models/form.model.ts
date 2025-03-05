@@ -1,5 +1,5 @@
-import { DropdownOption } from '../../form-field/models/dropdown-option.model';
-import { FormField } from '../../form-field/models/form-field.model';
+import { DropdownOption } from './dropdown-option.model';
+import { FormField } from './form-field.model';
 
 export interface EocForm {
   id: string;

@@ -1,4 +1,4 @@
-import { FieldConfig } from '../../form-field/models/field-config.model';
+import { FieldConfig } from './field-config.model';
 
 export type FormDirection = 'horizontal' | 'vertical';
 

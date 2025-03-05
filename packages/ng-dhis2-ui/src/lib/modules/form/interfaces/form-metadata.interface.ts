@@ -1,4 +1,4 @@
-import { IFormField } from '../../form-field';
+import { IFormField } from './form-field.interface';
 import { IFormMetadataSection } from './form-metadata-section.interface';
 
 export interface IFormMetadata {

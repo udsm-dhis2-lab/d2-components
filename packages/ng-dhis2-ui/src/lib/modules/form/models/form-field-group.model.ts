@@ -2,14 +2,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 import { camelCase, find } from 'lodash';
-import {
-  FieldDropdown,
-  FormField,
-  FieldUtil,
-  FormFieldMetaType,
-  IFormField,
-} from '../../form-field';
-import { IFormFieldGroup } from '../interfaces';
+
+import { FormFieldMetaType, IFormField, IFormFieldGroup } from '../interfaces';
+import { FieldDropdown } from './field-dropdown.model';
+import { FormField } from './form-field.model';
+import { FieldUtil } from '../utils';
 
 export class FormFieldGroup {
   id!: string;

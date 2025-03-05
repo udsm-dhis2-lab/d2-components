@@ -1,11 +1,16 @@
 import { Component } from '@angular/core';
-import { FormField, FormFieldModule, FormUtil } from '@iapps/ng-dhis2-ui';
+import {
+  D2FormModule,
+  DateField,
+  FormField,
+  FormUtil,
+} from '@iapps/ng-dhis2-ui';
 
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'app-form-components',
   templateUrl: './form-components.component.html',
-  imports: [FormFieldModule],
+  imports: [D2FormModule],
 })
 export class FormComponentsComponent {
   fields = [
@@ -17,6 +22,39 @@ export class FormComponentsComponent {
       controlType: 'textbox',
       type: 'text',
       required: true,
+    }),
+    new FormField<string>({
+      id: 'bio',
+      code: 'bio',
+      key: 'bio',
+      label: 'Bio',
+      controlType: 'textarea',
+      required: false,
+    }),
+    new DateField({
+      id: 'dob',
+      label: 'Date of birth',
+      controlType: 'date',
+    }),
+    new FormField<string>({
+      id: 'gender',
+      code: 'gender',
+      key: 'gender',
+      label: 'Gender',
+      controlType: 'dropdown',
+      options: [
+        { label: 'Male', key: 'male', value: 'male' },
+        { label: 'Female', key: 'female', value: 'female' },
+      ],
+      required: true,
+    }),
+    new FormField<string>({
+      id: 'attachment',
+      code: 'attachment',
+      key: 'attachment',
+      label: 'Attachment',
+      controlType: 'file',
+      required: false,
     }),
     new FormField<string>({
       id: 'Is new item',
