@@ -5,13 +5,15 @@ import {
   DateField,
   FormField,
   FormUtil,
+  FormValue,
+  TrackerFormModule,
 } from '@iapps/ng-dhis2-ui';
 
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'app-form-components',
   templateUrl: './form-components.component.html',
-  imports: [D2FormModule],
+  imports: [D2FormModule, TrackerFormModule],
 })
 export class FormComponentsComponent {
   fields = [
@@ -75,9 +77,11 @@ export class FormComponentsComponent {
     }),
   ];
 
-  form = FormUtil.getFormGroup(this.fields, {});
+  form = FormUtil.getFormGroup(this.fields, {
+    name: 'Rajabu',
+  });
 
-  onUpdate(event: any) {
-    console.log('Form updated', event);
+  onUpdate(event: FormValue) {
+    console.log('Form updated', event.form);
   }
 }

@@ -5,3 +5,4 @@ export * from './lib/modules/organisation-unit-selector';
 export * from './lib/modules/react-wrapper';
 export * from './lib/modules/line-list';
 export * from './lib/modules/form';
+export * from './lib/modules/tracker-form';

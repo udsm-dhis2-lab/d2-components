@@ -1,16 +1,18 @@
-<div>
-  <div
-    *ngFor="let repeatableEvent of repeatableEvents; let i = index"
-    class="card p-3 mb-2"
-  >
-    <div class="font-weight-bold h6">{{ fieldGroup().name }}: #{{ i + 1 }}</div>
+<div class="form__repeatable-stage-container">
+  <ng-dhis2-ui-wrapper [component]="EventTable()"></ng-dhis2-ui-wrapper>
+  @if(showForm()) {
+  <div class="form__repeatable-stage-form">
     <ng-dhis2-ui-form
       [fields]="fieldGroup().fields || []"
-      [form]="repeatableEvent.form"
+      [form]="eventForm"
       [programRuleActions]="programRuleActions"
-      [dataEntities]="repeatableEvent"
-      [isFormHorizontal]="true"
-      (formUpdate)="onFormUpdate($event, i)"
-    />
+      [dataEntities]="{}"
+      [isFormHorizontal]="false"
+      (formUpdate)="onFormUpdate($event)"
+    >
+    </ng-dhis2-ui-form>
+
+    <ng-dhis2-ui-wrapper [component]="FormActionButtons"></ng-dhis2-ui-wrapper>
   </div>
+  }
 </div>

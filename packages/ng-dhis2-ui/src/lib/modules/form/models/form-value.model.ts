@@ -1,6 +1,7 @@
 import { FormGroup } from '@angular/forms';
 import { find } from 'lodash';
 import { FormField } from './form-field.model';
+
 export class FormValue {
   form: FormGroup;
   fields: FormField<string>[];
@@ -23,18 +24,23 @@ export class FormValue {
     this.form.reset();
   }
 
-  getValues(): { [id: string]: { id: string; value: string; options: any[] } } {
+  getValues(options?: { valueOnly?: boolean }): {
+    [id: string]: { id: string; value: string; options: any[] };
+  } {
     const newValues: { [key: string]: any } = {};
     const formValues = this.form?.getRawValue();
+
+    if (options?.valueOnly) {
+      return formValues;
+    }
 
     Object.keys(formValues).forEach((key) => {
       const field = find(this.fields, ['key', key]);
 
       if (field) {
         newValues[key] = {
-          id: field.id,
+          ...field,
           value: formValues[key],
-          options: field.options,
         };
       }
     });

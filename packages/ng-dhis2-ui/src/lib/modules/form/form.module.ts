@@ -7,6 +7,7 @@ import { FormComponent } from './containers/form/form.component';
 import { RepeatableFormComponent } from './containers/repeatable-form/repeatable-form.component';
 import { SectionFormComponent } from './containers/section-form/section-form.component';
 import { OrganisationUnitSelectorModule } from '../organisation-unit-selector';
+import { ReactWrapperModule } from '../react-wrapper';
 
 @NgModule({
   declarations: [
@@ -16,7 +17,12 @@ import { OrganisationUnitSelectorModule } from '../organisation-unit-selector';
     SectionFormComponent,
     FormFieldItemComponent,
   ],
-  imports: [CommonModule, ReactiveFormsModule, OrganisationUnitSelectorModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    ReactWrapperModule,
+    OrganisationUnitSelectorModule,
+  ],
   exports: [
     FormFieldComponent,
     FormComponent,

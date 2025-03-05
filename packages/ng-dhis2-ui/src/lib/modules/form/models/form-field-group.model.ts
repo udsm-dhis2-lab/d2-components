@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 import { camelCase, find } from 'lodash';
-
 import { FormFieldMetaType, IFormField, IFormFieldGroup } from '../interfaces';
+import { FieldUtil, TranslationUtil } from '../utils';
 import { FieldDropdown } from './field-dropdown.model';
 import { FormField } from './form-field.model';
-import { FieldUtil } from '../utils';
 
-export class FormFieldGroup {
+export class FormFieldGroup implements IFormFieldGroup {
   id!: string;
   name!: string;
   translations?: any;
@@ -32,6 +31,10 @@ export class FormFieldGroup {
     const fields = this.params.formFieldGroup?.fields || [];
     return fields
       .map((field) => {
+        if (field instanceof FormField) {
+          return field;
+        }
+
         const fieldMetaData = this.params.fieldMetaData.find(
           (attribute) => attribute['id'] === field.id
         );
@@ -89,7 +92,10 @@ export class FormFieldGroup {
   toJson(): IFormFieldGroup {
     return {
       id: this.params.formFieldGroup?.id as string,
-      name: this.params.formFieldGroup?.name as string,
+      name: TranslationUtil.getTranslatedFormName(
+        this.params.formFieldGroup,
+        this.params.locale
+      ) as string,
       isFormHorizontal: this.params.formFieldGroup?.isFormHorizontal,
       repeatDependentField: this.params.formFieldGroup?.repeatDependentField,
       dataKey: this.params.formFieldGroup?.dataKey,
