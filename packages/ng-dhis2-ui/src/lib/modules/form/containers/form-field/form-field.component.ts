@@ -1,0 +1,213 @@
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  Output,
+  SimpleChanges,
+  input,
+  signal,
+} from '@angular/core';
+import { FormControl, FormGroup } from '@angular/forms';
+import { find } from 'lodash';
+import moment from 'moment';
+import { Subject, takeUntil } from 'rxjs';
+import { FieldConfig, FormField } from '../../models';
+
+@Component({
+  selector: 'ng-dhis2-ui-form-field',
+  templateUrl: './form-field.component.html',
+  styleUrls: ['./form-field.component.scss'],
+  standalone: false,
+})
+export class FormFieldComponent implements OnInit, OnChanges, OnDestroy {
+  field = input.required<FormField<string>>();
+  @Input() fieldConfig!: FieldConfig;
+  @Input() form!: FormGroup;
+  @Input() isCheckBoxButton!: boolean;
+  @Input() fieldClass!: string;
+  @Input() programRuleActions!: any[];
+  @Input() dataEntities: any;
+  @Input() minDate: any;
+  @Input() maxDate = new Date();
+  public color = 'primary';
+  @Output() fieldUpdate: EventEmitter<FormGroup> =
+    new EventEmitter<FormGroup>();
+
+  @Output() immediateFieldUpdate: EventEmitter<{ value: string }> =
+    new EventEmitter<{ value: string }>();
+
+  @Output() runtimeOptionChange: EventEmitter<any> = new EventEmitter<any>();
+
+  value = signal<any>('');
+
+  private _runtimeOptions: any[] = [];
+  runtimeOptions: any = [];
+  fieldFilterControl: FormControl = new FormControl();
+  protected _onDestroy = new Subject<void>();
+  optionSearchTerm!: string;
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes && changes['dataEntities'] && this.field()?.dependentField) {
+      if (this._runtimeOptions?.length === 0) {
+        const parentOption = find(
+          this.field()?.dependentField?.optionSet?.options,
+          ['code', (this.form?.value || {})[this.field()?.dependentField?.id]]
+        );
+
+        this.runtimeOptions = parentOption?.options || [];
+
+        this.runtimeOptionChange.emit({
+          field: this.field(),
+          options: this.runtimeOptions,
+        });
+      } else {
+        this.runtimeOptions = this._runtimeOptions;
+      }
+    }
+  }
+
+  ngOnInit() {
+    this.value.set(this.form?.get(this.field()?.id)?.value);
+    this.fieldFilterControl.valueChanges
+      .pipe(takeUntil(this._onDestroy))
+      .subscribe(() => {
+        this.optionSearchTerm = this.fieldFilterControl.value;
+      });
+  }
+
+  ngOnDestroy() {
+    this._onDestroy.next();
+    this._onDestroy.complete();
+  }
+
+  get isValid(): boolean {
+    return this.form?.controls[this.field().id]?.valid;
+  }
+
+  get fieldError(): string | undefined {
+    const error = this.form?.controls[this.field()?.id]?.errors;
+
+    if (!error) {
+      return undefined;
+    }
+
+    if (error['min']) {
+      return `${this.field().label} should not be less than ${
+        error['min'].min
+      }!`;
+    } else if (error['max']) {
+      return `${this.field().label} should not be greater than ${
+        error['max'].max
+      }!`;
+    } else if (error['pattern']) {
+      if (this.field().type === 'email') {
+        return `The email address provided is not valid`;
+      } else if (this.field().type === 'tel') {
+        return 'Phone number provided is not valid';
+      } else {
+        return `${this.field().label} should have appropriate format`;
+      }
+    }
+
+    return error['required'] ? `${this.field()?.label} is required` : undefined;
+  }
+
+  get minErrorText(): string | undefined {
+    const minError = this.form?.controls[this.field()?.id]?.errors?.['min'];
+
+    return minError ? `${this.field()?.label} is min` : undefined;
+  }
+
+  get maxErrorText(): string | undefined {
+    const maxError = this.form?.controls[this.field()?.id]?.errors?.['max'];
+
+    return maxError ? `${this.field()?.label} is required` : undefined;
+  }
+
+  get isInvalid(): boolean {
+    return (
+      this.form?.controls[this.field().id]?.invalid &&
+      !this.form?.controls[this.field().id].pristine
+    );
+  }
+
+  get isDate(): boolean {
+    return this.field().controlType === 'date';
+  }
+
+  get isDateTime(): boolean {
+    return this.field().controlType === 'date-time';
+  }
+
+  get isBoolean(): boolean {
+    return this.field().controlType === 'boolean';
+  }
+
+  get isCheckbox(): boolean {
+    return this.field()?.controlType === 'checkbox';
+  }
+
+  get isCommonField(): boolean {
+    return !this.isCheckbox && !this.isDate && !this.isDateTime;
+  }
+
+  get fieldId(): string {
+    return this.field()?.id;
+  }
+
+  onValueChange() {
+    this.fieldUpdate.emit(this.form);
+  }
+
+  onImmediateChange(event: { value: string }) {
+    this.immediateFieldUpdate.emit({ value: event?.value || '' });
+  }
+
+  onFieldUpdate(e?: any, isDate?: boolean, isDateTime?: boolean): void {
+    if (e && e.value) {
+      const dateValue = new Date(e.value);
+      if (isDate) {
+        const dateValue = new Date(e.value);
+        const formattedDate = moment(e.value).format('YYYY-MM-DD');
+        let dateTimeString = formattedDate;
+
+        if (isDateTime) {
+          const hours =
+            dateValue.getHours() < 10
+              ? '0' + dateValue.getHours()
+              : dateValue.getHours();
+          const minutes =
+            dateValue.getMinutes() < 10
+              ? '0' + dateValue.getMinutes()
+              : dateValue.getMinutes();
+          const seconds =
+            dateValue.getSeconds() < 10
+              ? '0' + dateValue.getSeconds()
+              : dateValue.getSeconds();
+
+          const timeValue = `${hours}:${minutes}:${seconds}`;
+          dateTimeString = `${formattedDate}T${timeValue}`;
+        }
+
+        const formControl = this.form.get(this.field().key);
+        if (formControl) {
+          formControl.setValue(dateTimeString);
+        }
+      } else {
+        const formControl = this.form.get(this.field().key);
+        if (formControl) {
+          formControl.setValue(e.value);
+        }
+      }
+    }
+
+    this.fieldUpdate.emit(this.form);
+  }
+
+  onUpdateRuntimeOptions(options: any[]) {
+    this._runtimeOptions = [...options];
+  }
+}

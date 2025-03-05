@@ -1,7 +1,7 @@
 import { getNowInCalendar } from '@dhis2/multi-calendar-dates';
 import { TabBar, Tab, Transfer } from '@dhis2/ui';
 import PropTypes from 'prop-types';
-import React, { useState } from 'react'; //TODO: Reimplement the icon.js
+import React, { useState } from 'react';
 import i18n from '@dhis2/d2-i18n';
 import {
   TRANSFER_HEIGHT,
