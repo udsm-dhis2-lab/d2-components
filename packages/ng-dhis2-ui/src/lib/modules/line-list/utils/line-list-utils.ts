@@ -1,5 +1,13 @@
 // src/utils/line-list-utils.ts
-import { LineListResponse, ColumnDefinition, TableRow, EventsResponse, TrackedEntityInstancesResponse } from '../models/line-list.models';
+import { FilterConfig } from '../models/filter-config.model';
+import {
+  LineListResponse,
+  ColumnDefinition,
+  TableRow,
+  EventsResponse,
+  TrackedEntityInstancesResponse,
+} from '../models/line-list.models';
+import { getFilteredTrackedEntityInstances } from './filter-builder';
 
 export const getProgramStageData = (
   response: LineListResponse, 
@@ -50,11 +58,16 @@ export const getProgramStageData = (
 };
 
 export const getTrackedEntityData = (
-  response: LineListResponse, 
-  programId: string, 
-  pager: any
-): { columns: ColumnDefinition[], data: TableRow[] } => {
-  const teis = (response.data as TrackedEntityInstancesResponse).trackedEntityInstances;
+  response: LineListResponse,
+  programId: string,
+  pager: any,
+  filters?: FilterConfig[]
+): { columns: ColumnDefinition[]; data: TableRow[] } => {
+  let teis = (response.data as TrackedEntityInstancesResponse)
+    .trackedEntityInstances;
+  if (filters) {
+    teis = getFilteredTrackedEntityInstances(teis, filters);
+  }
   const allAttributes = new Set<string>();
 
   teis.forEach((tei: any) => {
@@ -64,9 +77,7 @@ export const getTrackedEntityData = (
     const attributes = matchingEnrollment
       ? matchingEnrollment.attributes
       : tei.attributes;
-    attributes.forEach((attr: any) =>
-      allAttributes.add(attr.attribute)
-    );
+    attributes.forEach((attr: any) => allAttributes.add(attr.attribute));
   });
 
   const entityColumns = Array.from(allAttributes).map((attrId: string) => {
@@ -102,9 +113,7 @@ export const getTrackedEntityData = (
       ? matchingEnrollment.attributes
       : tei.attributes;
 
-    attributesToUse.forEach(
-      (attr: any) => (row[attr.attribute] = attr.value)
-    );
+    attributesToUse.forEach((attr: any) => (row[attr.attribute] = attr.value));
 
     return row;
   });
@@ -113,9 +122,9 @@ export const getTrackedEntityData = (
 };
 
 export const getEventData = (
-  response: LineListResponse, 
+  response: LineListResponse,
   pager: any
-): { columns: ColumnDefinition[], data: TableRow[] } => {
+): { columns: ColumnDefinition[]; data: TableRow[] } => {
   const events = (response.data as EventsResponse).events;
   const uniqueDataElements = new Set<string>();
   events.forEach((event: any) => {
@@ -123,7 +132,7 @@ export const getEventData = (
       uniqueDataElements.add(dv.dataElement)
     );
   });
-  
+
   const entityColumns = Array.from(uniqueDataElements).map(
     (dataElement: string) => ({
       label:
@@ -133,7 +142,7 @@ export const getEventData = (
       key: dataElement,
     })
   );
-  
+
   const dataElementsData = events.map((event: any, idx: number) => {
     let row: TableRow = {
       event: event.event,
@@ -142,9 +151,7 @@ export const getEventData = (
     uniqueDataElements.forEach(
       (dataElement: string) => (row[dataElement] = '')
     );
-    event.dataValues.forEach(
-      (dv: any) => (row[dv.dataElement] = dv.value)
-    );
+    event.dataValues.forEach((dv: any) => (row[dv.dataElement] = dv.value));
     return row;
   });
 
@@ -152,7 +159,7 @@ export const getEventData = (
 };
 
 export const addActionsColumn = (
-  columns: ColumnDefinition[], 
+  columns: ColumnDefinition[],
   actionOptions?: any[]
 ): ColumnDefinition[] => {
   return [
