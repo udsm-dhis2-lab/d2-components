@@ -1,0 +1,10 @@
+<div *ngIf="field()" class="form-field-item">
+  <ng-dhis2-ui-form-field-item
+    [field]="field()"
+    [fieldConfig]="fieldConfig"
+    [(form)]="form"
+    [value]="value()"
+    (update)="onValueChange()"
+    (immediateUpdate)="onImmediateChange($event)"
+  />
+</div>

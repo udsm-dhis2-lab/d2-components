@@ -2,7 +2,7 @@ import { flatten } from 'lodash';
 
 import { FormMetadataSection } from './form-metadata-section.model';
 import { IMetadataRule, MetadataRule } from './form-metadata-rule.model';
-import { FormField } from '../../form-field/models/form-field.model';
+import { FormField } from './form-field.model';
 import { Program, ProgramRule, ProgramRuleVariable } from '@iapps/d2-web-sdk';
 import { IFormMetadata, IFormMetadataSection } from '../interfaces';
 

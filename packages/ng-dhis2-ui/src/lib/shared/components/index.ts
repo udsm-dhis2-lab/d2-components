@@ -4,4 +4,4 @@
 
 export const sharedComponents: any[] = [];
 
-export * from './TransferOption';
+export * from './transfer-option.component';

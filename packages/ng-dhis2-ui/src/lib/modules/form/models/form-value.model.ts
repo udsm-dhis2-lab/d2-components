@@ -1,6 +1,6 @@
 import { FormGroup } from '@angular/forms';
 import { find } from 'lodash';
-import { FormField } from '../../form-field/models/form-field.model';
+import { FormField } from './form-field.model';
 export class FormValue {
   form: FormGroup;
   fields: FormField<string>[];

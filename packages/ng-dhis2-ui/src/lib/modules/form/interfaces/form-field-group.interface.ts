@@ -1,4 +1,4 @@
-import { IFormField } from '../../form-field';
+import { IFormField } from './form-field.interface';
 
 export interface IFormFieldGroup {
   dataKey?: string;
