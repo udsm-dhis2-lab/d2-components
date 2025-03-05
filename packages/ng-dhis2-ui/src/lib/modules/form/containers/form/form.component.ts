@@ -42,16 +42,10 @@ export class FormComponent implements OnChanges {
   });
 
   @Output() formUpdate: EventEmitter<any> = new EventEmitter<any>();
-  @Output() emitNumberOfCountriesToStep: EventEmitter<number> =
-    new EventEmitter<number>();
 
   @ViewChildren(FormFieldComponent) fieldComponents!: FormFieldComponent[];
 
   values: any;
-
-  emitNumberOfCountries(data: any) {
-    this.emitNumberOfCountriesToStep.emit(data);
-  }
 
   get sanitizedFields(): FormField<string>[] {
     return (this.fields || []).filter((field: any) => {

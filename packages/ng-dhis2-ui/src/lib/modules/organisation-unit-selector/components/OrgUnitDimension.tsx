@@ -50,7 +50,6 @@ const OrgUnitDimension = ({
   const dataEngine = useDataEngine();
 
   const onSelectItems = (selectedItem: any) => {
-    console.log('WE ARE SELECTING HERE', selectedItem);
     const { id, checked, displayName, path } = selectedItem;
     let result = [...selectedItems];
 

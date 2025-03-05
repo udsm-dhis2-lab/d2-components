@@ -14,6 +14,7 @@ import {
   inject,
   input,
   model,
+  signal,
 } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { FormGroup } from '@angular/forms';
@@ -26,11 +27,24 @@ import {
   SingleSelectOption,
   TextAreaField,
   Transfer,
+  Button,
+  ButtonStrip,
+  Modal,
+  ModalActions,
+  ModalContent,
+  ModalTitle,
+  CircularLoader,
+  IconDimensionOrgUnit16,
 } from '@dhis2/ui';
-import React, { useMemo, useState } from 'react';
+import { Provider } from '@dhis2/app-runtime';
+import React, { useEffect, useMemo, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { ReactWrapperComponent } from '../../react-wrapper/react-wrapper.component';
 import { FieldConfig, FormField } from '../models';
+import { OrganisationUnitSelectionConfig } from '../../organisation-unit-selector';
+import OrgUnitDimension from '../../organisation-unit-selector/components/OrgUnitDimension';
+import { firstValueFrom, map, Observable, zip } from 'rxjs';
+import { NgxDhis2HttpClientService, User } from '@iapps/ngx-dhis2-http-client';
 
 @Directive()
 export class BaseFormFieldComponent
@@ -38,6 +52,7 @@ export class BaseFormFieldComponent
   implements OnChanges
 {
   ngZone = inject(NgZone);
+  httpClient = inject(NgxDhis2HttpClientService);
   fieldType = 'textbox';
   field = input.required<FormField<string>>();
   fieldConfig = input<FieldConfig>(new FieldConfig());
@@ -48,6 +63,86 @@ export class BaseFormFieldComponent
 
   value = model<string>();
   protected value$ = toObservable(this.value);
+
+  FieldOrgUnitSelector = (props: {
+    onSelectOrgUnit: (selectedOrgUnits: any) => void;
+    onCancelOrgUnit: () => void;
+  }) => {
+    const { onSelectOrgUnit, onCancelOrgUnit } = props;
+    const [selected, setSelected] = useState([]);
+    const [rootOrgUnits, setRootOrgUnits] = useState<string[]>();
+    const [config, setConfig] = useState<any>();
+
+    useEffect(() => {
+      zip(this.getAppConfig(), this.getRootOrgUnits()).subscribe({
+        next: ([appConfig, rootOrgUnits]) => {
+          setConfig(appConfig);
+          setRootOrgUnits(rootOrgUnits);
+        },
+        error: (error) => console.error(error),
+      });
+    }, []);
+    return config ? (
+      <Provider
+        config={config}
+        plugin={false}
+        parentAlertsAdd={undefined}
+        showAlertsInPlugin={false}
+      >
+        {
+          <Modal position="middle" large>
+            <ModalTitle>Organisation unit</ModalTitle>
+            <ModalContent>
+              <OrgUnitDimension
+                selected={selected}
+                hideGroupSelect={this.orgUnitSelectionConfig.hideGroupSelect}
+                hideLevelSelect={this.orgUnitSelectionConfig.hideLevelSelect}
+                hideUserOrgUnits={this.orgUnitSelectionConfig.hideUserOrgUnits}
+                onSelect={(selectionEvent: any) => {
+                  setSelected(selectionEvent.items);
+                }}
+                orgUnitGroupPromise={this.getOrgUnitGroups()}
+                orgUnitLevelPromise={this.getOrgUnitLevels()}
+                roots={rootOrgUnits}
+              />
+            </ModalContent>
+            <ModalActions>
+              <ButtonStrip end>
+                <Button
+                  onClick={() => {
+                    onCancelOrgUnit();
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  primary
+                  disabled={selected.length === 0}
+                  onClick={() => {
+                    onSelectOrgUnit(selected);
+                  }}
+                >
+                  Confirm
+                </Button>
+              </ButtonStrip>
+            </ModalActions>
+          </Modal>
+        }
+      </Provider>
+    ) : (
+      <CircularLoader small />
+    );
+  };
+  showOrgUnitTree = signal<boolean>(false);
+  orgUnitSelectionConfig: OrganisationUnitSelectionConfig = {
+    hideGroupSelect: true,
+    hideLevelSelect: true,
+    hideUserOrgUnits: true,
+    allowSingleSelection: true,
+    usageType: 'DATA_ENTRY',
+  };
+  selectedOrgUnit = signal<any>(null);
+  selectedOrgUnit$ = toObservable(this.selectedOrgUnit);
 
   label: Signal<string | undefined> = computed(() => {
     return !this.fieldConfig()?.hideLabel ? this.field().label : undefined;
@@ -89,8 +184,10 @@ export class BaseFormFieldComponent
         this.form().get(this.field().id)?.value ||
           this.form().get(this.field().key)?.value
       );
+      const [displayValue, setDisplayValue] = useState(null);
       const [selected, setSelected] = useState();
       const [touched, setTouched] = useState(false);
+      const [showOrgUnit, setShowOrgUnit] = useState<boolean>(false);
 
       const onChange = (payload: {
         selected: React.SetStateAction<undefined>;
@@ -178,6 +275,61 @@ export class BaseFormFieldComponent
                 });
               }}
             />
+          );
+
+        case 'org-unit':
+          return (
+            <>
+              <InputField
+                error={hasError}
+                validationText={validationError}
+                type={this.field().type}
+                prefixIcon={<IconDimensionOrgUnit16 />}
+                required={this.field().required}
+                name={this.field().id}
+                label={this.label()}
+                placeholder={this.placeholder()}
+                value={displayValue}
+                readOnly={false}
+                onFocus={() => {
+                  setShowOrgUnit(true);
+                }}
+                onBlur={() => {
+                  this.ngZone.run(() => {
+                    this.update.emit({ form: this.form(), value });
+                  });
+                  setTouched(true);
+                }}
+              />
+              {showOrgUnit && (
+                <this.FieldOrgUnitSelector
+                  onCancelOrgUnit={() => {
+                    setShowOrgUnit(false);
+                    setTouched(true);
+                  }}
+                  onSelectOrgUnit={(selectedOrgUnits) => {
+                    if ((selectedOrgUnits || [])[0]) {
+                      const selectedOrgUnit = selectedOrgUnits[0];
+                      setDisplayValue(selectedOrgUnit.name);
+                      setValue(selectedOrgUnit.id);
+                      setShowOrgUnit(false);
+                      setTouched(true);
+
+                      this.ngZone.run(() => {
+                        (
+                          this.form().get(this.field().id) ||
+                          this.form().get(this.field().key)
+                        )?.setValue(selectedOrgUnit.id);
+                        this.immediateUpdate.emit({
+                          form: this.form(),
+                          value: selectedOrgUnit.id,
+                        });
+                      });
+                    }
+                  }}
+                />
+              )}
+            </>
           );
 
         case 'transfer':
@@ -377,5 +529,82 @@ export class BaseFormFieldComponent
 
   onChange(event: any): void {
     this.value.set(event);
+  }
+
+  onSelectOrgUnit(selectedOrgUnits: Record<string, string>[]) {
+    this.showOrgUnitTree.set(false);
+
+    if ((selectedOrgUnits || [])[0]) {
+      this.selectedOrgUnit.set(selectedOrgUnits[0]);
+    }
+  }
+  onCancelOrgUnit() {
+    this.showOrgUnitTree.set(false);
+  }
+
+  private getAppConfig(): Observable<any> {
+    return this.httpClient.systemInfo().pipe(
+      map((response) => {
+        const systemInfo = response as unknown as Record<string, unknown>;
+        return {
+          baseUrl: (document?.location?.host?.includes('localhost')
+            ? `${document.location.protocol}//${document.location.host}`
+            : systemInfo['contextPath']) as string,
+          apiVersion: Number(
+            (((systemInfo['version'] as string) || '')?.split('.') || [])[1]
+          ),
+        };
+      })
+    );
+  }
+
+  getOrgUnitAttributeByUsage(usageType: string) {
+    switch (usageType) {
+      case 'DATA_ENTRY':
+        return 'organisationUnits';
+
+      case 'DATA_VIEW':
+        return 'dataViewOrganisationUnits';
+
+      default:
+        return 'organisationUnits';
+    }
+  }
+
+  getRootOrgUnits(): Observable<string[]> {
+    const orgUnitAttribute = this.getOrgUnitAttributeByUsage(
+      this.orgUnitSelectionConfig.usageType
+    );
+    return this.httpClient
+      .me()
+      .pipe(
+        map((user: User) =>
+          (user ? user[orgUnitAttribute] : []).map((orgUnit) => orgUnit.id)
+        )
+      );
+  }
+
+  getOrgUnitGroups(): Promise<any> {
+    return firstValueFrom(
+      this.httpClient
+        .get(
+          'organisationUnitGroups.json?fields=id,displayName,name&paging=false'
+        )
+        .pipe(
+          map((res: Record<string, unknown>) => res?.['organisationUnitGroups'])
+        )
+    );
+  }
+
+  getOrgUnitLevels(): Promise<any> {
+    return firstValueFrom(
+      this.httpClient
+        .get(
+          'organisationUnitLevels.json?fields=id,level,displayName,name&paging=false'
+        )
+        .pipe(
+          map((res: Record<string, unknown>) => res?.['organisationUnitLevels'])
+        )
+    );
   }
 }
