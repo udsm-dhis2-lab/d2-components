@@ -2,6 +2,10 @@
   <h3>Form components</h3>
 
   <div>
-    <ng-dhis2-ui-form [form]="form" [fields]="fields" />
+    <ng-dhis2-ui-form
+      [form]="form"
+      [fields]="fields"
+      (formUpdate)="onUpdate($event)"
+    />
   </div>
 </div>

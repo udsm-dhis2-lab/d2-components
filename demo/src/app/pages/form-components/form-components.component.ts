@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { OrgUnitField } from '@iapps/d2-web-sdk';
 import {
   D2FormModule,
   DateField,
@@ -14,6 +15,13 @@ import {
 })
 export class FormComponentsComponent {
   fields = [
+    new FormField<string>({
+      id: 'orgUnit',
+      code: 'orgUnit',
+      key: 'orgUnit',
+      label: 'Organisation Unit',
+      controlType: 'org-unit',
+    }),
     new FormField<string>({
       id: 'name',
       code: 'name',
@@ -33,6 +41,7 @@ export class FormComponentsComponent {
     }),
     new DateField({
       id: 'dob',
+      key: 'dob',
       label: 'Date of birth',
       controlType: 'date',
     }),
@@ -67,4 +76,8 @@ export class FormComponentsComponent {
   ];
 
   form = FormUtil.getFormGroup(this.fields, {});
+
+  onUpdate(event: any) {
+    console.log('Form updated', event);
+  }
 }
