@@ -46,7 +46,8 @@ export const ContextMenu = (params: {
 
   return (
     <>
-      <Layer onBackdropClick={onClose} className={styles.layer}>
+      {/* <Layer onBackdropClick={onClose} className={styles.layer}> */}
+      <Layer onBackdropClick={(event: any, data: any) => onClose(event, data)} className={styles.layer}>
         <Popper reference={anchorRef} placement="bottom-start">
           <FlyoutMenu>
             {dropDownOptions.map((dropDownOption, index) => (
@@ -56,8 +57,8 @@ export const ContextMenu = (params: {
                 label={dropDownOption.label}
                 icon={dropDownOption.icon}
                 onClick={() => {
-                 // onMenuClick(dropDownOption);
-                  //onClose();
+                 onMenuClick(dropDownOption);
+                  onClose();
                 }}
                 dense
               />

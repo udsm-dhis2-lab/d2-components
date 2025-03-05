@@ -23,7 +23,7 @@ import { NgxDhis2DictionaryModule } from '@iapps/ngx-dhis2-dictionary';
     PeriodSelectorModule,
     OrganisationUnitSelectorModule,
     NgxDhis2DictionaryModule,
-    LineListModule,
+    LineListModule
   ],
 })
 export class ComponentsModule {}

@@ -5,25 +5,82 @@ export interface Pager {
   pageCount: number;
 }
 
+export interface Attribute {
+  lastUpdated: string;
+  code: string;
+  displayName: string;
+  created: string;
+  valueType: string;
+  attribute: string;
+  value: string;
+}
+
 export interface EventsResponse {
-  events: {
-    event: string;
-    programStage?: string;
-    dataValues: { dataElement: string; value: string }[];
-  }[];
+  events: Event[];
   pager: Pager;
 }
 
-export interface Enrollment {
-  enrollment: string;
+export interface Event {
+  dueDate: string;
   program: string;
-  attributes: { attribute: string; value: string; displayName?: string }[];
+  event: string;
+  programStage?: string;
+  orgUnit: string;
+  enrollment: string;
+  trackedEntityInstance: string;
+  enrollmentStatus: string;
+  orgUnitName: string;
+  status: string;
+  eventDate: string;
+  attributeCategoryOptions: string;
+  lastUpdated: string;
+  created: string;
+  completedDate: string;
+  followup: boolean;
+  deleted: boolean;
+  attributeOptionCombo: string;
+  completedBy: string;
+  lastUpdatedByUserInfo: LastUpdatedByUserInfo;
+  createdByUserInfo: CreatedByUserInfo;
+  dataValues: DataValue[];
+  notes: any[];
+  relationships: any[];
+}
+
+export interface DataValue {
+  lastUpdated: string;
+  created: string;
+  dataElement: string;
+  value: string;
+  providedElsewhere: boolean;
+}
+
+export interface Enrollment {
+  program: string;
+  lastUpdated: string;
+  created: string;
+  orgUnit: string;
+  enrollment: string;
+  trackedEntityInstance: string;
+  trackedEntityType: string;
+  orgUnitName: string;
+  enrollmentDate: string;
+  followup: boolean;
+  deleted: boolean;
+  incidentDate: string;
+  status: string;
+  lastUpdatedByUserInfo: LastUpdatedByUserInfo;
+  createdByUserInfo: CreatedByUserInfo;
+  notes: any[];
+  relationships: any[];
+  events: Event[];
+  attributes: Attribute[];
 }
 
 export interface TrackedEntityInstance {
   trackedEntityInstance: string;
   attributes: { attribute: string; value: string; displayName?: string }[];
-  enrollments: Enrollment[]; // Added enrollments here
+  enrollments: Enrollment[]; 
 }
 
 export interface TrackedEntityInstancesResponse {
@@ -62,7 +119,19 @@ export interface ColumnDefinition {
   key: string;
 }
 
+export interface LastUpdatedByUserInfo {
+  uid: string;
+  firstName: string;
+  surname: string;
+  username: string;
+}
 
+export interface CreatedByUserInfo {
+  uid: string;
+  firstName: string;
+  surname: string;
+  username: string;
+}
 
 // // //line-list.models.ts
 // // src/models/line-list.models.ts

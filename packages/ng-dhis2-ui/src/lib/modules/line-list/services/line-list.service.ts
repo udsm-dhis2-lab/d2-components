@@ -28,15 +28,20 @@ export class LineListService {
     pageSize: number,
     filters: AttributeFilter[] = [],
     startDate?: string,
-    endDate?: string
+    endDate?: string,
   ): Observable<TrackedEntityInstancesResponse> {
     const filterParams = buildFilters(filters);
-    const dateFilter =
-      startDate && endDate
-        ? `&programStartDate=${startDate}&programEndDate=${endDate}`
-        : '';
+    const dateFilter = startDate && endDate ? `&programStartDate=${startDate}&programEndDate=${endDate}` : '';
     return this.httpClient.get(
       `trackedEntityInstances.json?program=${programId}&ou=${orgUnit}&page=${page}&pageSize=${pageSize}&fields=trackedEntityInstance,attributes[*],enrollments[*]&totalPages=true&${filterParams}${dateFilter}`
+    ).pipe(
+      map((response: any) => {
+        response.trackedEntityInstances.forEach((tei: any) => {
+          // Filter attributes to only include those with displayInList=true
+          tei.attributes = tei.attributes.filter((attr: any) => attr.displayInList);
+        });
+        return response;
+      })
     );
   }
 
@@ -44,10 +49,15 @@ export class LineListService {
     programId: string,
     orgUnit: string,
     page: number,
-    pageSize: number
+    pageSize: number,
+    filters: AttributeFilter[] = [],
+    startDate?: string,
+    endDate?: string,
   ): Observable<EventsResponse> {
+    const filterParams = buildFilters(filters);
+    const dateFilter = startDate && endDate ? `&startDate=${startDate}&endDate=${endDate}` : '';
     return this.httpClient.get(
-      `events.json?program=${programId}&orgUnit=${orgUnit}&page=${page}&pageSize=${pageSize}&fields=event,programStage,dataValues[dataElement,value]&totalPages=true`
+      `events.json?program=${programId}&orgUnit=${orgUnit}&page=${page}&pageSize=${pageSize}&fields=*&totalPages=true&${filterParams}${dateFilter}`
     );
   }
 
@@ -55,10 +65,15 @@ export class LineListService {
     programStageId: string,
     orgUnit: string,
     page: number,
-    pageSize: number
+    pageSize: number,
+    filters: AttributeFilter[] = [],
+    startDate?: string,
+    endDate?: string,
   ): Observable<EventsResponse> {
+    const filterParams = buildFilters(filters);
+    const dateFilter = startDate && endDate ? `&startDate=${startDate}&endDate=${endDate}` : '';
     return this.httpClient.get(
-      `events.json?programStage=${programStageId}&orgUnit=${orgUnit}&page=${page}&pageSize=${pageSize}&fields=event,dataValues[dataElement,value]&totalPages=true`
+      `events.json?programStage=${programStageId}&orgUnit=${orgUnit}&page=${page}&pageSize=${pageSize}&fields=*&totalPages=true&${filterParams}${dateFilter}`
     );
   }
 
@@ -75,12 +90,7 @@ export class LineListService {
     return this.getProgramMetadata(programId).pipe(
       switchMap((programMetadata: ProgramMetadata) => {
         if (programStageId) {
-          return this.getEventsByProgramStage(
-            programStageId,
-            orgUnit,
-            page,
-            pageSize
-          ).pipe(
+          return this.getEventsByProgramStage(programStageId, orgUnit, page, pageSize, filters, startDate, endDate).pipe(
             map((events: EventsResponse) => ({
               metadata: programMetadata,
               data: events,
@@ -89,22 +99,14 @@ export class LineListService {
         }
 
         if (programMetadata.programType === 'WITH_REGISTRATION') {
-          return this.getTrackedEntityInstances(
-            programId,
-            orgUnit,
-            page,
-            pageSize,
-            filters,
-            startDate,
-            endDate
-          ).pipe(
+          return this.getTrackedEntityInstances(programId, orgUnit, page, pageSize, filters, startDate, endDate).pipe(
             map((teis: TrackedEntityInstancesResponse) => ({
               metadata: programMetadata,
               data: teis,
             }))
           );
         } else {
-          return this.getEvents(programId, orgUnit, page, pageSize).pipe(
+          return this.getEvents(programId, orgUnit, page, pageSize, filters, startDate, endDate).pipe(
             map((events: EventsResponse) => ({
               metadata: programMetadata,
               data: events,
@@ -115,6 +117,7 @@ export class LineListService {
     );
   }
 }
+
 
 // import { Injectable } from '@angular/core';
 // import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
@@ -280,7 +283,7 @@ export class LineListService {
 //             }))
 //           );
 //         }
-
+  
 //         if (programMetadata.programType === "WITH_REGISTRATION") {
 //           return this.getTrackedEntityInstances(programId, orgUnit).pipe(
 //             map((teis) => ({
@@ -299,5 +302,5 @@ export class LineListService {
 //         }
 //       })
 //     );
-//   }
+//   }  
 // }
