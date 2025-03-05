@@ -16,6 +16,10 @@ export class ComponentsComponent {
     { id: 'LAST_3_MONTHS', name: 'Last 3 months' },
   ];
 
+  onActionSelected(emitActionResponse: any) {
+    console.log(JSON.stringify(emitActionResponse));
+  }
+
   selectedOrgUnits = [];
   orgUnitSelectionConfig: OrganisationUnitSelectionConfig = {
     hideGroupSelect: false,
