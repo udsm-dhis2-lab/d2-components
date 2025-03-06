@@ -163,7 +163,7 @@ export class LineListTableComponent extends ReactWrapperComponent {
           this.attributeFilters,
           this.startDate,
           this.endDate,
-          this.ouMode,
+          this.ouMode
         )
         .subscribe((response: LineListResponse) => {
           let entityColumns: ColumnDefinition[] = [];
@@ -233,7 +233,10 @@ export class LineListTableComponent extends ReactWrapperComponent {
     return (
       <div>
         {loading ? (
-          <CircularLoader />
+          <div style={{display: "flex", justifyContent: "center", alignItems: "center",}}>
+            <CircularLoader />
+            <span style={{ marginLeft: "8px" }}>Loading...</span>
+          </div>
         ) : (
           <DataTable>
             <TableHead>
