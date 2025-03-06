@@ -1,0 +1,19 @@
+// Copyright 2025 UDSM DHIS2 Lab. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+/* Target the wrapper for React inputs or selects */
+.react-filters-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    /* Three columns */
+    gap: 20px;
+    /* Add some space between the elements */
+    margin-bottom: 20px;
+    /* Add space below */
+}
+
+.input-field,
+.single-select {
+    width: 100%;
+    /* Ensure the inputs and selects take full width within the grid */
+}
