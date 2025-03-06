@@ -21,7 +21,7 @@ export class WebSdkComponent {
 
     const result = await this.d2.trackerModule.trackedEntity
       .setProgram('oUiYTdbtOuh')
-      .setTrackedEntity('cXEFO5RHN3B')
+      .setTrackedEntities(['cXEFO5RHN3B', 'lh3IBKUtEtu'])
       .get();
 
     console.log('RESULT', result.data);

@@ -51,10 +51,10 @@ export class TrackerUrlGenerator {
         this.#addEnrollmentDates(
           this.#addFields(
             this.#addOrgUnit(
-              this.#addTrackedEntity(
-                this.#addFilters(
-                  this.#addTrackedEntityType(
-                    this.#addProgram(`${this.#baseEndpoint}`)
+              this.#addFilters(
+                this.#addTrackedEntityType(
+                  this.#addProgram(
+                    this.#addTrackedEntity(`${this.#baseEndpoint}`)
                   )
                 )
               )
@@ -129,6 +129,10 @@ export class TrackerUrlGenerator {
   #addTrackedEntity(url: string): string {
     if (!this.#trackedEntity) {
       return url;
+    }
+
+    if (this.#trackedEntity.split(';').length === 1) {
+      return url + `/${this.#trackedEntity}`;
     }
 
     const isThereParams = this.#isThereQueryParams(url);

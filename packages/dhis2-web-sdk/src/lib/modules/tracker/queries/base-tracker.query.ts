@@ -99,6 +99,11 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
     return this;
   }
 
+  setTrackedEntities(trackedEntities: string[]): BaseTrackerQuery<T> {
+    this.trackedEntity = trackedEntities.join(';');
+    return this;
+  }
+
   setTrackedEntityType(trackedEntityType: string): BaseTrackerQuery<T> {
     this.trackedEntityType = trackedEntityType;
     return this;
