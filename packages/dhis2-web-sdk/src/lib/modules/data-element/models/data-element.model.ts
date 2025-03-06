@@ -24,9 +24,6 @@ export type DataElementProperty =
   | 'optionSet';
 
 export class DataElement extends IdentifiableObject<DataElement> {
-  static getProperties(): {} {
-    throw new Error('Method not implemented.');
-  }
   static resourceName = 'dataElements';
   static singularResourceName = 'dataElement';
   static fields: DataElementProperty[] = [
@@ -55,6 +52,7 @@ export class DataElement extends IdentifiableObject<DataElement> {
   periodOffset?: number;
   optionSetValue?: boolean;
   optionSet?: OptionSet;
+  programStageId?: string;
 
   constructor(dataElement: Partial<DataElement>) {
     super(dataElement);

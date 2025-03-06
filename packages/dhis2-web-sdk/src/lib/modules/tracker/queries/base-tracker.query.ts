@@ -3,7 +3,13 @@
 // license that can be found in the LICENSE file.
 
 import { Program, ProgramModule, ProgramRule } from '../../program';
-import { D2HttpClient, D2HttpResponse, Pager } from '../../../shared';
+import {
+  D2HttpClient,
+  D2HttpResponse,
+  generateCodes,
+  generateUid,
+  Pager,
+} from '../../../shared';
 import {
   D2TrackerResponse,
   ITrackedEntityInstance,
@@ -13,6 +19,8 @@ import {
   TrackerUrlGenerator,
 } from '../models';
 import { D2Window } from '../../../d2-web-sdk';
+import { DataElement } from '../../data-element';
+import { camelCase } from 'lodash';
 
 export class BaseTrackerQuery<T extends TrackedEntityInstance> {
   protected orgUnit?: string;
@@ -161,6 +169,61 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
     const response = await this.fetchData();
 
     return new D2TrackerResponse<T>(response, this.identifiable);
+  }
+
+  async create(): Promise<T> {
+    if (!this.instance) {
+      const program = await this.getMetaData();
+
+      if (program) {
+        this.instance = new (this.identifiable as any)({
+          trackedEntity: generateUid(),
+          trackedEntityType: program.trackedEntityType,
+          program: program.id,
+        });
+
+        this.instance.fields = {
+          ...(this.instance.fields || {}),
+          ...(program.dataElements || []).reduce((fieldObject, dataElement) => {
+            const key = dataElement.code
+              ? camelCase(dataElement.code)
+              : dataElement.id;
+            return {
+              ...fieldObject,
+              [key]: {
+                id: dataElement.id,
+                type: 'DATA_ELEMENT',
+                stageId: dataElement.programStageId,
+              },
+            };
+          }, {}),
+          ...(program.trackedEntityAttributes || []).reduce(
+            (fieldObject, trackedEntityAttribute) => {
+              const key = trackedEntityAttribute.code
+                ? camelCase(trackedEntityAttribute.code)
+                : trackedEntityAttribute.id;
+              return {
+                ...fieldObject,
+                [key]: {
+                  id: trackedEntityAttribute.id,
+                  type: 'ATTRIBUTE',
+                  generated: trackedEntityAttribute.generated,
+                },
+              };
+            },
+            {}
+          ),
+        };
+
+        const reservedValues = await this.generateReservedValues();
+
+        (reservedValues || []).forEach((reserved) => {
+          this.instance.setAttributeValue(reserved.ownerUid, reserved.value);
+        });
+      }
+    }
+
+    return this.instance;
   }
 
   protected async fetchData() {
