@@ -55,6 +55,7 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() startDate?: string;
   @Input() endDate?: string;
   @Input() filters?: FilterConfig[];
+  @Input() ouMode?: string;
   @Output() actionSelected = new EventEmitter<{
     action: string;
     row: TableRow;
@@ -160,7 +161,8 @@ export class LineListTableComponent extends ReactWrapperModule {
           pager.pageSize,
           this.attributeFilters,
           this.startDate,
-          this.endDate
+          this.endDate,
+          this.ouMode
         )
         .subscribe((response: LineListResponse) => {
           let entityColumns: ColumnDefinition[] = [];
@@ -230,7 +232,23 @@ export class LineListTableComponent extends ReactWrapperModule {
     return (
       <div>
         {loading ? (
-          <CircularLoader />
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: 8,
+            }}
+          >
+            <CircularLoader small />
+            <div
+              style={{
+                fontSize: 14,
+              }}
+            >
+              Loading
+            </div>
+          </div>
         ) : (
           <DataTable>
             <TableHead>
