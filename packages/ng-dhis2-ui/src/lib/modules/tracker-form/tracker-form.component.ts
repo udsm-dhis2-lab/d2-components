@@ -22,6 +22,7 @@ export class TrackerFormComponent implements OnInit {
       this.program()
     );
     const program = await this.trackerQuery.getMetaData();
+    const instance = await this.trackerQuery.create();
 
     if (program) {
       this.formMetaData = new FormMetaData({

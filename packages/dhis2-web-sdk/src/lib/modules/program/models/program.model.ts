@@ -15,6 +15,7 @@ import { TrackedEntityAttribute } from './tracked-entity-attribute.model';
 import { DataElement } from '../../data-element';
 import { flatten } from 'lodash';
 import { ProgramRule } from './program-rule.model';
+import { TrackedEntityType } from './tracked-entity-type.model';
 
 export type ProgramField =
   | IdentifiableField
@@ -33,7 +34,6 @@ export type ProgramField =
   | 'incidentDateLabel'
   | 'completeEventsExpiryDays'
   | 'displayFrontPageList'
-  | 'trackedEntity'
   | 'trackedEntityType'
   | 'organisationUnits'
   | 'programTrackedEntityAttributes'
@@ -62,7 +62,6 @@ export class Program extends IdentifiableObject<Program> {
     'incidentDateLabel',
     'completeEventsExpiryDays',
     'displayFrontPageList',
-    'trackedEntity',
     'trackedEntityType',
     'organisationUnits',
     'programTrackedEntityAttributes',
@@ -83,8 +82,7 @@ export class Program extends IdentifiableObject<Program> {
   incidentDateLabel?: string;
   completeEventsExpiryDays?: number;
   displayFrontPageList?: boolean;
-  trackedEntity?: string;
-  trackedEntityType?: string;
+  trackedEntityType?: TrackedEntityType;
   organisationUnits?: object;
   programTrackedEntityAttributes?: ProgramTrackedEntityAttribute[];
   programRuleVariables?: ProgramRuleVariable[];
@@ -104,6 +102,13 @@ export class Program extends IdentifiableObject<Program> {
       );
     this.programRuleVariables = this.#getProgramRuleVariables(
       program.programRuleVariables || []
+    );
+  }
+
+  get trackedEntityAttributes(): TrackedEntityAttribute[] {
+    return (this.programTrackedEntityAttributes || []).map(
+      (programTrackedEntityAttribute) =>
+        programTrackedEntityAttribute.trackedEntityAttribute
     );
   }
 
@@ -145,6 +150,21 @@ export class Program extends IdentifiableObject<Program> {
           programTrackedEntityAttribute.trackedEntityAttribute
       )
       .filter((trackedEntityAttribute) => trackedEntityAttribute);
+  }
+
+  get dataElements(): DataElement[] {
+    return flatten(
+      (this.programStages || []).map((programStage) => {
+        return (programStage.programStageDataElements || [])
+          .map((programStageDataElement) => {
+            return {
+              ...programStageDataElement.dataElement,
+              programStageId: programStage.id,
+            };
+          })
+          .filter((dataElement) => dataElement);
+      })
+    );
   }
 
   get displayInListDataElements(): DataElement[] {

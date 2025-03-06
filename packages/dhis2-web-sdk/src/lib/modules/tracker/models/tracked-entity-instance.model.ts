@@ -1,4 +1,4 @@
-import { camelCase, isEmpty } from 'lodash';
+import { camelCase, isArray, isEmpty, isPlainObject } from 'lodash';
 import {
   AttributeUtil,
   EnrollmentUtil,
@@ -47,9 +47,30 @@ export interface TrackedEntityInstanceObject {
 
 interface TrackerFieldProperty {
   id: string;
-  type: 'ATTRIBUTE' | 'DATA_ELEMENT';
+  type:
+    | 'ATTRIBUTE'
+    | 'DATA_ELEMENT'
+    | 'ENROLLMENT_DATE'
+    | 'INCIDENT_DATE'
+    | 'ORG_UNIT';
   generated?: boolean;
+  stageId?: string;
 }
+
+const DEFAULT_FIELD_PROPERTIES: Record<string, TrackerFieldProperty> = {
+  enrollmentDate: {
+    id: 'enrollmentDate',
+    type: 'ENROLLMENT_DATE',
+  },
+  incidentDate: {
+    id: 'incidentDate',
+    type: 'INCIDENT_DATE',
+  },
+  orgUnit: {
+    id: 'orgUnit',
+    type: 'ORG_UNIT',
+  },
+};
 
 export interface ITrackedEntityInstance {
   program: string;
@@ -109,7 +130,7 @@ export class TrackedEntityInstance
   orgUnit!: string;
   orgUnitName!: string;
   relatedEntities?: TrackerRelationship[];
-  fields?: Record<string, TrackerFieldProperty>;
+  fields: Record<string, TrackerFieldProperty> = DEFAULT_FIELD_PROPERTIES;
   [key: string]: any;
 
   protected _attributes!: Attribute[];
@@ -201,7 +222,7 @@ export class TrackedEntityInstance
     });
   }
 
-  setOrgUnit?(orgUnit: string) {
+  setOrgUnit(orgUnit: string) {
     this.orgUnit = orgUnit;
     if (this.latestEnrollment) {
       this.latestEnrollment.orgUnit = orgUnit;
@@ -268,7 +289,7 @@ export class TrackedEntityInstance
     }
   }
 
-  setIncidentDate?(incidentDate: string) {
+  setIncidentDate(incidentDate: string) {
     if (this.latestEnrollment) {
       this.latestEnrollment.occurredAt = incidentDate;
       this.latestEnrollment.incidentDate = incidentDate;
@@ -317,20 +338,43 @@ export class TrackedEntityInstance
       .map((relatedEntity) => relatedEntity.trackedEntityInstance);
   }
 
-  updateDataValues?(dataValueEntities: Record<string, any>) {
+  updateDataValues(dataValueEntities: Record<string, unknown>) {
     const dataValueKeys = Object.keys(dataValueEntities);
 
     dataValueKeys.forEach((key) => {
-      const dataValue = dataValueEntities[key];
-      if (dataValue.attribute) {
-        if (this.setAttributeValue)
-          this.setAttributeValue(
-            dataValue.attribute,
-            dataValue.value,
-            dataValue.code
-          );
-      } else if (dataValue.dataElement) {
-        //TODO: Add implementation to add stage data
+      const dataValue = dataValueEntities[key] as string;
+      if (dataValue && dataValue.length > 0) {
+        const field = (this.fields || {})[key];
+        switch (field?.type) {
+          case 'ATTRIBUTE':
+            this.setAttributeValue(field.id, dataValue);
+            break;
+          case 'DATA_ELEMENT':
+            this.setDataValue(field.id, dataValue, field.stageId!);
+            break;
+          case 'ENROLLMENT_DATE':
+            this.setEnrollmentDate(dataValue);
+            break;
+          case 'INCIDENT_DATE':
+            this.setIncidentDate(dataValue);
+            break;
+          case 'ORG_UNIT':
+            this.setOrgUnit(dataValue);
+            break;
+
+          default: {
+            if (isArray(dataValue)) {
+              (dataValue as Record<string, unknown>[]).forEach((data) => {
+                this.updateDataValues(data);
+              });
+            } else if (isPlainObject(dataValue)) {
+              this.updateDataValues(
+                dataValue as unknown as Record<string, unknown>
+              );
+            }
+            break;
+          }
+        }
       }
     });
   }
@@ -373,7 +417,7 @@ export class TrackedEntityInstance
     }
   }
 
-  toObject?(options?: {
+  toObject(options?: {
     skipAttributes?: boolean;
   }): TrackedEntityInstanceObject {
     if (this.latestEnrollment) {
