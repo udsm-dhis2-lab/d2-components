@@ -4,7 +4,7 @@ import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
 import { Period } from '@iapps/period-utilities';
 
 @Component({
-  selector: 'app-components',
+  selector: 'ng-dhis2-ui-app-componenent',
   templateUrl: './components.component.html',
   standalone: false,
 })
@@ -16,6 +16,10 @@ export class ComponentsComponent {
     { id: 'LAST_3_MONTHS', name: 'Last 3 months' },
   ];
 
+  onActionSelected(emitActionResponse: any) {
+    console.log('THIS IS IT::: ' , JSON.stringify(emitActionResponse));
+  }
+  
   filters = [
     {
       programStage: 'AFdwWJ6LpRT',
@@ -40,6 +44,7 @@ export class ComponentsComponent {
     allowSingleSelection: true,
     usageType: 'DATA_ENTRY',
   };
+
   onSelectPeriods(periods: any) {
     console.log(periods);
   }
@@ -54,6 +59,7 @@ export class ComponentsComponent {
     { name: 'John Doe', age: 28, country: 'Tanzania' },
     { name: 'Jane Smith', age: 34, country: 'Kenya' },
   ];
+  
   //event program = A3olldDSHQg
   //program stage= AFdwWJ6LpRT
 
@@ -70,6 +76,10 @@ export class ComponentsComponent {
   }
 
   onDelete(row: any) {
+    console.log('Delete', row);
+  }
+
+  onGenerateReport(row: any): void {
     console.log('Delete', row);
   }
 
