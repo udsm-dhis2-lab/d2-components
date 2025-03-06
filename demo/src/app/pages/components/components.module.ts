@@ -9,6 +9,7 @@ import {
   DataTableUIModule,
   OrganisationUnitSelectorModule,
   PeriodSelectorModule,
+  SelectionFiltersUiModule,
 } from '@iapps/ng-dhis2-ui';
 import { routes } from './components-routes';
 import { ComponentsComponent } from './components.component';
@@ -25,7 +26,8 @@ import { NgxDhis2DictionaryModule } from '@iapps/ngx-dhis2-dictionary';
     OrganisationUnitSelectorModule,
     NgxDhis2DictionaryModule,
     LineListModule,
-    DataTableUIModule
+    DataTableUIModule,
+    SelectionFiltersUiModule
   ],
 })
 export class ComponentsModule {}
