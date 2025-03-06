@@ -102,6 +102,7 @@ export interface ProgramMetadata {
   programType: string;
   programStages: ProgramStage[];
   organisationUnits: { id: string; name: string }[];
+  programTrackedEntityAttributes: ProgramTrackedEntityAttribute[]
 }
 
 export interface LineListResponse {
@@ -132,6 +133,44 @@ export interface CreatedByUserInfo {
   surname: string;
   username: string;
 }
+
+export interface ProgramTrackedEntityAttribute {
+  access: {
+    read: boolean;
+    update: boolean;
+    externalize: boolean;
+    delete: boolean;
+    write: boolean;
+  };
+  attributeValues: any[]; 
+  created: string;
+  displayInList: boolean;
+  displayName: string;
+  displayShortName: string;
+  externalAccess: boolean;
+  favorite: boolean;
+  favorites: any[]; 
+  id: string;
+  lastUpdated: string;
+  mandatory: boolean;
+  name: string;
+  program: { id: string };
+  programTrackedEntityAttributeGroups: any[]; 
+  renderOptionsAsRadio: boolean;
+  searchable: boolean;
+  sharing: { userGroups: any; external: boolean; users: any };
+  sortOrder: number;
+  trackedEntityAttribute: {
+    id: string;
+    name: string;
+    valueType: string;
+  };
+  translations: any[]; 
+  userAccesses: any[];
+  userGroupAccesses: any[];
+  valueType: string;
+}
+
 
 // // //line-list.models.ts
 // // src/models/line-list.models.ts

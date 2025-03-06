@@ -16,7 +16,7 @@ export class LineListService {
   constructor(private httpClient: NgxDhis2HttpClientService) {}
   private getProgramMetadata(programId: string): Observable<ProgramMetadata> {
     return this.httpClient.get(
-      `programs/${programId}.json?fields=programType,programStages[id,name,programStageDataElements[dataElement[id,name]]],organisationUnits[id,name]`
+      `programs/${programId}.json?fields=programType,programStages[id,name,programStageDataElements[dataElement[id,name]]],organisationUnits[id,name],*`
     );
   }
 
@@ -34,7 +34,7 @@ export class LineListService {
     const dateFilter = startDate && endDate ? `&programStartDate=${startDate}&programEndDate=${endDate}` : '';
     const ouModeIdentifier = ouMode ? `&ouMode=${ouMode}`: ``;
     return this.httpClient.get(
-      `trackedEntityInstances.json?program=${programId}&ou=${orgUnit}${ouModeIdentifier}&page=${page}&pageSize=${pageSize}&fields=trackedEntityInstance,attributes[*],enrollments[*]&totalPages=true&${filterParams}${dateFilter}`
+      `trackedEntityInstances.json?program=${programId}&ou=${orgUnit}${ouModeIdentifier}&page=${page}&pageSize=${pageSize}&fields=trackedEntityInstance,attributes[*,displayInList],enrollments[*]&totalPages=true&${filterParams}${dateFilter}`
     ).pipe(
       map((response: any) => {
         response.trackedEntityInstances.forEach((tei: any) => {

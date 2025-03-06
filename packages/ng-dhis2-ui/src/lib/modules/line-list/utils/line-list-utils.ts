@@ -65,6 +65,17 @@ export const getTrackedEntityData = (
 ): { columns: ColumnDefinition[]; data: TableRow[] } => {
   let teis = (response.data as TrackedEntityInstancesResponse)
     .trackedEntityInstances;
+  
+  let programMetaData = response.metadata.programTrackedEntityAttributes;
+ 
+const programAttributesMap = programMetaData.reduce((acc: { [key: string]: string }, attribute: any) => {
+  if (attribute.displayInList) { 
+    acc[attribute.id] = attribute.displayName;
+  }
+  return acc;
+}, {});
+
+  console.log('metadata',  programAttributesMap);
   if (filters) {
     teis = getFilteredTrackedEntityInstances(teis, filters);
   }
@@ -80,7 +91,15 @@ export const getTrackedEntityData = (
     attributes.forEach((attr: any) => allAttributes.add(attr.attribute));
   });
 
-  const entityColumns = Array.from(allAttributes).map((attrId: string) => {
+  console.log('all of the attributes', allAttributes);
+
+  // const filteredAttributes = new Set(
+  //   [...allAttributes].filter((attributeId) => programAttributesMap[attributeId])
+  // );
+  
+  // console.log('Filtered All Attributes:', filteredAttributes);
+
+  let entityColumns = Array.from(allAttributes).map((attrId: string) => {
     const foundAttribute = teis
       .flatMap((tei: any) => {
         const matchingEnrollment = tei.enrollments.find(
@@ -97,6 +116,12 @@ export const getTrackedEntityData = (
       key: attrId,
     };
   });
+
+  entityColumns = entityColumns.filter((column) => {
+    // Check if the column label is part of any value in programAttributesMap
+    return Object.values(programAttributesMap).some((value: string) => value.includes(column.label));
+  });
+  
 
   const attributesData = teis.map((tei: any, idx: number) => {
     let row: TableRow = {
