@@ -16,7 +16,7 @@ import {
   DataTableCell,
   Pagination,
   TableFoot,
-  CircularLoader
+  CircularLoader,
 } from '@dhis2/ui';
 import React, { useEffect, useRef, useState } from 'react';
 import { LineListService } from '../services/line-list.service';
@@ -56,6 +56,7 @@ export class LineListTableComponent extends ReactWrapperComponent {
   @Input() startDate?: string;
   @Input() endDate?: string;
   @Input() filters?: FilterConfig[];
+  @Input() ouMode?: string;
   @Output() actionSelected = new EventEmitter<{
     action: string;
     row: TableRow;
@@ -139,7 +140,7 @@ export class LineListTableComponent extends ReactWrapperComponent {
           const paginationContainer = document.querySelector(
             '[data-test="dhis2-uiwidgets-pagination"]'
           ) as HTMLElement;
-    
+
           if (paginationContainer) {
             paginationContainer.style.display = 'flex';
             paginationContainer.style.flexDirection = 'row';
@@ -148,7 +149,7 @@ export class LineListTableComponent extends ReactWrapperComponent {
           }
         }, 500); // Short delay to ensure styles apply after data renders
       }
-    }, [loading]); 
+    }, [loading]);
 
     useEffect(() => {
       setLoading(true);
@@ -161,7 +162,8 @@ export class LineListTableComponent extends ReactWrapperComponent {
           pager.pageSize,
           this.attributeFilters,
           this.startDate,
-          this.endDate
+          this.endDate,
+          this.ouMode,
         )
         .subscribe((response: LineListResponse) => {
           let entityColumns: ColumnDefinition[] = [];
@@ -184,7 +186,7 @@ export class LineListTableComponent extends ReactWrapperComponent {
               response,
               this.programId,
               pager,
-             this.filters
+              this.filters
             );
             entityColumns = columns;
             entityData = data;
@@ -230,65 +232,66 @@ export class LineListTableComponent extends ReactWrapperComponent {
 
     return (
       <div>
-      {loading? (
-       <CircularLoader/>
-      ):
-       ( <DataTable>
-          <TableHead>
-            <DataTableRow>
-              {columns.map((col) => (
-                <DataTableColumnHeader key={col.key}>
-                  {col.label}
-                </DataTableColumnHeader>
-              ))}
-            </DataTableRow>
-          </TableHead>
-          <TableBody>
-            {data.map((row) => (
-              <DataTableRow key={row.index}>
+        {loading ? (
+          <CircularLoader />
+        ) : (
+          <DataTable>
+            <TableHead>
+              <DataTableRow>
                 {columns.map((col) => (
-                  <DataTableCell key={col.key}>
-                    {col.key === 'actions' ? (
-                      <DropdownMenu
-                        dropdownOptions={getDropdownOptions(row)}
-                        onClick={(option) => option.onClick?.()}
-                      />
-                    ) : (
-                      row[col.key]
-                    )}
-                  </DataTableCell>
+                  <DataTableColumnHeader key={col.key}>
+                    {col.label}
+                  </DataTableColumnHeader>
                 ))}
               </DataTableRow>
-            ))}
-          </TableBody>
-          <TableFoot>
-            <DataTableRow>
-              {/* <DataTableCell colSpan={columns.length}> */}
-              <DataTableCell colSpan={columns.length.toString()}>
-                <div>
-                  <Pagination
-                    page={pager.page}
-                    pageCount={pager.pageCount}
-                    pageSize={pager.pageSize}
-                    total={pager.total}
-                    onPageChange={(page: number) =>
-                      setPager((prev) => ({ ...prev, page }))
-                    }
-                    onPageSizeChange={(pageSize: number) => {
-                      const newPageSize = Number(pageSize);
-                      setPager((prev) => ({
-                        ...prev,
-                        page: 1,
-                        pageSize: newPageSize,
-                      }));
-                    }}
-                    pageSizes={['5', '10', '20', '50']}
-                  />
-                </div>
-              </DataTableCell>
-            </DataTableRow>
-          </TableFoot>
-        </DataTable>)}
+            </TableHead>
+            <TableBody>
+              {data.map((row) => (
+                <DataTableRow key={row.index}>
+                  {columns.map((col) => (
+                    <DataTableCell key={col.key}>
+                      {col.key === 'actions' ? (
+                        <DropdownMenu
+                          dropdownOptions={getDropdownOptions(row)}
+                          onClick={(option) => option.onClick?.()}
+                        />
+                      ) : (
+                        row[col.key]
+                      )}
+                    </DataTableCell>
+                  ))}
+                </DataTableRow>
+              ))}
+            </TableBody>
+            <TableFoot>
+              <DataTableRow>
+                {/* <DataTableCell colSpan={columns.length}> */}
+                <DataTableCell colSpan={columns.length.toString()}>
+                  <div>
+                    <Pagination
+                      page={pager.page}
+                      pageCount={pager.pageCount}
+                      pageSize={pager.pageSize}
+                      total={pager.total}
+                      onPageChange={(page: number) =>
+                        setPager((prev) => ({ ...prev, page }))
+                      }
+                      onPageSizeChange={(pageSize: number) => {
+                        const newPageSize = Number(pageSize);
+                        setPager((prev) => ({
+                          ...prev,
+                          page: 1,
+                          pageSize: newPageSize,
+                        }));
+                      }}
+                      pageSizes={['5', '10', '20', '50']}
+                    />
+                  </div>
+                </DataTableCell>
+              </DataTableRow>
+            </TableFoot>
+          </DataTable>
+        )}
       </div>
     );
   };
