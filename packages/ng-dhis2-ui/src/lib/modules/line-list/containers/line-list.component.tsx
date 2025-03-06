@@ -1,34 +1,44 @@
-import { Component, inject, Input } from '@angular/core';
+// src/app/line-list-table.component.ts
 import {
+  Component,
+  EventEmitter,
+  inject,
+  Input,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
+import {
+  CircularLoader,
   DataTable,
-  TableHead,
-  DataTableRow,
-  DataTableColumnHeader,
-  TableBody,
   DataTableCell,
+  DataTableColumnHeader,
+  DataTableRow,
   Pagination,
+  TableBody,
   TableFoot,
+  TableHead,
 } from '@dhis2/ui';
 import React, { useEffect, useRef, useState } from 'react';
-import { LineListService } from '../services/line-list.service';
+import * as ReactDOM from 'react-dom/client';
+import { ReactWrapperModule } from '../../react-wrapper/react-wrapper.component';
 import { DropdownMenu, DropdownMenuOption } from '../components/dropdown-menu';
+import { AttributeFilter } from '../models/attribute-filter.model';
+import { FilterConfig } from '../models/filter-config.model';
 import {
-  LineListResponse,
   ColumnDefinition,
-  TableRow,
   EventsResponse,
-  TrackedEntityInstancesResponse,
+  LineListResponse,
   Pager,
+  TableRow,
+  TrackedEntityInstancesResponse,
 } from '../models/line-list.models';
+import { LineListService } from '../services/line-list.service';
 import {
+  addActionsColumn,
+  getEventData,
   getProgramStageData,
   getTrackedEntityData,
-  getEventData,
-  addActionsColumn,
 } from '../utils/line-list-utils';
-import { AttributeFilter } from '../models/attribute-filter.model';
-import { ReactWrapperComponent } from '../../react-wrapper';
-import * as ReactDOM from 'react-dom/client';
 
 @Component({
   selector: 'app-line-list',
@@ -36,7 +46,7 @@ import * as ReactDOM from 'react-dom/client';
   styleUrls: ['./line-list.component.scss'],
   standalone: false,
 })
-export class LineListTableComponent extends ReactWrapperComponent {
+export class LineListTableComponent extends ReactWrapperModule {
   @Input() programId!: string;
   @Input() orgUnit!: string;
   @Input() programStageId?: string;
@@ -44,6 +54,40 @@ export class LineListTableComponent extends ReactWrapperComponent {
   @Input() attributeFilters?: AttributeFilter[];
   @Input() startDate?: string;
   @Input() endDate?: string;
+  @Input() filters?: FilterConfig[];
+  @Input() ouMode?: string;
+  @Output() actionSelected = new EventEmitter<{
+    action: string;
+    row: TableRow;
+  }>();
+  private reactStateUpdaters: any = null;
+
+  setReactStateUpdaters = (updaters: any) => {
+    this.reactStateUpdaters = updaters;
+  };
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (this.reactStateUpdaters) {
+      if (changes['programId']) {
+        this.reactStateUpdaters.setProgramIdState(this.programId);
+      }
+      if (changes['orgUnit']) {
+        this.reactStateUpdaters.setOrgUnitState(this.orgUnit);
+      }
+      if (changes['programStageId']) {
+        this.reactStateUpdaters.setProgramStageIdState(this.programStageId);
+      }
+      if (changes['attributeFilters']) {
+        this.reactStateUpdaters.setAttributeFiltersState(this.attributeFilters);
+      }
+      if (changes['startDate']) {
+        this.reactStateUpdaters.setStartDateState(this.startDate);
+      }
+      if (changes['endDate']) {
+        this.reactStateUpdaters.setEndDateState(this.endDate);
+      }
+    }
+  }
 
   lineListService = inject(LineListService);
 
@@ -57,41 +101,57 @@ export class LineListTableComponent extends ReactWrapperComponent {
       pageCount: 1,
     });
     const paginationRef = useRef<HTMLDivElement>(null);
+    const [programIdState, setProgramIdState] = useState<string>(
+      this.programId
+    );
+    const [orgUnitState, setOrgUnitState] = useState<string>(this.orgUnit);
+    const [programStageIdState, setProgramStageIdState] = useState<
+      string | undefined
+    >(this.programStageId);
+    const [attributeFiltersState, setAttributeFiltersState] = useState<
+      AttributeFilter[] | undefined
+    >(this.attributeFilters);
+    const [startDateState, setStartDateState] = useState<string | undefined>(
+      this.startDate
+    );
+    const [endDateState, setEndDateState] = useState<string | undefined>(
+      this.endDate
+    );
+    const [loading, setLoading] = useState<boolean>(false);
+
+    // Store updaters in refs for Angular to access
+    const updateRefs = useRef({
+      setProgramIdState,
+      setOrgUnitState,
+      setProgramStageIdState,
+      setAttributeFiltersState,
+      setStartDateState,
+      setEndDateState,
+    });
 
     useEffect(() => {
-      setTimeout(() => {
-        const paginationContainer = document.querySelector(
-          '[data-test="dhis2-uiwidgets-pagination"]'
-        ) as HTMLElement;
+      this.setReactStateUpdaters?.(updateRefs.current);
+    }, []);
 
-        if (paginationContainer) {
-          paginationContainer.style.setProperty('display', 'flex', 'important');
-          paginationContainer.style.setProperty(
-            'flex-direction',
-            'row',
-            'important'
-          );
-          paginationContainer.style.setProperty(
-            'justify-content',
-            'space-between',
-            'important'
-          );
-          paginationContainer.style.setProperty(
-            'align-items',
-            'center',
-            'important'
-          );
-        }
-      }, 1000);
+    useEffect(() => {
+      if (!loading) {
+        setTimeout(() => {
+          const paginationContainer = document.querySelector(
+            '[data-test="dhis2-uiwidgets-pagination"]'
+          ) as HTMLElement;
 
-      if (paginationRef.current) {
-        paginationRef.current.style.setProperty('display', 'flex', 'important');
-        paginationRef.current.style.setProperty(
-          'flex-direction',
-          'row',
-          'important'
-        );
+          if (paginationContainer) {
+            paginationContainer.style.display = 'flex';
+            paginationContainer.style.flexDirection = 'row';
+            paginationContainer.style.justifyContent = 'space-between';
+            paginationContainer.style.alignItems = 'center';
+          }
+        }, 500); // Short delay to ensure styles apply after data renders
       }
+    }, [loading]);
+
+    useEffect(() => {
+      setLoading(true);
       this.lineListService
         .getLineListData(
           this.programId,
@@ -101,7 +161,8 @@ export class LineListTableComponent extends ReactWrapperComponent {
           pager.pageSize,
           this.attributeFilters,
           this.startDate,
-          this.endDate
+          this.endDate,
+          this.ouMode
         )
         .subscribe((response: LineListResponse) => {
           let entityColumns: ColumnDefinition[] = [];
@@ -123,7 +184,8 @@ export class LineListTableComponent extends ReactWrapperComponent {
             const { columns, data } = getTrackedEntityData(
               response,
               this.programId,
-              pager
+              pager,
+              this.filters
             );
             entityColumns = columns;
             entityData = data;
@@ -138,80 +200,113 @@ export class LineListTableComponent extends ReactWrapperComponent {
             [{ label: '#', key: 'index' }, ...entityColumns],
             this.actionOptions
           );
-
-          setColumns(finalColumns);
-          setData(entityData);
-          setPager(responsePager);
+          setLoading(false);
+          console.log('hey');
+          setColumns(...[finalColumns]);
+          setData(...[entityData]);
+          setPager(...[responsePager]);
+          console.log('columns', columns);
+          console.log('data', data);
         });
-    }, [pager.page, pager.pageSize]);
-
-    console.log('columns', columns);
-    console.log('data', data);
+    }, [
+      programIdState,
+      orgUnitState,
+      programStageIdState,
+      attributeFiltersState,
+      startDateState,
+      endDateState,
+      pager.page,
+      pager.pageSize,
+    ]);
 
     const getDropdownOptions = (row: TableRow): DropdownMenuOption[] => {
       return (this.actionOptions || []).map((option) => ({
         ...option,
-        onClick: () => option.onClick?.(row),
+        onClick: () => {
+          option.onClick?.(row);
+          this.actionSelected.emit({ action: option.label, row });
+        },
       }));
     };
 
     return (
       <div>
-        <DataTable>
-          <TableHead>
-            <DataTableRow>
-              {columns.map((col) => (
-                <DataTableColumnHeader key={col.key}>
-                  {col.label}
-                </DataTableColumnHeader>
-              ))}
-            </DataTableRow>
-          </TableHead>
-          <TableBody>
-            {data.map((row) => (
-              <DataTableRow key={row.index}>
+        {loading ? (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: 8,
+            }}
+          >
+            <CircularLoader small />
+            <div
+              style={{
+                fontSize: 14,
+              }}
+            >
+              Loading
+            </div>
+          </div>
+        ) : (
+          <DataTable>
+            <TableHead>
+              <DataTableRow>
                 {columns.map((col) => (
-                  <DataTableCell key={col.key}>
-                    {col.key === 'actions' ? (
-                      <DropdownMenu
-                        dropdownOptions={getDropdownOptions(row)}
-                        onClick={(option) => option.onClick?.()}
-                      />
-                    ) : (
-                      row[col.key]
-                    )}
-                  </DataTableCell>
+                  <DataTableColumnHeader key={col.key}>
+                    {col.label}
+                  </DataTableColumnHeader>
                 ))}
               </DataTableRow>
-            ))}
-          </TableBody>
-          <TableFoot>
-            <DataTableRow>
-              <DataTableCell colSpan={columns.length}>
-                <div>
-                  <Pagination
-                    page={pager.page}
-                    pageCount={pager.pageCount}
-                    pageSize={pager.pageSize}
-                    total={pager.total}
-                    onPageChange={(page: number) =>
-                      setPager((prev) => ({ ...prev, page }))
-                    }
-                    onPageSizeChange={(pageSize: string) => {
-                      const newPageSize = Number(pageSize);
-                      setPager((prev) => ({
-                        ...prev,
-                        page: 1,
-                        pageSize: newPageSize,
-                      }));
-                    }}
-                    pageSizes={['5', '10', '20', '50']}
-                  />
-                </div>
-              </DataTableCell>
-            </DataTableRow>
-          </TableFoot>
-        </DataTable>
+            </TableHead>
+            <TableBody>
+              {data.map((row) => (
+                <DataTableRow key={row.index}>
+                  {columns.map((col) => (
+                    <DataTableCell key={col.key}>
+                      {col.key === 'actions' ? (
+                        <DropdownMenu
+                          dropdownOptions={getDropdownOptions(row)}
+                          onClick={(option) => option.onClick?.()}
+                        />
+                      ) : (
+                        row[col.key]
+                      )}
+                    </DataTableCell>
+                  ))}
+                </DataTableRow>
+              ))}
+            </TableBody>
+            <TableFoot>
+              <DataTableRow>
+                {/* <DataTableCell colSpan={columns.length}> */}
+                <DataTableCell colSpan={columns.length.toString()}>
+                  <div>
+                    <Pagination
+                      page={pager.page}
+                      pageCount={pager.pageCount}
+                      pageSize={pager.pageSize}
+                      total={pager.total}
+                      onPageChange={(page: number) =>
+                        setPager((prev) => ({ ...prev, page }))
+                      }
+                      onPageSizeChange={(pageSize: number) => {
+                        const newPageSize = Number(pageSize);
+                        setPager((prev) => ({
+                          ...prev,
+                          page: 1,
+                          pageSize: newPageSize,
+                        }));
+                      }}
+                      pageSizes={['5', '10', '20', '50']}
+                    />
+                  </div>
+                </DataTableCell>
+              </DataTableRow>
+            </TableFoot>
+          </DataTable>
+        )}
       </div>
     );
   };
@@ -338,6 +433,7 @@ export class LineListTableComponent extends ReactWrapperComponent {
 //                 allDataElements.add(dv.dataElement)
 //               );
 //             });
+
 //             const stageFromMetaData = response.metadata.programStages.find(
 //               (stage) => stage.id === this.programStageId
 //             );

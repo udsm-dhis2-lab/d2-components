@@ -1,29 +1,32 @@
 import {
   Component,
   EventEmitter,
-  Input,
+  NgZone,
   OnInit,
   Output,
+  inject,
   input,
+  signal,
 } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { FormGroup } from '@angular/forms';
-import { IFormFieldGroup, IFormMetadata } from '../../interfaces';
 import { ProgramRuleEngine } from '@iapps/d2-web-sdk';
+import { isEmpty } from 'lodash';
+import { Observable } from 'rxjs';
+import { IFormFieldGroup, IFormMetadata } from '../../interfaces';
 import { FormValue } from '../../models';
 import { FormUtil } from '../../utils';
 
 @Component({
   selector: 'ng-dhis2-ui-section-form',
   templateUrl: './section-form.component.html',
+  styleUrls: ['./section-form.component.scss'],
   standalone: false,
 })
 export class SectionFormComponent implements OnInit {
+  ngZone = inject(NgZone);
   loading = input<boolean>();
-  @Input() isLab?: boolean;
-  @Input() isLabResulst = false;
-  @Input() clientId?: string;
   isloading!: boolean;
-  @Input() labNumber?: any;
   formMetaData = input.required<IFormMetadata>();
   dataValueEntities = input.required<Record<string, unknown>>();
   formGroups: Record<string, FormGroup> = {};
@@ -35,26 +38,11 @@ export class SectionFormComponent implements OnInit {
   @Output() formUpdate = new EventEmitter<Record<string, unknown>>();
   @Output() cancel = new EventEmitter();
 
-  get inValid(): boolean {
-    const valueValidity = Object.keys(this.formValueEntity)
-      .map((key) => {
-        return (this.formValueEntity[key] || {}).isValid;
-      })
-      .some((validity) => !validity);
+  inValid = signal<boolean>(true);
+  inValid$: Observable<boolean>;
 
-    const repeatableDataValidity = Object.keys(this.repeatableFormValueEntity)
-      .map((key) => {
-        return Object.keys(this.repeatableFormValueEntity[key]).some(
-          (valueIndex) => {
-            return (
-              (this.repeatableFormValueEntity[key] || {})[+valueIndex] || {}
-            ).isValid;
-          }
-        );
-      })
-      .some((validity) => !validity);
-
-    return valueValidity && repeatableDataValidity;
+  constructor() {
+    this.inValid$ = toObservable(this.inValid);
   }
 
   ngOnInit(): void {
@@ -66,24 +54,22 @@ export class SectionFormComponent implements OnInit {
             this.dataValueEntities()
           );
 
-          // Set bookingId as default value for `travelerReferenceId` after search refLabNum
-          const refLabNum = formGroup.get('refLabNum');
-          const travelerReferenceIdControl = formGroup.get(
-            'travelerReferenceId'
-          );
-          if (travelerReferenceIdControl) {
-            const defaultValue = this.clientId ? this.clientId : '';
-            travelerReferenceIdControl.setValue(defaultValue);
-          } else if (refLabNum) {
-            const defaultValue = this.labNumber ? this.labNumber : '';
-            refLabNum.setValue(defaultValue);
-          }
-
           const formValue = new FormValue(formGroup, fieldGroup.fields);
-          this.formValueEntity[fieldGroup.id] = formValue;
           this.formGroups[fieldGroup.id] = formGroup;
+
+          if (!fieldGroup.repeatableStage) {
+            this.formValueEntity[fieldGroup.id] = formValue;
+          } else {
+            this.repeatableFormValueEntity[
+              fieldGroup.dataKey || fieldGroup.id
+            ] = {
+              0: formValue,
+            };
+          }
         });
       });
+
+      this.inValid.set(this.checkIfInValid());
 
       this.ruleActions = new ProgramRuleEngine()
         .setRules(this.formMetaData().rules)
@@ -96,15 +82,20 @@ export class SectionFormComponent implements OnInit {
     repeatableData: Record<number, FormValue>,
     fieldGroup: IFormFieldGroup
   ) {
-    this.repeatableFormValueEntity[fieldGroup.dataKey || fieldGroup.id] =
-      repeatableData;
-    const dataValues = this.#getDataValue();
+    if (!isEmpty(repeatableData)) {
+      this.repeatableFormValueEntity[fieldGroup.dataKey || fieldGroup.id] =
+        repeatableData;
+      this.inValid.set(this.checkIfInValid());
+      const dataValues = this.#getDataValue();
 
-    this.formUpdate.emit(dataValues);
+      this.formUpdate.emit(dataValues);
+    }
   }
 
   onFormUpdate(formValue: FormValue, fieldGroupId: string) {
     this.formValueEntity[fieldGroupId] = formValue;
+    this.inValid.set(this.checkIfInValid());
+
     const dataValues = this.#getDataValue();
 
     this.ruleActions = new ProgramRuleEngine()
@@ -115,15 +106,14 @@ export class SectionFormComponent implements OnInit {
     this.formUpdate.emit(dataValues);
   }
 
-  onSubmit(event: MouseEvent) {
-    event.stopPropagation();
+  onSubmit() {
     const dataValues = this.#getDataValue();
 
     this.save.emit(dataValues);
   }
 
-  onCancel(event: MouseEvent) {
-    event.stopPropagation();
+  onCancel(event?: MouseEvent) {
+    event?.stopPropagation();
     this.cancel.emit();
   }
 
@@ -152,5 +142,27 @@ export class SectionFormComponent implements OnInit {
     );
 
     return { ...dataValues, ...repeatableValues };
+  }
+
+  checkIfInValid() {
+    const valueValidity = Object.keys(this.formValueEntity)
+      .map((key) => {
+        return (this.formValueEntity[key] || {}).isValid;
+      })
+      .some((validity) => !validity);
+
+    const repeatableDataValidity = Object.keys(this.repeatableFormValueEntity)
+      .map((key) => {
+        return Object.keys(this.repeatableFormValueEntity[key]).some(
+          (valueIndex) => {
+            return (
+              (this.repeatableFormValueEntity[key] || {})[+valueIndex] || {}
+            ).isValid;
+          }
+        );
+      })
+      .some((validity) => !validity);
+
+    return valueValidity || repeatableDataValidity;
   }
 }

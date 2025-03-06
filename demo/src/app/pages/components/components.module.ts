@@ -27,7 +27,7 @@ import { NgxDhis2DictionaryModule } from '@iapps/ngx-dhis2-dictionary';
     NgxDhis2DictionaryModule,
     LineListModule,
     DataTableUIModule,
-    SelectionFiltersUiModule
+    SelectionFiltersUiModule,
   ],
 })
 export class ComponentsModule {}

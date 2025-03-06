@@ -2,7 +2,8 @@ import { AfterViewInit, Component, EventEmitter, Input, Output } from '@angular/
 import React, { useState, useEffect } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { InputField, SingleSelectField, SingleSelectOption, Button } from '@dhis2/ui';
-import { ReactWrapperComponent } from '../../../react-wrapper';
+import { ReactWrapperModule } from '../../../react-wrapper/react-wrapper.component';
+
 import { AttributeFilter, DataElementFilter, SelectionFiltersProps } from '../../models/selection-filters-ui.model';
 
 @Component({
@@ -11,7 +12,7 @@ import { AttributeFilter, DataElementFilter, SelectionFiltersProps } from '../..
   styleUrls: ['./selection-filters-ui.component.scss'],
   standalone: false,
 })
-export class SelectionFiltersComponent extends ReactWrapperComponent implements AfterViewInit {
+export class SelectionFiltersComponent extends ReactWrapperModule implements AfterViewInit {
   @Input() actionOptions: { label: string; onClick: (row: any) => void }[] = [];
   @Input() attributeFilters: AttributeFilter[] = [];
   @Input() dataElementFilters: DataElementFilter[] = [];

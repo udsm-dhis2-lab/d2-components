@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
   Component,
@@ -16,9 +17,8 @@ import * as ReactDOM from 'react-dom/client';
 
 @Directive({
   selector: 'ng-dhis2-ui-wrapper',
-  standalone: false,
 })
-export class ReactWrapperComponent implements OnDestroy, AfterViewInit {
+export class ReactWrapperModule implements OnDestroy, AfterViewInit {
   @Input() props?: ComponentProps<any>;
   @Input() component!: any;
 

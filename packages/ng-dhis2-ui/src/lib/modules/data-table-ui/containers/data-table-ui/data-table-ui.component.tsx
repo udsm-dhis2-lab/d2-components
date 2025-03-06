@@ -13,7 +13,7 @@ import {
   DropdownMenu,
   DropdownMenuOption,
 } from '../../components/dropdown-menu';
-import { ReactWrapperComponent } from '../../../react-wrapper';
+import { ReactWrapperModule } from '../../../react-wrapper/react-wrapper.component';
 import * as ReactDOM from 'react-dom/client';
 import { ColumnDefinition, TableRow } from '../../models/data-table.models';
 
@@ -24,7 +24,7 @@ import { ColumnDefinition, TableRow } from '../../models/data-table.models';
   styleUrls: ['./data-table-ui.component.scss'],
 })
 export class DataTableUIComponent
-  extends ReactWrapperComponent
+  extends ReactWrapperModule
   implements AfterViewInit
 {
   @Input() data!: TableRow[];

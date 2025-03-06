@@ -1,23 +1,21 @@
 <ng-container *ngIf="formMetaData()">
   <ng-container *ngFor="let formSection of formMetaData().sections">
     @if(formSection?.name; as sectionName) {
-    <div class="pt-3 pb-3 font-weight-bold text-left">
+    <div class="form__section-name">
       {{ sectionName }}
     </div>
     }
-    <div class="p-2">
+    <div class="form__section-content">
       <ng-container *ngIf="formSection">
-        <div class="row" *ngFor="let fieldGroup of formSection?.fieldGroups">
+        <div *ngFor="let fieldGroup of formSection?.fieldGroups">
           <ng-container *ngIf="formGroups[fieldGroup.id] as formGroup">
             <div
               *ngIf="fieldGroup.name && !fieldGroup.repeatableStage"
-              class="col-12"
+              class="form__field-group-name"
             >
-              <div class="pt-2 pb-3 font-weight-bold text-left">
-                {{ fieldGroup?.name }}
-              </div>
+              {{ fieldGroup?.name }}
             </div>
-            <div class="col-12" *ngIf="fieldGroup.fields">
+            <div *ngIf="fieldGroup.fields">
               <!-- Single stage form section -->
               <ng-container *ngIf="!fieldGroup.repeatableStage">
                 <ng-dhis2-ui-form
@@ -28,7 +26,7 @@
                   [programRuleActions]="ruleActions"
                   [isFormHorizontal]="fieldGroup.isFormHorizontal || false"
                   (formUpdate)="onFormUpdate($event, fieldGroup.id)"
-                />
+                ></ng-dhis2-ui-form>
               </ng-container>
 
               <!-- Repeatable stage form section -->
@@ -61,9 +59,25 @@
                       (repeatableStageUpdate)="
                         onUpdateRepeatableStage($event, fieldGroup)
                       "
-                  /></ng-container>
+                    ></ng-dhis2-ui-repeatable-form
+                  ></ng-container>
                 </ng-container>
-                } @else { Normal event form }
+                } @else {
+                <ng-dhis2-ui-repeatable-form
+                  [fieldGroup]="fieldGroup"
+                  [dataEntities]="dataValueEntities()"
+                  [form]="formGroup"
+                  [program]="formSection.program || ''"
+                  [programStage]="fieldGroup.repeatableStage"
+                  [programRuleActions]="ruleActions"
+                  [numberOfRows]="1"
+                  [repeatDependentField]="fieldGroup.repeatDependentField || ''"
+                  [events]="dataValueEntities()[fieldGroup.dataKey!]"
+                  (repeatableStageUpdate)="
+                    onUpdateRepeatableStage($event, fieldGroup)
+                  "
+                ></ng-dhis2-ui-repeatable-form>
+                }
               </ng-container>
             </div>
           </ng-container>
@@ -71,49 +85,4 @@
       </ng-container>
     </div>
   </ng-container>
-
-  <div class="flex gap-2 m-2">
-    <button mat-stroked-button (click)="onCancel($event)">
-      {{ 'cancel' }}
-    </button>
-    <button
-      mat-flat-button
-      color="primary"
-      [disabled]="inValid"
-      (click)="onSubmit($event)"
-      *ngIf="!isLab || isLabResulst"
-    >
-      <div *ngIf="isloading" class="p-1">
-        <!-- <mat-spinner diameter="30" strokeWidth="2"></mat-spinner> -->
-      </div>
-      <span *ngIf="!loading()">{{ 'submit' }}</span>
-      <div class="p-1" *ngIf="loading()">
-        <!-- <mat-spinner diameter="30" strokeWidth="2"></mat-spinner> -->
-      </div>
-    </button>
-    <button
-      mat-flat-button
-      color="primary"
-      [disabled]="inValid"
-      (click)="onSubmit($event)"
-      *ngIf="isLab && !isLabResulst"
-    >
-      <span *ngIf="!loading()">{{ 'Save & Add sample' }}</span>
-      <div class="p-1" *ngIf="loading()">
-        <!-- <mat-spinner diameter="30" strokeWidth="2"></mat-spinner> -->
-      </div>
-    </button>
-    <button
-      mat-flat-button
-      color="primary"
-      [disabled]="inValid"
-      (click)="onSubmit($event)"
-      *ngIf="isLab && !isLabResulst"
-    >
-      <span *ngIf="!loading()">{{ 'Save & Exit' }}</span>
-      <div class="p-1" *ngIf="loading()">
-        <!-- <mat-spinner diameter="30" strokeWidth="2"></mat-spinner> -->
-      </div>
-    </button>
-  </div>
 </ng-container>
