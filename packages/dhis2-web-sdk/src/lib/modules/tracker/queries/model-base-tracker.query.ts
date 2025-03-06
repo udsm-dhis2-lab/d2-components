@@ -2,17 +2,12 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import { Program, ProgramModule, ProgramRule } from '../../program';
-import { D2HttpClient, D2HttpResponse, Pager } from '../../../shared';
+import { D2HttpClient } from '../../../shared';
 import {
-  D2TrackerResponse,
   ITrackedEntityInstance,
-  ProgramDateType,
   TrackedEntityInstance,
   TrackerQueryFilter,
-  TrackerUrlGenerator,
 } from '../models';
-import { D2Window } from '../../../d2-web-sdk';
 import { BaseTrackerQuery } from './base-tracker.query';
 
 export class ModelBaseTrackerQuery<
