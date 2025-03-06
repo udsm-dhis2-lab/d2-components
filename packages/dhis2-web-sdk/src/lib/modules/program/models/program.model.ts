@@ -15,6 +15,7 @@ import { TrackedEntityAttribute } from './tracked-entity-attribute.model';
 import { DataElement } from '../../data-element';
 import { flatten } from 'lodash';
 import { ProgramRule } from './program-rule.model';
+import { TrackedEntityType } from './tracked-entity-type.model';
 
 export type ProgramField =
   | IdentifiableField
@@ -81,7 +82,7 @@ export class Program extends IdentifiableObject<Program> {
   incidentDateLabel?: string;
   completeEventsExpiryDays?: number;
   displayFrontPageList?: boolean;
-  trackedEntityType?: string;
+  trackedEntityType?: TrackedEntityType;
   organisationUnits?: object;
   programTrackedEntityAttributes?: ProgramTrackedEntityAttribute[];
   programRuleVariables?: ProgramRuleVariable[];
