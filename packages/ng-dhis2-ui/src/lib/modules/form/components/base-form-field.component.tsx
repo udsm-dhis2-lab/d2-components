@@ -39,7 +39,7 @@ import {
 import { Provider } from '@dhis2/app-runtime';
 import React, { useEffect, useMemo, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
-import { ReactWrapperComponent } from '../../react-wrapper/react-wrapper.component';
+import { ReactWrapperModule } from '../../react-wrapper/react-wrapper.component';
 import { FieldConfig, FormField } from '../models';
 import { OrganisationUnitSelectionConfig } from '../../organisation-unit-selector';
 import OrgUnitDimension from '../../organisation-unit-selector/components/OrgUnitDimension';
@@ -48,7 +48,7 @@ import { NgxDhis2HttpClientService, User } from '@iapps/ngx-dhis2-http-client';
 
 @Directive()
 export class BaseFormFieldComponent
-  extends ReactWrapperComponent
+  extends ReactWrapperModule
   implements OnChanges
 {
   ngZone = inject(NgZone);

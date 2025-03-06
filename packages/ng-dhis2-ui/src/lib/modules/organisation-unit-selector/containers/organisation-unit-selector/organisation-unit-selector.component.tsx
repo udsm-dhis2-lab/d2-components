@@ -11,7 +11,7 @@ import { NgxDhis2HttpClientService, User } from '@iapps/ngx-dhis2-http-client';
 import React from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { firstValueFrom, map } from 'rxjs';
-import { ReactWrapperComponent } from '../../../react-wrapper';
+import { ReactWrapperModule } from '../../../react-wrapper/react-wrapper.component';
 import OrgUnitDimension from '../../components/OrgUnitDimension';
 import {
   OrganisationUnitSelectionConfig,
@@ -28,7 +28,7 @@ type OrganisationUnitSelectionEvent = {
   template: '<ng-container><ng-container>',
   standalone: false,
 })
-export class OrganisationUnitSelectorComponent extends ReactWrapperComponent {
+export class OrganisationUnitSelectorComponent extends ReactWrapperModule {
   @Input() selectedOrgUnits: any[] = [];
   @Input() orgUnitSelectionConfig: OrganisationUnitSelectionConfig =
     new OrganisationUnitSelectionConfig();

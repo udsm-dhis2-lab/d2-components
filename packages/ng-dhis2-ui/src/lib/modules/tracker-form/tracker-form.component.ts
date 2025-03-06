@@ -2,10 +2,9 @@ import { Component, input, OnInit } from '@angular/core';
 import {
   BaseTrackerQuery,
   D2Window,
-  Program,
   TrackedEntityInstance,
 } from '@iapps/d2-web-sdk';
-import { FormMetaData } from '../form';
+import { FormMetaData, IFormMetadata } from '../form';
 
 @Component({
   selector: 'ng-dhis2-ui-tracker-form',
@@ -16,7 +15,7 @@ export class TrackerFormComponent implements OnInit {
   program = input.required<string>();
   d2 = (window as unknown as D2Window).d2Web;
   trackerQuery!: BaseTrackerQuery<TrackedEntityInstance>;
-  formMetaData!: FormMetaData;
+  formMetaData!: IFormMetadata;
 
   async ngOnInit() {
     this.trackerQuery = this.d2.trackerModule.trackedEntity.setProgram(
@@ -27,7 +26,7 @@ export class TrackerFormComponent implements OnInit {
     if (program) {
       this.formMetaData = new FormMetaData({
         programs: [program],
-      });
+      }).toJson();
     }
   }
 

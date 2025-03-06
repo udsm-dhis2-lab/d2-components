@@ -6,14 +6,14 @@ import * as ReactDOM from 'react-dom/client';
 import { firstValueFrom } from 'rxjs';
 import { HeaderBarData } from './models';
 import { HeaderBar } from './utils/header-bar';
-import { ReactWrapperComponent } from '../react-wrapper';
+import { ReactWrapperModule } from '../react-wrapper/react-wrapper.component';
 
 @Component({
-    selector: 'ng-dhis2-ui-header-bar',
-    template: `<ng-container></ng-container>`,
-    standalone: false
+  selector: 'ng-dhis2-ui-header-bar',
+  template: `<ng-container></ng-container>`,
+  standalone: false,
 })
-export class HeaderBarComponent extends ReactWrapperComponent {
+export class HeaderBarComponent extends ReactWrapperModule {
   constructor(
     elementRef: ElementRef<HTMLElement>,
     private httpClient: NgxDhis2HttpClientService
