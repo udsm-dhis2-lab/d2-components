@@ -1,7 +1,6 @@
 import {
   Component,
   EventEmitter,
-  Input,
   NgZone,
   OnInit,
   Output,
@@ -9,16 +8,14 @@ import {
   input,
   signal,
 } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { FormGroup } from '@angular/forms';
-import { IFormFieldGroup, IFormMetadata } from '../../interfaces';
 import { ProgramRuleEngine } from '@iapps/d2-web-sdk';
+import { isEmpty } from 'lodash';
+import { Observable } from 'rxjs';
+import { IFormFieldGroup, IFormMetadata } from '../../interfaces';
 import { FormValue } from '../../models';
 import { FormUtil } from '../../utils';
-import { ButtonStrip, Button } from '@dhis2/ui';
-import React, { useEffect, useState } from 'react';
-import { Observable } from 'rxjs';
-import { toObservable } from '@angular/core/rxjs-interop';
-import { isEmpty } from 'lodash';
 
 @Component({
   selector: 'ng-dhis2-ui-section-form',
@@ -47,43 +44,6 @@ export class SectionFormComponent implements OnInit {
   constructor() {
     this.inValid$ = toObservable(this.inValid);
   }
-
-  FormActionButtons = () => {
-    const [inValid, setInValid] = useState<boolean>();
-    useEffect(() => {
-      const inValidSubscription = this.inValid$.subscribe((inValid) => {
-        setInValid(inValid);
-      });
-
-      return () => {
-        inValidSubscription.unsubscribe();
-      };
-    }, []);
-    return (
-      <ButtonStrip>
-        <Button
-          primary
-          disabled={inValid}
-          onClick={() => {
-            this.ngZone.run(() => {
-              this.onSubmit();
-            });
-          }}
-        >
-          Submit
-        </Button>
-        <Button
-          onClick={() => {
-            this.ngZone.run(() => {
-              this.onCancel();
-            });
-          }}
-        >
-          Cancel
-        </Button>
-      </ButtonStrip>
-    );
-  };
 
   ngOnInit(): void {
     if (this.formMetaData().sections) {

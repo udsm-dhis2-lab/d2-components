@@ -1,20 +1,20 @@
 /* tslint:disable:no-unused-variable */
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ReactWrapperComponent } from './react-wrapper.component';
+import { ReactWrapperModule } from './react-wrapper.component';
 
 describe('ReactComponentWrapperComponent', () => {
-  let component: ReactWrapperComponent;
-  let fixture: ComponentFixture<ReactWrapperComponent>;
+  let component: ReactWrapperModule;
+  let fixture: ComponentFixture<ReactWrapperModule>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ReactWrapperComponent],
+      declarations: [ReactWrapperModule],
     }).compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ReactWrapperComponent);
+    fixture = TestBed.createComponent(ReactWrapperModule);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

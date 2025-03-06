@@ -7,7 +7,7 @@ import { FormComponent } from './containers/form/form.component';
 import { RepeatableFormComponent } from './containers/repeatable-form/repeatable-form.component';
 import { SectionFormComponent } from './containers/section-form/section-form.component';
 import { OrganisationUnitSelectorModule } from '../organisation-unit-selector';
-import { ReactWrapperModule } from '../react-wrapper';
+import { ReactWrapperModule } from '../react-wrapper/react-wrapper.component';
 
 @NgModule({
   declarations: [
