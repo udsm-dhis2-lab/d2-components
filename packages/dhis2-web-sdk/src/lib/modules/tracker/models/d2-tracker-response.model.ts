@@ -19,12 +19,12 @@ export class D2TrackerResponse<T extends TrackedEntityInstance> {
     this.responseStatus = response.responseStatus;
 
     if (response.data) {
-      this.pagination = this.getPagination(response.data);
-      this.data = this.getData(response.data, model);
+      this.pagination = this.#getPagination(response.data);
+      this.data = this.#getData(response.data, model);
     }
   }
 
-  getPagination(data: Record<string, unknown>): Pager | undefined {
+  #getPagination(data: Record<string, unknown>): Pager | undefined {
     if (!data['page']) {
       return undefined;
     }
@@ -33,14 +33,18 @@ export class D2TrackerResponse<T extends TrackedEntityInstance> {
       page: data['page'] as number,
       pageSize: data['pageSize'] as number,
       total: data['total'] as number,
+      pageCount: data['pageCount'] as number,
     });
   }
 
-  getData(
+  #getData(
     dataResponse: Record<string, unknown>,
     model: ITrackedEntityInstance
   ) {
-    const data = dataResponse['instances'] || dataResponse;
+    const data =
+      dataResponse['instances'] ||
+      dataResponse['trackedEntities'] ||
+      dataResponse;
 
     if (isPlainObject(data)) {
       return new (model as any)(data);

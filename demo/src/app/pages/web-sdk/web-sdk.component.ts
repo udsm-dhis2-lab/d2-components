@@ -19,11 +19,11 @@ export class WebSdkComponent {
 
     console.log(programResponse);
 
-    // const organisationUnitResponse =
-    //   await this.d2.organisationUnitModule.organisationUnit.get();
+    const result = await this.d2.trackerModule.trackedEntity
+      .setProgram('oUiYTdbtOuh')
+      .setTrackedEntity('cXEFO5RHN3B')
+      .get();
 
-    // console.log(organisationUnitResponse);
-
-    // console.log(Object.keys(DataElement.getProperties()), DataElement.fields);
+    console.log('RESULT', result.data);
   }
 }
