@@ -1,4 +1,10 @@
-import { Component, Input, AfterViewInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  AfterViewInit,
+  EventEmitter,
+  Output,
+} from '@angular/core';
 import {
   DataTable,
   TableHead,
@@ -9,13 +15,11 @@ import {
   TableFoot,
 } from '@dhis2/ui';
 import React, { useState, useEffect } from 'react';
-import {
-  DropdownMenu,
-  DropdownMenuOption,
-} from '../../components/dropdown-menu';
+
 import { ReactWrapperModule } from '../../../react-wrapper/react-wrapper.component';
 import * as ReactDOM from 'react-dom/client';
 import { ColumnDefinition, TableRow } from '../../models/data-table.models';
+import { DropdownMenu, DropdownMenuOption } from '../../components/dropdown-menu';
 
 @Component({
   selector: 'app-data-table-ui',
@@ -30,6 +34,10 @@ export class DataTableUIComponent
   @Input() data!: TableRow[];
   @Input() columnDefinitions!: ColumnDefinition[];
   @Input() actionOptions?: DropdownMenuOption[];
+  @Output() actionSelected = new EventEmitter<{
+    action: string;
+    row: TableRow;
+  }>();
 
   DataTableUI = () => {
     const [columns, setColumns] = useState<ColumnDefinition[]>([]);
@@ -54,7 +62,14 @@ export class DataTableUIComponent
     const getDropdownOptions = (row: TableRow): DropdownMenuOption[] => {
       return (this.actionOptions || []).map((option) => ({
         ...option,
-        onClick: () => option.onClick?.(row),
+        onClick: () => {
+
+          // Ensure the onClick is called with the correct context
+          if (option.onClick) {
+            option.onClick(row); // Passing row to the handler
+          }
+          this.actionSelected.emit({ action: option.label, row }); // Emit action and row details
+        },
       }));
     };
 
