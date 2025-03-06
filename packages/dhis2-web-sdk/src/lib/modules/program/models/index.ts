@@ -9,6 +9,8 @@ export * from './program-stage-data-element.model';
 export * from './program-stage-section.model';
 export * from './program-tracked-entity-attribute.model';
 export * from './tracked-entity-attribute.model';
+export * from './tracked-entity-type.model';
+export * from './tracked-entity-type-attribute.model';
 export * from './program-rule.model';
 export * from './program-rule-action.model';
 export * from './program-rule-variable.model';
