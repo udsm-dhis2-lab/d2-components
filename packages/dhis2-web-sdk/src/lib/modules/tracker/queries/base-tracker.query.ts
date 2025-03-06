@@ -178,7 +178,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
       if (program) {
         this.instance = new (this.identifiable as any)({
           trackedEntity: generateUid(),
-          trackedEntityType: program.trackedEntityType,
+          trackedEntityType: program.trackedEntityType?.id,
           program: program.id,
         });
 

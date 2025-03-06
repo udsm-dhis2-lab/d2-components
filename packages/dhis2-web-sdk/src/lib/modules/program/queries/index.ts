@@ -12,3 +12,4 @@ export * from './program-stage-data-element.query';
 export * from './program-stage-section.query';
 export * from './program-tracked-entity-attribute.query';
 export * from './tracked-entity-attribute.query';
+export * from './tracked-entity-type.query';
