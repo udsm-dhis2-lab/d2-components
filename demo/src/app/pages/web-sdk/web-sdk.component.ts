@@ -20,7 +20,7 @@ export class WebSdkComponent {
     console.log(programResponse);
 
     const result = await this.d2.trackerModule.trackedEntity
-      .setProgram('oUiYTdbtOuh')
+      // .setProgram('oUiYTdbtOuh')
       .setTrackedEntities(['cXEFO5RHN3B', 'lh3IBKUtEtu'])
       .get();
 
