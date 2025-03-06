@@ -1,10 +1,12 @@
-import { flatten } from 'lodash';
+import { camelCase, flatten } from 'lodash';
 
 import { FormMetadataSection } from './form-metadata-section.model';
 import { IMetadataRule, MetadataRule } from './form-metadata-rule.model';
 import { FormField } from './form-field.model';
 import { Program, ProgramRule, ProgramRuleVariable } from '@iapps/d2-web-sdk';
 import { IFormMetadata, IFormMetadataSection } from '../interfaces';
+import { DateField } from './date-field.model';
+import { TranslationUtil } from '../utils';
 
 export class FormMetaData implements IFormMetadata {
   id!: string;
@@ -14,14 +16,20 @@ export class FormMetaData implements IFormMetadata {
 
   constructor(
     private params: {
-      formMetaData: Partial<FormMetaData>;
       programs: Program[];
       locale?: string;
+      customFormMetaData?: Partial<FormMetaData>;
     }
   ) {}
 
   get sections(): IFormMetadataSection[] {
-    return (this.params.formMetaData.sections || [])
+    const customSections = this.params.customFormMetaData?.sections;
+
+    if (!customSections) {
+      return this.#getSectionFromPrograms(this.params.programs);
+    }
+
+    return (this.params.customFormMetaData?.sections || [])
       .map((section) => {
         const program = this.params.programs.find(
           (program) => section.program === program['id']
@@ -44,7 +52,7 @@ export class FormMetaData implements IFormMetadata {
     return flatten(
       flatten(
         this.sections.map((section) =>
-          section.fieldGroups.map((fieldGroup: any) => fieldGroup.fields || [])
+          section.fieldGroups.map((fieldGroup) => fieldGroup.fields || [])
         )
       )
     );
@@ -53,7 +61,7 @@ export class FormMetaData implements IFormMetadata {
   get rules(): IMetadataRule[] {
     let ruleVariables: ProgramRuleVariable[] = [];
     return [
-      ...(this.params.formMetaData.rules || []),
+      ...(this.params.customFormMetaData?.rules || []),
       ...(
         flatten(
           this.params.programs.map((program) => {
@@ -70,10 +78,148 @@ export class FormMetaData implements IFormMetadata {
     ];
   }
 
+  #getSectionFromPrograms(programs: Program[]): IFormMetadataSection[] {
+    const sections = flatten(
+      programs.map((program) => {
+        return [
+          this.#getReportingDetailsSection(program),
+          new FormMetadataSection({
+            section: {
+              id: 'registration',
+              name: 'Registration',
+              fieldGroups:
+                (program.programSections || []).length > 0
+                  ? program.programSections!.map((programSection) => {
+                      return {
+                        id: programSection.id,
+                        name: programSection.name,
+                        sortOrder: programSection.sortOrder,
+                        fields: programSection.trackedEntityAttributes as any,
+                      };
+                    })
+                  : [
+                      {
+                        id: 'registration',
+                        name: '',
+                        sortOrder: 1,
+                        fields: (
+                          program.programTrackedEntityAttributes || []
+                        ).map((programTrackedEntityAttribute) => {
+                          return {
+                            id: programTrackedEntityAttribute
+                              .trackedEntityAttribute?.id,
+                          };
+                        }),
+                      },
+                    ],
+            },
+            program,
+            locale: this.params.locale,
+          }).toJson(),
+          ...(program.programStages || []).map((programStage) => {
+            return new FormMetadataSection({
+              section: {
+                id: programStage.id,
+                name: programStage.name,
+                fieldGroups:
+                  (programStage.programStageSections || []).length > 0
+                    ? programStage.programStageSections!.map(
+                        (programStageSection) => {
+                          return {
+                            id: programStageSection.id,
+                            name: programStageSection.name,
+                            dataKey: camelCase(programStage.code),
+                            repeatableStage: programStage.repeatable
+                              ? programStage.id
+                              : undefined,
+                            sortOrder: programStageSection.sortOrder,
+                            fields: programStageSection.dataElements as any,
+                          };
+                        }
+                      )
+                    : [
+                        {
+                          id: programStage.id,
+                          dataKey: camelCase(programStage.code),
+                          repeatableStage: programStage.repeatable
+                            ? programStage.id
+                            : undefined,
+                          fields: (
+                            programStage.programStageDataElements || []
+                          ).map((programStageDataElement) => {
+                            return {
+                              id: programStageDataElement.dataElement?.id,
+                            };
+                          }) as any,
+                        },
+                      ],
+              },
+              program,
+              locale: this.params.locale,
+            }).toJson();
+          }),
+        ];
+      })
+    );
+
+    if (sections.length === 0) {
+      return [];
+    }
+
+    return sections as IFormMetadataSection[];
+  }
+
+  #getReportingDetailsSection(program: Program): IFormMetadataSection {
+    return new FormMetadataSection({
+      section: {
+        id: 'reporting_details',
+        name: 'Reporting details',
+        fieldGroups: [
+          {
+            id: 'reporting_details',
+            sortOrder: 1,
+            isFormHorizontal: true,
+            fields: [
+              new FormField<string>({
+                id: 'orgUnit',
+                key: 'orgUnit',
+                label: 'Organisation unit',
+                code: 'orgUnit',
+                required: true,
+                controlType: 'org-unit',
+              }),
+              new DateField({
+                id: 'enrollmentDate',
+                label: program.enrollmentDateLabel || 'Enrollment date',
+                code: 'enrollmentDate',
+                key: 'enrollmentDate',
+                required: true,
+              }),
+              program.displayIncidentDate
+                ? new DateField({
+                    id: 'incidentDate',
+                    label: program.incidentDateLabel || 'Incident date',
+                    code: 'incidentDate',
+                    key: 'incidentDate',
+                    required: true,
+                  })
+                : null,
+            ].filter((field) => field) as FormField<string>[],
+          },
+        ],
+      },
+      program,
+      locale: this.params.locale,
+    }).toJson();
+  }
+
   toJson(): IFormMetadata {
     return {
-      id: this.params.formMetaData?.id as string,
-      name: this.params.formMetaData?.name as string,
+      id: this.params.customFormMetaData?.id as string,
+      name: TranslationUtil.getTranslatedFormName(
+        this.params.customFormMetaData || {},
+        this.params.locale
+      ),
       fields: this.fields,
       sections: this.sections,
       rules: this.rules,

@@ -1,3 +1,16 @@
+<app-line-list
+  [programId]="'piWUQa85ell'"
+  [orgUnit]="'m0frOspS7JY'"
+  [actionOptions]="[
+    { label: 'View' },
+    { label: 'Edit' },
+    { label: 'Delete', destructive: true }
+  ]"
+  [ouMode]="'DESCENDANTS'"
+  [startDate]="'2024-03-01'"
+  [endDate]="'2025-02-28'"
+></app-line-list>
+
 <h5>Header Bar component</h5>
 <ng-dhis2-ui-header-bar></ng-dhis2-ui-header-bar>
 
@@ -9,12 +22,17 @@
 </ng-dhis2-ui-button>
 
 <h5>Period selector component</h5>
-<ng-dhis2-ui-period-selector [selectedPeriods]="selectedPeriods"
-  (selectPeriods)="onSelectPeriods($event)"></ng-dhis2-ui-period-selector>
+<ng-dhis2-ui-period-selector
+  [selectedPeriods]="selectedPeriods"
+  (selectPeriods)="onSelectPeriods($event)"
+></ng-dhis2-ui-period-selector>
 
 <h5>Organisation unit selector component</h5>
-<ng-dhis2-ui-org-unit-selector [selectedOrgUnits]="selectedOrgUnits" [orgUnitSelectionConfig]="orgUnitSelectionConfig"
-  (selectOrgUnits)="onSelectOrgUnits($event)"></ng-dhis2-ui-org-unit-selector>
+<ng-dhis2-ui-org-unit-selector
+  [selectedOrgUnits]="selectedOrgUnits"
+  [orgUnitSelectionConfig]="orgUnitSelectionConfig"
+  (selectOrgUnits)="onSelectOrgUnits($event)"
+></ng-dhis2-ui-org-unit-selector>
 
 <h5>Dictionary</h5>
 <!-- <ngx-dhis2-dictionary-list
@@ -30,96 +48,102 @@
     { label: 'Delete', destructive: true, onClick: onDelete }
   ]"></app-line-list> -->
 
-<app-selection-filters-ui [actionOptions]="[{ label: 'Search', onClick: onGenerateReport }]" [attributeFilters]="[
+<app-selection-filters-ui
+  [actionOptions]="[{ label: 'Search', onClick: onGenerateReport }]"
+  [attributeFilters]="[
     {
-      'attribute': 'nfpxRnc5Rsg',
-      'operator': 'eq',
-      'name': 'Batch',
-      'valueType': 'text',
-      'hasOptions': true,
-      'code': '',
-      'value': '',
-      'options': [
-        { 'id': '1', 'code': 'one', 'name': 'One' },
-        { 'id': '2', 'code': 'two', 'name': 'Two' },
-        { 'id': '3', 'code': 'three', 'name': 'Three' }
+      attribute: 'nfpxRnc5Rsg',
+      operator: 'eq',
+      name: 'Batch',
+      valueType: 'text',
+      hasOptions: true,
+      code: '',
+      value: '',
+      options: [
+        { id: '1', code: 'one', name: 'One' },
+        { id: '2', code: 'two', name: 'Two' },
+        { id: '3', code: 'three', name: 'Three' }
       ]
     },
     {
-      'attribute': 'nfpxRnc5Rsg',
-      'operator': 'eq',
-      'name': 'Batch',
-      'valueType': 'text',
-      'hasOptions': false,
-      'code': '',
-      'value': '',
-      'options': [
-        { 'id': '1', 'code': 'one', 'name': 'One' },
-        { 'id': '2', 'code': 'two', 'name': 'Two' },
-        { 'id': '3', 'code': 'three', 'name': 'Three' }
+      attribute: 'nfpxRnc5Rsg',
+      operator: 'eq',
+      name: 'Batch',
+      valueType: 'text',
+      hasOptions: false,
+      code: '',
+      value: '',
+      options: [
+        { id: '1', code: 'one', name: 'One' },
+        { id: '2', code: 'two', name: 'Two' },
+        { id: '3', code: 'three', name: 'Three' }
       ]
     },
     {
-      'attribute': 'nfpxRnc5Rsg',
-      'operator': 'eq',
-      'name': 'Batch',
-      'valueType': 'text',
-      'hasOptions': false,
-      'code': '',
-      'value': '',
-      'options': []
+      attribute: 'nfpxRnc5Rsg',
+      operator: 'eq',
+      name: 'Batch',
+      valueType: 'text',
+      hasOptions: false,
+      code: '',
+      value: '',
+      options: []
     },
     {
-      'attribute': 'nfpxRnc5Rsg',
-      'operator': 'eq',
-      'name': 'Batch',
-      'valueType': 'text',
-      'hasOptions': false,
-      'code': '',
-      'value': '',
-      'options': []
+      attribute: 'nfpxRnc5Rsg',
+      operator: 'eq',
+      name: 'Batch',
+      valueType: 'text',
+      hasOptions: false,
+      code: '',
+      value: '',
+      options: []
     },
     {
-      'attribute': 'nfpxRnc5Rsg',
-      'operator': 'eq',
-      'name': 'Batch',
-      'valueType': 'text',
-      'hasOptions': false,
-      'code': '',
-      'value': '',
-      'options': []
+      attribute: 'nfpxRnc5Rsg',
+      operator: 'eq',
+      name: 'Batch',
+      valueType: 'text',
+      hasOptions: false,
+      code: '',
+      value: '',
+      options: []
     }
-  ]" [dataElementFilters]="[
+  ]"
+  [dataElementFilters]="[
     {
-      'programStage': 'ABC',
-      'dataElement': 'ABC',
-      'name': 'ABC',
-      'valueType': 'number',
-      'hasOptions': true,
-      'operator': '',
-      'value': '',
-      'options': [
-        { 'id': '1', 'code': 'one', 'name': 'One' },
-        { 'id': '2', 'code': 'two', 'name': 'Two' },
-        { 'id': '3', 'code': 'three', 'name': 'Three' }
+      programStage: 'ABC',
+      dataElement: 'ABC',
+      name: 'ABC',
+      valueType: 'number',
+      hasOptions: true,
+      operator: '',
+      value: '',
+      options: [
+        { id: '1', code: 'one', name: 'One' },
+        { id: '2', code: 'two', name: 'Two' },
+        { id: '3', code: 'three', name: 'Three' }
       ]
     },
     {
-      'programStage': 'ABC',
-      'dataElement': 'CDE',
-      'name': 'ABC',
-      'valueType': 'number',
-      'hasOptions': true,
-      'operator': '',
-      'value': '',
-      'options': [
-        { 'id': '1', 'code': 'one', 'name': 'One' },
-        { 'id': '2', 'code': 'two', 'name': 'Two' },
-        { 'id': '3', 'code': 'three', 'name': 'Three' }
+      programStage: 'ABC',
+      dataElement: 'CDE',
+      name: 'ABC',
+      valueType: 'number',
+      hasOptions: true,
+      operator: '',
+      value: '',
+      options: [
+        { id: '1', code: 'one', name: 'One' },
+        { id: '2', code: 'two', name: 'Two' },
+        { id: '3', code: 'three', name: 'Three' }
       ]
     }
-  ]" [startDate]="'2024-03-01'" [endDate]="'2025-02-28'"
-  (actionSelected)="onActionSelected($event)"></app-selection-filters-ui>
+  ]"
+  [startDate]="'2024-03-01'"
+  [endDate]="'2025-02-28'"
+  (actionSelected)="onActionSelected($event)"
+></app-selection-filters-ui>
 
 <!-- programStage: string;
 dataElement: string;
@@ -164,13 +188,22 @@ options: Option[]; -->
       }
     ] 
   }
+<app-line-list
+  [programId]="'piWUQa85ell'"
+  [orgUnit]="'m0frOspS7JY'"
+  [actionOptions]="[
+    { label: 'View' },
+    { label: 'Edit' },
+    { label: 'Delete', destructive: true }
   ]"
+  [ouMode]="'DESCENDANTS'"
   [startDate]="'2024-03-01'"
   [endDate]="'2025-02-28'"
   (actionSelected)="onActionSelected($event)"
 ></app-selection-filters> -->
 
-<app-data-table-ui [data]="[
+<app-data-table-ui
+  [data]="[
     {
       name: 'Item A',
       description: 'Description of A',
@@ -185,7 +218,8 @@ options: Option[]; -->
       section: 'Section 2',
       index: 2
     }
-  ]" [columnDefinitions]="[
+  ]"
+  [columnDefinitions]="[
     { column: 'name', display: 'Name', index: '0', visible: true },
     {
       column: 'description',
@@ -193,10 +227,13 @@ options: Option[]; -->
       index: '1',
       visible: true
     },
-    { column: 'shortName', display: 'Short Name', index: '2', visible: true },
-  ]" [actionOptions]="[
+    { column: 'shortName', display: 'Short Name', index: '2', visible: true }
+  ]"
+  [actionOptions]="[
     { label: 'View', onClick: onView },
     { label: 'Edit', onClick: onView },
     { label: 'Delete', destructive: true, onClick: onView }
-  ]" (actionSelected)="onActionSelected($event)">
+  ]"
+  (actionSelected)="onActionSelected($event)"
+>
 </app-data-table-ui>

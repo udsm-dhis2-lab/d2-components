@@ -19,6 +19,22 @@ export class ComponentsComponent {
   onActionSelected(emitActionResponse: any) {
     console.log('THIS IS IT::: ' , JSON.stringify(emitActionResponse));
   }
+  
+  filters = [
+    {
+      programStage: 'AFdwWJ6LpRT',
+      dataElement: 'WCuw3RqR2pX',
+      operator: '=',
+      value: 'New event',
+    },
+  ];
+
+  // [attributeFilters]="[
+  //   { attribute: 'nfpxRnc5Rsg', operator: 'eq', value: 'A99' },
+  //   { attribute: 'vZ6Eb7SovWK', operator: 'gt', value: 3 },
+  //   { attribute: 'aukU9PbQpZs', operator: 'eq', value: 'Closed' },
+  //   { attribute: 'jI43wrfikTb', operator: 'eq', value: 'true' }
+  // ]"
 
   selectedOrgUnits = [];
   orgUnitSelectionConfig: OrganisationUnitSelectionConfig = {
@@ -46,6 +62,10 @@ export class ComponentsComponent {
   
   //event program = A3olldDSHQg
   //program stage= AFdwWJ6LpRT
+
+  // [attributeFilters]="[
+  //   { attribute: 'WCuw3RqR2pX', operator: 'eq', value: 'Ongoing event' },
+  // ]"
 
   onView(row: any) {
     console.log('View', row);

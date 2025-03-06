@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { SelectionFiltersComponent } from './containers/selection-filters-ui/selection-filters-ui.component';
 
 import { SharedDhis2UiModule } from '../../shared/shared.module';
-import { ReactWrapperModule } from '../react-wrapper';
+import { ReactWrapperModule } from '../react-wrapper/react-wrapper.component';
 
 @NgModule({
   declarations: [SelectionFiltersComponent],

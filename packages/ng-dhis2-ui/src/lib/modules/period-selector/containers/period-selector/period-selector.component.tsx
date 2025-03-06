@@ -23,7 +23,7 @@ import {
   WEEKLYTHU,
   WEEKLYWED,
 } from '../../components/utils';
-import { ReactWrapperComponent } from '../../../react-wrapper/react-wrapper.component';
+import { ReactWrapperModule } from '../../../react-wrapper/react-wrapper.component';
 
 type PeriodSelectionEvent = {
   dimensionId: string;
@@ -31,18 +31,18 @@ type PeriodSelectionEvent = {
 };
 
 @Component({
-    selector: 'ng-dhis2-ui-period-selector',
-    template: `<ng-container></ng-container>`,
-    styles: [
-        `
+  selector: 'ng-dhis2-ui-period-selector',
+  template: `<ng-container></ng-container>`,
+  styles: [
+    `
       ::ng-deep .content-container {
         z-index: 0 !important;
       }
     `,
-    ],
-    standalone: false
+  ],
+  standalone: false,
 })
-export class PeriodSelectorComponent extends ReactWrapperComponent {
+export class PeriodSelectorComponent extends ReactWrapperModule {
   @Input() selectedPeriods: any[] = [];
 
   @Output() selectPeriods = new EventEmitter();

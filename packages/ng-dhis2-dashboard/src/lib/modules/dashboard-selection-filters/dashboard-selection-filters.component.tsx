@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   Component,
   EventEmitter,
@@ -11,17 +12,21 @@ import { toObservable } from '@angular/core/rxjs-interop';
 import { MatDialog } from '@angular/material/dialog';
 import { MatMenuTrigger } from '@angular/material/menu';
 import {
-  DropdownButton,
+  Button,
   FlyoutMenu,
+  IconChevronDown16,
+  IconChevronUp16,
   IconClock16,
   IconDimensionOrgUnit16,
   IconFilter16,
   MenuItem,
   spacers,
-  IconChevronDown16,
-  IconChevronUp16,
-  Button,
 } from '@dhis2/ui';
+import {
+  OrganisationUnitSelectorModule,
+  PeriodSelectorModule,
+  ReactWrapperModule,
+} from '@iapps/ng-dhis2-ui';
 import { keys } from 'lodash';
 import React, { useState } from 'react';
 import {
@@ -31,26 +36,20 @@ import {
   VisualizationDataSelectionItem,
 } from '../../models';
 import { AdditionalFilterDialogComponent } from './dialogs/additional-filter-dialog/additional-filter-dialog.component';
-import { CommonModule } from '@angular/common';
-import {
-  OrganisationUnitSelectorModule,
-  PeriodSelectorModule,
-  ReactWrapperModule,
-} from '@iapps/ng-dhis2-ui';
 import { DashboardSelectionFilterService } from './services/dashboard-selection-filter.service';
 
 @Component({
-    imports: [
-        CommonModule,
-        AdditionalFilterDialogComponent,
-        OrganisationUnitSelectorModule,
-        PeriodSelectorModule,
-        ReactWrapperModule,
-    ],
-    providers: [DashboardSelectionFilterService],
-    selector: 'd2-dashboard-selection-filters',
-    templateUrl: './dashboard-selection-filters.component.html',
-    styleUrls: ['./dashboard-selection-filters.component.scss']
+  imports: [
+    CommonModule,
+    AdditionalFilterDialogComponent,
+    OrganisationUnitSelectorModule,
+    PeriodSelectorModule,
+    ReactWrapperModule,
+  ],
+  providers: [DashboardSelectionFilterService],
+  selector: 'd2-dashboard-selection-filters',
+  templateUrl: './dashboard-selection-filters.component.html',
+  styleUrls: ['./dashboard-selection-filters.component.scss'],
 })
 export class DashboardSelectionFiltersComponent {
   @Input() dataSelections!: VisualizationDataSelection[];
