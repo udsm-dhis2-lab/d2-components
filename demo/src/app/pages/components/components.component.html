@@ -42,11 +42,15 @@
 
 <h5>Wrapper implementation</h5>
 
-<!-- <app-line-list [programId]="'FO8K8HiXrga'" [orgUnit]="'xrku9x3XnV9'" [actionOptions]="[
+<app-line-list
+  [programId]="'FO8K8HiXrga'"
+  [orgUnit]="'xrku9x3XnV9'"
+  [actionOptions]="[
     { label: 'View', onClick: onView },
     { label: 'Edit', onClick: onEdit },
     { label: 'Delete', destructive: true, onClick: onDelete }
-  ]"></app-line-list> -->
+  ]"
+></app-line-list>
 
 <app-selection-filters-ui
   [actionOptions]="[{ label: 'Search', onClick: onGenerateReport }]"
@@ -145,63 +149,6 @@
   (actionSelected)="onActionSelected($event)"
 ></app-selection-filters-ui>
 
-<!-- programStage: string;
-dataElement: string;
-name: string;
-valueType: string;
-hasOptions: boolean;
-operator: string;
-value: string;
-options: Option[]; -->
-
-<!-- <app-selection-filters
-  [actionOptions]="[
-    { label: 'search', onClick: onGenerateReport }
-  ]"
-  [attributeFilters]="[
-  {
-    "attribute": "nfpxRnc5Rsg",
-    "operator": "eq",
-    "name": "",
-    "code": "",
-    "value": "",
-    "options": [
-      {
-        "id": "",
-        "code": "",
-        "name": ""
-      }
-    ]
-  }
-]"
-  [dataElementFilters]="[
-     {
-    "programState": "",
-    "dataElement": "",
-    "operator": "",
-    "value": "",
-    "options": [
-      {
-        "id": "",
-        "code": "",
-        "name": ""
-      }
-    ] 
-  }
-<app-line-list
-  [programId]="'piWUQa85ell'"
-  [orgUnit]="'m0frOspS7JY'"
-  [actionOptions]="[
-    { label: 'View' },
-    { label: 'Edit' },
-    { label: 'Delete', destructive: true }
-  ]"
-  [ouMode]="'DESCENDANTS'"
-  [startDate]="'2024-03-01'"
-  [endDate]="'2025-02-28'"
-  (actionSelected)="onActionSelected($event)"
-></app-selection-filters> -->
-
 <app-data-table-ui
   [data]="[
     {
@@ -210,13 +157,6 @@ options: Option[]; -->
       shortName: 'A',
       section: 'Section 1',
       index: 1
-    },
-    {
-      name: 'Item B',
-      description: 'Description of B',
-      shortName: 'B',
-      section: 'Section 2',
-      index: 2
     }
   ]"
   [columnDefinitions]="[
@@ -229,11 +169,7 @@ options: Option[]; -->
     },
     { column: 'shortName', display: 'Short Name', index: '2', visible: true }
   ]"
-  [actionOptions]="[
-    { label: 'View', onClick: onView },
-    { label: 'Edit', onClick: onView },
-    { label: 'Delete', destructive: true, onClick: onView }
-  ]"
   (actionSelected)="onActionSelected($event)"
+  [actionOptions]="[{ label: 'View', onClick: onView }]"
 >
 </app-data-table-ui>

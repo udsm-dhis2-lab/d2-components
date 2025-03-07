@@ -17,7 +17,7 @@ export class ComponentsComponent {
   ];
 
   onActionSelected(emitActionResponse: any) {
-    console.log('THIS IS IT::: ' , JSON.stringify(emitActionResponse));
+    console.log('ON ACTION SELECTED::: ' , JSON.stringify(emitActionResponse));
   }
   
   filters = [
