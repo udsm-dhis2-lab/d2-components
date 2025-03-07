@@ -4,6 +4,8 @@ import {
   AfterViewInit,
   EventEmitter,
   Output,
+  OnChanges,
+  SimpleChanges,
 } from '@angular/core';
 import {
   DataTable,
@@ -19,7 +21,10 @@ import React, { useState, useEffect } from 'react';
 import { ReactWrapperModule } from '../../../react-wrapper/react-wrapper.component';
 import * as ReactDOM from 'react-dom/client';
 import { ColumnDefinition, TableRow } from '../../models/data-table.models';
-import { DropdownMenu, DropdownMenuOption } from '../../components/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuOption,
+} from '../../components/dropdown-menu';
 
 @Component({
   selector: 'app-data-table-ui',
@@ -29,7 +34,7 @@ import { DropdownMenu, DropdownMenuOption } from '../../components/dropdown-menu
 })
 export class DataTableUIComponent
   extends ReactWrapperModule
-  implements AfterViewInit
+  implements AfterViewInit, OnChanges
 {
   @Input() data!: TableRow[];
   @Input() columnDefinitions!: ColumnDefinition[];
@@ -63,7 +68,6 @@ export class DataTableUIComponent
       return (this.actionOptions || []).map((option) => ({
         ...option,
         onClick: () => {
-
           // Ensure the onClick is called with the correct context
           if (option.onClick) {
             option.onClick(row); // Passing row to the handler
@@ -122,5 +126,15 @@ export class DataTableUIComponent
     this.reactDomRoot = ReactDOM.createRoot(this.elementRef.nativeElement);
     this.component = this.DataTableUI;
     this.render();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    console.log("THIS IS MORE");
+    if (changes['data'] || changes['columnDefinitions']) {
+      if (!this.elementRef) throw new Error('No element ref');
+      this.reactDomRoot = ReactDOM.createRoot(this.elementRef.nativeElement);
+      this.component = this.DataTableUI;
+      this.render();
+    }
   }
 }
