@@ -10,8 +10,6 @@ export class D2WebConfig {
   constructor(config: Partial<D2WebConfig>) {
     this.baseUrl = config?.baseUrl || '../../..';
     this.locale = config?.locale;
-    this.httpClientConfig = config?.httpClientConfig || {
-      baseURL: this.baseUrl,
-    };
+    this.httpClientConfig = config?.httpClientConfig || {};
   }
 }
