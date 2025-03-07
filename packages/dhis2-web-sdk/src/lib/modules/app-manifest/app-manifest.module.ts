@@ -2,20 +2,16 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import { D2HttpClient } from '../../shared';
+import axios from 'axios';
 import { Manifest } from './models';
 export class AppManifestModule {
-  constructor(private httpClient: D2HttpClient) {}
-
   async get(): Promise<Manifest | null> {
     let manifest = null;
 
     try {
-      const manifestResponse = await this.httpClient.get('manifest.webapp', {
-        useRootUrl: true,
-      });
+      const manifestResponse = await axios.get<Manifest>('./manifest.webapp');
 
-      manifest = (manifestResponse.data as unknown as Manifest) || null;
+      manifest = manifestResponse.data || null;
     } catch (error) {
       console.warn(
         'Manifest file could not be loaded, default options have been used instead'
