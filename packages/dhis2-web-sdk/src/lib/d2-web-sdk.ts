@@ -80,7 +80,7 @@ export class D2Web {
   }
 
   async setAppManifest(): Promise<void> {
-    const appManifestModule = new AppManifestModule(this.httpInstance);
+    const appManifestModule = new AppManifestModule();
 
     try {
       const manifest = await appManifestModule.get();
