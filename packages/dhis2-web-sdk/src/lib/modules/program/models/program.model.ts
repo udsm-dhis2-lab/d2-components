@@ -27,6 +27,7 @@ export type ProgramField =
   | 'captureCoordinates'
   | 'featureType'
   | 'enrollmentDateLabel'
+  | 'orgUnitLabel'
   | 'onlyEnrollOnce'
   | 'selectIncidentDatesInFuture'
   | 'selectEnrollmentDatesInFuture'
@@ -55,6 +56,7 @@ export class Program extends IdentifiableObject<Program> {
     'captureCoordinates',
     'featureType',
     'enrollmentDateLabel',
+    'orgUnitLabel',
     'onlyEnrollOnce',
     'selectIncidentDatesInFuture',
     'selectEnrollmentDatesInFuture',
@@ -75,6 +77,7 @@ export class Program extends IdentifiableObject<Program> {
   captureCoordinates?: boolean;
   featureType?: string;
   enrollmentDateLabel?: string;
+  orgUnitLabel?: string;
   onlyEnrollOnce?: boolean;
   selectIncidentDatesInFuture?: boolean;
   selectEnrollmentDatesInFuture?: boolean;
