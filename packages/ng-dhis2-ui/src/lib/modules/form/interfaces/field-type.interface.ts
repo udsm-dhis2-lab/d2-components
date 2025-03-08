@@ -1,5 +1,6 @@
 export enum FieldType {
   TEXT = 'TEXT',
+  MULTI_TEXT = 'MULTI_TEXT',
   TRUE_ONLY = 'TRUE_ONLY',
   LONG_TEXT = 'LONG_TEXT',
   BOOLEAN = 'BOOLEAN',
