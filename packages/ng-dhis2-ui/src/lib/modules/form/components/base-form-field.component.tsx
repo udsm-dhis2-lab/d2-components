@@ -36,6 +36,8 @@ import {
   CircularLoader,
   IconDimensionOrgUnit16,
   OrganisationUnitTree,
+  MultiSelectField,
+  MultiSelectOption,
 } from '@dhis2/ui';
 import { Provider } from '@dhis2/app-runtime';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -175,6 +177,14 @@ export class BaseFormFieldComponent
       const onChange = (payload: {
         selected: React.SetStateAction<undefined>;
       }) => setSelected(payload.selected);
+
+      const arrayValue = useMemo(() => {
+        if (value && value.length > 0) {
+          return value.split(',');
+        }
+
+        return [];
+      }, [value]);
 
       const hasError = useMemo(() => {
         return (
@@ -422,6 +432,48 @@ export class BaseFormFieldComponent
                 />
               ))}
             </SingleSelectField>
+          );
+        case 'multi-dropdown':
+          return (
+            <MultiSelectField
+              clearText="Clear"
+              clearable
+              empty="No data found"
+              filterable={(this.field().options || []).length > 5}
+              filterPlaceholder="Type to filter options"
+              error={hasError}
+              validationText={validationError}
+              inputWidth={this.fieldConfig()?.inputWidth}
+              label={this.label()}
+              name={this.field().id}
+              required={this.field().required}
+              loadingText="Loading options"
+              noMatchText="No options found"
+              onChange={(event: { selected: string[] }) => {
+                const selectedValue = (event.selected || []).join(',');
+                this.ngZone.run(() => {
+                  (
+                    this.form().get(this.field().id) ||
+                    this.form().get(this.field().key)
+                  )?.setValue(selectedValue);
+                  this.update.emit({
+                    form: this.form(),
+                    value: selectedValue,
+                  });
+                });
+                setValue(selectedValue);
+                setTouched(true);
+              }}
+              selected={arrayValue}
+            >
+              {(this.field().options || []).map((option) => (
+                <MultiSelectOption
+                  key={option.key}
+                  label={option.label}
+                  value={option.value}
+                />
+              ))}
+            </MultiSelectField>
           );
         case 'file':
           return (

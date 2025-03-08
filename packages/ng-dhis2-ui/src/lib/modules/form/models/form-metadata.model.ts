@@ -171,7 +171,6 @@ export class FormMetaData implements IFormMetadata {
   }
 
   #getRegisteringUnitSection(program: Program): IFormMetadataSection {
-    console.log(program);
     return new FormMetadataSection({
       section: {
         id: 'registering_unit_details',
