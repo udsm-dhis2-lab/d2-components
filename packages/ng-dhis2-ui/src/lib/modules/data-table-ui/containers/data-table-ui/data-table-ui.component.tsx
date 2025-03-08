@@ -4,8 +4,11 @@ import {
   AfterViewInit,
   EventEmitter,
   Output,
+  OnChanges,
+  SimpleChanges,
 } from '@angular/core';
 import {
+  CircularLoader,
   DataTable,
   TableHead,
   DataTableRow,
@@ -19,7 +22,10 @@ import React, { useState, useEffect } from 'react';
 import { ReactWrapperModule } from '../../../react-wrapper/react-wrapper.component';
 import * as ReactDOM from 'react-dom/client';
 import { ColumnDefinition, TableRow } from '../../models/data-table.models';
-import { DropdownMenu, DropdownMenuOption } from '../../components/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuOption,
+} from '../../components/dropdown-menu';
 
 @Component({
   selector: 'app-data-table-ui',
@@ -29,7 +35,7 @@ import { DropdownMenu, DropdownMenuOption } from '../../components/dropdown-menu
 })
 export class DataTableUIComponent
   extends ReactWrapperModule
-  implements AfterViewInit
+  implements AfterViewInit, OnChanges
 {
   @Input() data!: TableRow[];
   @Input() columnDefinitions!: ColumnDefinition[];
@@ -42,9 +48,16 @@ export class DataTableUIComponent
   DataTableUI = () => {
     const [columns, setColumns] = useState<ColumnDefinition[]>([]);
     const [tableData, setTableData] = useState<TableRow[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-      if (!this.data || !this.columnDefinitions) return;
+      const hasData = this.data?.length > 0;
+      const hasColumns = this.columnDefinitions?.length > 0;
+
+      if (!hasData || !hasColumns) {
+        setLoading(true);
+        return;
+      }
 
       const filteredColumns = this.columnDefinitions.filter(
         (col) => col.visible !== false
@@ -57,62 +70,81 @@ export class DataTableUIComponent
 
       setColumns(sortedColumns);
       setTableData(this.data);
+      setLoading(false);
     }, [this.data, this.columnDefinitions]);
 
     const getDropdownOptions = (row: TableRow): DropdownMenuOption[] => {
       return (this.actionOptions || []).map((option) => ({
         ...option,
         onClick: () => {
-
-          // Ensure the onClick is called with the correct context
           if (option.onClick) {
-            option.onClick(row); // Passing row to the handler
+            option.onClick(row);
           }
-          this.actionSelected.emit({ action: option.label, row }); // Emit action and row details
+          this.actionSelected.emit({ action: option.label, row });
         },
       }));
     };
 
     return (
       <div>
-        <DataTable>
-          <TableHead>
-            <DataTableRow>
-              {columns.map((col) => (
-                <DataTableColumnHeader key={col.column}>
-                  {col.display}
-                </DataTableColumnHeader>
-              ))}
-              {this.actionOptions && this.actionOptions.length > 0 && (
-                <DataTableColumnHeader>Actions</DataTableColumnHeader>
-              )}
-            </DataTableRow>
-          </TableHead>
-          <TableBody>
-            {tableData.map((row, rowIndex) => (
-              <DataTableRow key={rowIndex}>
+        {loading ? (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: 8,
+            }}
+          >
+            <CircularLoader small />
+            <div
+              style={{
+                fontSize: 14,
+              }}
+            >
+              Loading
+            </div>
+          </div>
+        ) : (
+          <DataTable>
+            <TableHead>
+              <DataTableRow>
                 {columns.map((col) => (
-                  <DataTableCell key={col.column}>
-                    {row[col.column] || '-'}
-                  </DataTableCell>
+                  <DataTableColumnHeader key={col.column}>
+                    {col.display}
+                  </DataTableColumnHeader>
                 ))}
                 {this.actionOptions && this.actionOptions.length > 0 && (
-                  <DataTableCell>
-                    <DropdownMenu
-                      dropdownOptions={getDropdownOptions(row)}
-                      onClick={(option) => option.onClick?.(row)}
-                    />
-                  </DataTableCell>
+                  <DataTableColumnHeader>Actions</DataTableColumnHeader>
                 )}
               </DataTableRow>
-            ))}
-          </TableBody>
-          <TableFoot>
-            <DataTableRow>
-              <DataTableCell colSpan={columns.length + 1}></DataTableCell>
-            </DataTableRow>
-          </TableFoot>
-        </DataTable>
+            </TableHead>
+            <TableBody>
+              {tableData.map((row, rowIndex) => (
+                <DataTableRow key={rowIndex}>
+                  {columns.map((col) => (
+                    <DataTableCell key={col.column}>
+                      {row[col.column] || '-'}
+                    </DataTableCell>
+                  ))}
+                  {this.actionOptions && this.actionOptions.length > 0 && (
+                    <DataTableCell>
+                      <DropdownMenu
+                        dropdownOptions={getDropdownOptions(row)}
+                        onClick={(option) => option.onClick?.(row)}
+                      />
+                    </DataTableCell>
+                  )}
+                </DataTableRow>
+              ))}
+            </TableBody>
+            <TableFoot>
+              <DataTableRow>
+                <DataTableCell colSpan={columns.length + 1}></DataTableCell>
+              </DataTableRow>
+            </TableFoot>
+          </DataTable>
+        )}
       </div>
     );
   };
@@ -122,5 +154,14 @@ export class DataTableUIComponent
     this.reactDomRoot = ReactDOM.createRoot(this.elementRef.nativeElement);
     this.component = this.DataTableUI;
     this.render();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['data'] || changes['columnDefinitions']) {
+      if (!this.elementRef) throw new Error('No element ref');
+      this.reactDomRoot = ReactDOM.createRoot(this.elementRef.nativeElement);
+      this.component = this.DataTableUI;
+      this.render();
+    }
   }
 }
