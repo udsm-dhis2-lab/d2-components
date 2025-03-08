@@ -258,6 +258,7 @@ const OrgUnitDimension = ({
       >
         <OrganisationUnitTree
           roots={roots}
+          singleSelection={allowSingleSelection}
           initiallyExpanded={[
             ...(roots.length === 1 ? [`/${roots[0]}`] : []),
             ...selectedItems

@@ -69,7 +69,10 @@ export class FormFieldGroup implements IFormFieldGroup {
           type: FieldUtil.getFieldType(fieldMetaData['valueType'] as string),
           dependentField,
           options,
-          disabled: field.disabled ?? (fieldMetaData['disabled'] as boolean),
+          disabled:
+            field.disabled ??
+            (fieldMetaData['disabled'] as boolean) ??
+            (fieldMetaData['generated'] as boolean),
           min: field.min ?? (fieldMetaData['min'] as number),
           max: field.max ?? (fieldMetaData['max'] as number),
           order:
