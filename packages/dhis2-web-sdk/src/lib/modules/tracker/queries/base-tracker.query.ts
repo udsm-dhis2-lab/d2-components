@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import { Program, ProgramModule, ProgramRule } from '../../program';
+import { camelCase } from 'lodash';
+import { D2Window } from '../../../d2-web-sdk';
 import {
   D2HttpClient,
   D2HttpResponse,
-  generateCodes,
   generateUid,
   Pager,
 } from '../../../shared';
+import { Program, ProgramRule } from '../../program';
 import {
   D2TrackerResponse,
   ITrackedEntityInstance,
@@ -18,9 +19,6 @@ import {
   TrackerQueryFilter,
   TrackerUrlGenerator,
 } from '../models';
-import { D2Window } from '../../../d2-web-sdk';
-import { DataElement } from '../../data-element';
-import { camelCase } from 'lodash';
 
 export class BaseTrackerQuery<T extends TrackedEntityInstance> {
   protected orgUnit?: string;
