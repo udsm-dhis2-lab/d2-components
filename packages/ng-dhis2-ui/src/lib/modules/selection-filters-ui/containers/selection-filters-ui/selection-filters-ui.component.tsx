@@ -288,7 +288,7 @@ export class SelectionFiltersComponent
         organisationUnit: selectedOrganisationUnit || this.organisationUnit || filters.organisationUnit,
         startDate: filters.startDate,
         endDate: filters.endDate,
-        program: this.program,
+        program: this.program || filters.program,
       } as unknown as SelectionFiltersProps);
     };
 
