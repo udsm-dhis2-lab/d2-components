@@ -17,7 +17,7 @@ export class ComponentsComponent {
   ];
 
   onActionSelected(emitActionResponse: any) {
-    console.log('ON ACTION SELECTED::: ' , JSON.stringify(emitActionResponse));
+    console.log('ON ACTION SELECTED::: ' , JSON.stringify(emitActionResponse, null, 4));
   }
   
   filters = [
@@ -44,6 +44,11 @@ export class ComponentsComponent {
     allowSingleSelection: true,
     usageType: 'DATA_ENTRY',
   };
+  onSelectOrgUnits(orgUnits: any) {
+    this.selectedOrgUnits = orgUnits;
+
+    console.log(this.selectedOrgUnits);
+  }
 
   onSelectPeriods(periods: any) {
     console.log(periods);
@@ -81,12 +86,6 @@ export class ComponentsComponent {
 
   onGenerateReport(row: any): void {
     console.log('Delete', row);
-  }
-
-  onSelectOrgUnits(orgUnits: any) {
-    this.selectedOrgUnits = orgUnits;
-
-    console.log(this.selectedOrgUnits);
   }
 
   ngOnInit() {
