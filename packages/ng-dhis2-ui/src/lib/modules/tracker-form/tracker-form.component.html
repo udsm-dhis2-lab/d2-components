@@ -1,7 +1,7 @@
 @if(formMetaData) {
 <ng-dhis2-ui-section-form
   [formMetaData]="formMetaData"
-  [dataValueEntities]="{}"
+  [dataValueEntities]="instance"
   (save)="onSave($event)"
   (cancel)="onCancel()"
 />
