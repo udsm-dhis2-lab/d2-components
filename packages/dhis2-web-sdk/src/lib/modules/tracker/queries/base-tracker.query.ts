@@ -138,6 +138,10 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
     const fieldEntities = this.instance.fields || {};
 
     const reservedAttributePromises = Object.keys(fieldEntities)
+      .filter((key) => {
+        const field = fieldEntities[key];
+        return field?.generated;
+      })
       .map((key: string) => {
         const availableValue = this.instance[key];
         if (availableValue && availableValue.length > 0) {
@@ -145,10 +149,6 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
         }
 
         const field = fieldEntities[key];
-
-        if (!field || !field.generated) {
-          return null;
-        }
 
         return this.httpClient.get(
           `trackedEntityAttributes/${field.id}/generate.json`
