@@ -4,6 +4,8 @@ export interface SelectionFiltersProps {
     programStageDataElementFilters: ProgramStageDataElementFilter[];
     startDate: string;
     endDate: string;
+    program: string;
+    organisationUnit: string;
 }
 
 export interface ActionOption {

@@ -285,7 +285,7 @@ export class SelectionFiltersComponent
     const handleSearch = () => {
       this.actionSelected.emit({
         ...filters,
-        organisationUnit: selectedOrganisationUnit,
+        organisationUnit: selectedOrganisationUnit || this.organisationUnit || filters.organisationUnit,
         startDate: filters.startDate,
         endDate: filters.endDate,
         program: this.program,
