@@ -82,7 +82,8 @@ export class FormMetaData implements IFormMetadata {
     const sections = flatten(
       programs.map((program) => {
         return [
-          this.#getReportingDetailsSection(program),
+          this.#getRegisteringUnitSection(program),
+          this.#getReportingDateSection(program),
           new FormMetadataSection({
             section: {
               id: 'registration',
@@ -169,25 +170,45 @@ export class FormMetaData implements IFormMetadata {
     return sections as IFormMetadataSection[];
   }
 
-  #getReportingDetailsSection(program: Program): IFormMetadataSection {
+  #getRegisteringUnitSection(program: Program): IFormMetadataSection {
     return new FormMetadataSection({
       section: {
-        id: 'reporting_details',
-        name: 'Reporting details',
+        id: 'registering_unit_details',
+        name: 'Registering unit details',
         fieldGroups: [
           {
-            id: 'reporting_details',
+            id: 'registering_unit_details',
             sortOrder: 1,
-            isFormHorizontal: true,
+            isFormHorizontal: false,
             fields: [
               new FormField<string>({
                 id: 'orgUnit',
                 key: 'orgUnit',
-                label: 'Organisation unit',
+                label: program.orgUnitLabel || 'Registering unit',
                 code: 'orgUnit',
                 required: true,
                 controlType: 'org-unit',
               }),
+            ],
+          },
+        ],
+      },
+      program,
+      locale: this.params.locale,
+    }).toJson();
+  }
+
+  #getReportingDateSection(program: Program): IFormMetadataSection {
+    return new FormMetadataSection({
+      section: {
+        id: 'reporting_dates',
+        name: 'Reporting dates',
+        fieldGroups: [
+          {
+            id: 'reporting_dates',
+            sortOrder: 1,
+            isFormHorizontal: false,
+            fields: [
               new DateField({
                 id: 'enrollmentDate',
                 label: program.enrollmentDateLabel || 'Enrollment date',
