@@ -35,6 +35,9 @@ import {
   ModalTitle,
   CircularLoader,
   IconDimensionOrgUnit16,
+  OrganisationUnitTree,
+  MultiSelectField,
+  MultiSelectOption,
 } from '@dhis2/ui';
 import { Provider } from '@dhis2/app-runtime';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -65,11 +68,11 @@ export class BaseFormFieldComponent
   protected value$ = toObservable(this.value);
 
   FieldOrgUnitSelector = (props: {
+    selectedOrgUnits: any;
     onSelectOrgUnit: (selectedOrgUnits: any) => void;
-    onCancelOrgUnit: () => void;
   }) => {
-    const { onSelectOrgUnit, onCancelOrgUnit } = props;
-    const [selected, setSelected] = useState([]);
+    const { onSelectOrgUnit, selectedOrgUnits } = props;
+    const [selected, setSelected] = useState(selectedOrgUnits);
     const [rootOrgUnits, setRootOrgUnits] = useState<string[]>();
     const [config, setConfig] = useState<any>();
 
@@ -91,41 +94,23 @@ export class BaseFormFieldComponent
       >
         {
           <Modal position="middle" large>
-            <ModalTitle>Organisation unit</ModalTitle>
+            <ModalTitle>Select {this.field().label}</ModalTitle>
             <ModalContent>
               <OrgUnitDimension
                 selected={selected}
+                allowSingleSelection={true}
                 hideGroupSelect={this.orgUnitSelectionConfig.hideGroupSelect}
                 hideLevelSelect={this.orgUnitSelectionConfig.hideLevelSelect}
                 hideUserOrgUnits={this.orgUnitSelectionConfig.hideUserOrgUnits}
                 onSelect={(selectionEvent: any) => {
                   setSelected(selectionEvent.items);
+                  onSelectOrgUnit(selectionEvent.items);
                 }}
                 orgUnitGroupPromise={this.getOrgUnitGroups()}
                 orgUnitLevelPromise={this.getOrgUnitLevels()}
                 roots={rootOrgUnits}
               />
             </ModalContent>
-            <ModalActions>
-              <ButtonStrip end>
-                <Button
-                  onClick={() => {
-                    onCancelOrgUnit();
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  primary
-                  disabled={selected.length === 0}
-                  onClick={() => {
-                    onSelectOrgUnit(selected);
-                  }}
-                >
-                  Confirm
-                </Button>
-              </ButtonStrip>
-            </ModalActions>
           </Modal>
         }
       </Provider>
@@ -192,6 +177,14 @@ export class BaseFormFieldComponent
       const onChange = (payload: {
         selected: React.SetStateAction<undefined>;
       }) => setSelected(payload.selected);
+
+      const arrayValue = useMemo(() => {
+        if (value && value.length > 0) {
+          return value.split(',');
+        }
+
+        return [];
+      }, [value]);
 
       const hasError = useMemo(() => {
         return (
@@ -303,10 +296,7 @@ export class BaseFormFieldComponent
               />
               {showOrgUnit && (
                 <this.FieldOrgUnitSelector
-                  onCancelOrgUnit={() => {
-                    setShowOrgUnit(false);
-                    setTouched(true);
-                  }}
+                  selectedOrgUnits={[]}
                   onSelectOrgUnit={(selectedOrgUnits) => {
                     if ((selectedOrgUnits || [])[0]) {
                       const selectedOrgUnit = selectedOrgUnits[0];
@@ -443,6 +433,48 @@ export class BaseFormFieldComponent
               ))}
             </SingleSelectField>
           );
+        case 'multi-dropdown':
+          return (
+            <MultiSelectField
+              clearText="Clear"
+              clearable
+              empty="No data found"
+              filterable={(this.field().options || []).length > 5}
+              filterPlaceholder="Type to filter options"
+              error={hasError}
+              validationText={validationError}
+              inputWidth={this.fieldConfig()?.inputWidth}
+              label={this.label()}
+              name={this.field().id}
+              required={this.field().required}
+              loadingText="Loading options"
+              noMatchText="No options found"
+              onChange={(event: { selected: string[] }) => {
+                const selectedValue = (event.selected || []).join(',');
+                this.ngZone.run(() => {
+                  (
+                    this.form().get(this.field().id) ||
+                    this.form().get(this.field().key)
+                  )?.setValue(selectedValue);
+                  this.update.emit({
+                    form: this.form(),
+                    value: selectedValue,
+                  });
+                });
+                setValue(selectedValue);
+                setTouched(true);
+              }}
+              selected={arrayValue}
+            >
+              {(this.field().options || []).map((option) => (
+                <MultiSelectOption
+                  key={option.key}
+                  label={option.label}
+                  value={option.value}
+                />
+              ))}
+            </MultiSelectField>
+          );
         case 'file':
           return (
             <FileInputField
@@ -467,7 +499,6 @@ export class BaseFormFieldComponent
                 setValue((event?.files || [])[0]);
                 setTouched(true);
               }}
-              // placeholder={this.placeholder()}
             >
               {this.uploadedFiles.map((file: any, index: any) => (
                 <FileListItem

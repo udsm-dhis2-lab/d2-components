@@ -1,5 +1,6 @@
 export type FieldControlType =
   | 'dropdown'
+  | 'multi-dropdown'
   | 'textbox'
   | 'textarea'
   | 'checkbox'
