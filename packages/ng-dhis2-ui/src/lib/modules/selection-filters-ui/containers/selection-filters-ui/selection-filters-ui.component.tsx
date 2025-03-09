@@ -13,8 +13,8 @@ import * as ReactDOM from 'react-dom/client';
 import { ReactWrapperModule } from '../../../react-wrapper/react-wrapper.component';
 
 import {
-  AttributeFilter,
-  DataElementFilter,
+  ProgramAttributesFilter,
+  ProgramStageDataElementFilter,
   SelectionFiltersProps,
 } from '../../models/selection-filters-ui.model';
 import { TableRow } from '../../models/selection-filters-ui.models';
@@ -52,8 +52,8 @@ export class SelectionFiltersComponent
     label: string;
     onClick: (row: TableRow) => void;
   }[] = [];
-  @Input() attributeFilters: AttributeFilter[] = [];
-  @Input() dataElementFilters: DataElementFilter[] = [];
+  @Input() programAttributesFilters: ProgramAttributesFilter[] = [];
+  @Input() programStageDataElementFilters: ProgramStageDataElementFilter[] = [];
   @Input() startDate?: string;
   @Input() endDate?: string;
   @Output() actionSelected = new EventEmitter<SelectionFiltersProps>();
@@ -218,14 +218,14 @@ export class SelectionFiltersComponent
 
   SelectionFiltersUI = () => {
     const [filters, setFilters] = useState<{
-      attributeFilters: AttributeFilter[];
-      dataElementFilters: DataElementFilter[];
+      programAttributesFilters: ProgramAttributesFilter[];
+      programStageDataElementFilters: ProgramStageDataElementFilter[];
       organizationUnitId: string;
       startDate: string;
       endDate: string;
     }>({
-      attributeFilters: this.attributeFilters || [],
-      dataElementFilters: this.dataElementFilters || [],
+      programAttributesFilters: this.programAttributesFilters || [],
+      programStageDataElementFilters: this.programStageDataElementFilters || [],
       organizationUnitId: '',
       startDate: this.startDate || '',
       endDate: this.endDate || '',
@@ -240,38 +240,41 @@ export class SelectionFiltersComponent
 
     useEffect(() => {
       setFilters({
-        attributeFilters: this.attributeFilters,
-        dataElementFilters: this.dataElementFilters,
+        programAttributesFilters: this.programAttributesFilters,
+        programStageDataElementFilters: this.programStageDataElementFilters,
         organizationUnitId: '',
         startDate: this.startDate || '',
         endDate: this.endDate || '',
       });
     }, [
-      this.attributeFilters,
-      this.dataElementFilters,
+      this.programAttributesFilters,
+      this.programStageDataElementFilters,
       this.startDate,
       this.endDate,
     ]);
 
     const handleAttributeChange = (index: number, selectedValue: string) => {
       setFilters((prevFilters) => {
-        const updatedFilters = [...prevFilters.attributeFilters];
+        const updatedFilters = [...prevFilters.programAttributesFilters];
         updatedFilters[index] = {
           ...updatedFilters[index],
           value: selectedValue,
         };
-        return { ...prevFilters, attributeFilters: updatedFilters };
+        return { ...prevFilters, programAttributesFilters: updatedFilters };
       });
     };
 
     const handleDataElementChange = (index: number, selectedValue: string) => {
       setFilters((prevFilters) => {
-        const updatedFilters = [...prevFilters.dataElementFilters];
+        const updatedFilters = [...prevFilters.programStageDataElementFilters];
         updatedFilters[index] = {
           ...updatedFilters[index],
           value: selectedValue,
         };
-        return { ...prevFilters, dataElementFilters: updatedFilters };
+        return {
+          ...prevFilters,
+          programStageDataElementFilters: updatedFilters,
+        };
       });
     };
 
@@ -286,7 +289,7 @@ export class SelectionFiltersComponent
     };
 
     const getAttributeColumnSpan = (index: number) => {
-      const totalItems = filters.attributeFilters.length;
+      const totalItems = filters.programAttributesFilters.length;
 
       if (totalItems <= 4) {
         if (totalItems === 1) {
@@ -316,7 +319,7 @@ export class SelectionFiltersComponent
     };
 
     const getDataElementColumnSpan = (index: number) => {
-      const totalItems = filters.dataElementFilters.length;
+      const totalItems = filters.programStageDataElementFilters.length;
 
       if (totalItems <= 4) {
         if (totalItems === 1) {
@@ -438,7 +441,7 @@ export class SelectionFiltersComponent
             gap: '16px',
           }}
         >
-          {filters.attributeFilters.map((filter, index) => (
+          {filters.programAttributesFilters.map((filter, index) => (
             <div
               key={index}
               style={{ gridColumn: getAttributeColumnSpan(index) }}
@@ -482,7 +485,7 @@ export class SelectionFiltersComponent
             gap: '16px',
           }}
         >
-          {filters.dataElementFilters.map((filter, index) => (
+          {filters.programStageDataElementFilters.map((filter, index) => (
             <div
               key={index}
               style={{ gridColumn: getDataElementColumnSpan(index) }}
