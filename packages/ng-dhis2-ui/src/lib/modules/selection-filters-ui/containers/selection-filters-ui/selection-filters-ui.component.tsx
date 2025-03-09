@@ -16,8 +16,8 @@ import {
   ProgramAttributesFilter,
   ProgramStageDataElementFilter,
   SelectionFiltersProps,
+  TableRow,
 } from '../../models/selection-filters-ui.model';
-import { TableRow } from '../../models/selection-filters-ui.models';
 
 import {
   InputField,
