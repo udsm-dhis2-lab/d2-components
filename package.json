@@ -4,7 +4,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "serve:demo": "nx serve demo",
+    "serve:demo": "nx serve demo --port 4201",
     "local-registry": "nx run @ng-dhis2-ui/source:local-registry",
     "build:demo": "nx build demo && cd dist/demo && zip -r -D dhis2-ui-demo.zip .",
     "build:ng-dhis2-ui": "nx build ng-dhis2-ui",
