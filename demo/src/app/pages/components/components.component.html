@@ -11,7 +11,7 @@
   [endDate]="'2025-02-28'"
 ></app-line-list> -->
 
-<h5>Header Bar component</h5>
+<!-- <h5>Header Bar component</h5>
 <ng-dhis2-ui-header-bar></ng-dhis2-ui-header-bar>
 
 <h5>Button component</h5>
@@ -34,11 +34,11 @@
   (selectOrgUnits)="onSelectOrgUnits($event)"
 ></ng-dhis2-ui-org-unit-selector>
 
-<h5>Dictionary</h5>
+<h5>Dictionary</h5> -->
 <!-- <ngx-dhis2-dictionary-list
   [metadataIdentifiers]="[]"
 ></ngx-dhis2-dictionary-list> -->
-<div [id]="'dictonary-container'"></div>
+<!-- <div [id]="'dictonary-container'"></div>
 
 <h5>Wrapper implementation</h5>
 
@@ -50,7 +50,7 @@
     { label: 'Edit', onClick: onEdit },
     { label: 'Delete', destructive: true, onClick: onDelete }
   ]"
-></app-line-list>
+></app-line-list> -->
 
 <app-selection-filters-ui
   [actionOptions]="[{ label: 'Search', onClick: onGenerateReport }]"
@@ -96,7 +96,7 @@
       name: 'Batch',
       shortName: '',
       formName: '',
-      valueType: 'text',
+      valueType: 'DATE',
       hasOptions: false,
       code: '',
       value: '',
@@ -109,7 +109,7 @@
       shortName: '',
       formName: '',
       program: '',
-      valueType: 'text',
+      valueType: 'DATE',
       hasOptions: false,
       code: '',
       value: '',
@@ -137,7 +137,7 @@
       shortName: '',
       formName: '',
       name: 'ABC',
-      valueType: 'number',
+      valueType: 'DATE',
       hasOptions: true,
       operator: '',
       value: '',
@@ -202,6 +202,8 @@
   [startDate]="'2024-03-01'"
   [endDate]="'2025-02-28'"
   (actionSelected)="onActionSelected($event)"
+  [program]="'ABC'"
+  [organisationUnit]="'EFG'"
 ></app-selection-filters-ui>
 
 <app-data-table-ui

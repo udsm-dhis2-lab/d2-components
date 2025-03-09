@@ -46,8 +46,7 @@ import OrgUnitDimension from '../../../organisation-unit-selector/components/Org
 })
 export class SelectionFiltersComponent
   extends ReactWrapperModule
-  implements AfterViewInit
-{
+  implements AfterViewInit {
   @Input() actionOptions: {
     label: string;
     onClick: (row: TableRow) => void;
@@ -56,6 +55,8 @@ export class SelectionFiltersComponent
   @Input() programStageDataElementFilters: ProgramStageDataElementFilter[] = [];
   @Input() startDate?: string;
   @Input() endDate?: string;
+  @Input() program?: string;
+  @Input() organisationUnit?: string;
   @Output() actionSelected = new EventEmitter<SelectionFiltersProps>();
 
   httpClient = inject(NgxDhis2HttpClientService);
@@ -220,15 +221,17 @@ export class SelectionFiltersComponent
     const [filters, setFilters] = useState<{
       programAttributesFilters: ProgramAttributesFilter[];
       programStageDataElementFilters: ProgramStageDataElementFilter[];
-      organizationUnitId: string;
       startDate: string;
       endDate: string;
+      program: string;
+      organisationUnit: string;
     }>({
       programAttributesFilters: this.programAttributesFilters || [],
       programStageDataElementFilters: this.programStageDataElementFilters || [],
-      organizationUnitId: '',
       startDate: this.startDate || '',
       endDate: this.endDate || '',
+      program: this.program || '',
+      organisationUnit: this.organisationUnit || '',
     });
 
     const [displayValue, setDisplayValue] = useState(null);
@@ -242,9 +245,10 @@ export class SelectionFiltersComponent
       setFilters({
         programAttributesFilters: this.programAttributesFilters,
         programStageDataElementFilters: this.programStageDataElementFilters,
-        organizationUnitId: '',
         startDate: this.startDate || '',
         endDate: this.endDate || '',
+        program: this.program || '',
+        organisationUnit: this.organisationUnit || filters.organisationUnit,
       });
     }, [
       this.programAttributesFilters,
@@ -281,10 +285,10 @@ export class SelectionFiltersComponent
     const handleSearch = () => {
       this.actionSelected.emit({
         ...filters,
-        organizationUnit: selectedOrganisationUnit,
-        organizationUnitId: selectedOrganisationUnit,
+        organisationUnit: selectedOrganisationUnit,
         startDate: filters.startDate,
         endDate: filters.endDate,
+        program: this.program,
       } as unknown as SelectionFiltersProps);
     };
 
@@ -415,7 +419,7 @@ export class SelectionFiltersComponent
           <InputField
             className="input-field"
             label="Start Date"
-            type="date"
+            type="DATE"
             value={filters.startDate}
             onChange={(event: { value: string }) =>
               setFilters({ ...filters, startDate: event.value })
@@ -425,7 +429,7 @@ export class SelectionFiltersComponent
           <InputField
             className="input-field"
             label="End Date"
-            type="date"
+            type="DATE"
             value={filters.endDate}
             onChange={(event: { value: string }) =>
               setFilters({ ...filters, endDate: event.value })
@@ -450,6 +454,7 @@ export class SelectionFiltersComponent
                 <SingleSelectField
                   className="single-select"
                   label={filter.name || 'Select Option'}
+                  type={filter.valueType}
                   selected={filter.value}
                   onChange={(event: { selected: string }) =>
                     handleAttributeChange(index, event.selected)
@@ -459,7 +464,7 @@ export class SelectionFiltersComponent
                     <SingleSelectOption
                       key={i}
                       label={option.name}
-                      value={option.id}
+                      value={option.code}
                     />
                   ))}
                 </SingleSelectField>
@@ -467,6 +472,7 @@ export class SelectionFiltersComponent
                 <InputField
                   className="input-field"
                   label={filter.name || 'Program name'}
+                  type={filter.valueType}
                   value={filter.value}
                   onChange={(event: { value: string }) =>
                     handleAttributeChange(index, event.value)
@@ -494,6 +500,7 @@ export class SelectionFiltersComponent
                 <SingleSelectField
                   className="single-select"
                   label={filter.name || 'Aggregation type'}
+                  type={filter.valueType}
                   selected={filter.value}
                   onChange={(event: { selected: string }) =>
                     handleDataElementChange(index, event.selected)
@@ -503,13 +510,14 @@ export class SelectionFiltersComponent
                     <SingleSelectOption
                       key={i}
                       label={option.name}
-                      value={option.id}
+                      value={option.code}
                     />
                   ))}
                 </SingleSelectField>
               ) : (
                 <InputField
                   className="input-field"
+                  type={filter.valueType}
                   label={filter.name || 'Program name'}
                   value={filter.value}
                   onChange={(event: { value: string }) =>
