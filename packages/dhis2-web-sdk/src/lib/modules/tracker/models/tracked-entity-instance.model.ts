@@ -54,6 +54,7 @@ interface TrackerFieldProperty {
     | 'ORG_UNIT';
   generated?: boolean;
   stageId?: string;
+  repeatable?: boolean;
 }
 
 const DEFAULT_FIELD_PROPERTIES: Record<string, TrackerFieldProperty> = {

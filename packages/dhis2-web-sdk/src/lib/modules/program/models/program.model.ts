@@ -163,6 +163,7 @@ export class Program extends IdentifiableObject<Program> {
             return {
               ...programStageDataElement.dataElement,
               programStageId: programStage.id,
+              isProgramStageRepeatable: programStage.repeatable,
             };
           })
           .filter((dataElement) => dataElement);
