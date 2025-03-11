@@ -63,7 +63,7 @@ export class LineListTableComponent extends ReactWrapperModule {
     row: TableRow;
   }>();
   private reactStateUpdaters: any = null;
-  @Output() approvalSelected = new EventEmitter<string[]>();
+  @Output() approvalSelected = new EventEmitter<{ teiId: string; enrollmentId: string }[]>();
 
   setReactStateUpdaters = (updaters: any) => {
     this.reactStateUpdaters = updaters;
@@ -232,14 +232,6 @@ export class LineListTableComponent extends ReactWrapperModule {
       }));
     };
 
-    // // Add this handler for the Approval button
-    // const handleApprovalClick = () => {
-    //   console.log('Approval button clicked');
-    //   // Optionally emit an event to Angular parent component
-    //   // this.actionSelected.emit({ action: 'Approval', row: null });
-    // };
-
-    // Updated handler using the new approvalSelected emitter
     const handleApprovalClick = () => {
       this.lineListService
         .getLineListData(
@@ -255,12 +247,30 @@ export class LineListTableComponent extends ReactWrapperModule {
         )
         .subscribe((response: LineListResponse) => {
           if ('trackedEntityInstances' in response.data) {
-            const trackedEntityInstances = (response.data as TrackedEntityInstancesResponse)
-              .trackedEntityInstances;
-            const teiIds = trackedEntityInstances.map((tei) => tei.trackedEntityInstance);
-            // Emit TEI IDs using the new emitter
-            console.log('teis emitted', teiIds);
-            this.approvalSelected.emit(teiIds);
+            const trackedEntityInstances = (
+              response.data as TrackedEntityInstancesResponse
+            ).trackedEntityInstances;
+
+            // Map TEIs to objects with teiId and enrollmentId
+            const teiEnrollmentList = trackedEntityInstances
+              .map((tei) => {
+                // Find the enrollment where program matches this.programId
+                const matchingEnrollment = tei.enrollments?.find(
+                  (enrollment) => enrollment.program === this.programId
+                );
+
+                // Return object with teiId and enrollmentId (if found)
+                return matchingEnrollment
+                  ? {
+                      teiId: tei.trackedEntityInstance,
+                      enrollmentId: matchingEnrollment.enrollment,
+                    }
+                  : null;
+              })
+              .filter((item) => item !== null); // Remove null entries (no matching enrollment)
+
+            console.log('TEI and Enrollment IDs emitted:', teiEnrollmentList);
+            this.approvalSelected.emit(teiEnrollmentList);
           } else {
             console.log('No tracked entity instances found in the response');
             this.approvalSelected.emit([]); // Emit empty array if no TEIs
