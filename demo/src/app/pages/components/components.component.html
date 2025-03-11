@@ -42,17 +42,9 @@
 
 <h5>Wrapper implementation</h5>
 
-<app-line-list
-  [programId]="'FO8K8HiXrga'"
-  [orgUnit]="'xrku9x3XnV9'"
-  [actionOptions]="[
-    { label: 'View', onClick: onView },
-    { label: 'Edit', onClick: onEdit },
-    { label: 'Delete', destructive: true, onClick: onDelete }
-  ]"
-></app-line-list> -->
 
-<app-selection-filters-ui
+
+ <app-selection-filters-ui
   [actionOptions]="[{ label: 'Search', onClick: onGenerateReport }]"
   [programAttributesFilters]="[
     {
@@ -230,4 +222,15 @@
   (actionSelected)="onActionSelected($event)"
   [actionOptions]="[{ label: 'View', onClick: onView }]"
 >
-</app-data-table-ui>
+</app-data-table-ui> -->
+
+<app-line-list
+  [programId]="'piWUQa85ell'"
+  [orgUnit]="'m0frOspS7JY'"
+  [actionOptions]="[
+    { label: 'View', onClick: onView },
+    { label: 'Edit', onClick: onEdit },
+    { label: 'Delete', destructive: true, onClick: onDelete }
+  ]"
+  [showApprovalButton]="true"
+></app-line-list> 

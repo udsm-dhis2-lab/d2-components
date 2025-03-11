@@ -17,6 +17,7 @@ import {
   TableBody,
   TableFoot,
   TableHead,
+  Button,
 } from '@dhis2/ui';
 import React, { useEffect, useRef, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
@@ -56,11 +57,13 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() endDate?: string;
   @Input() filters?: FilterConfig[];
   @Input() ouMode?: string;
+  @Input() showApprovalButton: boolean = false;
   @Output() actionSelected = new EventEmitter<{
     action: string;
     row: TableRow;
   }>();
   private reactStateUpdaters: any = null;
+  @Output() approvalSelected = new EventEmitter<string[]>();
 
   setReactStateUpdaters = (updaters: any) => {
     this.reactStateUpdaters = updaters;
@@ -229,8 +232,84 @@ export class LineListTableComponent extends ReactWrapperModule {
       }));
     };
 
+    // // Add this handler for the Approval button
+    // const handleApprovalClick = () => {
+    //   console.log('Approval button clicked');
+    //   // Optionally emit an event to Angular parent component
+    //   // this.actionSelected.emit({ action: 'Approval', row: null });
+    // };
+
+    // Updated handler using the new approvalSelected emitter
+    const handleApprovalClick = () => {
+      this.lineListService
+        .getLineListData(
+          this.programId,
+          this.orgUnit,
+          this.programStageId,
+          pager.page,
+          pager.pageSize,
+          this.attributeFilters,
+          this.startDate,
+          this.endDate,
+          this.ouMode
+        )
+        .subscribe((response: LineListResponse) => {
+          if ('trackedEntityInstances' in response.data) {
+            const trackedEntityInstances = (response.data as TrackedEntityInstancesResponse)
+              .trackedEntityInstances;
+            const teiIds = trackedEntityInstances.map((tei) => tei.trackedEntityInstance);
+            // Emit TEI IDs using the new emitter
+            console.log('teis emitted', teiIds);
+            this.approvalSelected.emit(teiIds);
+          } else {
+            console.log('No tracked entity instances found in the response');
+            this.approvalSelected.emit([]); // Emit empty array if no TEIs
+          }
+        });
+    };
+
     return (
       <div>
+        {/* <div
+          style={{
+            width: '100%', // Ensures it spans the full container
+            display: 'flex',
+            justifyContent: 'flex-end', // Aligns button to the right
+            alignItems: 'center',
+            gap: 8, // Adds 8px gap (if you add more elements later)
+            padding: 8, // Adds 8px padding around the div
+            marginBottom: 16, // Adds 16px space below (equivalent to mb-4)
+          }}
+        >
+          <Button
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            onClick={handleApprovalClick}
+            primary
+          >
+            Approval
+          </Button>
+        </div> */}
+        {this.showApprovalButton && (
+          <div
+            style={{
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              alignItems: 'center',
+              gap: 8,
+              padding: 8,
+              marginBottom: 16,
+            }}
+          >
+            <Button
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              onClick={handleApprovalClick}
+              primary
+            >
+              Approval
+            </Button>
+          </div>
+        )}
         {loading ? (
           <div
             style={{
