@@ -1,10 +1,42 @@
-import { AfterViewInit, Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  EventEmitter,
+  inject,
+  Input,
+  NgZone,
+  Output,
+  signal,
+} from '@angular/core';
 import React, { useState, useEffect } from 'react';
 import * as ReactDOM from 'react-dom/client';
-import { InputField, SingleSelectField, SingleSelectOption, Button } from '@dhis2/ui';
 import { ReactWrapperModule } from '../../../react-wrapper/react-wrapper.component';
 
-import { AttributeFilter, DataElementFilter, SelectionFiltersProps } from '../../models/selection-filters-ui.model';
+import {
+  ProgramAttributesFilter,
+  ProgramStageDataElementFilter,
+  SelectionFiltersProps,
+  TableRow,
+} from '../../models/selection-filters-ui.model';
+
+import {
+  InputField,
+  SingleSelectField,
+  SingleSelectOption,
+  Button,
+  ButtonStrip,
+  Modal,
+  ModalActions,
+  ModalContent,
+  ModalTitle,
+  CircularLoader,
+} from '@dhis2/ui';
+import { Provider } from '@dhis2/app-runtime';
+import { firstValueFrom, map, Observable, zip } from 'rxjs';
+import { NgxDhis2HttpClientService, User } from '@iapps/ngx-dhis2-http-client';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { OrganisationUnitSelectionConfig } from '../../../organisation-unit-selector';
+import OrgUnitDimension from '../../../organisation-unit-selector/components/OrgUnitDimension';
 
 @Component({
   selector: 'app-selection-filters-ui',
@@ -12,155 +44,439 @@ import { AttributeFilter, DataElementFilter, SelectionFiltersProps } from '../..
   styleUrls: ['./selection-filters-ui.component.scss'],
   standalone: false,
 })
-export class SelectionFiltersComponent extends ReactWrapperModule implements AfterViewInit {
-  @Input() actionOptions: { label: string; onClick: (row: any) => void }[] = [];
-  @Input() attributeFilters: AttributeFilter[] = [];
-  @Input() dataElementFilters: DataElementFilter[] = [];
+export class SelectionFiltersComponent
+  extends ReactWrapperModule
+  implements AfterViewInit {
+  @Input() actionOptions: {
+    label: string;
+    onClick: (row: TableRow) => void;
+  }[] = [];
+  @Input() programAttributesFilters: ProgramAttributesFilter[] = [];
+  @Input() programStageDataElementFilters: ProgramStageDataElementFilter[] = [];
   @Input() startDate?: string;
   @Input() endDate?: string;
+  @Input() program?: string;
+  @Input() organisationUnit?: string;
   @Output() actionSelected = new EventEmitter<SelectionFiltersProps>();
+
+  httpClient = inject(NgxDhis2HttpClientService);
+  ngZone = inject(NgZone);
+
+  private getAppConfig(): Observable<any> {
+    return this.httpClient.systemInfo().pipe(
+      map((response) => {
+        const systemInfo = response as unknown as Record<string, unknown>;
+        return {
+          baseUrl: (document?.location?.host?.includes('localhost')
+            ? `${document.location.protocol}//${document.location.host}`
+            : systemInfo['contextPath']) as string,
+          apiVersion: Number(
+            (((systemInfo['version'] as string) || '')?.split('.') || [])[1]
+          ),
+        };
+      })
+    );
+  }
+
+  getRootOrgUnits(): Observable<string[]> {
+    const orgUnitAttribute = this.getOrgUnitAttributeByUsage(
+      this.orgUnitSelectionConfig.usageType
+    );
+    return this.httpClient
+      .me()
+      .pipe(
+        map((user: User) =>
+          (user ? user[orgUnitAttribute] : []).map((orgUnit) => orgUnit.id)
+        )
+      );
+  }
+
+  getOrgUnitLevels(): Promise<any> {
+    return firstValueFrom(
+      this.httpClient
+        .get(
+          'organisationUnitLevels.json?fields=id,level,displayName,name&paging=false'
+        )
+        .pipe(
+          map((res: Record<string, unknown>) => res?.['organisationUnitLevels'])
+        )
+    );
+  }
+
+  onSelectOrgUnit(selectedOrgUnits: Record<string, string>[]) {
+    this.showOrgUnitTree.set(false);
+
+    if ((selectedOrgUnits || [])[0]) {
+      this.selectedOrgUnit.set(selectedOrgUnits[0]);
+    }
+  }
+
+  getOrgUnitGroups(): Promise<any> {
+    return firstValueFrom(
+      this.httpClient
+        .get(
+          'organisationUnitGroups.json?fields=id,displayName,name&paging=false'
+        )
+        .pipe(
+          map((res: Record<string, unknown>) => res?.['organisationUnitGroups'])
+        )
+    );
+  }
+
+  getOrgUnitAttributeByUsage(usageType: string) {
+    switch (usageType) {
+      case 'DATA_ENTRY':
+        return 'organisationUnits';
+
+      case 'DATA_VIEW':
+        return 'dataViewOrganisationUnits';
+
+      default:
+        return 'organisationUnits';
+    }
+  }
+
+  FieldOrgUnitSelector = (props: {
+    onSelectOrgUnit: (selectedOrgUnits: any) => void;
+    onCancelOrgUnit: () => void;
+  }) => {
+    const { onSelectOrgUnit, onCancelOrgUnit } = props;
+    const [selected, setSelected] = useState([]);
+    const [rootOrgUnits, setRootOrgUnits] = useState<string[]>();
+    const [config, setConfig] = useState<any>();
+
+    useEffect(() => {
+      zip(this.getAppConfig(), this.getRootOrgUnits()).subscribe({
+        next: ([appConfig, rootOrgUnits]) => {
+          setConfig(appConfig);
+          setRootOrgUnits(rootOrgUnits);
+        },
+        error: (error) => console.error(error),
+      });
+    }, []);
+    return config ? (
+      <Provider
+        config={config}
+        plugin={false}
+        parentAlertsAdd={undefined}
+        showAlertsInPlugin={false}
+      >
+        {
+          <Modal position="middle" large>
+            <ModalTitle>Organisation unit</ModalTitle>
+            <ModalContent>
+              <OrgUnitDimension
+                selected={selected}
+                hideGroupSelect={this.orgUnitSelectionConfig.hideGroupSelect}
+                hideLevelSelect={this.orgUnitSelectionConfig.hideLevelSelect}
+                hideUserOrgUnits={this.orgUnitSelectionConfig.hideUserOrgUnits}
+                onSelect={(selectionEvent: any) => {
+                  setSelected(selectionEvent.items);
+                }}
+                orgUnitGroupPromise={this.getOrgUnitGroups()}
+                orgUnitLevelPromise={this.getOrgUnitLevels()}
+                roots={rootOrgUnits}
+              />
+            </ModalContent>
+            <ModalActions>
+              <ButtonStrip end>
+                <Button
+                  onClick={() => {
+                    onCancelOrgUnit();
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  primary
+                  disabled={selected.length === 0}
+                  onClick={() => {
+                    onSelectOrgUnit(selected);
+                  }}
+                >
+                  Confirm
+                </Button>
+              </ButtonStrip>
+            </ModalActions>
+          </Modal>
+        }
+      </Provider>
+    ) : (
+      <CircularLoader small />
+    );
+  };
+  showOrgUnitTree = signal<boolean>(false);
+  orgUnitSelectionConfig: OrganisationUnitSelectionConfig = {
+    hideGroupSelect: true,
+    hideLevelSelect: true,
+    hideUserOrgUnits: true,
+    allowSingleSelection: true,
+    usageType: 'DATA_ENTRY',
+  };
+
+  selectedOrgUnit = signal<any>(null);
+  selectedOrgUnit$ = toObservable(this.selectedOrgUnit);
 
   SelectionFiltersUI = () => {
     const [filters, setFilters] = useState<{
-      attributeFilters: AttributeFilter[];
-      dataElementFilters: DataElementFilter[];
+      programAttributesFilters: ProgramAttributesFilter[];
+      programStageDataElementFilters: ProgramStageDataElementFilter[];
+      startDate: string;
+      endDate: string;
+      program: string;
+      organisationUnit: string;
     }>({
-      attributeFilters: this.attributeFilters || [],
-      dataElementFilters: this.dataElementFilters || [],
+      programAttributesFilters: this.programAttributesFilters || [],
+      programStageDataElementFilters: this.programStageDataElementFilters || [],
+      startDate: this.startDate || '',
+      endDate: this.endDate || '',
+      program: this.program || '',
+      organisationUnit: this.organisationUnit || '',
     });
+
+    const [displayValue, setDisplayValue] = useState(null);
+    const [selected, setSelected] = useState();
+    const [selectedOrganisationUnit, setSelectedOrganisationUnit] = useState();
+    const [touched, setTouched] = useState(false);
+    const [showOrgUnit, setShowOrgUnit] = useState<boolean>(false);
+    const [value, setValue] = useState(null);
 
     useEffect(() => {
       setFilters({
-        attributeFilters: this.attributeFilters,
-        dataElementFilters: this.dataElementFilters,
+        programAttributesFilters: this.programAttributesFilters,
+        programStageDataElementFilters: this.programStageDataElementFilters,
+        startDate: this.startDate || '',
+        endDate: this.endDate || '',
+        program: this.program || '',
+        organisationUnit: this.organisationUnit || filters.organisationUnit,
       });
-    }, [this.attributeFilters, this.dataElementFilters]);
+    }, [
+      this.programAttributesFilters,
+      this.programStageDataElementFilters,
+      this.startDate,
+      this.endDate,
+    ]);
 
     const handleAttributeChange = (index: number, selectedValue: string) => {
       setFilters((prevFilters) => {
-        const updatedFilters = [...prevFilters.attributeFilters];
-        updatedFilters[index] = { ...updatedFilters[index], value: selectedValue };
-        return { ...prevFilters, attributeFilters: updatedFilters };
+        const updatedFilters = [...prevFilters.programAttributesFilters];
+        updatedFilters[index] = {
+          ...updatedFilters[index],
+          value: selectedValue,
+        };
+        return { ...prevFilters, programAttributesFilters: updatedFilters };
       });
     };
 
     const handleDataElementChange = (index: number, selectedValue: string) => {
       setFilters((prevFilters) => {
-        const updatedFilters = [...prevFilters.dataElementFilters];
-        updatedFilters[index] = { ...updatedFilters[index], value: selectedValue };
-        return { ...prevFilters, dataElementFilters: updatedFilters };
+        const updatedFilters = [...prevFilters.programStageDataElementFilters];
+        updatedFilters[index] = {
+          ...updatedFilters[index],
+          value: selectedValue,
+        };
+        return {
+          ...prevFilters,
+          programStageDataElementFilters: updatedFilters,
+        };
       });
     };
 
     const handleSearch = () => {
-      this.actionSelected.emit(filters as SelectionFiltersProps);
+      this.actionSelected.emit({
+        ...filters,
+        organisationUnit: selectedOrganisationUnit || this.organisationUnit || filters.organisationUnit,
+        startDate: filters.startDate,
+        endDate: filters.endDate,
+        program: this.program || filters.program,
+      } as unknown as SelectionFiltersProps);
     };
 
-    // Grid Column Span Logic for Attribute Filters
     const getAttributeColumnSpan = (index: number) => {
-      const totalItems = filters.attributeFilters.length;
+      const totalItems = filters.programAttributesFilters.length;
 
       if (totalItems <= 4) {
-        // If 1 to 4 items, place them in a single row (span all columns if there's only one item)
         if (totalItems === 1) {
-          return 'span 4'; // One item spans all four columns
+          return 'span 4';
         }
         if (totalItems === 2) {
-          return 'span 2'; // Two items, each spans 2 columns
+          return 'span 2';
         }
         if (totalItems === 3) {
-          return 'span 1'; // Three items, each spans one column
+          return 'span 1';
         }
         if (totalItems === 4) {
-          return 'span 1'; // Four items, each spans one column
+          return 'span 1';
         }
       } else {
-        // More than 4 items, recursively adjust the placement
-        const rowIndex = Math.floor(index / 2); // Calculate row by pairs
+        const rowIndex = Math.floor(index / 2);
         if (index % 2 === 0) {
-          // For first item in each row, span 2 columns
           return 'span 2';
         } else if (index === totalItems - 1) {
-          // Last item, spans the full row (4 columns)
           return 'span 4';
         } else {
-          // For other items, span 2 columns
           return 'span 2';
         }
       }
 
-      return 'span 1'; // Default behavior
+      return 'span 1';
     };
 
-    // Grid Column Span Logic for Data Element Filters
     const getDataElementColumnSpan = (index: number) => {
-      const totalItems = filters.dataElementFilters.length;
+      const totalItems = filters.programStageDataElementFilters.length;
 
       if (totalItems <= 4) {
-        // If 1 to 4 items, place them in a single row (span all columns if there's only one item)
         if (totalItems === 1) {
-          return 'span 4'; // One item spans all four columns
+          return 'span 4';
         }
         if (totalItems === 2) {
-          return 'span 2'; // Two items, each spans 2 columns
+          return 'span 2';
         }
         if (totalItems === 3) {
-          return 'span 1'; // Three items, each spans one column
+          return 'span 1';
         }
         if (totalItems === 4) {
-          return 'span 1'; // Four items, each spans one column
+          return 'span 1';
         }
       } else {
-        // More than 4 items, recursively adjust the placement
-        const rowIndex = Math.floor(index / 2); // Calculate row by pairs
+        const rowIndex = Math.floor(index / 2);
         if (index % 2 === 0) {
-          // For first item in each row, span 2 columns
           return 'span 2';
         } else if (index === totalItems - 1) {
-          // Last item, spans the full row (4 columns)
           return 'span 4';
         } else {
-          // For other items, span 2 columns
           return 'span 2';
         }
       }
 
-      return 'span 1'; // Default behavior
+      return 'span 1';
     };
 
     return (
-      <div style={{
-        fontFamily: 'Arial, sans-serif',
-        padding: '20px',
-        backgroundColor: '#f9f9f9',
-        borderRadius: '8px',
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-      }}>
+      <div
+        style={{
+          fontFamily: 'Arial, sans-serif',
+          padding: '20px',
+          backgroundColor: '#f9f9f9',
+          borderRadius: '8px',
+          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+        }}
+      >
+        {/* Organization Unit, Start Date, End Date Row */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '16px',
+            marginBottom: '16px',
+          }}
+        >
+          <>
+            <InputField
+              value={displayValue}
+              label="Organization Unit"
+              readOnly={false}
+              onFocus={() => {
+                setShowOrgUnit(true);
+              }}
+              onBlur={() => {
+                this.ngZone.run(() => {
+                  console.log('THIS IS IT::: ');
+                });
+                setTouched(true);
+              }}
+            />
+            {showOrgUnit && (
+              <this.FieldOrgUnitSelector
+                onCancelOrgUnit={() => {
+                  setShowOrgUnit(false);
+                  setTouched(true);
+                }}
+                onSelectOrgUnit={(selectedOrgUnits) => {
+                  if ((selectedOrgUnits || [])[0]) {
+                    const selectedOrgUnit = selectedOrgUnits[0];
+                    setDisplayValue(selectedOrgUnit.name);
+                    setSelected(selectedOrgUnit.id);
+                    setSelectedOrganisationUnit(selectedOrgUnit.id);
+                    setValue(selectedOrgUnit.id);
+                    setShowOrgUnit(false);
+                    setTouched(true);
+
+                    // this.ngZone.run(() => {
+                    //   setDisplayValue(selectedOrgUnit.name);
+                    //   setSelected(selectedOrgUnit.id)
+                    //   setSelectedOrganisationUnit(selectedOrgUnit.id)
+                    //   setValue(selectedOrgUnit.id);
+                    //   setShowOrgUnit(false);
+                    // setTouched(true);
+                    // });
+                  }
+                }}
+              />
+            )}
+          </>
+
+          <InputField
+            className="input-field"
+            label="Start Date"
+            type="DATE"
+            value={filters.startDate}
+            onChange={(event: { value: string }) =>
+              setFilters({ ...filters, startDate: event.value })
+            }
+          />
+
+          <InputField
+            className="input-field"
+            label="End Date"
+            type="DATE"
+            value={filters.endDate}
+            onChange={(event: { value: string }) =>
+              setFilters({ ...filters, endDate: event.value })
+            }
+          />
+        </div>
+
         {/* Attribute Filters Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: '16px',
-        }}>
-          {filters.attributeFilters.map((filter, index) => (
-            <div key={index} style={{ gridColumn: getAttributeColumnSpan(index) }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            gap: '16px',
+          }}
+        >
+          {filters.programAttributesFilters.map((filter, index) => (
+            <div
+              key={index}
+              style={{ gridColumn: getAttributeColumnSpan(index) }}
+            >
               {filter.hasOptions && filter.options.length > 0 ? (
                 <SingleSelectField
                   className="single-select"
                   label={filter.name || 'Select Option'}
+                  type={filter.valueType}
                   selected={filter.value}
-                  onChange={(event: { selected: string }) => handleAttributeChange(index, event.selected)}
+                  onChange={(event: { selected: string }) =>
+                    handleAttributeChange(index, event.selected)
+                  }
                 >
                   {filter.options.map((option, i) => (
-                    <SingleSelectOption key={i} label={option.name} value={option.id} />
+                    <SingleSelectOption
+                      key={i}
+                      label={option.name}
+                      value={option.code}
+                    />
                   ))}
                 </SingleSelectField>
               ) : (
                 <InputField
                   className="input-field"
                   label={filter.name || 'Program name'}
+                  type={filter.valueType}
                   value={filter.value}
-                  onChange={(event: { value: string }) => handleAttributeChange(index, event.value)}
+                  onChange={(event: { value: string }) =>
+                    handleAttributeChange(index, event.value)
+                  }
                 />
               )}
             </div>
@@ -168,30 +484,45 @@ export class SelectionFiltersComponent extends ReactWrapperModule implements Aft
         </div>
 
         {/* Data Element Filters Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: '16px',
-        }}>
-          {filters.dataElementFilters.map((filter, index) => (
-            <div key={index} style={{ gridColumn: getDataElementColumnSpan(index) }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            gap: '16px',
+          }}
+        >
+          {filters.programStageDataElementFilters.map((filter, index) => (
+            <div
+              key={index}
+              style={{ gridColumn: getDataElementColumnSpan(index) }}
+            >
               {filter.hasOptions && filter.options.length > 0 ? (
                 <SingleSelectField
                   className="single-select"
                   label={filter.name || 'Aggregation type'}
+                  type={filter.valueType}
                   selected={filter.value}
-                  onChange={(event: { selected: string }) => handleDataElementChange(index, event.selected)}
+                  onChange={(event: { selected: string }) =>
+                    handleDataElementChange(index, event.selected)
+                  }
                 >
                   {filter.options.map((option, i) => (
-                    <SingleSelectOption key={i} label={option.name} value={option.id} />
+                    <SingleSelectOption
+                      key={i}
+                      label={option.name}
+                      value={option.code}
+                    />
                   ))}
                 </SingleSelectField>
               ) : (
                 <InputField
                   className="input-field"
+                  type={filter.valueType}
                   label={filter.name || 'Program name'}
                   value={filter.value}
-                  onChange={(event: { value: string }) => handleDataElementChange(index, event.value)}
+                  onChange={(event: { value: string }) =>
+                    handleDataElementChange(index, event.value)
+                  }
                 />
               )}
             </div>

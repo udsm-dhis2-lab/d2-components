@@ -11,7 +11,7 @@
   [endDate]="'2025-02-28'"
 ></app-line-list> -->
 
-<h5>Header Bar component</h5>
+<!-- <h5>Header Bar component</h5>
 <ng-dhis2-ui-header-bar></ng-dhis2-ui-header-bar>
 
 <h5>Button component</h5>
@@ -34,31 +34,26 @@
   (selectOrgUnits)="onSelectOrgUnits($event)"
 ></ng-dhis2-ui-org-unit-selector>
 
-<h5>Dictionary</h5>
+<h5>Dictionary</h5> -->
 <!-- <ngx-dhis2-dictionary-list
   [metadataIdentifiers]="[]"
 ></ngx-dhis2-dictionary-list> -->
-<div [id]="'dictonary-container'"></div>
+<!-- <div [id]="'dictonary-container'"></div>
 
 <h5>Wrapper implementation</h5>
 
-<app-line-list
-  [programId]="'FO8K8HiXrga'"
-  [orgUnit]="'xrku9x3XnV9'"
-  [actionOptions]="[
-    { label: 'View', onClick: onView },
-    { label: 'Edit', onClick: onEdit },
-    { label: 'Delete', destructive: true, onClick: onDelete }
-  ]"
-></app-line-list>
 
-<app-selection-filters-ui
+
+ <app-selection-filters-ui
   [actionOptions]="[{ label: 'Search', onClick: onGenerateReport }]"
-  [attributeFilters]="[
+  [programAttributesFilters]="[
     {
       attribute: 'nfpxRnc5Rsg',
+      program: '',
       operator: 'eq',
       name: 'Batch',
+      shortName: '',
+      formName: '',
       valueType: 'text',
       hasOptions: true,
       code: '',
@@ -72,7 +67,10 @@
     {
       attribute: 'nfpxRnc5Rsg',
       operator: 'eq',
+      program: '',
       name: 'Batch',
+      shortName: '',
+      formName: '',
       valueType: 'text',
       hasOptions: false,
       code: '',
@@ -86,8 +84,11 @@
     {
       attribute: 'nfpxRnc5Rsg',
       operator: 'eq',
+      program: '',
       name: 'Batch',
-      valueType: 'text',
+      shortName: '',
+      formName: '',
+      valueType: 'DATE',
       hasOptions: false,
       code: '',
       value: '',
@@ -97,7 +98,10 @@
       attribute: 'nfpxRnc5Rsg',
       operator: 'eq',
       name: 'Batch',
-      valueType: 'text',
+      shortName: '',
+      formName: '',
+      program: '',
+      valueType: 'DATE',
       hasOptions: false,
       code: '',
       value: '',
@@ -106,6 +110,9 @@
     {
       attribute: 'nfpxRnc5Rsg',
       operator: 'eq',
+      program: '',
+      shortName: '',
+      formName: '',
       name: 'Batch',
       valueType: 'text',
       hasOptions: false,
@@ -114,11 +121,31 @@
       options: []
     }
   ]"
-  [dataElementFilters]="[
+  [programStageDataElementFilters]="[
     {
       programStage: 'ABC',
       dataElement: 'ABC',
+      program: '',
+      shortName: '',
+      formName: '',
       name: 'ABC',
+      valueType: 'DATE',
+      hasOptions: true,
+      operator: '',
+      value: '',
+      options: [
+        { id: '1', code: 'one', name: 'One' },
+        { id: '2', code: 'two', name: 'Two' },
+        { id: '3', code: 'three', name: 'Three' }
+      ]
+    },
+    {
+      programStage: 'ABC',
+      dataElement: 'CDE',
+      name: 'ABC',
+      program: '',
+      shortName: '',
+      formName: '',
       valueType: 'number',
       hasOptions: true,
       operator: '',
@@ -133,7 +160,27 @@
       programStage: 'ABC',
       dataElement: 'CDE',
       name: 'ABC',
+      shortName: '',
+      formName: '',
       valueType: 'number',
+      program: '',
+      hasOptions: true,
+      operator: '',
+      value: '',
+      options: [
+        { id: '1', code: 'one', name: 'One' },
+        { id: '2', code: 'two', name: 'Two' },
+        { id: '3', code: 'three', name: 'Three' }
+      ]
+    },
+    {
+      programStage: 'ABC',
+      dataElement: 'CDE',
+      name: 'ABC',
+      shortName: '',
+      formName: '',
+      valueType: 'number',
+      program: '',
       hasOptions: true,
       operator: '',
       value: '',
@@ -147,6 +194,8 @@
   [startDate]="'2024-03-01'"
   [endDate]="'2025-02-28'"
   (actionSelected)="onActionSelected($event)"
+  [program]="'ABC1'"
+  [organisationUnit]="'EFG'"
 ></app-selection-filters-ui>
 
 <app-data-table-ui
@@ -173,4 +222,26 @@
   (actionSelected)="onActionSelected($event)"
   [actionOptions]="[{ label: 'View', onClick: onView }]"
 >
-</app-data-table-ui>
+</app-data-table-ui> -->
+
+<!-- <app-line-list
+  [programId]="'piWUQa85ell'"
+  [orgUnit]="'m0frOspS7JY'"
+  [actionOptions]="[
+    { label: 'View', onClick: onView },
+    { label: 'Edit', onClick: onEdit },
+    { label: 'Delete', destructive: true, onClick: onDelete }
+  ]"
+  [showApprovalButton]="true"
+></app-line-list>  -->
+<div class="p-4">
+  <app-line-list
+    [programId]="'lw9fZTamYec'"
+    [orgUnit]="'lgZ6HfZaj3f'"
+    [actionOptions]="[
+    { label: 'View', },
+    ]"
+    [filters]="rasFilters"
+    [showApprovalButton]="true"
+  ></app-line-list>
+</div>

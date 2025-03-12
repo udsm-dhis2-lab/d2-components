@@ -17,6 +17,7 @@ import {
   TableBody,
   TableFoot,
   TableHead,
+  Button,
 } from '@dhis2/ui';
 import React, { useEffect, useRef, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
@@ -56,11 +57,13 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() endDate?: string;
   @Input() filters?: FilterConfig[];
   @Input() ouMode?: string;
+  @Input() showApprovalButton: boolean = false;
   @Output() actionSelected = new EventEmitter<{
     action: string;
     row: TableRow;
   }>();
   private reactStateUpdaters: any = null;
+  @Output() approvalSelected = new EventEmitter<{ teiId: string; enrollmentId: string }[]>();
 
   setReactStateUpdaters = (updaters: any) => {
     this.reactStateUpdaters = updaters;
@@ -229,8 +232,94 @@ export class LineListTableComponent extends ReactWrapperModule {
       }));
     };
 
+    const handleApprovalClick = () => {
+      this.lineListService
+        .getLineListData(
+          this.programId,
+          this.orgUnit,
+          this.programStageId,
+          pager.page,
+          pager.pageSize,
+          this.attributeFilters,
+          this.startDate,
+          this.endDate,
+          this.ouMode
+        )
+        .subscribe((response: LineListResponse) => {
+          if ('trackedEntityInstances' in response.data) {
+            const trackedEntityInstances = (
+              response.data as TrackedEntityInstancesResponse
+            ).trackedEntityInstances;
+
+            // Map TEIs to objects with teiId and enrollmentId
+            const teiEnrollmentList = trackedEntityInstances
+              .map((tei) => {
+                // Find the enrollment where program matches this.programId
+                const matchingEnrollment = tei.enrollments?.find(
+                  (enrollment) => enrollment.program === this.programId
+                );
+
+                // Return object with teiId and enrollmentId (if found)
+                return matchingEnrollment
+                  ? {
+                      teiId: tei.trackedEntityInstance,
+                      enrollmentId: matchingEnrollment.enrollment,
+                    }
+                  : null;
+              })
+              .filter((item) => item !== null); // Remove null entries (no matching enrollment)
+
+            console.log('TEI and Enrollment IDs emitted:', teiEnrollmentList);
+            this.approvalSelected.emit(teiEnrollmentList);
+          } else {
+            console.log('No tracked entity instances found in the response');
+            this.approvalSelected.emit([]); // Emit empty array if no TEIs
+          }
+        });
+    };
+
     return (
       <div>
+        {/* <div
+          style={{
+            width: '100%', // Ensures it spans the full container
+            display: 'flex',
+            justifyContent: 'flex-end', // Aligns button to the right
+            alignItems: 'center',
+            gap: 8, // Adds 8px gap (if you add more elements later)
+            padding: 8, // Adds 8px padding around the div
+            marginBottom: 16, // Adds 16px space below (equivalent to mb-4)
+          }}
+        >
+          <Button
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            onClick={handleApprovalClick}
+            primary
+          >
+            Approval
+          </Button>
+        </div> */}
+        {this.showApprovalButton && (
+          <div
+            style={{
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              alignItems: 'center',
+              gap: 8,
+              padding: 8,
+              marginBottom: 16,
+            }}
+          >
+            <Button
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              onClick={handleApprovalClick}
+              primary
+            >
+              Approval
+            </Button>
+          </div>
+        )}
         {loading ? (
           <div
             style={{
