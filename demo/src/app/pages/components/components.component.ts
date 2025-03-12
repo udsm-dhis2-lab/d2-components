@@ -17,7 +17,7 @@ export class ComponentsComponent {
   ];
 
   onActionSelected(emitActionResponse: any) {
-    console.log('ON ACTION SELECTED::: ' , JSON.stringify(emitActionResponse));
+    console.log('ON ACTION SELECTED::: ' , JSON.stringify(emitActionResponse, null, 4));
   }
   
   filters = [
@@ -44,6 +44,11 @@ export class ComponentsComponent {
     allowSingleSelection: true,
     usageType: 'DATA_ENTRY',
   };
+  onSelectOrgUnits(orgUnits: any) {
+    this.selectedOrgUnits = orgUnits;
+
+    console.log(this.selectedOrgUnits);
+  }
 
   onSelectPeriods(periods: any) {
     console.log(periods);
@@ -58,6 +63,27 @@ export class ComponentsComponent {
   tableData = [
     { name: 'John Doe', age: 28, country: 'Tanzania' },
     { name: 'Jane Smith', age: 34, country: 'Kenya' },
+  ];
+
+  rasFilters = [
+    {
+      programStage: 'k4ZFqYqRNDF',
+      dataElement: 'Z4LwppfGhjI',
+      operator: '=',
+      value: 'Approved',
+    },
+    // {
+    //   programStage: 'k4ZFqYqRNDF',
+    //   dataElement: 'EBUF7spbIY1',
+    //   operator: '=',
+    //   value: 'DED',
+    // },
+    {
+      programStage: 'NtZXBym2KfD',
+      dataElement: 'lj3cQAle9Fo',
+      operator: '=',
+      value: 'Qualified',
+    },
   ];
   
   //event program = A3olldDSHQg
@@ -81,12 +107,6 @@ export class ComponentsComponent {
 
   onGenerateReport(row: any): void {
     console.log('Delete', row);
-  }
-
-  onSelectOrgUnits(orgUnits: any) {
-    this.selectedOrgUnits = orgUnits;
-
-    console.log(this.selectedOrgUnits);
   }
 
   ngOnInit() {
