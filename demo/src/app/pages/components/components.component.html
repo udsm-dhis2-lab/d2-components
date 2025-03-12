@@ -224,7 +224,7 @@
 >
 </app-data-table-ui> -->
 
-<app-line-list
+<!-- <app-line-list
   [programId]="'piWUQa85ell'"
   [orgUnit]="'m0frOspS7JY'"
   [actionOptions]="[
@@ -233,4 +233,15 @@
     { label: 'Delete', destructive: true, onClick: onDelete }
   ]"
   [showApprovalButton]="true"
-></app-line-list> 
+></app-line-list>  -->
+<div class="p-4">
+  <app-line-list
+    [programId]="'lw9fZTamYec'"
+    [orgUnit]="'lgZ6HfZaj3f'"
+    [actionOptions]="[
+    { label: 'View', },
+    ]"
+    [filters]="rasFilters"
+    [showApprovalButton]="true"
+  ></app-line-list>
+</div>

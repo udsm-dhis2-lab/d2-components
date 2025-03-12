@@ -64,28 +64,51 @@ const matchesCondition = (
   }
 };
 
+// export const getFilteredTrackedEntityInstances = (
+//   trackedEntityInstance: TrackedEntityInstance[],
+//   filters: FilterConfig[]
+// ): TrackedEntityInstance[] => {
+//   return trackedEntityInstance.filter(
+//       (trackedEntityInstance: TrackedEntityInstance) =>
+//           trackedEntityInstance.enrollments.some((enrollment) =>
+//               enrollment.events.some((event) =>
+//                   filters.every(
+//                       (filter) =>
+//                           event.programStage === filter.programStage &&
+//                           event.dataValues.some(
+//                               (dataValue) =>
+//                                   dataValue.dataElement === filter.dataElement &&
+//                                   matchesCondition(
+//                                       dataValue.value,
+//                                       filter.operator,
+//                                       filter.value
+//                                   )
+//                           )
+//                   )
+//               )
+//           )
+//   );
+// };
 export const getFilteredTrackedEntityInstances = (
-  trackedEntityInstance: TrackedEntityInstance[],
-  filters: FilterConfig[]
-): TrackedEntityInstance[] => {
-  return trackedEntityInstance.filter(
-      (trackedEntityInstance: TrackedEntityInstance) =>
-          trackedEntityInstance.enrollments.some((enrollment) =>
-              enrollment.events.some((event) =>
-                  filters.every(
-                      (filter) =>
-                          event.programStage === filter.programStage &&
-                          event.dataValues.some(
-                              (dataValue) =>
-                                  dataValue.dataElement === filter.dataElement &&
-                                  matchesCondition(
-                                      dataValue.value,
-                                      filter.operator,
-                                      filter.value
-                                  )
-                          )
-                  )
+    trackedEntityInstances: TrackedEntityInstance[],
+    filters: FilterConfig[]
+  ): TrackedEntityInstance[] => {
+    if (!filters.length) return trackedEntityInstances;
+  
+    return trackedEntityInstances.filter((tei) =>
+      filters.every((filter) =>
+        tei.enrollments?.some((enrollment) =>
+          enrollment.events?.some(
+            (event) =>
+              event.programStage === filter.programStage &&
+              event.dataValues?.some(
+                (dataValue) =>
+                  dataValue.dataElement === filter.dataElement &&
+                  matchesCondition(dataValue.value, filter.operator, filter.value)
               )
           )
-  );
-};
+        )
+      )
+    );
+  };
+  
