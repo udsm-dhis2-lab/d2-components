@@ -79,7 +79,7 @@ class FixedPeriodSelect extends Component {
           >
             {this.state.options.map((option) => (
               <SingleSelectOption
-                key={option.id}
+                key={crypto.randomUUID() || option.id}
                 value={option.id}
                 label={option.name}
               />

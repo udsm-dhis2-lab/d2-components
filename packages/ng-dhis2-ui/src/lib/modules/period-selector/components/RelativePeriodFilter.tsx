@@ -25,7 +25,7 @@ export const RelativePeriodFilter = ({
         excludedPeriodTypes
       ).map((option: any) => (
         <SingleSelectOption
-          key={option.id}
+          key={crypto.randomUUID() || option.id}
           value={option.id}
           label={option.name}
           dataTest={`${dataTest}-option-${option.id}`}
