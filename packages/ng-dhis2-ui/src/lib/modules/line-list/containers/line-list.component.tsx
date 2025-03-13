@@ -63,7 +63,10 @@ export class LineListTableComponent extends ReactWrapperModule {
     row: TableRow;
   }>();
   private reactStateUpdaters: any = null;
-  @Output() approvalSelected = new EventEmitter<{ teiId: string; enrollmentId: string }[]>();
+  @Output() approvalSelected = new EventEmitter<
+    { teiId: string; enrollmentId: string }[]
+  >();
+  @Input() isButtonLoading: boolean = false;
 
   setReactStateUpdaters = (updaters: any) => {
     this.reactStateUpdaters = updaters;
@@ -88,6 +91,9 @@ export class LineListTableComponent extends ReactWrapperModule {
       }
       if (changes['endDate']) {
         this.reactStateUpdaters.setEndDateState(this.endDate);
+      }
+      if (changes['isButtonLoading']) {
+        this.reactStateUpdaters.setIsButtonLoading(this.isButtonLoading);
       }
     }
   }
@@ -121,6 +127,7 @@ export class LineListTableComponent extends ReactWrapperModule {
       this.endDate
     );
     const [loading, setLoading] = useState<boolean>(false);
+    const [isButtonLoading, setIsButtonLoading] = useState<boolean>(this.isButtonLoading);
 
     // Store updaters in refs for Angular to access
     const updateRefs = useRef({
@@ -130,6 +137,7 @@ export class LineListTableComponent extends ReactWrapperModule {
       setAttributeFiltersState,
       setStartDateState,
       setEndDateState,
+      setIsButtonLoading,
     });
 
     useEffect(() => {
@@ -280,25 +288,6 @@ export class LineListTableComponent extends ReactWrapperModule {
 
     return (
       <div>
-        {/* <div
-          style={{
-            width: '100%', // Ensures it spans the full container
-            display: 'flex',
-            justifyContent: 'flex-end', // Aligns button to the right
-            alignItems: 'center',
-            gap: 8, // Adds 8px gap (if you add more elements later)
-            padding: 8, // Adds 8px padding around the div
-            marginBottom: 16, // Adds 16px space below (equivalent to mb-4)
-          }}
-        >
-          <Button
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            onClick={handleApprovalClick}
-            primary
-          >
-            Approval
-          </Button>
-        </div> */}
         {this.showApprovalButton && (
           <div
             style={{
@@ -311,13 +300,24 @@ export class LineListTableComponent extends ReactWrapperModule {
               marginBottom: 16,
             }}
           >
-            <Button
+            {this.isButtonLoading ? (
+              <CircularLoader small />
+            ) : (
+              <Button
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                onClick={handleApprovalClick}
+                primary
+              >
+                Approval
+              </Button>
+            )}
+            {/* <Button
               className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
               onClick={handleApprovalClick}
               primary
             >
               Approval
-            </Button>
+            </Button> */}
           </div>
         )}
         {loading ? (
