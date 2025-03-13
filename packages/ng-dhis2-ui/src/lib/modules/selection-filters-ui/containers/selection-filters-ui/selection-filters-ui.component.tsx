@@ -462,7 +462,7 @@ export class SelectionFiltersComponent
                 >
                   {filter.options.map((option, i) => (
                     <SingleSelectOption
-                      key={i}
+                      key={crypto.randomUUID() || i}
                       label={option.name}
                       value={option.code}
                     />
@@ -508,7 +508,7 @@ export class SelectionFiltersComponent
                 >
                   {filter.options.map((option, i) => (
                     <SingleSelectOption
-                      key={i}
+                      key={crypto.randomUUID() || i}
                       label={option.name}
                       value={option.code}
                     />
