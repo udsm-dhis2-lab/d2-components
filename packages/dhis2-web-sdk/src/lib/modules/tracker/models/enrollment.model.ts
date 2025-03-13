@@ -84,8 +84,8 @@ export class Enrollment
 
   constructor(enrollmentDetails: Partial<Enrollment>) {
     super(enrollmentDetails);
-    this.enrollmentDate = this.enrolledAt;
-    this.incidentDate = this.occurredAt;
+    this.enrollmentDate = (this.enrolledAt || '').split('T')[0];
+    this.incidentDate = (this.occurredAt || '').split('T')[0];
     this.events = EventUtil.getEvents(enrollmentDetails.events || []);
     const eventsByProgramStage = groupBy(this.events, 'programStage');
     this.programStageEvents = Object.keys(eventsByProgramStage).reduce(

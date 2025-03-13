@@ -177,7 +177,7 @@ export class DashboardService {
 
     this.router.navigate([
       config.rootUrl,
-      'dhis-dashboard-view',
+      'ng-dashboard-view',
       currentDashboardMenu.id,
     ]);
   }

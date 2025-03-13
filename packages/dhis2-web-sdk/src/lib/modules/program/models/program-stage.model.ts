@@ -68,6 +68,7 @@ export class ProgramStage extends IdentifiableObject<ProgramStage> {
     this.programStageSections = (programStage.programStageSections || []).map(
       (programStageSection) => new ProgramStageSection(programStageSection)
     );
+
     this.programStageDataElements = (
       programStage.programStageDataElements || []
     ).map(

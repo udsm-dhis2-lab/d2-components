@@ -13,21 +13,32 @@ import { FormMetaData, IFormMetadata } from '../form';
 })
 export class TrackerFormComponent implements OnInit {
   program = input.required<string>();
+  trackedEntity = input<string | undefined>();
   d2 = (window as unknown as D2Window).d2Web;
   trackerQuery!: BaseTrackerQuery<TrackedEntityInstance>;
   formMetaData!: IFormMetadata;
+  instance!: TrackedEntityInstance;
 
   async ngOnInit() {
     this.trackerQuery = this.d2.trackerModule.trackedEntity.setProgram(
       this.program()
     );
     const program = await this.trackerQuery.getMetaData();
-    const instance = await this.trackerQuery.create();
+
+    this.instance = this.trackedEntity()
+      ? ((
+          await this.trackerQuery
+            .setTrackedEntity(this.trackedEntity() as string)
+            .get()
+        ).data as TrackedEntityInstance) || (await this.trackerQuery.create())
+      : await this.trackerQuery.create();
 
     if (program) {
       this.formMetaData = new FormMetaData({
         programs: [program],
       }).toJson();
+
+      console.log(this.formMetaData, this.instance.enrollmentDate);
     }
   }
 

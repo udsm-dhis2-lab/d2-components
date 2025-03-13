@@ -64,6 +64,27 @@ export class ComponentsComponent {
     { name: 'John Doe', age: 28, country: 'Tanzania' },
     { name: 'Jane Smith', age: 34, country: 'Kenya' },
   ];
+
+  rasFilters = [
+    {
+      programStage: 'k4ZFqYqRNDF',
+      dataElement: 'Z4LwppfGhjI',
+      operator: '=',
+      value: 'Approved',
+    },
+    // {
+    //   programStage: 'k4ZFqYqRNDF',
+    //   dataElement: 'EBUF7spbIY1',
+    //   operator: '=',
+    //   value: 'DED',
+    // },
+    {
+      programStage: 'NtZXBym2KfD',
+      dataElement: 'lj3cQAle9Fo',
+      operator: '=',
+      value: 'Qualified',
+    },
+  ];
   
   //event program = A3olldDSHQg
   //program stage= AFdwWJ6LpRT

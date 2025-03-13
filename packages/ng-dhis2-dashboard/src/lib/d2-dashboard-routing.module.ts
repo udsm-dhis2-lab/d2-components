@@ -6,11 +6,11 @@ import { D2DashboardComponent } from './d2-dashboard.component';
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'dhis-dashboard-view',
+    redirectTo: 'ng-dashboard-view',
     pathMatch: 'full',
   },
   {
-    path: 'dhis-dashboard-view',
+    path: 'ng-dashboard-view',
     component: D2DashboardComponent,
     children: [
       {

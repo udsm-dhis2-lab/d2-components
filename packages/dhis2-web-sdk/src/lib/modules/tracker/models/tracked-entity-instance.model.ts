@@ -1,16 +1,15 @@
+import { format } from 'date-fns';
 import { camelCase, isArray, isEmpty, isPlainObject } from 'lodash';
 import {
   AttributeUtil,
   EnrollmentUtil,
-  TrackedEntityInstanceUtil,
   TrackerRelationshipUtil,
 } from '../utils';
 import { Attribute, AttributeEntity } from './attribute.model';
+import { BaseTrackerSDKModel } from './base.model';
 import { Enrollment, IEnrollment } from './enrollment.model';
 import { DHIS2Event, IDHIS2Event } from './event.model';
 import { TrackerRelationship } from './tracker-relationship.model';
-import { format } from 'date-fns';
-import { BaseTrackerSDKModel } from './base.model';
 
 export interface ProgramOwner {
   ownerOrgUnit: string;
@@ -55,6 +54,7 @@ interface TrackerFieldProperty {
     | 'ORG_UNIT';
   generated?: boolean;
   stageId?: string;
+  repeatable?: boolean;
 }
 
 const DEFAULT_FIELD_PROPERTIES: Record<string, TrackerFieldProperty> = {
@@ -159,25 +159,21 @@ export class TrackedEntityInstance
       );
 
       this.latestEnrollment = EnrollmentUtil.getLatestEnrollment(
-        this.enrollments.filter(
-          (enrollment) => enrollment.program === this.program
-        ) || []
+        this.enrollments.filter((enrollment) => {
+          if (!this.program) {
+            return true;
+          }
+
+          return enrollment.program === this.program;
+        }) || []
       ) as Enrollment;
 
-      // Spread event data values as standalone attributes of the class
-      (
-        Object.keys(this.latestEnrollment?.programStageEvents || {}) || []
-      ).forEach((stageKey) => {
-        const stageEvent = ((this.latestEnrollment?.programStageEvents || {})[
-          stageKey
-        ]?.events || [])[0];
+      if (!this.program && this.latestEnrollment) {
+        this.program = this.latestEnrollment.program;
+      }
 
-        Object.keys(stageEvent?.dataValueEntities || {}).forEach(
-          (dataValueKey) => {
-            this[dataValueKey] = stageEvent[dataValueKey];
-          }
-        );
-      });
+      // Spread event data values as standalone attributes of the class
+      this.#spreadEvents();
 
       // Spread enrollment data values as standalone attributes of the class
       Object.keys(this.latestEnrollment || {}).forEach((key) => {
@@ -185,7 +181,6 @@ export class TrackedEntityInstance
       });
 
       this.orgUnitName = this.latestEnrollment?.orgUnitName as string;
-      // this.attributes = trackedEntityInstanceObject?.['attributes'] || [];
       this.relatedEntities = TrackerRelationshipUtil.getRelationships(
         this['relationships'] || [],
         this.trackedEntity as string
@@ -193,6 +188,22 @@ export class TrackedEntityInstance
 
       this.spreadAttributes!(this.attributes || []);
     }
+  }
+
+  #spreadEvents() {
+    (
+      Object.keys(this.latestEnrollment?.programStageEvents || {}) || []
+    ).forEach((stageKey) => {
+      const stageEvent = ((this.latestEnrollment?.programStageEvents || {})[
+        stageKey
+      ]?.events || [])[0];
+
+      Object.keys(stageEvent?.dataValueEntities || {}).forEach(
+        (dataValueKey) => {
+          this[dataValueKey] = stageEvent[dataValueKey];
+        }
+      );
+    });
   }
 
   get attributeEntities(): AttributeEntity {
