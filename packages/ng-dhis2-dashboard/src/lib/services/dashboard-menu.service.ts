@@ -67,7 +67,7 @@ export class DashboardMenuService {
         const { selectedDashboardMenu, selectedDashboardSubMenu } =
           DashboardMenu.getCurrentDashboardMenu(
             dashboardMenus,
-            splitedUrl[splitedUrl.indexOf('dhis-dashboard-view') + 1]
+            splitedUrl[splitedUrl.indexOf('ng-dashboard-view') + 1]
           );
 
         this.#dashboardMenuStore.update((state) => ({
@@ -83,7 +83,7 @@ export class DashboardMenuService {
         if (selectedDashboardMenu || selectedDashboardSubMenu) {
           this.#router.navigate([
             config.rootUrl,
-            'dhis-dashboard-view',
+            'ng-dashboard-view',
             selectedDashboardSubMenu?.id || selectedDashboardMenu?.id,
           ]);
         }
@@ -145,7 +145,7 @@ export class DashboardMenuService {
 
     this.#router.navigate([
       config.rootUrl,
-      'dhis-dashboard-view',
+      'ng-dashboard-view',
       selectedDashboardSubMenu?.id || selectedDashboardMenu.id,
     ]);
   }

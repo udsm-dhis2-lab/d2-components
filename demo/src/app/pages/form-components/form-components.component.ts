@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { OrgUnitField } from '@iapps/d2-web-sdk';
+import { D2Window, OrgUnitField } from '@iapps/d2-web-sdk';
 import {
   D2FormModule,
   DateField,
@@ -16,6 +16,7 @@ import {
   imports: [D2FormModule, TrackerFormModule],
 })
 export class FormComponentsComponent {
+  d2 = (window as unknown as D2Window).d2Web;
   fields = [
     new FormField<string>({
       id: 'orgUnit',
@@ -83,5 +84,14 @@ export class FormComponentsComponent {
 
   onUpdate(event: FormValue) {
     console.log('Form updated', event.form);
+  }
+
+  async ngOnInit() {
+    const result = await this.d2.trackerModule.trackedEntity
+      .setProgram('lw9fZTamYec')
+      .setTrackedEntity('i9h2cFraNvL')
+      .get();
+
+    console.log(result.data);
   }
 }
