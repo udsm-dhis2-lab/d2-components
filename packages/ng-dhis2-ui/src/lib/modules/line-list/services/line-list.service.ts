@@ -34,13 +34,11 @@ export class LineListService {
     const dateFilter = startDate && endDate ? `&programStartDate=${startDate}&programEndDate=${endDate}` : '';
     const ouModeIdentifier = ouMode ? `&ouMode=${ouMode}`: ``;
     return this.httpClient.get(
-      `trackedEntityInstances.json?program=${programId}&ou=${orgUnit}${ouModeIdentifier}&page=${page}&pageSize=${pageSize}&fields=trackedEntityInstance,attributes[*,displayInList],enrollments[*]&totalPages=true&${filterParams}${dateFilter}`
+      `trackedEntityInstances.json?program=${programId}&ou=${orgUnit}${ouModeIdentifier}&page=${page}&pageSize=${pageSize}&fields=trackedEntityInstance,attributes[*,displayInList],enrollments[*]&totalPages=true&${filterParams}${dateFilter}&order=created:desc`
     ).pipe(
       map((response: any) => {
-        response.trackedEntityInstances.forEach((tei: any) => {
-          // Filter attributes to only include those with displayInList=true
-          tei.attributes = tei.attributes.filter((attr: any) => attr.displayInList);
-        });
+       //TODO: use the api to to order by desc
+      // response.trackedEntityInstances.reverse();
         return response;
       })
     );

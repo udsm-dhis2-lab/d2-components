@@ -16,6 +16,14 @@ export class ComponentsComponent {
     { id: 'LAST_3_MONTHS', name: 'Last 3 months' },
   ];
 
+  isButtonLoading = true;
+
+  constructor() {
+    setInterval(() => {
+      this.isButtonLoading = !this.isButtonLoading; // Toggle value every 5 seconds
+    }, 5000);
+  }
+
   onActionSelected(emitActionResponse: any) {
     console.log('ON ACTION SELECTED::: ' , JSON.stringify(emitActionResponse, null, 4));
   }
