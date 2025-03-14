@@ -1,15 +1,14 @@
-import { GeoJSONUtil, MapGeometryUtil } from '../utils';
-import { VisualizationData, LegendSet } from '../../../shared/models';
+import { AnalyticsResult } from '@iapps/function-analytics';
+import { LegendSet, VisualizationData } from '../../../shared/models';
 import {
   DigitGroupSeparator,
+  GeoJSON,
   MapLayerType,
   MapRenderingStrategy,
   TitleOption,
-  GeoJSON,
 } from '../models';
-import { GeoFeature } from '../models/geo-feature.model';
-import { MapGeometry } from '../models/geometry.model';
 import { MapGeoFeature } from '../models/map-geo-feature.model';
+import { GeoJSONUtil } from '../utils';
 
 export class MapLayer {
   id!: string;
@@ -29,7 +28,7 @@ export class MapLayer {
   dataSelections!: any[];
   geoFeatures!: MapGeoFeature[];
   features!: GeoJSON[];
-  data!: any;
+  data!: AnalyticsResult;
   mapSourceData!: any;
   fillType!: 'fill' | 'line' | 'circle';
   sourceType = 'geojson';
@@ -118,11 +117,6 @@ export class MapLayer {
     return this;
   }
 
-  // setFeatures(features: GeoJSON[]): MapLayer {
-  //   this.features = features;
-  //   return this;
-  // }
-
   async loadFeatures() {
     this.geoFeatures = await new MapGeoFeature()
       .setDataSelections(this.dataSelections)
@@ -132,17 +126,8 @@ export class MapLayer {
       .setSelections(this.dataSelections)
       .getAnalytics();
 
-    this.setMapSourceData();
-    this.features = (this.geoFeatures || [])
-      .map((geoFeature) => {
-        return GeoJSONUtil.getGeoJSON(
-          geoFeature,
-          this.data,
-          this.legendSet,
-          this.layer
-        );
-      })
-      .filter((geoJSON) => geoJSON) as GeoJSON[];
+    this.#setFeatures();
+    this.#setMapSourceData();
     this.setFillType();
   }
 
@@ -158,7 +143,7 @@ export class MapLayer {
       case 'fill':
         return {
           'fill-color': ['get', 'color'],
-          'fill-opacity': 0.75,
+          'fill-opacity': 1,
         };
 
       case 'circle': {
@@ -206,18 +191,23 @@ export class MapLayer {
     };
   }
 
-  setMapSourceData() {
+  #setFeatures() {
+    this.features = (this.geoFeatures || [])
+      .map((geoFeature) => {
+        return GeoJSONUtil.getGeoJSON(
+          geoFeature,
+          this.data,
+          this.legendSet,
+          this.layer
+        );
+      })
+      .filter((geoJSON) => geoJSON) as GeoJSON[];
+  }
+
+  #setMapSourceData() {
     this.mapSourceData = {
       type: 'FeatureCollection',
-      features: (this.geoFeatures || []).map((geoFeature) => {
-        return {
-          type: 'Feature',
-          geometry: {
-            type: 'Polygon',
-            coordinates: JSON.parse(geoFeature.co),
-          },
-        };
-      }),
+      features: this.features,
     };
   }
 }

@@ -32,4 +32,11 @@ export const appRoutes: Route[] = [
         (m) => m.FormComponentsComponent
       ),
   },
+  {
+    path: 'visualizations',
+    loadComponent: () =>
+      import('./pages/visualizations/visualizations.component').then(
+        (m) => m.VisualizationsComponent
+      ),
+  },
 ];
