@@ -37,6 +37,10 @@ export class ComponentsComponent {
     },
   ];
 
+  onApprovalSelected(data: any) {
+    console.log('these are all the tei', data);
+  }
+
   // [attributeFilters]="[
   //   { attribute: 'nfpxRnc5Rsg', operator: 'eq', value: 'A99' },
   //   { attribute: 'vZ6Eb7SovWK', operator: 'gt', value: 3 },
