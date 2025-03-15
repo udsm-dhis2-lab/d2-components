@@ -16,12 +16,12 @@ export class ComponentsComponent {
     { id: 'LAST_3_MONTHS', name: 'Last 3 months' },
   ];
 
-  isButtonLoading = true;
+  isButtonLoading: any;
 
   constructor() {
     setInterval(() => {
-      this.isButtonLoading = !this.isButtonLoading; // Toggle value every 5 seconds
-    }, 5000);
+      this.isButtonLoading = false; // Toggle value every 5 seconds
+    }, 10000);
   }
 
   onActionSelected(emitActionResponse: any) {
@@ -36,6 +36,10 @@ export class ComponentsComponent {
       value: 'New event',
     },
   ];
+
+  onApprovalSelected(data: any) {
+    console.log('these are all the tei', data);
+  }
 
   // [attributeFilters]="[
   //   { attribute: 'nfpxRnc5Rsg', operator: 'eq', value: 'A99' },
@@ -127,5 +131,6 @@ export class ComponentsComponent {
     const periodInstance = new Period().setType('Weekly').get();
 
     console.log('PERIOD LIST', periodInstance.list());
+
   }
 }

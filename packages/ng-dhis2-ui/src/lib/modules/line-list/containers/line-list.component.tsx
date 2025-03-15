@@ -67,6 +67,7 @@ export class LineListTableComponent extends ReactWrapperModule {
     { teiId: string; enrollmentId: string }[]
   >();
   @Input() isButtonLoading: boolean = false;
+  @Input() buttonLabel: string = '';
 
   setReactStateUpdaters = (updaters: any) => {
     this.reactStateUpdaters = updaters;
@@ -127,7 +128,9 @@ export class LineListTableComponent extends ReactWrapperModule {
       this.endDate
     );
     const [loading, setLoading] = useState<boolean>(false);
-    const [isButtonLoading, setIsButtonLoading] = useState<boolean>(this.isButtonLoading);
+    const [isButtonLoading, setIsButtonLoading] = useState<boolean>(
+      this.isButtonLoading
+    );
 
     // Store updaters in refs for Angular to access
     const updateRefs = useRef({
@@ -241,13 +244,14 @@ export class LineListTableComponent extends ReactWrapperModule {
     };
 
     const handleApprovalClick = () => {
+      setIsButtonLoading(true);
       this.lineListService
         .getLineListData(
           this.programId,
           this.orgUnit,
           this.programStageId,
           pager.page,
-          pager.pageSize,
+          1000, 
           this.attributeFilters,
           this.startDate,
           this.endDate,
@@ -300,7 +304,7 @@ export class LineListTableComponent extends ReactWrapperModule {
               marginBottom: 16,
             }}
           >
-            {this.isButtonLoading ? (
+            {isButtonLoading ? (
               <CircularLoader small />
             ) : (
               <Button
@@ -308,7 +312,7 @@ export class LineListTableComponent extends ReactWrapperModule {
                 onClick={handleApprovalClick}
                 primary
               >
-                Approval
+                {this.buttonLabel}
               </Button>
             )}
             {/* <Button
