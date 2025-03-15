@@ -241,8 +241,8 @@
     [actionOptions]="[
     { label: 'View', },
     ]"
-
+    (approvalSelected)="onApprovalSelected($event)"
     [showApprovalButton]="true"
-    [isButtonLoading]="isButtonLoading"
+    [buttonLabel]="'approve applicants'"
   ></app-line-list>
 </div>
