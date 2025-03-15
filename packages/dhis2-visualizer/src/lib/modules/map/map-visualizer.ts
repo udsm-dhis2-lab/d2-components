@@ -1,16 +1,17 @@
 import * as turf from '@turf/turf';
 import * as mapboxgl from 'mapbox-gl';
 
-import { flatten, uniqBy } from 'lodash';
+import { flatten } from 'lodash';
+import { MapboxStyleSwitcherControl } from 'mapbox-gl-style-switcher';
 import {
   BaseVisualizer,
   Visualizer,
 } from '../../shared/models/base-visualizer.model';
 import { MapLayer } from './layers/map-layer.model';
-import { BaseMap, LegendControl } from './models';
-import { MapboxStyleSwitcherControl } from 'mapbox-gl-style-switcher';
+import { BaseMap, LegendControl, MapLayerConfiguration } from './models';
 
 export class MapVisualizer extends BaseVisualizer implements Visualizer {
+  mapLayerConfiguration: MapLayerConfiguration = new MapLayerConfiguration();
   basemap!: BaseMap;
   layers: MapLayer[] = [];
   zoom = 5;
@@ -38,6 +39,13 @@ export class MapVisualizer extends BaseVisualizer implements Visualizer {
 
   addLayer(layer: MapLayer): MapVisualizer {
     this.layers = [...this.layers, layer];
+    return this;
+  }
+
+  setLayerConfig(mapLayerConfig: MapLayerConfiguration): MapVisualizer {
+    if (mapLayerConfig) {
+      this.mapLayerConfiguration = mapLayerConfig;
+    }
     return this;
   }
 
@@ -78,114 +86,179 @@ export class MapVisualizer extends BaseVisualizer implements Visualizer {
 
       this.map = new mapboxgl.Map({
         container: this._id,
-        style: this.style,
+        style: this.mapLayerConfiguration.hideBasemap
+          ? {
+              version: 8,
+              sources: {},
+              layers: [],
+              glyphs: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf',
+            }
+          : this.style,
         zoom: this.zoom,
         accessToken: this.accessToken,
       });
 
       this.map.fitBounds(bbox, { padding: 40 });
-      this.map.addControl(new mapboxgl.NavigationControl());
-      this.map.addControl(new MapboxStyleSwitcherControl());
+      if (!this.mapLayerConfiguration.hideNavigationControls) {
+        this.map.addControl(new mapboxgl.NavigationControl());
+      }
+
+      if (!this.mapLayerConfiguration.hideStyleSwitcher) {
+        this.map.addControl(new MapboxStyleSwitcherControl());
+      }
 
       this.map.on('load', () => {
-        this.layers.forEach((layer: MapLayer) => {
-          this.map.addSource(layer.id, {
-            type: layer.sourceType,
-            cluster: true,
-            clusterMaxZoom: 14, // Max zoom to cluster points on
-            clusterRadius: 50, // Radius of each cluster when clustering points (defaults to 50),
-            clusterProperties: {
-              // Aggregate 'value' property for clusters
-              sum: ['+', ['get', 'value']],
-            },
-            data: layer.featureCollection,
+        setTimeout(() => {
+          this.layers.forEach((layer: MapLayer) => {
+            /**
+             * Add data source to the map
+             */
+            // this.map.addSource(layer.id, {
+            //   type: layer.sourceType,
+            //   cluster: layer.sourceType === 'geojson',
+            //   clusterMaxZoom: 14,
+            //   clusterRadius: 50,
+            //   clusterProperties: {
+            //     sum: ['+', ['get', 'value']],
+            //   },
+            //   data: layer.featureCollection,
+            // });
+
+            this.map.addSource(`${layer.id}-source`, {
+              type: layer.sourceType,
+              data: layer.featureCollection,
+            });
+
+            switch (layer.fillType) {
+              case 'line': {
+                this.map.addLayer({
+                  id: layer.id,
+                  type: layer.fillType,
+                  source: `${layer.id}-source`,
+                  paint: layer.paint,
+                  layout: {},
+                });
+                break;
+              }
+
+              case 'fill': {
+                const fillColors = this.#getFillColors(layer);
+
+                /**
+                 * Set layer to present the actual data
+                 */
+                this.map.addLayer({
+                  id: layer.id,
+                  type: layer.fillType,
+                  source: `${layer.id}-source`,
+                  paint: layer.paint,
+                  layout: {},
+                });
+
+                /**
+                 * Set boundary layer to property show the boundaries around data
+                 */
+                this.map.addLayer({
+                  id: `${layer.id}-boundary`,
+                  type: 'line',
+                  source: `${layer.id}-source`,
+                  paint: {
+                    'line-color': '#000000',
+                    'line-width': 1,
+                  },
+                  layout: {
+                    'line-join': 'round',
+                    'line-cap': 'round',
+                  },
+                });
+
+                /**
+                 * Set symbol layer to show labels on map data
+                 */
+                this.map.addLayer({
+                  id: `${layer.id}-symbol`,
+                  type: 'symbol',
+                  source: `${layer.id}-source`,
+
+                  layout: {
+                    'text-field': ['get', 'name'],
+                    'text-size': 11,
+                    'text-anchor': 'center',
+                  },
+                  paint: {
+                    'text-color': '#000000',
+                    'text-halo-color': '#ffffff',
+                    'text-halo-width': 2,
+                  },
+                });
+
+                break;
+              }
+
+              default:
+                break;
+            }
+
+            // TODO: Refactor this code, not all layers will respond to this logic
+            // const circleColors = this.getCircleColors(layer);
+
+            // if (layer.fillType !== 'line') {
+            //   this.map.addLayer({
+            //     id: 'clusters',
+            //     type: 'circle',
+            //     source: layer.id,
+            //     filter: ['has', 'sum'],
+            //     paint: {
+            //       'circle-color': ['step', ['get', 'sum'], ...circleColors],
+            //       'circle-radius': [
+            //         'step',
+            //         ['get', 'sum'],
+            //         20,
+            //         100,
+            //         30,
+            //         1000,
+            //         40,
+            //       ],
+            //     },
+            //   });
+
+            // }
+
+            // if (layer.fillType !== 'line') {
+            //   this.map.addLayer({
+            //     id: `${layer.id}_unclustered`,
+            //     type: 'symbol',
+            //     filter: ['!', ['has', 'sum']],
+            //     source: layer.id,
+            //     layout: {
+            //       'text-field': ['get', 'value'],
+            //       'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+            //       'text-size': 10,
+            //     },
+            //   });
+            // }
+
+            // Add legend control
+            const legendTitle = layer.legendSet?.name;
+
+            const legends = (layer.legendSet?.legends || [])
+              .map((legend) => {
+                return {
+                  useBackgroundColor: true,
+                  backgroundColor: legend.color,
+                  label: `${legend.name} (${legend.startValue} - ${legend.endValue})`,
+                };
+              })
+              .filter((legend) => legend.label);
+
+            if (!this.mapLayerConfiguration.hideLegendControl) {
+              this.map.addControl(
+                new LegendControl(legends, legendTitle),
+                'bottom-right'
+              );
+            }
           });
-
-          // TODO: Refactor this code, not all layers will respond to this logic
-          const circleColors = flatten(
-            (layer.legendSet?.legends || [])
-              .sort((a, b) => a.startValue - b.startValue)
-              .map((legend, index) =>
-                index === 0 ? [legend.color] : [legend.startValue, legend.color]
-              )
-          );
-
-          console.log(circleColors);
-
-          if (layer.fillType !== 'line') {
-            this.map.addLayer({
-              id: 'clusters',
-              type: 'circle',
-              source: layer.id,
-              filter: ['has', 'sum'],
-              paint: {
-                'circle-color': ['step', ['get', 'sum'], ...circleColors],
-                'circle-radius': [
-                  'step',
-                  ['get', 'sum'],
-                  20,
-                  100,
-                  30,
-                  1000,
-                  40,
-                ],
-              },
-            });
-
-            this.map.addLayer({
-              id: `${layer.id}_clustered`,
-              type: 'symbol',
-              filter: ['has', 'sum'],
-              source: layer.id,
-              layout: {
-                'text-field': ['get', 'sum'],
-                'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
-                'text-size': 12,
-              },
-            });
-          }
-
-          this.map.addLayer({
-            id: layer.id,
-            type: layer.fillType,
-            filter: ['!', ['has', 'sum']],
-            source: layer.id,
-            paint: layer.paint,
-            layout: {},
-          });
-
-          if (layer.fillType !== 'line') {
-            this.map.addLayer({
-              id: `${layer.id}_unclustered`,
-              type: 'symbol',
-              filter: ['!', ['has', 'sum']],
-              source: layer.id,
-              layout: {
-                'text-field': ['get', 'value'],
-                'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
-                'text-size': 10,
-              },
-            });
-          }
-
-          // Add legend control
-          const legendTitle = layer.legendSet?.name;
-
-          const legends = (layer.legendSet?.legends || [])
-            .map((legend) => {
-              return {
-                useBackgroundColor: true,
-                backgroundColor: legend.color,
-                label: `${legend.name} (${legend.startValue} - ${legend.endValue})`,
-              };
-            })
-            .filter((legend) => legend.label);
-
-          this.map.addControl(
-            new LegendControl(legends, legendTitle),
-            'bottom-right'
-          );
-        });
+        }, 1000);
       });
 
       // new MapUtil()
@@ -204,6 +277,19 @@ export class MapVisualizer extends BaseVisualizer implements Visualizer {
       //   .setShowMapSummary(this.d2VisualizerMapControl?.showMapSummary)
       //   .draw();
     }
+  }
+
+  #getFillColors(layer: MapLayer) {
+    // ['#BD0026', 30, '#F03B20', 50, '#FD8D3C', 70, '#FEB24C', 80, '#FED976', 90, '#FFFFB2', 120, '#CCCCCC']
+    return (
+      flatten(
+        (layer.legendSet?.legends || [])
+          .sort((a, b) => a.startValue - b.startValue)
+          .map((legend, index) =>
+            index === 0 ? [legend.color] : [legend.startValue, legend.color]
+          )
+      ) || ['#FF0000', 30, '#00FF00', 60, '#0000FF']
+    );
   }
 
   override dispose(): void {
