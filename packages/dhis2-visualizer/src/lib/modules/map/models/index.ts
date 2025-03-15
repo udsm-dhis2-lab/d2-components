@@ -8,3 +8,4 @@ export * from './geometry.model';
 export * from './map-geo-feature.model';
 export * from './geo-feature.model';
 export * from './legend-control.model';
+export * from './map-layer-configuration.model';

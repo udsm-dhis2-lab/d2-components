@@ -20,6 +20,7 @@ import {
   ChartType,
   VisualizationType,
 } from './shared/models/visualization-type.model';
+import { MapLayerConfiguration } from './modules/map/models';
 
 export class D2Visualizer {
   dataSelections!: any[];
@@ -40,6 +41,9 @@ export class D2Visualizer {
   data!: any;
   visualizer!: Visualizer;
   plotOptions!: VisualizerPlotOptions;
+
+  // TODO we need to find better way to manage configuration for each visualization type
+  mapLayerConfig!: MapLayerConfiguration;
 
   // Table Configuration
   tableDashboardItem: TableDashboardItem | any;
@@ -279,6 +283,14 @@ export class D2Visualizer {
     return this;
   }
 
+  setMapLayerConfig(mapLayerConfig: MapLayerConfiguration): D2Visualizer {
+    if (this.visualizationType === 'MAP') {
+      this.mapLayerConfig = mapLayerConfig;
+    }
+
+    return this;
+  }
+
   /**
    *
    * @returns
@@ -383,7 +395,8 @@ export class D2Visualizer {
       case 'MAP': {
         this.visualizer = new MapVisualizer()
           .setId(this.id)
-          .setBaseMap(this.config?.config?.basemap);
+          .setBaseMap(this.config?.config?.basemap)
+          .setLayerConfig(this.mapLayerConfig);
 
         (this.config?.config?.mapViews || []).forEach((mapView: any) => {
           const dataSelections = _.unionBy(
