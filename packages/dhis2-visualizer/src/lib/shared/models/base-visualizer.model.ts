@@ -13,6 +13,7 @@ export class BaseVisualizer {
   protected _dataSelections: any;
   protected _trackedEntityInstances?: any[];
   protected _program: any;
+  protected _baseUrl = '../../..';
   /**
    *
    * @param id
@@ -70,6 +71,11 @@ export class BaseVisualizer {
    */
   setSelections(dataSelections: any[]) {
     this._dataSelections = dataSelections;
+    return this;
+  }
+
+  setBaseUrl(baseUrl: string) {
+    this._baseUrl = baseUrl;
     return this;
   }
 
