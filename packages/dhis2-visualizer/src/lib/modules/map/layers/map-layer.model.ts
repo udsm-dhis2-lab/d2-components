@@ -36,6 +36,7 @@ export class MapLayer {
   mapSourceData!: any;
   fillType!: 'fill' | 'line' | 'circle';
   sourceType = 'geojson';
+  baseUrl = '../../..';
   [x: string]: any;
 
   constructor(props?: Partial<MapLayer>) {
@@ -125,15 +126,20 @@ export class MapLayer {
     return this;
   }
 
-  setDataSelections(dataSelections: any): any {
+  setDataSelections(dataSelections: any): MapLayer {
     this.dataSelections = dataSelections;
+    return this;
+  }
+
+  setBaseUrl(baseUrl: string): MapLayer {
+    this.baseUrl = baseUrl;
     return this;
   }
 
   async loadFeatures() {
     this.geoFeatures = await new MapGeoFeature()
       .setDataSelections(this.dataSelections)
-      .get();
+      .get(this.baseUrl);
 
     this.data = await new VisualizationData()
       .setSelections(this.dataSelections)
