@@ -406,11 +406,7 @@ export class D2Visualizer {
           );
 
           (this.visualizer as MapVisualizer).addLayer(
-            new MapLayer()
-              .setId(mapView.id)
-              .setType(mapView.layer)
-              .setLegendSet(mapView.legendSet)
-              .setDataSelections(dataSelections)
+            new MapLayer(mapView).setDataSelections(dataSelections)
           );
         });
 

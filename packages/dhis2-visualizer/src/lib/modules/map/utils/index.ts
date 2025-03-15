@@ -3,3 +3,4 @@
 // license that can be found in the LICENSE file.
 export * from './map-geometry.util';
 export * from './geo-json.util';
+export * from './legend-set.util';
