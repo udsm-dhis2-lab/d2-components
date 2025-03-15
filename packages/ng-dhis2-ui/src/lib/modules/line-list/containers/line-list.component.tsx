@@ -244,6 +244,7 @@ export class LineListTableComponent extends ReactWrapperModule {
     };
 
     const handleApprovalClick = () => {
+      setIsButtonLoading(true);
       this.lineListService
         .getLineListData(
           this.programId,
