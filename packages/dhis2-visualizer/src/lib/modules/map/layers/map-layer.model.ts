@@ -8,7 +8,7 @@ import {
   TitleOption,
 } from '../models';
 import { MapGeoFeature } from '../models/map-geo-feature.model';
-import { GeoJSONUtil } from '../utils';
+import { GeoJSONUtil, LegendSetUtil } from '../utils';
 
 export class MapLayer {
   id!: string;
@@ -24,6 +24,10 @@ export class MapLayer {
   digitGroupSeparator!: DigitGroupSeparator;
   titleOption!: TitleOption;
   subtitleOption!: TitleOption;
+  method!: number;
+  classes!: number;
+  colorScale!: string;
+  noDataColor!: string;
   legendSet!: LegendSet;
   dataSelections!: any[];
   geoFeatures!: MapGeoFeature[];
@@ -32,6 +36,15 @@ export class MapLayer {
   mapSourceData!: any;
   fillType!: 'fill' | 'line' | 'circle';
   sourceType = 'geojson';
+  [x: string]: any;
+
+  constructor(props?: Partial<MapLayer>) {
+    if (props) {
+      Object.keys(props).forEach((key) => {
+        this[key] = props[key];
+      });
+    }
+  }
 
   setId(id: string) {
     this.id = id;
@@ -192,6 +205,18 @@ export class MapLayer {
   }
 
   #setFeatures() {
+    if (!this.legendSet) {
+      this.legendSet = LegendSetUtil.generateFromColorScale(
+        {
+          method: this.method,
+          colorScale: this.colorScale,
+          classes: this.classes,
+          noDataColor: this.noDataColor,
+        },
+        this.data
+      );
+    }
+
     this.features = (this.geoFeatures || [])
       .map((geoFeature) => {
         return GeoJSONUtil.getGeoJSON(

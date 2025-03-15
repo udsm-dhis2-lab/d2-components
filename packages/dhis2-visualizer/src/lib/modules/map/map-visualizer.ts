@@ -253,7 +253,7 @@ export class MapVisualizer extends BaseVisualizer implements Visualizer {
 
             if (!this.mapLayerConfiguration.hideLegendControl) {
               this.map.addControl(
-                new LegendControl(legends, legendTitle),
+                new LegendControl(legends, legendTitle || 'Legend'),
                 'bottom-right'
               );
             }
