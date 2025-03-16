@@ -18,6 +18,7 @@ import {
   TableFoot,
   TableHead,
   Button,
+  InputField,
 } from '@dhis2/ui';
 import React, { useEffect, useRef, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
@@ -131,6 +132,9 @@ export class LineListTableComponent extends ReactWrapperModule {
     const [isButtonLoading, setIsButtonLoading] = useState<boolean>(
       this.isButtonLoading
     );
+    const [filteredColumns, setFilteredColumns] =
+      useState<ColumnDefinition[]>();
+    const [inputValues, setInputValues] = useState<Record<string, string>>({});
 
     // Store updaters in refs for Angular to access
     const updateRefs = useRef({
@@ -173,7 +177,8 @@ export class LineListTableComponent extends ReactWrapperModule {
           this.programStageId,
           pager.page,
           pager.pageSize,
-          this.attributeFilters,
+          attributeFiltersState,
+          // this.attributeFilters,
           this.startDate,
           this.endDate,
           this.ouMode
@@ -182,6 +187,7 @@ export class LineListTableComponent extends ReactWrapperModule {
           let entityColumns: ColumnDefinition[] = [];
           let responsePager: Pager;
           let entityData: TableRow[] = [];
+          let filteredDataColumns: ColumnDefinition[] = [];
 
           if (this.programStageId) {
             responsePager = (response.data as EventsResponse).pager;
@@ -195,14 +201,22 @@ export class LineListTableComponent extends ReactWrapperModule {
           } else if ('trackedEntityInstances' in response.data) {
             responsePager = (response.data as TrackedEntityInstancesResponse)
               .pager;
-            const { columns, data } = getTrackedEntityData(
-              response,
-              this.programId,
-              pager,
-              this.filters
-            );
+            const { columns, data, filteredEntityColumns } =
+              getTrackedEntityData(
+                response,
+                this.programId,
+                pager,
+                this.filters
+              );
             entityColumns = columns;
             entityData = data;
+            //  setFilteredColumns(filteredEntityColumns);
+            // Ensure filter inputs do not disappear when no data is returned
+            // If filteredEntityColumns is empty, keep the previous columns instead of clearing them
+            setFilteredColumns((prev) =>
+              filteredEntityColumns.length > 0 ? filteredEntityColumns : prev
+            );
+            filteredDataColumns = filteredEntityColumns;
           } else {
             responsePager = (response.data as EventsResponse).pager;
             const { columns, data } = getEventData(response, pager);
@@ -251,7 +265,7 @@ export class LineListTableComponent extends ReactWrapperModule {
           this.orgUnit,
           this.programStageId,
           pager.page,
-          1000, 
+          1000,
           this.attributeFilters,
           this.startDate,
           this.endDate,
@@ -290,8 +304,121 @@ export class LineListTableComponent extends ReactWrapperModule {
         });
     };
 
+    // const handleInputChange = (key: string, value: string) => {
+    //   setInputValues((prevValues) => ({
+    //     ...prevValues,
+    //     [key]: value ?? '', // Ensure no undefined values
+    //   }));
+    // };
+
+    // if (!filteredColumns || filteredColumns.length === 0) {
+    //   return <div>No fields available</div>;
+    // }
+
+    const handleInputChange = (key: string, value: string) => {
+      setInputValues((prevValues) => ({
+        ...prevValues,
+        [key]: value ?? '',
+      }));
+
+      setAttributeFiltersState((prevFilters = []) => {
+        // Remove old filter for this key
+        const filteredFilters = prevFilters.filter((f) => f.attribute !== key);
+
+        // Only add new filter if value is not empty
+        const updatedFilters = value.trim()
+          ? [...filteredFilters, { attribute: key, operator: 'like', value }]
+          : filteredFilters;
+
+        console.log(`Updated Filters:`, updatedFilters); // Debugging
+
+        return updatedFilters;
+      });
+
+      // setAttributeFiltersState((prevFilters = []) => {
+      //   // Check if attribute already exists
+      //   const existingFilterIndex = prevFilters.findIndex(
+      //     (f) => f.attribute === key
+      //   );
+
+      //   // Create a new filter object
+      //   const newFilter = { attribute: key, operator: 'like', value };
+
+      //   if (existingFilterIndex !== -1) {
+      //     // If attribute exists, update its value
+      //     const updatedFilters = [...prevFilters];
+      //     updatedFilters[existingFilterIndex] = newFilter;
+      //     console.log(`Updated Filters:`, updatedFilters); // Log updated filter list
+      //     return updatedFilters;
+      //   } else {
+      //     // If attribute doesn't exist, add a new object
+      //     return [...prevFilters, newFilter];
+      //   }
+      // });
+    };
+
+    console.log(
+      'these are the filtered columns which have the attributes neede',
+      filteredColumns
+    );
+
     return (
       <div>
+        {/* <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+      {filteredColumns?.map(({ label, key }) => (
+        <InputField
+          key={key}
+          label={label}
+          value={inputValues?.[key] || ""} 
+          onChange={(e: { target: { value: any; }; }) => handleInputChange(key, e.target.value)}
+        />
+      ))}
+    </div> */}
+
+        {/* <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          {(filteredColumns ?? []).map(({ label, key }) => (
+            <InputField
+              key={key}
+              label={label}
+              value={inputValues[key] || ''}
+              onChange={(e: { target: { value: any }; value: any }) => {
+                console.log(`Event for key "${key}":`, e);
+
+                // Support both standard event structure and DHIS2 UI value objects
+                const newValue = e?.target?.value ?? e?.value ?? '';
+
+                handleInputChange(key, newValue);
+              }}
+            />
+          ))}
+        </div> */}
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          {(filteredColumns ?? []).map(({ label, key }) => (
+            <InputField
+              key={key}
+              label={label}
+              value={inputValues[key] || ''}
+              onChange={(
+                e: React.ChangeEvent<HTMLInputElement> | { value?: string }
+              ) => {
+                console.log(`Event for key "${key}":`, e);
+
+                // Check if it's a standard event with target.value
+                if ('target' in e && e.target) {
+                  handleInputChange(
+                    key,
+                    (e as React.ChangeEvent<HTMLInputElement>).target.value
+                  );
+                }
+                // Check if it's a DHIS2 UI event with direct value
+                else if ('value' in e) {
+                  handleInputChange(key, e.value ?? '');
+                }
+              }}
+            />
+          ))}
+        </div>
+
         {this.showApprovalButton && (
           <div
             style={{
@@ -353,7 +480,7 @@ export class LineListTableComponent extends ReactWrapperModule {
                 ))}
               </DataTableRow>
             </TableHead>
-            <TableBody>
+            {/* <TableBody>
               {data.map((row) => (
                 <DataTableRow key={row.index}>
                   {columns.map((col) => (
@@ -370,7 +497,42 @@ export class LineListTableComponent extends ReactWrapperModule {
                   ))}
                 </DataTableRow>
               ))}
+            </TableBody> */}
+            <TableBody>
+              {data.length > 0 ? (
+                data.map((row) => (
+                  <DataTableRow key={row.index}>
+                    {columns.map((col) => (
+                      <DataTableCell key={col.key}>
+                        {col.key === 'actions' ? (
+                          <DropdownMenu
+                            dropdownOptions={getDropdownOptions(row)}
+                            onClick={(option) => option.onClick?.()}
+                          />
+                        ) : (
+                          row[col.key] || '--' // Display '--' if value is undefined or null
+                        )}
+                      </DataTableCell>
+                    ))}
+                  </DataTableRow>
+                ))
+              ) : (
+                <DataTableRow>
+                  <DataTableCell
+                    colSpan={columns.length}
+                    style={{
+                      textAlign: 'center',
+                      fontWeight: 'bold',
+                      color: 'grey',
+                      padding: '20px',
+                    }}
+                  >
+                    No data found
+                  </DataTableCell>
+                </DataTableRow>
+              )}
             </TableBody>
+
             <TableFoot>
               <DataTableRow>
                 {/* <DataTableCell colSpan={columns.length}> */}
