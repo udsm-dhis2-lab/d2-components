@@ -19,6 +19,7 @@ import {
   TableHead,
   Button,
   InputField,
+  IconFilter16,
 } from '@dhis2/ui';
 import React, { useEffect, useRef, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
@@ -58,7 +59,8 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() endDate?: string;
   @Input() filters?: FilterConfig[];
   @Input() ouMode?: string;
-  @Input() showApprovalButton: boolean = false;
+  @Input() dispatchTeis: boolean = false;
+  @Input() showFilterButton: boolean = false;
   @Output() actionSelected = new EventEmitter<{
     action: string;
     row: TableRow;
@@ -135,6 +137,7 @@ export class LineListTableComponent extends ReactWrapperModule {
     const [filteredColumns, setFilteredColumns] =
       useState<ColumnDefinition[]>();
     const [inputValues, setInputValues] = useState<Record<string, string>>({});
+    const [filters, setFilters] = useState<boolean>(false);
 
     // Store updaters in refs for Angular to access
     const updateRefs = useRef({
@@ -392,34 +395,95 @@ export class LineListTableComponent extends ReactWrapperModule {
             />
           ))}
         </div> */}
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          {(filteredColumns ?? []).map(({ label, key }) => (
-            <InputField
-              key={key}
-              label={label}
-              value={inputValues[key] || ''}
-              onChange={(
-                e: React.ChangeEvent<HTMLInputElement> | { value?: string }
-              ) => {
-                console.log(`Event for key "${key}":`, e);
+        <div
+          style={{
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            gap: 8,
+            padding: 8,
+            marginBottom: 16,
+          }}
+        >
+          {this.dispatchTeis &&
+            (isButtonLoading ? (
+              <CircularLoader small />
+            ) : (
+              <Button
+                style={{
+                  backgroundColor: '#3b82f6', // Blue color
+                  color: 'white',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                }}
+                onClick={handleApprovalClick}
+                primary
+              >
+                {this.buttonLabel}
+              </Button>
+            ))}
 
-                // Check if it's a standard event with target.value
-                if ('target' in e && e.target) {
-                  handleInputChange(
-                    key,
-                    (e as React.ChangeEvent<HTMLInputElement>).target.value
-                  );
-                }
-                // Check if it's a DHIS2 UI event with direct value
-                else if ('value' in e) {
-                  handleInputChange(key, e.value ?? '');
-                }
+          {this.showFilterButton && (
+            <Button
+              style={{
+                backgroundColor: '#6b7280', // Gray color
+                color: 'white',
+                padding: '8px 16px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
               }}
-            />
-          ))}
+              onClick={() => {
+                setFilters(!filters);
+              }}
+            >
+              <IconFilter16 />
+              {filters ? 'Hide Filters' : 'Show Filters'}
+            </Button>
+          )}
         </div>
 
-        {this.showApprovalButton && (
+        {filters && (
+          <div
+            style={{
+              display: 'flex',
+              gap: '10px',
+              flexWrap: 'wrap',
+              paddingBottom: '16px',
+            }}
+          >
+            {(filteredColumns ?? []).map(({ label, key }) => (
+              <InputField
+                key={key}
+                label={label}
+                value={inputValues[key] || ''}
+                onChange={(
+                  e: React.ChangeEvent<HTMLInputElement> | { value?: string }
+                ) => {
+                  console.log(`Event for key "${key}":`, e);
+
+                  // Check if it's a standard event with target.value
+                  if ('target' in e && e.target) {
+                    handleInputChange(
+                      key,
+                      (e as React.ChangeEvent<HTMLInputElement>).target.value
+                    );
+                  }
+                  // Check if it's an event with direct value
+                  else if ('value' in e) {
+                    handleInputChange(key, e.value ?? '');
+                  }
+                }}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* {this.showApprovalButton && (
           <div
             style={{
               width: '100%',
@@ -442,15 +506,9 @@ export class LineListTableComponent extends ReactWrapperModule {
                 {this.buttonLabel}
               </Button>
             )}
-            {/* <Button
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-              onClick={handleApprovalClick}
-              primary
-            >
-              Approval
-            </Button> */}
           </div>
-        )}
+        )} */}
+
         {loading ? (
           <div
             style={{
