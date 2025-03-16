@@ -41,6 +41,7 @@ export class D2Visualizer {
   data!: any;
   visualizer!: Visualizer;
   plotOptions!: VisualizerPlotOptions;
+  baseUrl = '../../..';
 
   // TODO we need to find better way to manage configuration for each visualization type
   mapLayerConfig!: MapLayerConfiguration;
@@ -299,6 +300,11 @@ export class D2Visualizer {
     return this.mapDashboardExtensionItem;
   }
 
+  setBaseUrl(baseUrl: string): D2Visualizer {
+    this.baseUrl = baseUrl;
+    return this;
+  }
+
   /**
    *
    * @returns
@@ -395,6 +401,7 @@ export class D2Visualizer {
       case 'MAP': {
         this.visualizer = new MapVisualizer()
           .setId(this.id)
+          .setBaseUrl(this.baseUrl)
           .setBaseMap(this.config?.config?.basemap)
           .setLayerConfig(this.mapLayerConfig);
 
@@ -406,11 +413,7 @@ export class D2Visualizer {
           );
 
           (this.visualizer as MapVisualizer).addLayer(
-            new MapLayer()
-              .setId(mapView.id)
-              .setType(mapView.layer)
-              .setLegendSet(mapView.legendSet)
-              .setDataSelections(dataSelections)
+            new MapLayer(mapView).setDataSelections(dataSelections)
           );
         });
 

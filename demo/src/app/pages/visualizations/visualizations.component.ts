@@ -2,6 +2,62 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { D2Visualizer, MapLayerConfiguration } from '@iapps/d2-visualizer';
 
+const legendSet = {
+  name: 'ANC Coverage',
+  legends: [
+    {
+      name: 'High Plus',
+      startValue: 80,
+      endValue: 90,
+      color: '#FED976',
+      id: 'LHzMx7m1mo7',
+    },
+    {
+      name: 'Great',
+      startValue: 90,
+      endValue: 120,
+      color: '#FFFFB2',
+      id: 'nFM35aXnjG4',
+    },
+    {
+      name: 'Medium Pl.',
+      startValue: 50,
+      endValue: 70,
+      color: '#FD8D3C',
+      id: 'R09fMgqwz7l',
+    },
+    {
+      name: 'Medium',
+      startValue: 30,
+      endValue: 50,
+      color: '#F03B20',
+      id: 'fyn331OKcrc',
+    },
+    {
+      name: 'Invalid',
+      startValue: 120,
+      endValue: 990,
+      color: '#CCCCCC',
+      id: 'uLeRgauKbmk',
+    },
+    {
+      name: 'Low',
+      startValue: 0,
+      endValue: 30,
+      color: '#BD0026',
+      id: 'YCSOboULcBM',
+    },
+    {
+      name: 'High',
+      startValue: 70,
+      endValue: 80,
+      color: '#FEB24C',
+      id: 'XMzyLoC0hdi',
+    },
+  ],
+  id: 'fqs276KXCXi',
+};
+
 @Component({
   selector: 'app-visualizations',
   templateUrl: './visualizations.component.html',
@@ -187,61 +243,8 @@ export class VisualizationsComponent {
             },
             layer: 'thematic',
             method: 1,
-            legendSet: {
-              name: 'ANC Coverage',
-              legends: [
-                {
-                  name: 'High Plus',
-                  startValue: 80,
-                  endValue: 90,
-                  color: '#FED976',
-                  id: 'LHzMx7m1mo7',
-                },
-                {
-                  name: 'Great',
-                  startValue: 90,
-                  endValue: 120,
-                  color: '#FFFFB2',
-                  id: 'nFM35aXnjG4',
-                },
-                {
-                  name: 'Medium Pl.',
-                  startValue: 50,
-                  endValue: 70,
-                  color: '#FD8D3C',
-                  id: 'R09fMgqwz7l',
-                },
-                {
-                  name: 'Medium',
-                  startValue: 30,
-                  endValue: 50,
-                  color: '#F03B20',
-                  id: 'fyn331OKcrc',
-                },
-                {
-                  name: 'Invalid',
-                  startValue: 120,
-                  endValue: 990,
-                  color: '#CCCCCC',
-                  id: 'uLeRgauKbmk',
-                },
-                {
-                  name: 'Low',
-                  startValue: 0,
-                  endValue: 30,
-                  color: '#BD0026',
-                  id: 'YCSOboULcBM',
-                },
-                {
-                  name: 'High',
-                  startValue: 70,
-                  endValue: 80,
-                  color: '#FEB24C',
-                  id: 'XMzyLoC0hdi',
-                },
-              ],
-              id: 'fqs276KXCXi',
-            },
+            classes: 5,
+            colorScale: '#fee5d9,#fcae91,#fb6a4a,#de2d26,#a50f15',
             opacity: 0.9,
             eventClustering: false,
             eventPointRadius: 0,
