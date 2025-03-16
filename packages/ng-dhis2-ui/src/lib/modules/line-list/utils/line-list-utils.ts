@@ -10,18 +10,16 @@ import {
 import { getFilteredTrackedEntityInstances } from './filter-builder';
 
 export const getProgramStageData = (
-  response: LineListResponse, 
-  programStageId: string, 
+  response: LineListResponse,
+  programStageId: string,
   pager: any
-): { columns: ColumnDefinition[], data: TableRow[] } => {
+): { columns: ColumnDefinition[]; data: TableRow[] } => {
   const events = (response.data as EventsResponse).events;
   const allDataElements = new Set<string>();
   events.forEach((event: any) => {
-    event.dataValues.forEach((dv: any) =>
-      allDataElements.add(dv.dataElement)
-    );
+    event.dataValues.forEach((dv: any) => allDataElements.add(dv.dataElement));
   });
-  
+
   const stageFromMetaData = response.metadata.programStages.find(
     (stage: any) => stage.id === programStageId
   );
@@ -39,7 +37,7 @@ export const getProgramStageData = (
       key: dataElementId,
     })
   );
-  
+
   const dataElementsData: TableRow[] = events.map((event: any, idx: number) => {
     let row: TableRow = {
       event: event.event,
@@ -48,9 +46,7 @@ export const getProgramStageData = (
     allDataElements.forEach(
       (dataElementId: string) => (row[dataElementId] = '')
     );
-    event.dataValues.forEach(
-      (dv: any) => (row[dv.dataElement] = dv.value)
-    );
+    event.dataValues.forEach((dv: any) => (row[dv.dataElement] = dv.value));
     return row;
   });
 
@@ -62,20 +58,32 @@ export const getTrackedEntityData = (
   programId: string,
   pager: any,
   filters?: FilterConfig[]
-): { columns: ColumnDefinition[]; data: TableRow[] } => {
+): { columns: ColumnDefinition[]; data: TableRow[]; filteredEntityColumns: ColumnDefinition[] } => {
   let teis = (response.data as TrackedEntityInstancesResponse)
     .trackedEntityInstances;
-  
-  let programMetaData = response.metadata.programTrackedEntityAttributes;
- 
-const programAttributesMap = programMetaData.reduce((acc: { [key: string]: string }, attribute: any) => {
-  if (attribute.displayInList) { 
-    acc[attribute.id] = attribute.displayName;
-  }
-  return acc;
-}, {});
 
-  console.log('metadata',  programAttributesMap);
+  let programMetaData = response.metadata.programTrackedEntityAttributes;
+  //let progrmaMetaDataAttributesMap = programMetaData.reduce
+
+  const mappedProgramMetadataAttributes = programMetaData.map((attr) => ({
+    displayInList: attr.displayInList,
+    searchable: attr.searchable,
+    id: attr.trackedEntityAttribute.id,
+  }));
+
+  console.log('the mapped attributes', mappedProgramMetadataAttributes);
+
+  const programAttributesMap = programMetaData.reduce(
+    (acc: { [key: string]: string }, attribute: any) => {
+      if (attribute.displayInList) {
+        acc[attribute.id] = attribute.displayName;
+      }
+      return acc;
+    },
+    {}
+  );
+
+  console.log('metadat attributes', programMetaData);
   if (filters) {
     teis = getFilteredTrackedEntityInstances(teis, filters);
   }
@@ -96,7 +104,7 @@ const programAttributesMap = programMetaData.reduce((acc: { [key: string]: strin
   // const filteredAttributes = new Set(
   //   [...allAttributes].filter((attributeId) => programAttributesMap[attributeId])
   // );
-  
+
   // console.log('Filtered All Attributes:', filteredAttributes);
 
   let entityColumns = Array.from(allAttributes).map((attrId: string) => {
@@ -119,9 +127,29 @@ const programAttributesMap = programMetaData.reduce((acc: { [key: string]: strin
 
   entityColumns = entityColumns.filter((column) => {
     // Check if the column label is part of any value in programAttributesMap
-    return Object.values(programAttributesMap).some((value: string) => value.includes(column.label));
+    return Object.values(programAttributesMap).some((value: string) =>
+      value.includes(column.label)
+    );
   });
-  
+
+  const searchableAttributes =  mappedProgramMetadataAttributes
+    .filter((attr) => attr.searchable && attr.displayInList)
+    .map((attr) => ({
+      //  label: attr.trackedEntityAttribute.displayName,
+      key: attr.id,
+    }));
+
+  // Extract keys from searchableAttributes for quick lookup
+  const searchableKeys = new Set(searchableAttributes.map((attr) => attr.key));
+
+  // Filter entityColumns to keep only those whose key exists in searchableAttributes
+  const filteredEntityColumns = entityColumns.filter((column) =>
+    searchableKeys.has(column.key)
+  );
+
+  console.log('show the filtered values', filteredEntityColumns);
+
+  console.log('the answer is ', searchableAttributes);
 
   const attributesData = teis.map((tei: any, idx: number) => {
     let row: TableRow = {
@@ -142,8 +170,8 @@ const programAttributesMap = programMetaData.reduce((acc: { [key: string]: strin
 
     return row;
   });
-
-  return { columns: entityColumns, data: attributesData };
+  console.log('attributes to use', entityColumns);
+  return { columns: entityColumns, data: attributesData, filteredEntityColumns: filteredEntityColumns };
 };
 
 export const getEventData = (

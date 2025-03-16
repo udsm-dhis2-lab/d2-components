@@ -241,7 +241,10 @@
     [actionOptions]="[
     { label: 'View', },
     ]"
-    [filters]="rasFilters"
+    (approvalSelected)="onApprovalSelected($event)"
     [showApprovalButton]="true"
+    [buttonLabel]="'approve applicants'"
+    [isButtonLoading]="isButtonLoading"
+    [attributeFilters]="attributeFilters"
   ></app-line-list>
 </div>

@@ -20,6 +20,7 @@ import {
   ChartType,
   VisualizationType,
 } from './shared/models/visualization-type.model';
+import { MapLayerConfiguration } from './modules/map/models';
 
 export class D2Visualizer {
   dataSelections!: any[];
@@ -40,6 +41,10 @@ export class D2Visualizer {
   data!: any;
   visualizer!: Visualizer;
   plotOptions!: VisualizerPlotOptions;
+  baseUrl = '../../..';
+
+  // TODO we need to find better way to manage configuration for each visualization type
+  mapLayerConfig!: MapLayerConfiguration;
 
   // Table Configuration
   tableDashboardItem: TableDashboardItem | any;
@@ -279,12 +284,25 @@ export class D2Visualizer {
     return this;
   }
 
+  setMapLayerConfig(mapLayerConfig: MapLayerConfiguration): D2Visualizer {
+    if (this.visualizationType === 'MAP') {
+      this.mapLayerConfig = mapLayerConfig;
+    }
+
+    return this;
+  }
+
   /**
    *
    * @returns
    */
   getDashboardExtensionItem(): MapDashboardExtensionItem {
     return this.mapDashboardExtensionItem;
+  }
+
+  setBaseUrl(baseUrl: string): D2Visualizer {
+    this.baseUrl = baseUrl;
+    return this;
   }
 
   /**
@@ -383,7 +401,9 @@ export class D2Visualizer {
       case 'MAP': {
         this.visualizer = new MapVisualizer()
           .setId(this.id)
-          .setBaseMap(this.config?.config?.basemap);
+          .setBaseUrl(this.baseUrl)
+          .setBaseMap(this.config?.config?.basemap)
+          .setLayerConfig(this.mapLayerConfig);
 
         (this.config?.config?.mapViews || []).forEach((mapView: any) => {
           const dataSelections = _.unionBy(
@@ -393,11 +413,7 @@ export class D2Visualizer {
           );
 
           (this.visualizer as MapVisualizer).addLayer(
-            new MapLayer()
-              .setId(mapView.id)
-              .setType(mapView.layer)
-              .setLegendSet(mapView.legendSet)
-              .setDataSelections(dataSelections)
+            new MapLayer(mapView).setDataSelections(dataSelections)
           );
         });
 

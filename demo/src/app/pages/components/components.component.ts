@@ -16,6 +16,22 @@ export class ComponentsComponent {
     { id: 'LAST_3_MONTHS', name: 'Last 3 months' },
   ];
 
+  attributeFilters = [
+    {
+      attribute: 'tgGvHgQgtQ0',
+      operator: 'eq',
+      value: `ABC`,
+    },
+  ];
+
+  isButtonLoading: any;
+
+  constructor() {
+    setInterval(() => {
+      this.isButtonLoading = false; // Toggle value every 5 seconds
+    }, 10000);
+  }
+
   onActionSelected(emitActionResponse: any) {
     console.log('ON ACTION SELECTED::: ' , JSON.stringify(emitActionResponse, null, 4));
   }
@@ -28,6 +44,10 @@ export class ComponentsComponent {
       value: 'New event',
     },
   ];
+
+  onApprovalSelected(data: any) {
+    console.log('these are all the tei', data);
+  }
 
   // [attributeFilters]="[
   //   { attribute: 'nfpxRnc5Rsg', operator: 'eq', value: 'A99' },
@@ -119,5 +139,6 @@ export class ComponentsComponent {
     const periodInstance = new Period().setType('Weekly').get();
 
     console.log('PERIOD LIST', periodInstance.list());
+
   }
 }
