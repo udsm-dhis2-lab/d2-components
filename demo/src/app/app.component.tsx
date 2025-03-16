@@ -55,6 +55,14 @@ export class AppComponent {
             this.onSelectPage(e);
           }}
         />
+        <MenuItem
+          label="Visualizations"
+          value="visualizations"
+          className="menu-background"
+          onClick={(e: any) => {
+            this.onSelectPage(e);
+          }}
+        />
       </Menu>
     </div>
   );

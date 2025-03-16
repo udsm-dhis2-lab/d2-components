@@ -1,15 +1,14 @@
-import { GeoJSONUtil, MapGeometryUtil } from '../utils';
-import { VisualizationData, LegendSet } from '../../../shared/models';
+import { AnalyticsResult } from '@iapps/function-analytics';
+import { LegendSet, VisualizationData } from '../../../shared/models';
 import {
   DigitGroupSeparator,
+  GeoJSON,
   MapLayerType,
   MapRenderingStrategy,
   TitleOption,
-  GeoJSON,
 } from '../models';
-import { GeoFeature } from '../models/geo-feature.model';
-import { MapGeometry } from '../models/geometry.model';
 import { MapGeoFeature } from '../models/map-geo-feature.model';
+import { GeoJSONUtil, LegendSetUtil } from '../utils';
 
 export class MapLayer {
   id!: string;
@@ -25,14 +24,28 @@ export class MapLayer {
   digitGroupSeparator!: DigitGroupSeparator;
   titleOption!: TitleOption;
   subtitleOption!: TitleOption;
+  method!: number;
+  classes!: number;
+  colorScale!: string;
+  noDataColor!: string;
   legendSet!: LegendSet;
   dataSelections!: any[];
   geoFeatures!: MapGeoFeature[];
   features!: GeoJSON[];
-  data!: any;
+  data!: AnalyticsResult;
   mapSourceData!: any;
   fillType!: 'fill' | 'line' | 'circle';
   sourceType = 'geojson';
+  baseUrl = '../../..';
+  [x: string]: any;
+
+  constructor(props?: Partial<MapLayer>) {
+    if (props) {
+      Object.keys(props).forEach((key) => {
+        this[key] = props[key];
+      });
+    }
+  }
 
   setId(id: string) {
     this.id = id;
@@ -113,36 +126,27 @@ export class MapLayer {
     return this;
   }
 
-  setDataSelections(dataSelections: any): any {
+  setDataSelections(dataSelections: any): MapLayer {
     this.dataSelections = dataSelections;
     return this;
   }
 
-  // setFeatures(features: GeoJSON[]): MapLayer {
-  //   this.features = features;
-  //   return this;
-  // }
+  setBaseUrl(baseUrl: string): MapLayer {
+    this.baseUrl = baseUrl;
+    return this;
+  }
 
   async loadFeatures() {
     this.geoFeatures = await new MapGeoFeature()
       .setDataSelections(this.dataSelections)
-      .get();
+      .get(this.baseUrl);
 
     this.data = await new VisualizationData()
       .setSelections(this.dataSelections)
       .getAnalytics();
 
-    this.setMapSourceData();
-    this.features = (this.geoFeatures || [])
-      .map((geoFeature) => {
-        return GeoJSONUtil.getGeoJSON(
-          geoFeature,
-          this.data,
-          this.legendSet,
-          this.layer
-        );
-      })
-      .filter((geoJSON) => geoJSON) as GeoJSON[];
+    this.#setFeatures();
+    this.#setMapSourceData();
     this.setFillType();
   }
 
@@ -158,7 +162,7 @@ export class MapLayer {
       case 'fill':
         return {
           'fill-color': ['get', 'color'],
-          'fill-opacity': 0.75,
+          'fill-opacity': 1,
         };
 
       case 'circle': {
@@ -206,18 +210,35 @@ export class MapLayer {
     };
   }
 
-  setMapSourceData() {
+  #setFeatures() {
+    if (!this.legendSet) {
+      this.legendSet = LegendSetUtil.generateFromColorScale(
+        {
+          method: this.method,
+          colorScale: this.colorScale,
+          classes: this.classes,
+          noDataColor: this.noDataColor,
+        },
+        this.data
+      );
+    }
+
+    this.features = (this.geoFeatures || [])
+      .map((geoFeature) => {
+        return GeoJSONUtil.getGeoJSON(
+          geoFeature,
+          this.data,
+          this.legendSet,
+          this.layer
+        );
+      })
+      .filter((geoJSON) => geoJSON) as GeoJSON[];
+  }
+
+  #setMapSourceData() {
     this.mapSourceData = {
       type: 'FeatureCollection',
-      features: (this.geoFeatures || []).map((geoFeature) => {
-        return {
-          type: 'Feature',
-          geometry: {
-            type: 'Polygon',
-            coordinates: JSON.parse(geoFeature.co),
-          },
-        };
-      }),
+      features: this.features,
     };
   }
 }
