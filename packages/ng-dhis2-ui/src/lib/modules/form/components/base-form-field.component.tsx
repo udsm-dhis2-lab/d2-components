@@ -426,7 +426,7 @@ export class BaseFormFieldComponent
             >
               {(this.field().options || []).map((option) => (
                 <SingleSelectOption
-                  key={option.key}
+                  key={crypto.randomUUID() || option.key} 
                   label={option.label}
                   value={option.value}
                 />
