@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { from } from 'rxjs';
 
 export class MapGeoFeature {
   id!: string;
@@ -30,8 +29,8 @@ export class MapGeoFeature {
       .join('');
   }
 
-  async get() {
-    const url = `../../../api/geoFeatures?ou=ou:${this.orgUnitParams}&displayProperty=NAME`;
+  async get(baseUrl: string) {
+    const url = `${baseUrl}/api/geoFeatures?ou=ou:${this.orgUnitParams}&displayProperty=NAME`;
 
     return (await axios.get(url))?.data;
   }

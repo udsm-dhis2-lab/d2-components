@@ -52,6 +52,7 @@ export class MapVisualizer extends BaseVisualizer implements Visualizer {
   async loadLayers() {
     this.layers = await Promise.all(
       this.layers.map(async (layer: MapLayer) => {
+        layer.setBaseUrl(this._baseUrl);
         await layer.loadFeatures();
         return layer;
       })
@@ -253,7 +254,7 @@ export class MapVisualizer extends BaseVisualizer implements Visualizer {
 
             if (!this.mapLayerConfiguration.hideLegendControl) {
               this.map.addControl(
-                new LegendControl(legends, legendTitle),
+                new LegendControl(legends, legendTitle || 'Legend'),
                 'bottom-right'
               );
             }
