@@ -229,12 +229,12 @@ export class LineListTableComponent extends ReactWrapperModule {
             this.actionOptions
           );
           setLoading(false);
-          console.log('hey');
+          // console.log('hey');
           setColumns(...[finalColumns]);
           setData(...[entityData]);
           setPager(...[responsePager]);
-          console.log('columns', columns);
-          console.log('data', data);
+          // console.log('columns', columns);
+          // console.log('data', data);
         });
     }, [
       programIdState,
@@ -295,10 +295,10 @@ export class LineListTableComponent extends ReactWrapperModule {
               })
               .filter((item) => item !== null); // Remove null entries (no matching enrollment)
 
-            console.log('TEI and Enrollment IDs emitted:', teiEnrollmentList);
+            // console.log('TEI and Enrollment IDs emitted:', teiEnrollmentList);
             this.approvalSelected.emit(teiEnrollmentList);
           } else {
-            console.log('No tracked entity instances found in the response');
+            // console.log('No tracked entity instances found in the response');
             this.approvalSelected.emit([]); // Emit empty array if no TEIs
           }
         });
@@ -330,7 +330,7 @@ export class LineListTableComponent extends ReactWrapperModule {
           ? [...filteredFilters, { attribute: key, operator: 'like', value }]
           : filteredFilters;
 
-        console.log(`Updated Filters:`, updatedFilters); // Debugging
+        // console.log(`Updated Filters:`, updatedFilters); // Debugging
 
         return updatedFilters;
       });
@@ -357,10 +357,10 @@ export class LineListTableComponent extends ReactWrapperModule {
       // });
     };
 
-    console.log(
-      'these are the filtered columns which have the attributes neede',
-      filteredColumns
-    );
+    // console.log(
+    //   'these are the filtered columns which have the attributes neede',
+    //   filteredColumns
+    // );
 
     return (
       <div>
@@ -401,7 +401,7 @@ export class LineListTableComponent extends ReactWrapperModule {
               onChange={(
                 e: React.ChangeEvent<HTMLInputElement> | { value?: string }
               ) => {
-                console.log(`Event for key "${key}":`, e);
+                // console.log(`Event for key "${key}":`, e);
 
                 // Check if it's a standard event with target.value
                 if ('target' in e && e.target) {
