@@ -46,7 +46,8 @@ import OrgUnitDimension from '../../../organisation-unit-selector/components/Org
 })
 export class SelectionFiltersComponent
   extends ReactWrapperModule
-  implements AfterViewInit {
+  implements AfterViewInit
+{
   @Input() actionOptions: {
     label: string;
     onClick: (row: TableRow) => void;
@@ -240,6 +241,9 @@ export class SelectionFiltersComponent
     const [touched, setTouched] = useState(false);
     const [showOrgUnit, setShowOrgUnit] = useState<boolean>(false);
     const [value, setValue] = useState(null);
+    const [showMoreFilters, setShowMoreFilters] = useState(false);
+
+    const toggleMoreFilters = () => setShowMoreFilters((prev) => !prev);
 
     useEffect(() => {
       setFilters({
@@ -285,7 +289,10 @@ export class SelectionFiltersComponent
     const handleSearch = () => {
       this.actionSelected.emit({
         ...filters,
-        organisationUnit: selectedOrganisationUnit || this.organisationUnit || filters.organisationUnit,
+        organisationUnit:
+          selectedOrganisationUnit ||
+          this.organisationUnit ||
+          filters.organisationUnit,
         startDate: filters.startDate,
         endDate: filters.endDate,
         program: this.program || filters.program,
@@ -363,7 +370,7 @@ export class SelectionFiltersComponent
         }}
       >
         {/* Organization Unit, Start Date, End Date Row */}
-        <div
+        {/* <div
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(3, 1fr)',
@@ -435,104 +442,202 @@ export class SelectionFiltersComponent
               setFilters({ ...filters, endDate: event.value })
             }
           />
-        </div>
+        </div> */}
 
-        {/* Attribute Filters Grid */}
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
+            gridTemplateColumns: '1fr 1fr 1fr auto', // Ensure proper button sizing
             gap: '16px',
+            alignItems: 'center', // Align inputs and button on the same row
+            marginBottom: '16px',
           }}
         >
-          {filters.programAttributesFilters.map((filter, index) => (
-            <div
-              key={index}
-              style={{ gridColumn: getAttributeColumnSpan(index) }}
+          {/* Organization Unit Selector */}
+          <div style={{ width: '100%' }}>
+            <InputField
+              value={displayValue}
+              label="Organization Unit"
+              readOnly={false}
+              onFocus={() => setShowOrgUnit(true)}
+              onBlur={() => {
+                this.ngZone.run(() => console.log('THIS IS IT::: '));
+                setTouched(true);
+              }}
+            />
+            {showOrgUnit && (
+              <this.FieldOrgUnitSelector
+                onCancelOrgUnit={() => {
+                  setShowOrgUnit(false);
+                  setTouched(true);
+                }}
+                onSelectOrgUnit={(selectedOrgUnits) => {
+                  if ((selectedOrgUnits || [])[0]) {
+                    const selectedOrgUnit = selectedOrgUnits[0];
+                    setDisplayValue(selectedOrgUnit.name);
+                    setSelected(selectedOrgUnit.id);
+                    setSelectedOrganisationUnit(selectedOrgUnit.id);
+                    setValue(selectedOrgUnit.id);
+                    setShowOrgUnit(false);
+                    setTouched(true);
+                  }
+                }}
+              />
+            )}
+          </div>
+
+          {/* Start Date */}
+          <InputField
+            className="input-field"
+            label="Start Date"
+            type="DATE"
+            value={filters.startDate}
+            onChange={(event: { value: string }) =>
+              setFilters({ ...filters, startDate: event.value })
+            }
+            style={{ width: '100%', height: '100%' }}
+          />
+
+          {/* End Date */}
+          <InputField
+            className="input-field"
+            label="End Date"
+            type="DATE"
+            value={filters.endDate}
+            onChange={(event: { value: string }) =>
+              setFilters({ ...filters, endDate: event.value })
+            }
+            style={{ width: '100%', height: '100%' }}
+          />
+
+          {/* Toggle Button with Hidden Label */}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+            }}
+          >
+            <label
+              style={{
+                color: 'transparent', // Hides label text but keeps spacing
+                fontSize: '14px',
+                marginBottom: '4px',
+              }}
             >
-              {filter.hasOptions && filter.options.length > 0 ? (
-                <SingleSelectField
-                  className="single-select"
-                  label={filter.name || 'Select Option'}
-                  type={filter.valueType}
-                  selected={filter.value}
-                  onChange={(event: { selected: string }) =>
-                    handleAttributeChange(index, event.selected)
-                  }
-                >
-                  {filter.options.map((option, i) => (
-                    <SingleSelectOption
-                      key={i}
-                      label={option.name}
-                      value={option.code}
-                    />
-                  ))}
-                </SingleSelectField>
-              ) : (
-                <InputField
-                  className="input-field"
-                  label={filter.name || 'Program name'}
-                  type={filter.valueType}
-                  value={filter.value}
-                  onChange={(event: { value: string }) =>
-                    handleAttributeChange(index, event.value)
-                  }
-                />
-              )}
-            </div>
-          ))}
+              Toggle
+            </label>
+            <Button
+              style={{ height: '40px' }} // Match input field height
+              onClick={() => setShowMoreFilters(!showMoreFilters)}
+            >
+              {showMoreFilters ? 'Hide Filters' : 'More Filters'}
+            </Button>
+          </div>
         </div>
 
-        {/* Data Element Filters Grid */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
-            gap: '16px',
-          }}
-        >
-          {filters.programStageDataElementFilters.map((filter, index) => (
+        {showMoreFilters && (
+          <>
+            {/* Attribute Filters Grid */}
             <div
-              key={index}
-              style={{ gridColumn: getDataElementColumnSpan(index) }}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4, 1fr)',
+                gap: '16px',
+              }}
             >
-              {filter.hasOptions && filter.options.length > 0 ? (
-                <SingleSelectField
-                  className="single-select"
-                  label={filter.name || 'Aggregation type'}
-                  type={filter.valueType}
-                  selected={filter.value}
-                  onChange={(event: { selected: string }) =>
-                    handleDataElementChange(index, event.selected)
-                  }
+              {filters.programAttributesFilters.map((filter, index) => (
+                <div
+                  key={index}
+                  style={{ gridColumn: getAttributeColumnSpan(index) }}
                 >
-                  {filter.options.map((option, i) => (
-                    <SingleSelectOption
-                      key={i}
-                      label={option.name}
-                      value={option.code}
+                  {filter.hasOptions && filter.options.length > 0 ? (
+                    <SingleSelectField
+                      className="single-select"
+                      label={filter.name || 'Select Option'}
+                      type={filter.valueType}
+                      selected={filter.value}
+                      onChange={(event: { selected: string }) =>
+                        handleAttributeChange(index, event.selected)
+                      }
+                    >
+                      {filter.options.map((option, i) => (
+                        <SingleSelectOption
+                          key={crypto.randomUUID() || i}
+                          label={option.name}
+                          value={option.code}
+                        />
+                      ))}
+                    </SingleSelectField>
+                  ) : (
+                    <InputField
+                      className="input-field"
+                      label={filter.name || 'Program name'}
+                      type={filter.valueType}
+                      value={filter.value}
+                      onChange={(event: { value: string }) =>
+                        handleAttributeChange(index, event.value)
+                      }
                     />
-                  ))}
-                </SingleSelectField>
-              ) : (
-                <InputField
-                  className="input-field"
-                  type={filter.valueType}
-                  label={filter.name || 'Program name'}
-                  value={filter.value}
-                  onChange={(event: { value: string }) =>
-                    handleDataElementChange(index, event.value)
-                  }
-                />
-              )}
+                  )}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        {/* Search Button */}
-        <div style={{ textAlign: 'right', marginTop: '16px' }}>
-          <Button onClick={handleSearch}>Search</Button>
-        </div>
+            {/* Data Element Filters Grid */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4, 1fr)',
+                gap: '16px',
+              }}
+            >
+              {filters.programStageDataElementFilters.map((filter, index) => (
+                <div
+                  key={index}
+                  style={{ gridColumn: getDataElementColumnSpan(index) }}
+                >
+                  {filter.hasOptions && filter.options.length > 0 ? (
+                    <SingleSelectField
+                      className="single-select"
+                      label={filter.name || 'Aggregation type'}
+                      type={filter.valueType}
+                      selected={filter.value}
+                      onChange={(event: { selected: string }) =>
+                        handleDataElementChange(index, event.selected)
+                      }
+                    >
+                      {filter.options.map((option, i) => (
+                        <SingleSelectOption
+                          key={crypto.randomUUID() || i}
+                          label={option.name}
+                          value={option.code}
+                        />
+                      ))}
+                    </SingleSelectField>
+                  ) : (
+                    <InputField
+                      className="input-field"
+                      type={filter.valueType}
+                      label={filter.name || 'Program name'}
+                      value={filter.value}
+                      onChange={(event: { value: string }) =>
+                        handleDataElementChange(index, event.value)
+                      }
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Search Button */}
+            <div style={{ textAlign: 'right', marginTop: '16px' }}>
+              <Button onClick={handleSearch}>Search</Button>
+            </div>
+          </>
+        )}
       </div>
     );
   };

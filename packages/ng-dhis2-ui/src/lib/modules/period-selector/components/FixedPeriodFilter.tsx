@@ -45,7 +45,7 @@ const FixedPeriodFilter = ({
               )
           ).map((option) => (
             <SingleSelectOption
-              key={option.id}
+              key={crypto.randomUUID() || option.id}
               value={option.id}
               label={option.name}
               dataTest={`${dataTest}-period-type-option-${option.id}`}
