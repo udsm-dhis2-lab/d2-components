@@ -16,6 +16,14 @@ export class ComponentsComponent {
     { id: 'LAST_3_MONTHS', name: 'Last 3 months' },
   ];
 
+  attributeFilters = [
+    {
+      attribute: 'tgGvHgQgtQ0',
+      operator: 'eq',
+      value: `ABC`,
+    },
+  ];
+
   isButtonLoading: any;
 
   constructor() {
