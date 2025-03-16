@@ -242,7 +242,8 @@
     { label: 'View', },
     ]"
     (approvalSelected)="onApprovalSelected($event)"
-    [showApprovalButton]="true"
+    [dispatchTeis]="true"
+    [showFilterButton]="true"
     [buttonLabel]="'approve applicants'"
     [isButtonLoading]="isButtonLoading"
     [attributeFilters]="attributeFilters"
