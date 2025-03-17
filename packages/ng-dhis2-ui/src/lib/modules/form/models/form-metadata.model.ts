@@ -18,6 +18,7 @@ export class FormMetaData implements IFormMetadata {
     private params: {
       programs: Program[];
       locale?: string;
+      splitRegistrationSection?: boolean;
       customFormMetaData?: Partial<FormMetaData>;
     }
   ) {}
@@ -82,41 +83,13 @@ export class FormMetaData implements IFormMetadata {
     const sections = flatten(
       programs.map((program) => {
         return [
-          this.#getRegisteringUnitSection(program),
-          this.#getReportingDateSection(program),
-          new FormMetadataSection({
-            section: {
-              id: 'registration',
-              name: 'Registration',
-              fieldGroups:
-                (program.programSections || []).length > 0
-                  ? program.programSections!.map((programSection) => {
-                      return {
-                        id: programSection.id,
-                        name: programSection.name,
-                        sortOrder: programSection.sortOrder,
-                        fields: programSection.trackedEntityAttributes as any,
-                      };
-                    })
-                  : [
-                      {
-                        id: 'registration',
-                        name: '',
-                        sortOrder: 1,
-                        fields: (
-                          program.programTrackedEntityAttributes || []
-                        ).map((programTrackedEntityAttribute) => {
-                          return {
-                            id: programTrackedEntityAttribute
-                              .trackedEntityAttribute?.id,
-                          };
-                        }),
-                      },
-                    ],
-            },
-            program,
-            locale: this.params.locale,
-          }).toJson(),
+          ...(this.params.splitRegistrationSection
+            ? [
+                this.#getRegisteringUnitSection(program),
+                this.#getReportingDateSection(program),
+                this.#getRegistrationSection(program),
+              ]
+            : [this.#getMergedRegistrationSection(program)]),
           ...(program.programStages || []).map((programStage) => {
             return new FormMetadataSection({
               section: {
@@ -227,6 +200,119 @@ export class FormMetaData implements IFormMetadata {
                 : null,
             ].filter((field) => field) as FormField<string>[],
           },
+        ],
+      },
+      program,
+      locale: this.params.locale,
+    }).toJson();
+  }
+
+  #getRegistrationSection(program: Program): IFormMetadataSection {
+    return new FormMetadataSection({
+      section: {
+        id: 'registration',
+        name: 'Registration',
+        fieldGroups:
+          (program.programSections || []).length > 0
+            ? program.programSections!.map((programSection) => {
+                return {
+                  id: programSection.id,
+                  name: programSection.name,
+                  sortOrder: programSection.sortOrder,
+                  fields: programSection.trackedEntityAttributes as any,
+                };
+              })
+            : [
+                {
+                  id: 'registration',
+                  name: '',
+                  sortOrder: 1,
+                  fields: (program.programTrackedEntityAttributes || []).map(
+                    (programTrackedEntityAttribute) => {
+                      return {
+                        id: programTrackedEntityAttribute.trackedEntityAttribute
+                          ?.id,
+                      };
+                    }
+                  ),
+                },
+              ],
+      },
+      program,
+      locale: this.params.locale,
+    }).toJson();
+  }
+
+  #getMergedRegistrationSection(program: Program): IFormMetadataSection {
+    return new FormMetadataSection({
+      section: {
+        id: 'registration',
+        name: 'Registration',
+        fieldGroups: [
+          {
+            id: 'registering_unit_details',
+            name: 'Registering unit details',
+            sortOrder: 1,
+            isFormHorizontal: false,
+            fields: [
+              new FormField<string>({
+                id: 'orgUnit',
+                key: 'orgUnit',
+                label: program.orgUnitLabel || 'Registering unit',
+                code: 'orgUnit',
+                required: true,
+                controlType: 'org-unit',
+              }),
+            ],
+          },
+          {
+            id: 'reporting_dates',
+            name: 'Reporting dates',
+            sortOrder: 1,
+            isFormHorizontal: false,
+            fields: [
+              new DateField({
+                id: 'enrollmentDate',
+                label: program.enrollmentDateLabel || 'Enrollment date',
+                code: 'enrollmentDate',
+                key: 'enrollmentDate',
+                required: true,
+              }),
+              program.displayIncidentDate
+                ? new DateField({
+                    id: 'incidentDate',
+                    label: program.incidentDateLabel || 'Incident date',
+                    code: 'incidentDate',
+                    key: 'incidentDate',
+                    required: true,
+                  })
+                : null,
+            ].filter((field) => field) as FormField<string>[],
+          },
+          ...((program.programSections || []).length > 0
+            ? program.programSections!.map((programSection) => {
+                return {
+                  id: programSection.id,
+                  name: programSection.name,
+                  sortOrder: programSection.sortOrder,
+                  fields: programSection.trackedEntityAttributes as any,
+                };
+              })
+            : [
+                {
+                  id: 'registration',
+                  name: '',
+                  sortOrder: 1,
+                  fields: (program.programTrackedEntityAttributes || []).map(
+                    (programTrackedEntityAttribute) => {
+                      return {
+                        id: programTrackedEntityAttribute.trackedEntityAttribute
+                          ?.id,
+                      };
+                    }
+                  ),
+                },
+              ]),
         ],
       },
       program,
