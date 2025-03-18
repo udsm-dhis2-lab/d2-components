@@ -81,6 +81,10 @@ export class ComponentsComponent implements OnInit {
     console.log(periods);
   }
 
+  onFirstValueEmitted(teiId: string) {
+    console.log('first tei emitted', teiId);
+  }
+
   tableColumns = [
     { label: 'Name', key: 'name' },
     { label: 'Age', key: 'age' },

@@ -42,7 +42,6 @@ import {
   getProgramStageData,
   getTrackedEntityData,
 } from '../utils/line-list-utils';
-
 @Component({
   selector: 'app-line-list',
   template: '<ng-content></ng-content>',
@@ -71,7 +70,7 @@ export class LineListTableComponent extends ReactWrapperModule {
   >();
   @Input() isButtonLoading: boolean = false;
   @Input() buttonLabel: string = '';
-
+  @Output() firstValue = new EventEmitter<string>();
   setReactStateUpdaters = (updaters: any) => {
     this.reactStateUpdaters = updaters;
   };
@@ -213,6 +212,8 @@ export class LineListTableComponent extends ReactWrapperModule {
               );
             entityColumns = columns;
             entityData = data;
+           let firstTei = (response.data as TrackedEntityInstancesResponse).trackedEntityInstances[0].trackedEntityInstance;
+            this.firstValue.emit(firstTei);
             //  setFilteredColumns(filteredEntityColumns);
             // Ensure filter inputs do not disappear when no data is returned
             // If filteredEntityColumns is empty, keep the previous columns instead of clearing them
@@ -307,17 +308,6 @@ export class LineListTableComponent extends ReactWrapperModule {
         });
     };
 
-    // const handleInputChange = (key: string, value: string) => {
-    //   setInputValues((prevValues) => ({
-    //     ...prevValues,
-    //     [key]: value ?? '', // Ensure no undefined values
-    //   }));
-    // };
-
-    // if (!filteredColumns || filteredColumns.length === 0) {
-    //   return <div>No fields available</div>;
-    // }
-
     const handleInputChange = (key: string, value: string) => {
       setInputValues((prevValues) => ({
         ...prevValues,
@@ -337,64 +327,10 @@ export class LineListTableComponent extends ReactWrapperModule {
 
         return updatedFilters;
       });
-
-      // setAttributeFiltersState((prevFilters = []) => {
-      //   // Check if attribute already exists
-      //   const existingFilterIndex = prevFilters.findIndex(
-      //     (f) => f.attribute === key
-      //   );
-
-      //   // Create a new filter object
-      //   const newFilter = { attribute: key, operator: 'like', value };
-
-      //   if (existingFilterIndex !== -1) {
-      //     // If attribute exists, update its value
-      //     const updatedFilters = [...prevFilters];
-      //     updatedFilters[existingFilterIndex] = newFilter;
-      //     console.log(`Updated Filters:`, updatedFilters); // Log updated filter list
-      //     return updatedFilters;
-      //   } else {
-      //     // If attribute doesn't exist, add a new object
-      //     return [...prevFilters, newFilter];
-      //   }
-      // });
     };
-
-    // console.log(
-    //   'these are the filtered columns which have the attributes neede',
-    //   filteredColumns
-    // );
 
     return (
       <div>
-        {/* <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-      {filteredColumns?.map(({ label, key }) => (
-        <InputField
-          key={key}
-          label={label}
-          value={inputValues?.[key] || ""} 
-          onChange={(e: { target: { value: any; }; }) => handleInputChange(key, e.target.value)}
-        />
-      ))}
-    </div> */}
-
-        {/* <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          {(filteredColumns ?? []).map(({ label, key }) => (
-            <InputField
-              key={key}
-              label={label}
-              value={inputValues[key] || ''}
-              onChange={(e: { target: { value: any }; value: any }) => {
-                console.log(`Event for key "${key}":`, e);
-
-                // Support both standard event structure and DHIS2 UI value objects
-                const newValue = e?.target?.value ?? e?.value ?? '';
-
-                handleInputChange(key, newValue);
-              }}
-            />
-          ))}
-        </div> */}
         <div
           style={{
             width: '100%',
@@ -440,6 +376,7 @@ export class LineListTableComponent extends ReactWrapperModule {
               onClick={() => {
                 setFilters(!filters);
               }}
+              secondary
             >
               <IconFilter16 />
               {filters ? 'Hide Filters' : 'Show Filters'}
