@@ -30,8 +30,8 @@ export class MapGeoFeature {
   }
 
   async get(baseUrl: string) {
-    const url = `${baseUrl}/api/geoFeatures?ou=ou:${this.orgUnitParams}&displayProperty=NAME`;
+    const url = `${baseUrl}/api/geoFeatures.json?ou=ou:${this.orgUnitParams}&displayProperty=NAME`;
 
-    return (await axios.get(url))?.data;
+    return (await fetch(url))?.json();
   }
 }

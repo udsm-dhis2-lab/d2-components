@@ -31,7 +31,7 @@ HighchartDrilldown(Highcharts);
 export class ChartVisualizer extends BaseVisualizer implements Visualizer {
   private _type: ChartType = 'COLUMN';
   private _layout: VisualizationLayout = new VisualizationLayout();
-  private _chart: any;
+  private _chart!: Highcharts.Chart;
 
   /**
    *
@@ -64,8 +64,15 @@ export class ChartVisualizer extends BaseVisualizer implements Visualizer {
     const chartObject = drawChart(this._data, this._config);
 
     setTimeout(() => {
+      this.dispose();
       this._chart = Highcharts.chart(chartObject);
     }, 20);
+  }
+
+  override dispose() {
+    if (this._chart) {
+      this._chart.destroy();
+    }
   }
 
   /**
@@ -76,7 +83,7 @@ export class ChartVisualizer extends BaseVisualizer implements Visualizer {
     const filename = this._config?.title || 'chart-data';
     switch (downloadFormat) {
       case 'PNG':
-        this._chart.exportChart({ filename, type: 'image/png' });
+        this._chart.exportChart({ filename, type: 'image/png' }, {});
         break;
       case 'CSV':
         new VisualizationDownloader()
