@@ -248,8 +248,42 @@
     [isButtonLoading]="isButtonLoading"
     [attributeFilters]="attributeFilters"
     (firstValue)="onFirstValueEmitted($event)"
-  >
-  <div action-buttons>Hello
-  </div>
-</app-line-list>
+  ></app-line-list>
+</div>
+
+<ng-dhis2-ui-form
+  [programRuleActions]="[
+    {
+      field: 'OhV3SJdy7HV',
+      action: 'HIDEFIELD'
+    },
+    {
+      field: 'p5FAom9pPWw',
+      action: 'HIDEFIELD'
+    },
+    {
+      field: 'B4EfUtSyMMP',
+      action: 'HIDEFIELD'
+    }
+  ]"
+  [form]="enrollmentFormGroup"
+  [fields]="fields"
+  (formUpdate)="onUpdate($event)"
+  [showSaveButton]="false"
+  class="w-full"
+/>
+<div class="p-4">
+  <app-line-list
+    [programId]="'lw9fZTamYec'"
+    [orgUnit]="'lgZ6HfZaj3f'"
+    [actionOptions]="[
+    { label: 'View', },
+    ]"
+    (approvalSelected)="onApprovalSelected($event)"
+    [dispatchTeis]="true"
+    [showFilterButton]="true"
+    [buttonLabel]="'approve applicants'"
+    [isButtonLoading]="isButtonLoading"
+    [attributeFilters]="attributeFilters"
+  ></app-line-list>
 </div>

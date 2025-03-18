@@ -245,6 +245,8 @@ export class BaseFormFieldComponent
               label={this.label()}
               min={this.field().min?.toString()}
               max={this.field().max?.toString()}
+              disabled={this.field()?.disabled || this.field()?.generated || this.field()?.unique || false}
+              readOnly={this.field()?.disabled || this.field()?.generated || this.field()?.unique || false}
               placeholder={this.placeholder()}
               value={value}
               onChange={(event: any) => {
@@ -283,7 +285,8 @@ export class BaseFormFieldComponent
                 label={this.label()}
                 placeholder={this.placeholder()}
                 value={displayValue}
-                readOnly={false}
+                disabled={this.field()?.disabled || this.field()?.generated || this.field()?.unique || false}
+                readOnly={this.field()?.disabled || this.field()?.generated || this.field()?.unique || false}
                 onFocus={() => {
                   setShowOrgUnit(true);
                 }}
@@ -332,6 +335,8 @@ export class BaseFormFieldComponent
               validationText={validationError}
               type={this.field().type}
               inputWidth={this.fieldConfig()?.inputWidth}
+              disabled={this.field()?.disabled || this.field()?.generated || this.field()?.unique || false}
+              readOnly={this.field()?.disabled || this.field()?.generated || this.field()?.unique || false}
               required={this.field().required}
               name={this.field().id}
               label={this.label()}
@@ -379,6 +384,8 @@ export class BaseFormFieldComponent
               error={hasError}
               label={this.label()}
               name={this.field().id}
+              disabled={this.field()?.disabled || this.field()?.generated || this.field()?.unique || false}
+              readOnly={this.field()?.disabled || this.field()?.generated || this.field()?.unique || false}
               onChange={(event: any) => {
                 this.ngZone.run(() => {
                   (
@@ -404,6 +411,8 @@ export class BaseFormFieldComponent
               error={hasError}
               validationText={validationError}
               inputWidth={this.fieldConfig()?.inputWidth}
+              disabled={this.field()?.disabled || this.field()?.generated || this.field()?.unique || false}
+              readOnly={this.field()?.disabled || this.field()?.generated || this.field()?.unique || false}
               required={this.field().required}
               name={this.field().id}
               className="select"
@@ -444,6 +453,8 @@ export class BaseFormFieldComponent
               error={hasError}
               validationText={validationError}
               inputWidth={this.fieldConfig()?.inputWidth}
+              disabled={this.field()?.disabled || this.field()?.generated || this.field()?.unique || false}
+              readOnly={this.field()?.disabled || this.field()?.generated || this.field()?.unique || false}
               label={this.label()}
               name={this.field().id}
               required={this.field().required}
@@ -482,6 +493,8 @@ export class BaseFormFieldComponent
               buttonLabel="Upload a file"
               label={this.label()}
               name={this.field().id}
+              disabled={this.field()?.disabled || this.field()?.generated || this.field()?.unique || false}
+              readOnly={this.field()?.disabled || this.field()?.generated || this.field()?.unique || false}
               files={this.uploadedFiles}
               onChange={(event: any) => {
                 this.uploadedFiles.push((event?.files || [])[0]);
@@ -532,8 +545,8 @@ export class BaseFormFieldComponent
               max={this.field().max?.toString()}
               placeholder={this.placeholder()}
               value={value}
-              readOnly={this.field().disabled}
-              onChange={(event: any) => {
+              disabled={this.field()?.disabled || this.field()?.generated || this.field()?.unique || false}
+              readOnly={this.field()?.disabled || this.field()?.generated || this.field()?.unique || false}              onChange={(event: any) => {
                 this.ngZone.run(() => {
                   (
                     this.form().get(this.field().id) ||
