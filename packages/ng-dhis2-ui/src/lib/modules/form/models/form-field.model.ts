@@ -24,6 +24,8 @@ export class FormField<T> implements IFormField<T> {
   maxLength?: number | string;
   hidden: boolean;
   units?: string;
+  generated?: boolean;
+  unique?: boolean;
   isDataElement?: boolean;
   isAttribute?: boolean;
   isOrgUnit?: boolean;
@@ -38,7 +40,6 @@ export class FormField<T> implements IFormField<T> {
   displayInList?: boolean;
   displayInReports?: boolean;
   searchable?: boolean;
-  unique?: boolean;
   metaType?: FormFieldMetaType;
   stepId?: string;
   availableOptionsLabel?: string;
@@ -63,6 +64,8 @@ export class FormField<T> implements IFormField<T> {
       options.max || (this.controlType === 'date' ? new Date() : undefined);
     this.maxLength = options.maxLength as number;
     this.hidden = options.hidden || false;
+    this.unique = options.unique || false;
+    this.generated = options.generated || false;
     this.isDataElement = options.isDataElement;
     this.isAttribute = options.isAttribute;
     this.isOrgUnit = options.isOrgUnit;

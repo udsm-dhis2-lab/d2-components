@@ -107,7 +107,7 @@ export const OrgUnitFormField = (props: Props) => {
   const [searchData, setSearchData] = useState<any>();
   const [selectedOrgUnit, setSelectedOrgUnit] =
     React.useState<Record<string, unknown>>();
-  const [expanded, setExpanded] = React.useState(initiallyExpanded);
+  const [expanded, setExpanded] = React.useState<any[]>(initiallyExpanded);
 
   useEffect(() => {
     setLoading(true);
@@ -129,9 +129,9 @@ export const OrgUnitFormField = (props: Props) => {
     }
   }, [selected]);
 
-  const highlighted = useMemo(() => {
+  const highlighted: string[] | undefined = useMemo(() => {
     if (selectedOrgUnit) {
-      return [selectedOrgUnit['path']];
+      return [selectedOrgUnit['path']] as string[];
     }
 
     return undefined;
@@ -200,7 +200,7 @@ export const OrgUnitFormField = (props: Props) => {
             key={`${key}-search`}
             roots={searchData?.map((orgUnit: any) => orgUnit.id) || []}
             singleSelection={true}
-            expanded={expanded}
+            expanded={expanded as any}
             handleExpand={handleExpand}
             handleCollapse={handleCollapse}
             selected={highlighted}
@@ -217,7 +217,7 @@ export const OrgUnitFormField = (props: Props) => {
         key={key}
         roots={rootOrgUnits?.map((orgUnit) => orgUnit.id) || []}
         singleSelection={true}
-        expanded={expanded}
+        expanded={expanded as any}
         handleExpand={handleExpand}
         handleCollapse={handleCollapse}
         selected={highlighted}
