@@ -490,24 +490,22 @@ export class SelectionFiltersComponent
           <InputField
             className="input-field"
             label="Start Date"
-            type="DATE"
+            type="date"
             value={filters.startDate}
             onChange={(event: { value: string }) =>
               setFilters({ ...filters, startDate: event.value })
             }
-            style={{ width: '100%', height: '100%' }}
           />
 
           {/* End Date */}
           <InputField
             className="input-field"
             label="End Date"
-            type="DATE"
+            type="date"
             value={filters.endDate}
             onChange={(event: { value: string }) =>
               setFilters({ ...filters, endDate: event.value })
             }
-            style={{ width: '100%', height: '100%' }}
           />
 
           {/* Toggle Button with Hidden Label */}
@@ -557,7 +555,6 @@ export class SelectionFiltersComponent
                     <SingleSelectField
                       className="single-select"
                       label={filter.name || 'Select Option'}
-                      type={filter.valueType}
                       selected={filter.value}
                       onChange={(event: { selected: string }) =>
                         handleAttributeChange(index, event.selected)
@@ -575,7 +572,7 @@ export class SelectionFiltersComponent
                     <InputField
                       className="input-field"
                       label={filter.name || 'Program name'}
-                      type={filter.valueType}
+                      type={filter.valueType as any}
                       value={filter.value}
                       onChange={(event: { value: string }) =>
                         handleAttributeChange(index, event.value)
@@ -603,7 +600,6 @@ export class SelectionFiltersComponent
                     <SingleSelectField
                       className="single-select"
                       label={filter.name || 'Aggregation type'}
-                      type={filter.valueType}
                       selected={filter.value}
                       onChange={(event: { selected: string }) =>
                         handleDataElementChange(index, event.selected)
@@ -620,7 +616,7 @@ export class SelectionFiltersComponent
                   ) : (
                     <InputField
                       className="input-field"
-                      type={filter.valueType}
+                      type={filter.valueType as any}
                       label={filter.name || 'Program name'}
                       value={filter.value}
                       onChange={(event: { value: string }) =>

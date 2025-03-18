@@ -13,6 +13,8 @@ import {
   ProgramModule,
   TrackerModule,
   UserModule,
+  SystemInfo,
+  SystemModule,
 } from './modules';
 import { D2HttpClient, D2WebConfig } from './shared';
 
@@ -26,6 +28,7 @@ export class D2Web {
   httpInstance!: D2HttpClient;
   appManifest!: Manifest | null;
   currentUser!: CurrentUser | null;
+  systemInfo!: SystemInfo | null;
   private constructor() {}
 
   public static async initialize(config: D2WebConfig): Promise<D2Web> {
@@ -59,6 +62,11 @@ export class D2Web {
        * Fetch and set current user
        */
       await instance.setCurrentUser();
+
+      /**
+       * Set system information
+       */
+      await instance.setSystemInfo();
 
       D2Web.instance = instance;
 
@@ -104,6 +112,18 @@ export class D2Web {
     }
   }
 
+  async setSystemInfo(): Promise<void> {
+    try {
+      const systemInfo = await this.systemModule.getSystemInfo();
+
+      if (systemInfo) {
+        this.systemInfo = systemInfo;
+      }
+    } catch (e) {
+      throw new Error('System information could not be retrieved');
+    }
+  }
+
   setHttpInstance(httpConfig: AxiosDefaults): void {
     this.httpInstance = new D2HttpClient(httpConfig);
   }
@@ -127,6 +147,10 @@ export class D2Web {
 
   get userModule(): UserModule {
     return new UserModule(this.httpInstance);
+  }
+
+  get systemModule(): SystemModule {
+    return new SystemModule(this.httpInstance);
   }
 
   get programModule(): ProgramModule {
