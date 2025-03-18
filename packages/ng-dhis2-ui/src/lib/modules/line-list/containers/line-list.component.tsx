@@ -212,7 +212,8 @@ export class LineListTableComponent extends ReactWrapperModule {
               );
             entityColumns = columns;
             entityData = data;
-           let firstTei = (response.data as TrackedEntityInstancesResponse).trackedEntityInstances[0].trackedEntityInstance;
+            let firstTei = (response.data as TrackedEntityInstancesResponse)
+              .trackedEntityInstances[0].trackedEntityInstance;
             this.firstValue.emit(firstTei);
             //  setFilteredColumns(filteredEntityColumns);
             // Ensure filter inputs do not disappear when no data is returned
@@ -514,7 +515,7 @@ export class LineListTableComponent extends ReactWrapperModule {
               ) : (
                 <DataTableRow>
                   <DataTableCell
-                    colSpan={columns.length}
+                    colSpan={columns.length?.toString()}
                     style={{
                       textAlign: 'center',
                       fontWeight: 'bold',

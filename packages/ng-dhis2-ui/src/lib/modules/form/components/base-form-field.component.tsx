@@ -48,6 +48,8 @@ import { OrganisationUnitSelectionConfig } from '../../organisation-unit-selecto
 import OrgUnitDimension from '../../organisation-unit-selector/components/OrgUnitDimension';
 import { firstValueFrom, map, Observable, zip } from 'rxjs';
 import { NgxDhis2HttpClientService, User } from '@iapps/ngx-dhis2-http-client';
+import { useFieldValidation } from '../hooks';
+import { OrgUnitFormField } from './org-unit-form-field.component';
 
 @Directive()
 export class BaseFormFieldComponent
@@ -186,51 +188,12 @@ export class BaseFormFieldComponent
         return [];
       }, [value]);
 
-      const hasError = useMemo(() => {
-        return (
-          touched &&
-          (
-            this.form().get(this.field().id) ||
-            this.form().get(this.field().key)
-          )?.invalid
-        );
-      }, [value, touched]);
-
-      const validationError = useMemo(() => {
-        if (!touched) {
-          return undefined;
-        }
-
-        const field = this.field();
-        const error = (this.form().get(field.id) || this.form().get(field.key))
-          ?.errors;
-
-        if (!error) {
-          return undefined;
-        }
-
-        if (error['min']) {
-          return `${this.label() || 'Value'} should not be less than ${
-            error['min'].min
-          }!`;
-        } else if (error['max']) {
-          return `${this.label() || 'Value'} should not be greater than ${
-            error['max'].max
-          }!`;
-        } else if (error['pattern']) {
-          if (field.type === 'email') {
-            return `The email address provided is not valid`;
-          } else if (field.type === 'tel') {
-            return 'Phone number provided is not valid';
-          } else {
-            return `${this.label() || 'Value'} should have appropriate format`;
-          }
-        }
-
-        return error['required']
-          ? `${this.label() || 'Value'} is required`
-          : undefined;
-      }, [hasError]);
+      const { hasError, validationError } = useFieldValidation({
+        field: this.field(),
+        form: this.form(),
+        value,
+        touched,
+      });
 
       switch (this.field().controlType) {
         case 'textarea':
@@ -238,13 +201,11 @@ export class BaseFormFieldComponent
             <TextAreaField
               error={hasError}
               validationText={validationError}
-              type={this.field().type}
               inputWidth={this.fieldConfig()?.inputWidth}
               required={this.field().required}
               name={this.field().id}
               label={this.label()}
-              min={this.field().min?.toString()}
-              max={this.field().max?.toString()}
+              rows={5}
               placeholder={this.placeholder()}
               value={value}
               onChange={(event: any) => {
@@ -272,54 +233,19 @@ export class BaseFormFieldComponent
 
         case 'org-unit':
           return (
-            <>
-              <InputField
-                error={hasError}
-                validationText={validationError}
-                type={this.field().type}
-                prefixIcon={<IconDimensionOrgUnit16 />}
-                required={this.field().required}
-                name={this.field().id}
-                label={this.label()}
-                placeholder={this.placeholder()}
-                value={displayValue}
-                readOnly={false}
-                onFocus={() => {
-                  setShowOrgUnit(true);
-                }}
-                onBlur={() => {
-                  this.ngZone.run(() => {
-                    this.update.emit({ form: this.form(), value });
-                  });
-                  setTouched(true);
-                }}
-              />
-              {showOrgUnit && (
-                <this.FieldOrgUnitSelector
-                  selectedOrgUnits={[]}
-                  onSelectOrgUnit={(selectedOrgUnits) => {
-                    if ((selectedOrgUnits || [])[0]) {
-                      const selectedOrgUnit = selectedOrgUnits[0];
-                      setDisplayValue(selectedOrgUnit.name);
-                      setValue(selectedOrgUnit.id);
-                      setShowOrgUnit(false);
-                      setTouched(true);
-
-                      this.ngZone.run(() => {
-                        (
-                          this.form().get(this.field().id) ||
-                          this.form().get(this.field().key)
-                        )?.setValue(selectedOrgUnit.id);
-                        this.immediateUpdate.emit({
-                          form: this.form(),
-                          value: selectedOrgUnit.id,
-                        });
-                      });
-                    }
-                  }}
-                />
-              )}
-            </>
+            <OrgUnitFormField
+              label={this.label()}
+              key={this.field().id}
+              required={this.field().required}
+              onSelectOrgUnit={(selectedOrgUnit: string) => {
+                setValue(selectedOrgUnit);
+                this.ngZone.run(() => {
+                  this.update.emit({ form: this.form(), value });
+                });
+              }}
+              selected={value}
+              onBlur={(event: any) => {}}
+            />
           );
 
         case 'transfer':
@@ -328,15 +254,6 @@ export class BaseFormFieldComponent
               filterable
               filterPlaceholder="Search"
               selected={selected}
-              error={hasError}
-              validationText={validationError}
-              type={this.field().type}
-              inputWidth={this.fieldConfig()?.inputWidth}
-              required={this.field().required}
-              name={this.field().id}
-              label={this.label()}
-              placeholder={this.placeholder()}
-              value={selected}
               leftHeader={
                 <div
                   style={{
@@ -405,7 +322,6 @@ export class BaseFormFieldComponent
               validationText={validationError}
               inputWidth={this.fieldConfig()?.inputWidth}
               required={this.field().required}
-              name={this.field().id}
               className="select"
               label={this.label()}
               selected={value}
@@ -426,7 +342,7 @@ export class BaseFormFieldComponent
             >
               {(this.field().options || []).map((option) => (
                 <SingleSelectOption
-                  key={crypto.randomUUID() || option.key} 
+                  key={crypto.randomUUID() || option.key}
                   label={option.label}
                   value={option.value}
                 />
@@ -445,7 +361,6 @@ export class BaseFormFieldComponent
               validationText={validationError}
               inputWidth={this.fieldConfig()?.inputWidth}
               label={this.label()}
-              name={this.field().id}
               required={this.field().required}
               loadingText="Loading options"
               noMatchText="No options found"
@@ -482,7 +397,6 @@ export class BaseFormFieldComponent
               buttonLabel="Upload a file"
               label={this.label()}
               name={this.field().id}
-              files={this.uploadedFiles}
               onChange={(event: any) => {
                 this.uploadedFiles.push((event?.files || [])[0]);
 
