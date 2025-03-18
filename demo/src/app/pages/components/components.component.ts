@@ -33,9 +33,12 @@ export class ComponentsComponent {
   }
 
   onActionSelected(emitActionResponse: any) {
-    console.log('ON ACTION SELECTED::: ' , JSON.stringify(emitActionResponse, null, 4));
+    console.log(
+      'ON ACTION SELECTED::: ',
+      JSON.stringify(emitActionResponse, null, 4)
+    );
   }
-  
+
   filters = [
     {
       programStage: 'AFdwWJ6LpRT',
@@ -74,6 +77,10 @@ export class ComponentsComponent {
     console.log(periods);
   }
 
+  onFirstValueEmitted(teiId: string) {
+    console.log('first tei emitted', teiId);
+  }
+
   tableColumns = [
     { label: 'Name', key: 'name' },
     { label: 'Age', key: 'age' },
@@ -105,7 +112,7 @@ export class ComponentsComponent {
       value: 'Qualified',
     },
   ];
-  
+
   //event program = A3olldDSHQg
   //program stage= AFdwWJ6LpRT
 
@@ -139,6 +146,5 @@ export class ComponentsComponent {
     const periodInstance = new Period().setType('Weekly').get();
 
     console.log('PERIOD LIST', periodInstance.list());
-
   }
 }

@@ -42,7 +42,6 @@ import {
   getProgramStageData,
   getTrackedEntityData,
 } from '../utils/line-list-utils';
-
 @Component({
   selector: 'app-line-list',
   template: '<ng-content></ng-content>',
@@ -71,7 +70,7 @@ export class LineListTableComponent extends ReactWrapperModule {
   >();
   @Input() isButtonLoading: boolean = false;
   @Input() buttonLabel: string = '';
-
+  @Output() firstValue = new EventEmitter<string>();
   setReactStateUpdaters = (updaters: any) => {
     this.reactStateUpdaters = updaters;
   };
@@ -213,6 +212,8 @@ export class LineListTableComponent extends ReactWrapperModule {
               );
             entityColumns = columns;
             entityData = data;
+           let firstTei = (response.data as TrackedEntityInstancesResponse).trackedEntityInstances[0].trackedEntityInstance;
+            this.firstValue.emit(firstTei);
             //  setFilteredColumns(filteredEntityColumns);
             // Ensure filter inputs do not disappear when no data is returned
             // If filteredEntityColumns is empty, keep the previous columns instead of clearing them
