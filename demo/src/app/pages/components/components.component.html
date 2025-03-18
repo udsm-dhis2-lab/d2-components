@@ -247,6 +247,7 @@
     [buttonLabel]="'approve applicants'"
     [isButtonLoading]="isButtonLoading"
     [attributeFilters]="attributeFilters"
+    (firstValue)="onFirstValueEmitted($event)"
   ></app-line-list>
 </div>
 

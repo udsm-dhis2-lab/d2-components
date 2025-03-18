@@ -1,32 +1,32 @@
 ::ng-deep mat-chip {
-  font-weight: normal !important;
-}
-
-.d2-dashboard__menu-item {
-  margin-top: 0;
-  margin-bottom: 0;
-  padding: 8px 16px 0 16px;
-  cursor: pointer;
-  height: 100%;
-  max-width: 150px;
-  white-space: nowrap;
-  display: inline-block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 12px;
-  color: #212934;
-  border-bottom: solid 2px transparent;
-
-  &:hover {
-    background-color: #e8edf2;
+    font-weight: normal !important;
+  }
+  
+  .d2-dashboard__menu-item {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 8px 16px 0 16px;
     cursor: pointer;
+    height: 100%;
+    max-width: 150px;
+    white-space: nowrap;
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 12px;
+    color: #212934;
+    border-bottom: solid 2px transparent;
+  
+    &:hover {
+      background-color: #e8edf2;
+      cursor: pointer;
+    }
+    &:nth-child(odd) {
+      border-left: none;
+    }
   }
-  &:nth-child(odd) {
-    border-left: none;
+  
+  .d2-dashboard__menu-item-active {
+    color: #00695c;
+    border-bottom: solid 2px #00695c;
   }
-}
-
-.d2-dashboard__menu-item-active {
-  color: #00695c;
-  border-bottom: solid 2px #00695c;
-}

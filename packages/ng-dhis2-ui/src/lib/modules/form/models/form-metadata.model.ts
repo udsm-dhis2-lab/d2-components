@@ -19,6 +19,8 @@ export class FormMetaData implements IFormMetadata {
       programs: Program[];
       locale?: string;
       splitRegistrationSection?: boolean;
+      includeAllProgramStages?: boolean;
+      programStage?: string;
       customFormMetaData?: Partial<FormMetaData>;
     }
   ) {}
@@ -82,6 +84,13 @@ export class FormMetaData implements IFormMetadata {
   #getSectionFromPrograms(programs: Program[]): IFormMetadataSection[] {
     const sections = flatten(
       programs.map((program) => {
+        if (this.params.programStage) {
+          return this.#getProgramStageSections(
+            program,
+            this.params.programStage
+          );
+        }
+
         return [
           ...(this.params.splitRegistrationSection
             ? [
@@ -90,48 +99,7 @@ export class FormMetaData implements IFormMetadata {
                 this.#getRegistrationSection(program),
               ]
             : [this.#getMergedRegistrationSection(program)]),
-          ...(program.programStages || []).map((programStage) => {
-            return new FormMetadataSection({
-              section: {
-                id: programStage.id,
-                name: programStage.name,
-                fieldGroups:
-                  (programStage.programStageSections || []).length > 0
-                    ? programStage.programStageSections!.map(
-                        (programStageSection) => {
-                          return {
-                            id: programStageSection.id,
-                            name: programStageSection.name,
-                            dataKey: camelCase(programStage.code),
-                            repeatableStage: programStage.repeatable
-                              ? programStage.id
-                              : undefined,
-                            sortOrder: programStageSection.sortOrder,
-                            fields: programStageSection.dataElements as any,
-                          };
-                        }
-                      )
-                    : [
-                        {
-                          id: programStage.id,
-                          dataKey: camelCase(programStage.code),
-                          repeatableStage: programStage.repeatable
-                            ? programStage.id
-                            : undefined,
-                          fields: (
-                            programStage.programStageDataElements || []
-                          ).map((programStageDataElement) => {
-                            return {
-                              id: programStageDataElement.dataElement?.id,
-                            };
-                          }) as any,
-                        },
-                      ],
-              },
-              program,
-              locale: this.params.locale,
-            }).toJson();
-          }),
+          ...this.#getProgramStageSections(program),
         ];
       })
     );
@@ -141,6 +109,61 @@ export class FormMetaData implements IFormMetadata {
     }
 
     return sections as IFormMetadataSection[];
+  }
+
+  #getProgramStageSections(program: Program, programStageId?: string) {
+    const programStages = programStageId
+      ? (program.programStages || []).filter(
+          (programStage) => programStage.id === programStageId
+        )
+      : this.params.includeAllProgramStages
+      ? program.programStages
+      : program.useFirstStageDuringRegistration
+      ? [(program.programStages || [])[0]]
+      : [];
+
+    return (programStages || []).map((programStage) => {
+      return new FormMetadataSection({
+        section: {
+          id: programStage.id,
+          name: programStage.name,
+          fieldGroups:
+            (programStage.programStageSections || []).length > 0
+              ? programStage.programStageSections!.map(
+                  (programStageSection) => {
+                    return {
+                      id: programStageSection.id,
+                      name: programStageSection.name,
+                      dataKey: camelCase(programStage.code),
+                      repeatableStage: programStage.repeatable
+                        ? programStage.id
+                        : undefined,
+                      sortOrder: programStageSection.sortOrder,
+                      fields: programStageSection.dataElements as any,
+                    };
+                  }
+                )
+              : [
+                  {
+                    id: programStage.id,
+                    dataKey: camelCase(programStage.code),
+                    repeatableStage: programStage.repeatable
+                      ? programStage.id
+                      : undefined,
+                    fields: (programStage.programStageDataElements || []).map(
+                      (programStageDataElement) => {
+                        return {
+                          id: programStageDataElement.dataElement?.id,
+                        };
+                      }
+                    ) as any,
+                  },
+                ],
+        },
+        program,
+        locale: this.params.locale,
+      }).toJson();
+    });
   }
 
   #getRegisteringUnitSection(program: Program): IFormMetadataSection {
@@ -301,7 +324,7 @@ export class FormMetaData implements IFormMetadata {
             : [
                 {
                   id: 'registration',
-                  name: '',
+                  name: 'Registration',
                   sortOrder: 1,
                   fields: (program.programTrackedEntityAttributes || []).map(
                     (programTrackedEntityAttribute) => {
