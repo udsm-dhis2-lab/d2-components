@@ -13,6 +13,7 @@ import { FormMetaData, IFormMetadata } from '../form';
 })
 export class TrackerFormComponent implements OnInit {
   program = input.required<string>();
+  programStage = input<string>();
   trackedEntity = input<string | undefined>();
   d2 = (window as unknown as D2Window).d2Web;
   trackerQuery!: BaseTrackerQuery<TrackedEntityInstance>;
@@ -36,6 +37,7 @@ export class TrackerFormComponent implements OnInit {
     if (program) {
       this.formMetaData = new FormMetaData({
         programs: [program],
+        programStage: this.programStage(),
       }).toJson();
 
       console.log(this.formMetaData, this.instance.enrollmentDate);
