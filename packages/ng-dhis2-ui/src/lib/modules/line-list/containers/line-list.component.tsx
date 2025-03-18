@@ -203,6 +203,7 @@ export class LineListTableComponent extends ReactWrapperModule {
           } else if ('trackedEntityInstances' in response.data) {
             responsePager = (response.data as TrackedEntityInstancesResponse)
               .pager;
+            console.log('tei received', response.data.trackedEntityInstances);
             const { columns, data, filteredEntityColumns } =
               getTrackedEntityData(
                 response,
@@ -211,9 +212,14 @@ export class LineListTableComponent extends ReactWrapperModule {
                 this.filters
               );
             entityColumns = columns;
+            console.log('columns shown', entityColumns);
             entityData = data;
-           let firstTei = (response.data as TrackedEntityInstancesResponse).trackedEntityInstances[0].trackedEntityInstance;
+            let firstTei = (response.data as TrackedEntityInstancesResponse)
+            ?.trackedEntityInstances?.[0]?.trackedEntityInstance;
+          
+          if (firstTei) {
             this.firstValue.emit(firstTei);
+          }
             //  setFilteredColumns(filteredEntityColumns);
             // Ensure filter inputs do not disappear when no data is returned
             // If filteredEntityColumns is empty, keep the previous columns instead of clearing them
@@ -227,11 +233,13 @@ export class LineListTableComponent extends ReactWrapperModule {
             entityColumns = columns;
             entityData = data;
           }
+          console.log('before final columns');
 
           const finalColumns: ColumnDefinition[] = addActionsColumn(
             [{ label: '#', key: 'index' }, ...entityColumns],
             this.actionOptions
           );
+          console.log('the columns shown', finalColumns);
           setLoading(false);
           // console.log('hey');
           setColumns(...[finalColumns]);
@@ -251,6 +259,7 @@ export class LineListTableComponent extends ReactWrapperModule {
       pager.pageSize,
     ]);
 
+    console.log('the columns shown hehe', columns);
     const getDropdownOptions = (row: TableRow): DropdownMenuOption[] => {
       return (this.actionOptions || []).map((option) => ({
         ...option,

@@ -20,7 +20,7 @@ export class ComponentsComponent {
     {
       attribute: 'tgGvHgQgtQ0',
       operator: 'eq',
-      value: `ABC`,
+      value: `ABC_12355`,
     },
   ];
 
