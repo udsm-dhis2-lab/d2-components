@@ -52,11 +52,13 @@ export class GeoJSONUtil {
 
   static getPropertyColor(value: number, legendSet: LegendSet) {
     if (!value) {
-      return undefined;
+      return '#ffffff';
     }
 
-    return (legendSet?.legends || []).find(
-      (legend) => value >= legend.startValue && value < legend.endValue
-    )?.color;
+    return (
+      (legendSet?.legends || []).find(
+        (legend) => value >= legend.startValue && value < legend.endValue
+      )?.color || '#f5f5f5'
+    );
   }
 }
