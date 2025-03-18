@@ -20,6 +20,7 @@ export class FormMetaData implements IFormMetadata {
       locale?: string;
       splitRegistrationSection?: boolean;
       includeAllProgramStages?: boolean;
+      programStage?: string;
       customFormMetaData?: Partial<FormMetaData>;
     }
   ) {}
@@ -83,6 +84,13 @@ export class FormMetaData implements IFormMetadata {
   #getSectionFromPrograms(programs: Program[]): IFormMetadataSection[] {
     const sections = flatten(
       programs.map((program) => {
+        if (this.params.programStage) {
+          return this.#getProgramStageSections(
+            program,
+            this.params.programStage
+          );
+        }
+
         return [
           ...(this.params.splitRegistrationSection
             ? [
@@ -103,8 +111,12 @@ export class FormMetaData implements IFormMetadata {
     return sections as IFormMetadataSection[];
   }
 
-  #getProgramStageSections(program: Program) {
-    const programStages = this.params.includeAllProgramStages
+  #getProgramStageSections(program: Program, programStageId?: string) {
+    const programStages = programStageId
+      ? (program.programStages || []).filter(
+          (programStage) => programStage.id === programStageId
+        )
+      : this.params.includeAllProgramStages
       ? program.programStages
       : program.useFirstStageDuringRegistration
       ? [(program.programStages || [])[0]]
