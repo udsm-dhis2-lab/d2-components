@@ -34,7 +34,7 @@ export class LineListService {
     const dateFilter = startDate && endDate ? `&programStartDate=${startDate}&programEndDate=${endDate}` : '';
     const ouModeIdentifier = ouMode ? `&ouMode=${ouMode}`: ``;
     return this.httpClient.get(
-      `trackedEntityInstances.json?program=${programId}&ou=${orgUnit}${ouModeIdentifier}&page=${page}&pageSize=${pageSize}&fields=trackedEntityInstance,attributes[*,displayInList],enrollments[*]&totalPages=true&${filterParams}${dateFilter}&order=created:desc`
+      `trackedEntityInstances.json?program=${programId}&ou=${orgUnit}${ouModeIdentifier}&page=${page}&pageSize=${pageSize}&fields=trackedEntityInstance,orgUnit,attributes[*,displayInList],enrollments[*]&totalPages=true&${filterParams}${dateFilter}&order=created:desc`
     ).pipe(
       map((response: any) => {
        //TODO: use the api to to order by desc
