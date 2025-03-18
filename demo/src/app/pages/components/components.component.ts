@@ -22,7 +22,7 @@ export class ComponentsComponent implements OnInit {
     {
       attribute: 'tgGvHgQgtQ0',
       operator: 'eq',
-      value: `ABC_12355890`,
+      value: `ABC`,
     },
   ];
 
