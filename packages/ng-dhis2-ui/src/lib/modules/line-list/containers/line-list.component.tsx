@@ -203,6 +203,7 @@ export class LineListTableComponent extends ReactWrapperModule {
           } else if ('trackedEntityInstances' in response.data) {
             responsePager = (response.data as TrackedEntityInstancesResponse)
               .pager;
+
             const { columns, data, filteredEntityColumns } =
               getTrackedEntityData(
                 response,
@@ -213,8 +214,11 @@ export class LineListTableComponent extends ReactWrapperModule {
             entityColumns = columns;
             entityData = data;
             let firstTei = (response.data as TrackedEntityInstancesResponse)
-              .trackedEntityInstances[0].trackedEntityInstance;
-            this.firstValue.emit(firstTei);
+              ?.trackedEntityInstances?.[0]?.trackedEntityInstance;
+
+            if (firstTei) {
+              this.firstValue.emit(firstTei);
+            }
             //  setFilteredColumns(filteredEntityColumns);
             // Ensure filter inputs do not disappear when no data is returned
             // If filteredEntityColumns is empty, keep the previous columns instead of clearing them
@@ -233,13 +237,11 @@ export class LineListTableComponent extends ReactWrapperModule {
             [{ label: '#', key: 'index' }, ...entityColumns],
             this.actionOptions
           );
+
           setLoading(false);
-          // console.log('hey');
           setColumns(...[finalColumns]);
           setData(...[entityData]);
           setPager(...[responsePager]);
-          // console.log('columns', columns);
-          // console.log('data', data);
         });
     }, [
       programIdState,
@@ -300,10 +302,8 @@ export class LineListTableComponent extends ReactWrapperModule {
               })
               .filter((item) => item !== null); // Remove null entries (no matching enrollment)
 
-            // console.log('TEI and Enrollment IDs emitted:', teiEnrollmentList);
             this.approvalSelected.emit(teiEnrollmentList);
           } else {
-            // console.log('No tracked entity instances found in the response');
             this.approvalSelected.emit([]); // Emit empty array if no TEIs
           }
         });
@@ -323,8 +323,6 @@ export class LineListTableComponent extends ReactWrapperModule {
         const updatedFilters = value.trim()
           ? [...filteredFilters, { attribute: key, operator: 'like', value }]
           : filteredFilters;
-
-        // console.log(`Updated Filters:`, updatedFilters); // Debugging
 
         return updatedFilters;
       });
@@ -402,8 +400,6 @@ export class LineListTableComponent extends ReactWrapperModule {
                 onChange={(
                   e: React.ChangeEvent<HTMLInputElement> | { value?: string }
                 ) => {
-                  console.log(`Event for key "${key}":`, e);
-
                   // Check if it's a standard event with target.value
                   if ('target' in e && e.target) {
                     handleInputChange(

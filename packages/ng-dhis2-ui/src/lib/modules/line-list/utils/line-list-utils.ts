@@ -63,15 +63,20 @@ export const getTrackedEntityData = (
     .trackedEntityInstances;
 
   let programMetaData = response.metadata.programTrackedEntityAttributes;
-  //let progrmaMetaDataAttributesMap = programMetaData.reduce
+
+  //organisation units from metadata
+  let orgUnitsFromMetaData = response.metadata.organisationUnits;
+
+  //a Map to efficiently look up orgUnit names by ID
+  const orgUnitMap = new Map<string, string>(
+    orgUnitsFromMetaData.map((ou: { id: string; name: string }) => [ou.id, ou.name])
+  );
 
   const mappedProgramMetadataAttributes = programMetaData.map((attr) => ({
     displayInList: attr.displayInList,
     searchable: attr.searchable,
     id: attr.trackedEntityAttribute.id,
   }));
-
-  console.log('the mapped attributes', mappedProgramMetadataAttributes);
 
   const programAttributesMap = programMetaData.reduce(
     (acc: { [key: string]: string }, attribute: any) => {
@@ -83,7 +88,6 @@ export const getTrackedEntityData = (
     {}
   );
 
-  console.log('metadat attributes', programMetaData);
   if (filters) {
     teis = getFilteredTrackedEntityInstances(teis, filters);
   }
@@ -98,14 +102,6 @@ export const getTrackedEntityData = (
       : tei.attributes;
     attributes.forEach((attr: any) => allAttributes.add(attr.attribute));
   });
-
-  console.log('all of the attributes', allAttributes);
-
-  // const filteredAttributes = new Set(
-  //   [...allAttributes].filter((attributeId) => programAttributesMap[attributeId])
-  // );
-
-  // console.log('Filtered All Attributes:', filteredAttributes);
 
   let entityColumns = Array.from(allAttributes).map((attrId: string) => {
     const foundAttribute = teis
@@ -132,6 +128,17 @@ export const getTrackedEntityData = (
     );
   });
 
+  // entityColumns.push({
+  //   label: 'Location',
+  //   key: 'orgUnit',
+  // });
+
+  // Add orgUnit as the first column
+  entityColumns.unshift({
+    label: 'Location',
+    key: 'orgUnit',
+  });
+
   const searchableAttributes =  mappedProgramMetadataAttributes
     .filter((attr) => attr.searchable && attr.displayInList)
     .map((attr) => ({
@@ -146,10 +153,6 @@ export const getTrackedEntityData = (
   const filteredEntityColumns = entityColumns.filter((column) =>
     searchableKeys.has(column.key)
   );
-
-  console.log('show the filtered values', filteredEntityColumns);
-
-  console.log('the answer is ', searchableAttributes);
 
   const attributesData = teis.map((tei: any, idx: number) => {
     let row: TableRow = {
@@ -168,9 +171,11 @@ export const getTrackedEntityData = (
 
     attributesToUse.forEach((attr: any) => (row[attr.attribute] = attr.value));
 
+    // Access the name of the orgUnit using the Map
+    row['orgUnit'] = orgUnitMap.get(tei.orgUnit) || tei.orgUnit || 'N/A';
+
     return row;
   });
-  console.log('attributes to use', entityColumns);
   return { columns: entityColumns, data: attributesData, filteredEntityColumns: filteredEntityColumns };
 };
 

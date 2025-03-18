@@ -296,6 +296,12 @@ export class BaseFormFieldComponent
               error={hasError}
               label={this.label()}
               name={this.field().id}
+              disabled={
+                this.field()?.disabled ||
+                this.field()?.generated ||
+                this.field()?.unique ||
+                false
+              }
               onChange={(event: any) => {
                 this.ngZone.run(() => {
                   (
@@ -321,6 +327,12 @@ export class BaseFormFieldComponent
               error={hasError}
               validationText={validationError}
               inputWidth={this.fieldConfig()?.inputWidth}
+              disabled={
+                this.field()?.disabled ||
+                this.field()?.generated ||
+                this.field()?.unique ||
+                false
+              }
               required={this.field().required}
               className="select"
               label={this.label()}
@@ -360,6 +372,12 @@ export class BaseFormFieldComponent
               error={hasError}
               validationText={validationError}
               inputWidth={this.fieldConfig()?.inputWidth}
+              disabled={
+                this.field()?.disabled ||
+                this.field()?.generated ||
+                this.field()?.unique ||
+                false
+              }
               label={this.label()}
               required={this.field().required}
               loadingText="Loading options"
@@ -446,7 +464,18 @@ export class BaseFormFieldComponent
               max={this.field().max?.toString()}
               placeholder={this.placeholder()}
               value={value}
-              readOnly={this.field().disabled}
+              disabled={
+                this.field()?.disabled ||
+                this.field()?.generated ||
+                this.field()?.unique ||
+                false
+              }
+              readOnly={
+                this.field()?.disabled ||
+                this.field()?.generated ||
+                this.field()?.unique ||
+                false
+              }
               onChange={(event: any) => {
                 this.ngZone.run(() => {
                   (
