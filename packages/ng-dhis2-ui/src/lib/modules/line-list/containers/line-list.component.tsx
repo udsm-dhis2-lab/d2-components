@@ -71,6 +71,13 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() isButtonLoading: boolean = false;
   @Input() buttonLabel: string = '';
   @Output() firstValue = new EventEmitter<string>();
+  @Input() onApprove!: () => void; 
+
+  onClick() {
+    if (this.onApprove) {
+      this.onApprove(); 
+    }
+  }
   setReactStateUpdaters = (updaters: any) => {
     this.reactStateUpdaters = updaters;
   };
