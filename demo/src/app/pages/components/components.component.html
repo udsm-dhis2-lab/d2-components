@@ -248,6 +248,7 @@
     [isButtonLoading]="isButtonLoading"
     [attributeFilters]="attributeFilters"
     (firstValue)="onFirstValueEmitted($event)"
+    [buttonFilter]="'RASI'"
   ></app-line-list>
 </div>
 
@@ -285,6 +286,5 @@
     [buttonLabel]="'approve applicants'"
     [isButtonLoading]="isButtonLoading"
     [attributeFilters]="attributeFilters"
-    [onApprove]="handleApprovalClick"
   ></app-line-list>
 </div>
