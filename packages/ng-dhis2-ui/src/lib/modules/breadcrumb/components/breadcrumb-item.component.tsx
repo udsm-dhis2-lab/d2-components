@@ -38,8 +38,6 @@ export const BreadcrumbItemComponent = (props: {
   const { breadcrumb, onClick } = props;
   const classes = useDynamicStyles(styles);
 
-  console.log('STYLES', classes);
-
   return (
     <button
       type="button"
