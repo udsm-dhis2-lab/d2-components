@@ -2,60 +2,32 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import { Pager } from '../../../shared';
-import { TrackerQueryFilter } from './tracker-query-filter.model';
+import { DataUrlGenerator, Pager, ProgramDateType } from '../../../shared';
 
-export type ProgramDateType = 'ENROLLED_ON' | 'OCCURED_ON';
+const DEFAULT_FIELDS =
+  'createdAt,updatedAt,trackedEntity,trackedEntityType,orgUnit,orgUnitName,attributes,enrollments[enrollment,enrolledAt,occurredAt,program,status,orgUnit,storedBy,events[event,occurredAt,dueDate,scheduledAt,status,programStage,program,trackedEntity,enrollment,orgUnit,orgUnitName,assignedUser,storedBy,dataValues]],relationships[relationship,relationshipType,from[trackedEntity[trackedEntity]],to[trackedEntity[trackedEntity]]';
 
-export class TrackerUrlGenerator {
-  #baseEndpoint = 'tracker/trackedEntities';
-  #orgUnit?: string;
-  #ouMode: 'ALL' | 'DESCENDANTS' | 'SELECTED' = 'SELECTED';
-  #program?: string;
-  #trackedEntityType?: string;
-  filters?: TrackerQueryFilter[];
-  #fields?: string =
-    'createdAt,updatedAt,trackedEntity,trackedEntityType,orgUnit,orgUnitName,attributes,enrollments[enrollment,enrolledAt,occurredAt,program,status,orgUnit,storedBy,events[event,occurredAt,dueDate,scheduledAt,status,programStage,program,trackedEntity,enrollment,orgUnit,orgUnitName,assignedUser,storedBy,dataValues]],relationships[relationship,relationshipType,from[trackedEntity[trackedEntity]],to[trackedEntity[trackedEntity]]';
-  #enrollmentEnrolledAfter?: string;
-  #enrollmentEnrolledBefore?: string;
-  #trackedEntity?: string;
-  #pager!: Pager;
+export class TrackerUrlGenerator extends DataUrlGenerator<TrackerUrlGenerator> {
+  baseEndpoint = 'tracker/trackedEntities';
+  trackedEntity?: string;
+  trackedEntityType?: string;
 
-  constructor(params: {
-    program?: string;
-    trackedEntityType?: string;
-    orgUnit?: string;
-    ouMode?: 'ALL' | 'DESCENDANTS' | 'SELECTED';
-    filters?: TrackerQueryFilter[];
-    fields?: string;
-    enrollmentEnrolledAfter?: string;
-    enrollmentEnrolledBefore?: string;
-    trackedEntity?: string;
-    pager?: Pager;
-  }) {
-    this.#program = params.program;
-    this.#trackedEntityType = params.trackedEntityType;
-    this.#orgUnit = params.orgUnit;
-    this.#ouMode = params.ouMode || this.#ouMode;
-    this.filters = params.filters;
-    this.#fields = params.fields ?? this.#fields;
-    this.#enrollmentEnrolledAfter = params.enrollmentEnrolledAfter;
-    this.#enrollmentEnrolledBefore = params.enrollmentEnrolledBefore;
-    this.#trackedEntity = params.trackedEntity;
-    this.#pager = params.pager || new Pager();
+  constructor(params: Partial<TrackerUrlGenerator>) {
+    super(params);
+    this.trackedEntityType = params.trackedEntityType;
+    this.fields = params.fields ?? DEFAULT_FIELDS;
+    this.trackedEntity = params.trackedEntity;
   }
 
-  generate(): string {
-    return this.#addPager(
-      this.#addOrder(
-        this.#addEnrollmentDates(
-          this.#addFields(
-            this.#addOrgUnit(
-              this.#addFilters(
-                this.#addTrackedEntityType(
-                  this.#addProgram(
-                    this.#addTrackedEntity(`${this.#baseEndpoint}`)
-                  )
+  override generate(): string {
+    return this.addPager(
+      this.addOrder(
+        this.addEnrollmentDates(
+          this.addFields(
+            this.addOrgUnit(
+              this.addFilters(
+                this.addTrackedEntityType(
+                  this.addProgram(this.addTrackedEntity(`${this.baseEndpoint}`))
                 )
               )
             )
@@ -65,115 +37,32 @@ export class TrackerUrlGenerator {
     );
   }
 
-  #addProgram(url: string): string {
-    if (!this.#program) {
+  addTrackedEntityType(url: string): string {
+    if (!this.trackedEntityType || this.program) {
       return url;
     }
 
-    const isThereParams = this.#isThereQueryParams(url);
-
-    return url + `${isThereParams ? '&' : '?'}program=${this.#program}`;
-  }
-
-  #addTrackedEntityType(url: string): string {
-    if (!this.#trackedEntityType || this.#program) {
-      return url;
-    }
-
-    const isThereParams = this.#isThereQueryParams(url);
+    const isThereParams = this.isThereQueryParams(url);
 
     return (
       url +
-      `${isThereParams ? '&' : '?'}trackedEntityType=${this.#trackedEntityType}`
+      `${isThereParams ? '&' : '?'}trackedEntityType=${this.trackedEntityType}`
     );
   }
 
-  #addFilters(url: string): string {
-    if (!this.filters) {
+  addTrackedEntity(url: string): string {
+    if (!this.trackedEntity) {
       return url;
     }
 
-    const filterParams = TrackerQueryFilter.getApiFilters(
-      this.filters as TrackerQueryFilter[]
-    );
-
-    const isThereParams = this.#isThereQueryParams(url);
-
-    return url + `${isThereParams ? '&' : '?'}${filterParams}`;
-  }
-
-  #addOrgUnit(url: string): string {
-    const isThereParams = this.#isThereQueryParams(url);
-    if (!this.#orgUnit) {
-      return url + `${isThereParams ? '&' : '?'}ouMode=${this.#ouMode}`;
+    if (this.trackedEntity.split(';').length === 1) {
+      return url + `/${this.trackedEntity}`;
     }
+
+    const isThereParams = this.isThereQueryParams(url);
 
     return (
-      url +
-      `${isThereParams ? '&' : '?'}orgUnit=${this.#orgUnit}${
-        this.#ouMode ? `&ouMode=${this.#ouMode}` : ''
-      }`
+      url + `${isThereParams ? '&' : '?'}trackedEntity=${this.trackedEntity}`
     );
-  }
-
-  #addFields(url: string): string {
-    if (!this.#fields) {
-      return url;
-    }
-
-    const isThereParams = this.#isThereQueryParams(url);
-
-    return url + `${isThereParams ? '&' : '?'}fields=${this.#fields}`;
-  }
-
-  #addTrackedEntity(url: string): string {
-    if (!this.#trackedEntity) {
-      return url;
-    }
-
-    if (this.#trackedEntity.split(';').length === 1) {
-      return url + `/${this.#trackedEntity}`;
-    }
-
-    const isThereParams = this.#isThereQueryParams(url);
-
-    return (
-      url + `${isThereParams ? '&' : '?'}trackedEntity=${this.#trackedEntity}`
-    );
-  }
-
-  #addEnrollmentDates(url: string): string {
-    if (!this.#enrollmentEnrolledBefore) {
-      return url;
-    }
-
-    const isThereParams = this.#isThereQueryParams(url);
-
-    return (
-      url +
-      `${isThereParams ? '&' : '?'}${
-        this.#enrollmentEnrolledAfter
-          ? `enrollmentEnrolledAfter=${this.#enrollmentEnrolledAfter}&`
-          : ''
-      }enrollmentEnrolledBefore=${this.#enrollmentEnrolledBefore}`
-    );
-  }
-
-  #addOrder(url: string) {
-    const isThereParams = this.#isThereQueryParams(url);
-
-    return url + `${isThereParams ? '&' : '?'}order=updatedAt:desc`;
-  }
-
-  #addPager(url: string) {
-    const isThereParams = this.#isThereQueryParams(url);
-
-    return (
-      url + `${isThereParams ? '&' : '?'}${this.#pager.getPagingQueryParams()}`
-    );
-  }
-
-  #isThereQueryParams(url: string) {
-    return (url || '').includes('?');
   }
 }

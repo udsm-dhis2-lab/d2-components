@@ -1,6 +1,6 @@
 import { camelCase, isEmpty, isString, isUndefined } from 'lodash';
 import { EventUtil } from '../utils/event.util';
-import { BaseTrackerSDKModel } from './base.model';
+import { BaseTrackerSDKModel } from '../../tracker/models/base.model';
 import { DataValue } from './data-value.model';
 import { generateUid } from '../../../shared';
 

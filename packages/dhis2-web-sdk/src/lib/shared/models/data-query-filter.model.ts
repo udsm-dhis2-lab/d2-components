@@ -2,30 +2,29 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import { TrackerFilterCondition } from '../interfaces';
-import { ITrackerQueryFilter } from '../interfaces';
+import { DataFilterCondition, IDataQueryFilter } from '../interfaces';
 
-export class TrackerQueryFilter implements ITrackerQueryFilter {
+export class DataQueryFilter implements IDataQueryFilter {
   attribute!: string;
-  condition!: TrackerFilterCondition;
+  condition!: DataFilterCondition;
   value!: string | string[];
 
-  setAttribute(attribute: string): TrackerQueryFilter {
+  setAttribute(attribute: string): DataQueryFilter {
     this.attribute = attribute;
     return this;
   }
 
-  setCondition(condition: TrackerFilterCondition): TrackerQueryFilter {
+  setCondition(condition: DataFilterCondition): DataQueryFilter {
     this.condition = condition;
     return this;
   }
 
-  setValue(value: string | string[]): TrackerQueryFilter {
+  setValue(value: string | string[]): DataQueryFilter {
     this.value = value;
     return this;
   }
 
-  static getApiFilters(filters: TrackerQueryFilter[]): string {
+  static getApiFilters(filters: DataQueryFilter[]): string {
     return filters
       .map((trackerQueryFilter) => trackerQueryFilter.toApiFilters())
       .join('&');
@@ -39,7 +38,7 @@ export class TrackerQueryFilter implements ITrackerQueryFilter {
 
   private _getApiFilterValue() {
     switch (this.condition) {
-      case TrackerFilterCondition.In:
+      case DataFilterCondition.In:
         return (this.value as string[]).join(';');
 
       default:

@@ -9,3 +9,4 @@ export * from './lib/modules/data-table-ui';
 export * from './lib/modules/form';
 export * from './lib/modules/selection-filters-ui';
 export * from './lib/modules/tracker-form';
+export * from './lib/modules/event-form';

@@ -1,8 +1,8 @@
 import { cloneDeep, groupBy } from 'lodash';
-import { EventUtil } from '../utils/event.util';
+import { EventUtil } from '../../event/utils/event.util';
 import { BaseTrackerSDKModel } from './base.model';
-import { DataValue, DataValueUtil } from './data-value.model';
-import { DHIS2Event, IDHIS2Event } from './event.model';
+import { DataValue, DataValueUtil } from '../../event/models/data-value.model';
+import { DHIS2Event, IDHIS2Event } from '../../event/models/event.model';
 import { AttributeUtil } from '../utils';
 
 export interface IEnrollment {

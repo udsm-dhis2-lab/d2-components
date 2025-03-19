@@ -7,13 +7,14 @@ import {
   FormUtil,
   FormValue,
   TrackerFormModule,
+  EventFormModule,
 } from '@iapps/ng-dhis2-ui';
 
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'app-form-components',
   templateUrl: './form-components.component.html',
-  imports: [D2FormModule, TrackerFormModule],
+  imports: [D2FormModule, TrackerFormModule, EventFormModule],
 })
 export class FormComponentsComponent {
   d2 = (window as unknown as D2Window).d2Web;
@@ -93,5 +94,12 @@ export class FormComponentsComponent {
       .get();
 
     console.log(result.data);
+
+    const eventResult = await this.d2.eventModule.event
+      .setProgramStage('k4ZFqYqRNDF')
+      .setEvent('ctmcl4b26Mk')
+      .get();
+
+    console.log(eventResult.data);
   }
 }

@@ -1,5 +1,5 @@
-import { generateUid } from '@iapps/d2-web-sdk';
-import { DHIS2Event, IDHIS2Event } from '../models';
+import { generateUid } from '../../../shared';
+import { DHIS2Event } from '../models';
 
 export class EventUtil {
   static getEvents(eventList: Record<string, any>): DHIS2Event[] {

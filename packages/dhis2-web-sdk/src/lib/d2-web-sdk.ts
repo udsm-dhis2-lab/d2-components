@@ -15,6 +15,7 @@ import {
   UserModule,
   SystemInfo,
   SystemModule,
+  EventModule,
 } from './modules';
 import { D2HttpClient, D2WebConfig } from './shared';
 
@@ -169,6 +170,9 @@ export class D2Web {
     return new D2EngineModule();
   }
 
+  get eventModule(): EventModule {
+    return new EventModule(this.httpInstance);
+  }
   get trackerModule(): TrackerModule {
     return new TrackerModule(this.httpInstance);
   }

@@ -1,4 +1,4 @@
-import { generateUid } from '@iapps/d2-web-sdk';
+import { generateUid } from '../../../shared';
 import { ITrackedEntityInstance, TrackedEntityInstanceObject } from '../models';
 import { EnrollmentUtil } from './enrollment.util';
 

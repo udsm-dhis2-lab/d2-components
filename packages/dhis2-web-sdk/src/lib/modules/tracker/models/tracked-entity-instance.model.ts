@@ -8,7 +8,7 @@ import {
 import { Attribute, AttributeEntity } from './attribute.model';
 import { BaseTrackerSDKModel } from './base.model';
 import { Enrollment, IEnrollment } from './enrollment.model';
-import { DHIS2Event, IDHIS2Event } from './event.model';
+import { DHIS2Event, IDHIS2Event } from '../../event/models/event.model';
 import { TrackerRelationship } from './tracker-relationship.model';
 
 export interface ProgramOwner {
