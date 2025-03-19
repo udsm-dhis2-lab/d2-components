@@ -140,7 +140,9 @@ export class DataTableUIComponent
             </TableBody>
             <TableFoot>
               <DataTableRow>
-                <DataTableCell colSpan={columns.length + 1}></DataTableCell>
+                <DataTableCell
+                  colSpan={(columns.length || 0 + 1).toString()}
+                ></DataTableCell>
               </DataTableRow>
             </TableFoot>
           </DataTable>

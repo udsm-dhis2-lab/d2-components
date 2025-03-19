@@ -13,8 +13,8 @@ export class UserModule {
     const [userResponse, authorityResponse] = await Promise.all([
       this.httpClient.get(
         'me?fields=id,name,displayName,created,' +
-          'lastUpdated,email,dataViewOrganisationUnits[id,name,level],' +
-          'organisationUnits[id,name,level],userCredentials[username],userGroups[id,name]'
+          'lastUpdated,email,dataViewOrganisationUnits[id,code,path,name,level],' +
+          'organisationUnits[id,code,path,name,level],userCredentials[username],userGroups[id,name]'
       ),
       this.httpClient.get(`me/authorization`),
     ]);
