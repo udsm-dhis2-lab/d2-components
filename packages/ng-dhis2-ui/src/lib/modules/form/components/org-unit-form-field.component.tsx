@@ -16,6 +16,8 @@ import { useDynamicStyles } from '../../../shared';
 import { OrganisationUnitTree, CircularLoader, InputField } from '@dhis2/ui';
 import { D2Window } from '@iapps/d2-web-sdk';
 import { debounce } from 'lodash';
+import { Chip } from '@dhis2/ui';
+import { Tooltip } from '@dhis2/ui';
 
 const orgUnitFieldStyles = {
   container: {
@@ -107,14 +109,19 @@ export const OrgUnitFormField = (props: Props) => {
   const [searchData, setSearchData] = useState<any>();
   const [selectedOrgUnit, setSelectedOrgUnit] =
     React.useState<Record<string, unknown>>();
-  const [expanded, setExpanded] = React.useState<any[]>(initiallyExpanded);
+  const [expanded, setExpanded] = React.useState<any[] | undefined>(
+    initiallyExpanded
+  );
+  const [showOrgUnitTree, setShowOrgUnitTree] = useState<boolean>(!selected);
 
   useEffect(() => {
     setLoading(true);
 
     if (selected) {
       d2.httpInstance
-        .get(`organisationUnits/${selected}.json?fields=id,name,path,code`)
+        .get(
+          `organisationUnits/${selected}.json?fields=id,name,path,code,ancestors[id,name]`
+        )
         .then((response) => {
           if (response.data) {
             setSelectedOrgUnit(response.data);
@@ -135,6 +142,19 @@ export const OrgUnitFormField = (props: Props) => {
     }
 
     return undefined;
+  }, [selectedOrgUnit]);
+
+  const selectedOrgUnitLabel: string = useMemo(() => {
+    if (selectedOrgUnit) {
+      return [
+        ...((selectedOrgUnit['ancestors'] as any[]) || []),
+        selectedOrgUnit,
+      ]
+        .map((orgUnit) => orgUnit['name'])
+        .join(' / ');
+    }
+
+    return '';
   }, [selectedOrgUnit]);
 
   const handleExpand = ({ path }: { path: string }) => {
@@ -252,28 +272,47 @@ export const OrgUnitFormField = (props: Props) => {
               )}
             </div>
           )}
-          <div className={classes.container}>
-            <div className={classes.debounceFieldContainer}>
-              <InputField
-                placeholder="Search"
-                value={searchText}
-                disabled={disabled}
-                onChange={handleFilterChange}
-              />
-            </div>
-            {loading ? (
+
+          {selected && !showOrgUnitTree ? (
+            selectedOrgUnit ? (
+              <Tooltip content={selectedOrgUnitLabel}>
+                <Chip
+                  onRemove={() => {
+                    setShowOrgUnitTree(true);
+                  }}
+                >
+                  {(selectedOrgUnit as any).name}
+                </Chip>
+              </Tooltip>
+            ) : (
               <div className={classes.orgUnitTreeLoader}>
                 <CircularLoader small />
               </div>
-            ) : (
-              <div
-                className={classes.orgUnitTreeContainer}
-                style={{ maxHeight: '200px', overflowY: 'auto' }}
-              >
-                {renderOrgUnitTree()}
+            )
+          ) : (
+            <div className={classes.container}>
+              <div className={classes.debounceFieldContainer}>
+                <InputField
+                  placeholder="Search"
+                  value={searchText}
+                  disabled={disabled}
+                  onChange={handleFilterChange}
+                />
               </div>
-            )}
-          </div>
+              {loading ? (
+                <div className={classes.orgUnitTreeLoader}>
+                  <CircularLoader small />
+                </div>
+              ) : (
+                <div
+                  className={classes.orgUnitTreeContainer}
+                  style={{ maxHeight: '200px', overflowY: 'auto' }}
+                >
+                  {renderOrgUnitTree()}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </Provider>
     )
