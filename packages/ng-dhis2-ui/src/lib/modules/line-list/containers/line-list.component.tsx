@@ -352,15 +352,15 @@ export class LineListTableComponent extends ReactWrapperModule {
     return (
       <div>
         <div
-          style={{
-            width: '100%',
-            display: 'flex',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-            gap: 8,
-            padding: 8,
-            marginBottom: 16,
-          }}
+          // style={{
+          //   width: '100%',
+          //   display: 'flex',
+          //   justifyContent: 'flex-end',
+          //   alignItems: 'center',
+          //   gap: 8,
+          //   padding: 8,
+          //   marginBottom: 16,
+          // }}
         >
           {valueMatch &&
             this.dispatchTeis &&
