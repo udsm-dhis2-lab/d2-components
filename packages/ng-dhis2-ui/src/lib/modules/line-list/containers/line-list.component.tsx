@@ -352,15 +352,15 @@ export class LineListTableComponent extends ReactWrapperModule {
     return (
       <div>
         <div
-          style={{
-            width: '100%',
-            display: 'flex',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-            gap: 8,
-            padding: 8,
-            marginBottom: 16,
-          }}
+          // style={{
+          //   width: '100%',
+          //   display: 'flex',
+          //   justifyContent: 'flex-end',
+          //   alignItems: 'center',
+          //   gap: 8,
+          //   padding: 8,
+          //   marginBottom: 16,
+          // }}
         >
           {valueMatch &&
             this.dispatchTeis &&
@@ -385,16 +385,16 @@ export class LineListTableComponent extends ReactWrapperModule {
 
           {this.showFilterButton && (
             <Button
-              style={{
-                backgroundColor: '#6b7280', // Gray color
-                color: 'white',
-                padding: '8px 16px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-              }}
+              // style={{
+              //   backgroundColor: '#6b7280', 
+              //   color: 'white',
+              //   padding: '8px 16px',
+              //   borderRadius: '4px',
+              //   cursor: 'pointer',
+              //   display: 'flex',
+              //   alignItems: 'center',
+              //   gap: 8,
+              // }}
               onClick={() => {
                 setFilters(!filters);
               }}
@@ -408,12 +408,12 @@ export class LineListTableComponent extends ReactWrapperModule {
 
         {filters && (
           <div
-            style={{
-              display: 'flex',
-              gap: '10px',
-              flexWrap: 'wrap',
-              paddingBottom: '16px',
-            }}
+            // style={{
+            //   display: 'flex',
+            //   gap: '10px',
+            //   flexWrap: 'wrap',
+            //   paddingBottom: '16px',
+            // }}
           >
             {(filteredColumns ?? []).map(({ label, key }) => (
               <InputField
