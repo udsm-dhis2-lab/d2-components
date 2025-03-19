@@ -1,7 +1,11 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ProgramRuleEngine } from '@iapps/d2-web-sdk';
-import { FormValue, OrganisationUnitSelectionConfig } from '@iapps/ng-dhis2-ui';
+import {
+  BreadcrumbItem,
+  FormValue,
+  OrganisationUnitSelectionConfig,
+} from '@iapps/ng-dhis2-ui';
 import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
 import { Period } from '@iapps/period-utilities';
 
@@ -19,7 +23,9 @@ export class ComponentsComponent implements OnInit {
   ];
 
   handleApprovalClick() {
-    console.log('Approval button clicked from child! Performing approval logic...');
+    console.log(
+      'Approval button clicked from child! Performing approval logic...'
+    );
   }
 
   attributeFilters = [
@@ -238,7 +244,6 @@ export class ComponentsComponent implements OnInit {
       })
       .execute() as any;
 
-
     this.formValuePayload = formValue;
   }
 
@@ -366,8 +371,8 @@ export class ComponentsComponent implements OnInit {
           key: camelCaseLabel,
           label: dataElement.name,
           controlType: controlType,
-          generated: dataElement && dataElement.generated ||  false,
-          unique: dataElement && dataElement.unique ||  false,
+          generated: (dataElement && dataElement.generated) || false,
+          unique: (dataElement && dataElement.unique) || false,
           type: controlType,
           required: true,
         });
@@ -734,6 +739,10 @@ export class ComponentsComponent implements OnInit {
       id: 'QuJ5Eno7WdP',
     },
   ];
+
+  onSelectBreadcrumb(breadcrumb: BreadcrumbItem) {
+    console.log('SELECTED BREADCRUMB', breadcrumb);
+  }
 }
 
 class Option {

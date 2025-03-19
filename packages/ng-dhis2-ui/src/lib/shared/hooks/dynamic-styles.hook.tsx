@@ -1,74 +1,80 @@
 import { set } from 'lodash';
 import { useEffect, useState, useRef } from 'react';
 
-// Helper function to generate a unique class name
 const generateClassName = (base: string) =>
   `${base}-${Math.random().toString(36).substr(2, 9)}`;
 
-// Helper function to convert camelCased properties to hyphenated CSS properties
 const convertStylesToCSS = (
   className: string,
-  styles: React.CSSProperties | any
-) => {
-  let cssString = `.${className} {`;
+  styles: any,
+  parentSelector = ''
+): string => {
+  let cssString = '';
+  let mainBlock = parentSelector ? `${parentSelector} {` : `.${className} {`;
+
   for (const key in styles) {
-    if (typeof styles[key] === 'object' && key.startsWith('@media')) {
-      const mediaStyles = convertStylesToCSS(className, styles[key]);
-      cssString += `${key} { ${mediaStyles} }`;
-    } else if (key.startsWith('&:')) {
-      const pseudoClass = key.replace('&', '');
-      cssString += `${pseudoClass} { ${convertStylesToCSS('', styles[key])} }`;
+    const value = styles[key];
+
+    if (typeof value === 'object') {
+      if (key.startsWith('@media')) {
+        // Handle media queries
+        cssString += `${key} { ${convertStylesToCSS(
+          className,
+          value,
+          `.${className}`
+        )} }`;
+      } else if (key.startsWith('&')) {
+        // Handle pseudo-classes and nested selectors
+        const selector = key.replace('&', `.${className}`);
+        cssString += convertStylesToCSS(className, value, selector);
+      } else {
+        // Handle nested elements (e.g., '& > div')
+        cssString += convertStylesToCSS(
+          className,
+          value,
+          `.${className} ${key}`
+        );
+      }
     } else {
+      // Convert camelCase to kebab-case
       const cssKey = key.replace(
         /[A-Z]/g,
         (match) => `-${match.toLowerCase()}`
       );
-      cssString += `${cssKey}: ${styles[key]}; `;
+      mainBlock += `${cssKey}: ${value}; `;
     }
   }
-  cssString += '}';
-  return cssString;
+
+  mainBlock += '}';
+  return mainBlock + ' ' + cssString;
 };
 
-// Custom hook for dynamic styles with generics
-
-export const useDynamicStyles = <
-  T extends Record<string, React.CSSProperties | any>
->(
+// Custom hook for dynamic styles
+export const useDynamicStyles = <T extends Record<string, any>>(
   stylesObj: T
 ) => {
   const [classNames, setClassNames] = useState<{ [K in keyof T]: string }>(
-    {} as { [K in keyof T]: string }
+    {} as any
   );
+
   useEffect(() => {
-    const convertedStyles = Object.keys(stylesObj).map((key) => {
+    const styleElements: HTMLStyleElement[] = [];
+    const generatedClassNames = Object.keys(stylesObj).reduce((acc, key) => {
       const className = generateClassName(key);
       const styleElement = document.createElement('style');
       styleElement.innerHTML = convertStylesToCSS(className, stylesObj[key]);
       document.head.appendChild(styleElement);
+      styleElements.push(styleElement);
+      acc[key as keyof T] = className;
+      return acc;
+    }, {} as { [K in keyof T]: string });
 
-      return {
-        key,
-        className,
-        styleElement,
-      };
-    });
-
-    setClassNames(
-      convertedStyles.reduce((classNameEntity, convertedStyle) => {
-        return {
-          ...classNameEntity,
-          [convertedStyle.key]: convertedStyle.className,
-        };
-      }, {} as { [K in keyof T]: string })
-    );
+    setClassNames(generatedClassNames);
 
     return () => {
-      convertedStyles.forEach((convertedStyle) => {
-        document.head.removeChild(convertedStyle.styleElement);
-      });
+      styleElements.forEach((el) => document.head.removeChild(el));
     };
-  }, []);
+  }, [stylesObj]);
 
   return classNames;
 };
