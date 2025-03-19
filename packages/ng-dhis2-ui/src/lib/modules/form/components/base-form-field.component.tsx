@@ -50,6 +50,7 @@ import { firstValueFrom, map, Observable, zip } from 'rxjs';
 import { NgxDhis2HttpClientService, User } from '@iapps/ngx-dhis2-http-client';
 import { useFieldValidation } from '../hooks';
 import { OrgUnitFormField } from './org-unit-form-field.component';
+import { FileUploadField } from './file-upload-field.component';
 
 @Directive()
 export class BaseFormFieldComponent
@@ -244,7 +245,6 @@ export class BaseFormFieldComponent
                 });
               }}
               selected={value}
-              onBlur={(event: any) => {}}
             />
           );
 
@@ -410,45 +410,29 @@ export class BaseFormFieldComponent
           );
         case 'file':
           return (
-            <FileInputField
-              accept="*"
-              buttonLabel="Upload a file"
-              label={this.label()}
-              name={this.field().id}
-              onChange={(event: any) => {
-                this.uploadedFiles.push((event?.files || [])[0]);
-
-                this.ngZone.run(() => {
-                  this.form().get(this.field().id) ||
-                    this.form()
-                      .get(this.field().key)
-                      ?.setValue((event?.files || [])[0]);
-                  this.update.emit({
-                    form: this.form(),
-                    value: (event?.files || [])[0],
-                  });
-                });
-                setValue((event?.files || [])[0]);
-                setTouched(true);
-              }}
-            >
-              {this.uploadedFiles.map((file: any, index: any) => (
-                <FileListItem
-                  key={index}
-                  cancelText="Cancel"
-                  label={file.name}
-                  onCancel={() => {}}
-                  onRemove={() => {
-                    this.ngZone.run(() => {
-                      this.uploadedFiles.splice(index, 1);
-                      setValue(this.uploadedFiles);
-                      setTouched(true);
+            <>
+              <FileUploadField
+                label={this.label()}
+                id={this.field().id}
+                hasError={hasError}
+                required={this.field().required}
+                validationText={validationError}
+                performUpload={true}
+                uploadUrl={'fileResources'}
+                onUploadSuccess={(fileId: string) => {
+                  this.ngZone.run(() => {
+                    this.form().get(this.field().id) ||
+                      this.form().get(this.field().key)?.setValue(fileId);
+                    this.update.emit({
+                      form: this.form(),
+                      value: fileId,
                     });
-                  }}
-                  removeText="Remove"
-                />
-              ))}
-            </FileInputField>
+                  });
+                  setValue(fileId);
+                  setTouched(true);
+                }}
+              />
+            </>
           );
         default:
           return (

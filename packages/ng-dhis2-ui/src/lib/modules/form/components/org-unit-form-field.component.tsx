@@ -72,7 +72,7 @@ type Props = {
   label?: string;
   required?: boolean;
   onSelectOrgUnit: (selectedOrgUnits: any) => void;
-  onBlur: (selectedOrgUnit: Record<string, unknown>) => void;
+  onBlur?: (selectedOrgUnit: Record<string, unknown>) => void;
   selected?: string;
   maxTreeHeight?: number;
   disabled?: boolean;
