@@ -9,23 +9,24 @@ import {
   D2HttpResponse,
   generateUid,
   Pager,
+  DataQueryFilter,
+  ProgramDateType,
+  OuMode,
 } from '../../../shared';
 import { Program, ProgramRule } from '../../program';
 import {
   D2TrackerResponse,
   ITrackedEntityInstance,
-  ProgramDateType,
   TrackedEntityInstance,
-  TrackerQueryFilter,
   TrackerUrlGenerator,
 } from '../models';
 
 export class BaseTrackerQuery<T extends TrackedEntityInstance> {
   protected orgUnit?: string;
-  protected ouMode: 'ALL' | 'DESCENDANTS' | 'SELECTED' = 'ALL';
+  protected ouMode: OuMode = 'ALL';
   protected program?: string;
   protected trackedEntityType?: string;
-  protected filters?: TrackerQueryFilter[];
+  protected filters?: DataQueryFilter[];
   protected fields?: string;
   protected enrollmentEnrolledAfter?: string;
   protected enrollmentEnrolledBefore?: string;
@@ -51,7 +52,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
     return this;
   }
 
-  setOuMode(ouMode: 'ALL' | 'DESCENDANTS' | 'SELECTED'): BaseTrackerQuery<T> {
+  setOuMode(ouMode: OuMode): BaseTrackerQuery<T> {
     this.ouMode = ouMode;
     return this;
   }
@@ -107,7 +108,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
     return this;
   }
 
-  setFilters(filters: TrackerQueryFilter[]): BaseTrackerQuery<T> {
+  setFilters(filters: DataQueryFilter[]): BaseTrackerQuery<T> {
     this.filters = filters;
     return this;
   }

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import { TrackerFilterCondition } from './tracker-filter-condition.interface';
+import { DataFilterCondition } from './data-filter-condition.interface';
 
-export interface ITrackerQueryFilter {
+export interface IDataQueryFilter {
   attribute: string;
-  condition: TrackerFilterCondition;
+  condition: DataFilterCondition;
   value: unknown;
 }

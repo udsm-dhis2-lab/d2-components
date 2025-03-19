@@ -1,4 +1,4 @@
-import { generateUid } from '@iapps/d2-web-sdk';
+import { generateUid } from '../../../shared';
 import { Enrollment, IEnrollment } from '../models';
 
 export class EnrollmentUtil {

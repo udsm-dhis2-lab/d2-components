@@ -2,12 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import { D2HttpClient } from '../../../shared';
-import {
-  ITrackedEntityInstance,
-  TrackedEntityInstance,
-  TrackerQueryFilter,
-} from '../models';
+import { D2HttpClient, DataQueryFilter } from '../../../shared';
+import { ITrackedEntityInstance, TrackedEntityInstance } from '../models';
 import { BaseTrackerQuery } from './base-tracker.query';
 
 export class ModelBaseTrackerQuery<
@@ -31,7 +27,7 @@ export class ModelBaseTrackerQuery<
     }
 
     this.setFilters([
-      new TrackerQueryFilter()
+      new DataQueryFilter()
         .setAttribute(attributeProperty.id)
         .setCondition('EQ' as any)
         .setValue(id),

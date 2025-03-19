@@ -3,12 +3,10 @@
 // license that can be found in the LICENSE file.
 
 import { isArray, isEmpty } from 'lodash';
-import {
-  DHIS2Event,
-  TrackedEntityInstance,
-  TrackerRelationship,
-} from '../models';
+
+import { TrackedEntityInstance, TrackerRelationship } from '../models';
 import { generateUid } from '../../../shared';
+import { DHIS2Event } from '../../event';
 
 export function RelationshipField(
   relationshipType: string,

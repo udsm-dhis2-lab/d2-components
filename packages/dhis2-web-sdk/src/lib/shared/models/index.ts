@@ -16,3 +16,5 @@ export * from './relationship-direction.model';
 export * from './http-response.model';
 export * from './http-client-config.model';
 export * from './d2-http-request-config.model';
+export * from './data-query-filter.model';
+export * from './data-url-generator.model';

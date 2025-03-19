@@ -1,8 +1,4 @@
-import {
-  Attribute,
-  AttributeEntity,
-  AttributeValueEntity,
-} from '../models/attribute.model';
+import { Attribute, AttributeEntity, AttributeValueEntity } from '../models';
 
 export class AttributeUtil {
   static getAttribute(

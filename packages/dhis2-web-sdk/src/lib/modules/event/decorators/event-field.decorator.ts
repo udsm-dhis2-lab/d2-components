@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import { DHIS2Event, TrackedEntityInstance } from '../models';
+import { TrackedEntityInstance } from '../../tracker';
+import { DHIS2Event } from '../models';
 import { isEmpty } from 'lodash';
 
 export function EventField(

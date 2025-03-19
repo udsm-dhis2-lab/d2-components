@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import { DHIS2Event, IDHIS2Event, TrackedEntityInstance } from '../models';
+import { TrackedEntityInstance } from '../../tracker';
+import { DHIS2Event, IDHIS2Event } from '../models';
 
 export function DataElementField(
   dataElement: string,
