@@ -18,6 +18,10 @@ export class ComponentsComponent implements OnInit {
     { id: 'LAST_3_MONTHS', name: 'Last 3 months' },
   ];
 
+  handleApprovalClick() {
+    console.log('Approval button clicked from child! Performing approval logic...');
+  }
+
   attributeFilters = [
     {
       attribute: 'tgGvHgQgtQ0',
