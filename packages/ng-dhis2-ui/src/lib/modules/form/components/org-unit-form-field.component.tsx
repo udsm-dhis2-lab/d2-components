@@ -108,8 +108,8 @@ export const OrgUnitFormField = (props: Props) => {
   const [searchLoading, setSearchLoading] = useState<boolean>();
   const [searchData, setSearchData] = useState<any>();
   const [selectedOrgUnit, setSelectedOrgUnit] =
-    React.useState<Record<string, unknown>>();
-  const [expanded, setExpanded] = React.useState<any[] | undefined>(
+    useState<Record<string, unknown>>();
+  const [expanded, setExpanded] = useState<any[] | undefined>(
     initiallyExpanded
   );
   const [showOrgUnitTree, setShowOrgUnitTree] = useState<boolean>(!selected);
@@ -120,7 +120,7 @@ export const OrgUnitFormField = (props: Props) => {
     if (selected) {
       d2.httpInstance
         .get(
-          `organisationUnits/${selected}.json?fields=id,name,path,code,ancestors[id,name]`
+          `organisationUnits/${selected}.json?fields=id,displayName,path,code,ancestors[id,displayName]`
         )
         .then((response) => {
           if (response.data) {
@@ -132,9 +132,10 @@ export const OrgUnitFormField = (props: Props) => {
           }
         });
     } else {
+      setShowOrgUnitTree(true);
       setLoading(false);
     }
-  }, [selected]);
+  }, []);
 
   const highlighted: string[] | undefined = useMemo(() => {
     if (selectedOrgUnit) {
@@ -150,7 +151,7 @@ export const OrgUnitFormField = (props: Props) => {
         ...((selectedOrgUnit['ancestors'] as any[]) || []),
         selectedOrgUnit,
       ]
-        .map((orgUnit) => orgUnit['name'])
+        .map((orgUnit) => orgUnit['displayName'])
         .join(' / ');
     }
 
@@ -226,6 +227,7 @@ export const OrgUnitFormField = (props: Props) => {
             selected={highlighted}
             onChange={(event: any) => {
               setSelectedOrgUnit(event);
+              setShowOrgUnitTree(false);
               onSelectOrgUnit(event.id);
             }}
           />
@@ -243,6 +245,7 @@ export const OrgUnitFormField = (props: Props) => {
         selected={highlighted}
         onChange={(event: any) => {
           setSelectedOrgUnit(event);
+          setShowOrgUnitTree(false);
           onSelectOrgUnit(event.id);
         }}
       />
@@ -273,17 +276,19 @@ export const OrgUnitFormField = (props: Props) => {
             </div>
           )}
 
-          {selected && !showOrgUnitTree ? (
+          {!showOrgUnitTree ? (
             selectedOrgUnit ? (
-              <Tooltip content={selectedOrgUnitLabel}>
-                <Chip
-                  onRemove={() => {
-                    setShowOrgUnitTree(true);
-                  }}
-                >
-                  {(selectedOrgUnit as any).name}
-                </Chip>
-              </Tooltip>
+              <>
+                <Tooltip content={selectedOrgUnitLabel}>
+                  <Chip
+                    onRemove={() => {
+                      setShowOrgUnitTree(true);
+                    }}
+                  >
+                    {(selectedOrgUnit as any).displayName}
+                  </Chip>
+                </Tooltip>
+              </>
             ) : (
               <div className={classes.orgUnitTreeLoader}>
                 <CircularLoader small />
