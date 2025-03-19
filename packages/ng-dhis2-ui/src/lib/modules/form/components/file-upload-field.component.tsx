@@ -73,7 +73,6 @@ export const FileUploadField = (props: {
       buttonLabel="Upload a file"
       label={label}
       name={id}
-      valid={valid}
       required={required}
       validationText={validationText}
       onChange={(event: any) => {

@@ -239,10 +239,19 @@ export class BaseFormFieldComponent
               key={this.field().id}
               required={this.field().required}
               onSelectOrgUnit={(selectedOrgUnit: string) => {
-                setValue(selectedOrgUnit);
                 this.ngZone.run(() => {
-                  this.update.emit({ form: this.form(), value });
+                  (
+                    this.form().get(this.field().id) ||
+                    this.form().get(this.field().key)
+                  )?.setValue(selectedOrgUnit);
+
+                  this.update.emit({
+                    form: this.form(),
+                    value: selectedOrgUnit,
+                  });
                 });
+                setValue(selectedOrgUnit);
+                setTouched(true);
               }}
               selected={value}
             />
