@@ -210,7 +210,7 @@ export class LineListTableComponent extends ReactWrapperModule {
           } else if ('trackedEntityInstances' in response.data) {
             responsePager = (response.data as TrackedEntityInstancesResponse)
               .pager;
-          
+
             const { columns, data, filteredEntityColumns } =
               getTrackedEntityData(
                 response,
@@ -221,11 +221,11 @@ export class LineListTableComponent extends ReactWrapperModule {
             entityColumns = columns;
             entityData = data;
             let firstTei = (response.data as TrackedEntityInstancesResponse)
-            ?.trackedEntityInstances?.[0]?.trackedEntityInstance;
-          
-          if (firstTei) {
-            this.firstValue.emit(firstTei);
-          }
+              ?.trackedEntityInstances?.[0]?.trackedEntityInstance;
+
+            if (firstTei) {
+              this.firstValue.emit(firstTei);
+            }
             //  setFilteredColumns(filteredEntityColumns);
             // Ensure filter inputs do not disappear when no data is returned
             // If filteredEntityColumns is empty, keep the previous columns instead of clearing them
@@ -309,10 +309,8 @@ export class LineListTableComponent extends ReactWrapperModule {
               })
               .filter((item) => item !== null); // Remove null entries (no matching enrollment)
 
-          
             this.approvalSelected.emit(teiEnrollmentList);
           } else {
-    
             this.approvalSelected.emit([]); // Emit empty array if no TEIs
           }
         });
@@ -409,7 +407,6 @@ export class LineListTableComponent extends ReactWrapperModule {
                 onChange={(
                   e: React.ChangeEvent<HTMLInputElement> | { value?: string }
                 ) => {
-
                   // Check if it's a standard event with target.value
                   if ('target' in e && e.target) {
                     handleInputChange(
@@ -521,7 +518,7 @@ export class LineListTableComponent extends ReactWrapperModule {
               ) : (
                 <DataTableRow>
                   <DataTableCell
-                    colSpan={columns.length}
+                    colSpan={columns.length?.toString()}
                     style={{
                       textAlign: 'center',
                       fontWeight: 'bold',

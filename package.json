@@ -127,7 +127,7 @@
     "@dhis2/app-runtime": "^3.13.0",
     "@dhis2/d2-i18n": "^1.1.3",
     "@dhis2/pwa": "^10.3.10",
-    "@dhis2/ui": "8.13.0",
+    "@dhis2/ui": "^10.4.0",
     "@iapps/ngx-dhis2-org-unit-filter": "^1.1.37",
     "@iapps/ngx-dhis2-period-filter": "^2.0.0",
     "@katoid/angular-grid-layout": "^2.2.0",
