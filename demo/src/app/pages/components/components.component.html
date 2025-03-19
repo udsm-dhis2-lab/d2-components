@@ -287,4 +287,22 @@
     [isButtonLoading]="isButtonLoading"
     [attributeFilters]="attributeFilters"
   ></app-line-list>
+
+  <!-- breadcrumb -->
+  <div class="p-3">
+    <ng-dhis2-ui-breadcrumb
+      [breadcrumbs]="[
+        {
+          label: 'Home',
+          url: '/'
+        },
+        {
+          label: 'Enrollment',
+          url: '/enrollment',
+          selected: true
+        }
+      ]"
+      (selectBreadcrumb)="onSelectBreadcrumb($event)"
+    />
+  </div>
 </div>
