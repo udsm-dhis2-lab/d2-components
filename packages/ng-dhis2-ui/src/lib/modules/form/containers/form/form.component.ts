@@ -127,8 +127,12 @@ export class FormComponent implements OnChanges, OnDestroy {
           );
 
           if (fieldToRemove) {
-            this.form.get(fieldToRemove.key)?.setValue('');
-            this.onFieldUpdate(this.form, fieldToRemove);
+            const currentValue = this.form.get(fieldToRemove.key)?.value;
+
+            if (currentValue != null) {
+              this.form.get(fieldToRemove.key)?.setValue(null);
+              this.onFieldUpdate(this.form, fieldToRemove);
+            }
           }
           break;
         }
