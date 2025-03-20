@@ -105,8 +105,6 @@ export class FormMetaData implements IFormMetadata {
       })
     );
 
-    console.log(sections);
-
     if (sections.length === 0) {
       return [];
     }
