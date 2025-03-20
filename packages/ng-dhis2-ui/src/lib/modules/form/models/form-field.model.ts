@@ -1,3 +1,4 @@
+import { format } from 'date-fns';
 import {
   FieldControlType,
   FormFieldMetaType,
@@ -5,7 +6,11 @@ import {
   IFieldDropdown,
 } from '../interfaces';
 
-export class FormField<T> implements IFormField<T> {
+interface FormFieldFunction<T> {
+  setMax: (field: Partial<IFormField<T>>) => string | number | Date | undefined;
+}
+
+export class FormField<T> implements IFormField<T>, FormFieldFunction<T> {
   value?: T | '';
   id: string;
   code?: string;
@@ -44,6 +49,7 @@ export class FormField<T> implements IFormField<T> {
   stepId?: string;
   availableOptionsLabel?: string;
   selectedOptionsLabel?: string;
+  allowFutureDate?: boolean;
 
   constructor(options: Partial<FormField<T>> = {}) {
     this.value = options.value || '';
@@ -60,8 +66,7 @@ export class FormField<T> implements IFormField<T> {
     this.disabled = options.disabled ?? false;
     this.placeholder = options.placeholder || '';
     this.min = options.min;
-    this.max =
-      options.max || (this.controlType === 'date' ? new Date() : undefined);
+    this.max = this.setMax(options);
     this.maxLength = options.maxLength as number;
     this.hidden = options.hidden || false;
     this.unique = options.unique || false;
@@ -86,5 +91,18 @@ export class FormField<T> implements IFormField<T> {
       options.availableOptionsLabel ?? 'Available options';
     this.selectedOptionsLabel =
       options.availableOptionsLabel ?? 'Selected options';
+    this.allowFutureDate = options.allowFutureDate;
+  }
+
+  setMax(field: Partial<FormField<T>>): string | number | Date | undefined {
+    if (field.controlType !== 'date') {
+      return field.max;
+    }
+
+    if (field.allowFutureDate) {
+      return undefined;
+    }
+
+    return format(new Date(), 'yyyy-MM-dd');
   }
 }

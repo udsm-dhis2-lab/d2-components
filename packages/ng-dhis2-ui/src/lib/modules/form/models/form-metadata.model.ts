@@ -4,7 +4,7 @@ import { FormMetadataSection } from './form-metadata-section.model';
 import { IMetadataRule, MetadataRule } from './form-metadata-rule.model';
 import { FormField } from './form-field.model';
 import { Program, ProgramRule, ProgramRuleVariable } from '@iapps/d2-web-sdk';
-import { IFormMetadata, IFormMetadataSection } from '../interfaces';
+import { IFormField, IFormMetadata, IFormMetadataSection } from '../interfaces';
 import { DateField } from './date-field.model';
 import { TranslationUtil } from '../utils';
 
@@ -52,7 +52,7 @@ export class FormMetaData implements IFormMetadata {
       .filter((section) => section !== null) as IFormMetadataSection[];
   }
 
-  get fields(): FormField<string>[] {
+  get fields(): IFormField<string>[] {
     return flatten(
       flatten(
         this.sections.map((section) =>

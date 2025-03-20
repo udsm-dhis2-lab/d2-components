@@ -110,8 +110,12 @@ export class Program extends IdentifiableObject<Program> {
 
   get trackedEntityAttributes(): TrackedEntityAttribute[] {
     return (this.programTrackedEntityAttributes || []).map(
-      (programTrackedEntityAttribute) =>
-        programTrackedEntityAttribute.trackedEntityAttribute
+      (programTrackedEntityAttribute) => {
+        return {
+          ...programTrackedEntityAttribute.trackedEntityAttribute,
+          allowFutureDate: programTrackedEntityAttribute.allowFutureDate,
+        };
+      }
     );
   }
 
@@ -163,6 +167,7 @@ export class Program extends IdentifiableObject<Program> {
             return {
               ...programStageDataElement.dataElement,
               programStageId: programStage.id,
+              allowFutureDate: programStageDataElement.allowFutureDate,
               isProgramStageRepeatable: programStage.repeatable,
             };
           })

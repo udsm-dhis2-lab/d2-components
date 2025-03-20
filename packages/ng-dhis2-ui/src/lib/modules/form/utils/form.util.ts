@@ -6,14 +6,15 @@ import {
 import { camelCase, find, isArray } from 'lodash';
 import { FormField } from '../models';
 import { FieldUtil } from '../utils';
+import { IFormField } from '../interfaces';
 
 export class FormUtil {
   static getFormGroup(
-    fields: FormField<string>[],
+    fields: IFormField<string>[],
     dataEntities: any
   ): UntypedFormGroup {
     const group: any = {};
-    (fields || []).forEach((field: FormField<string>) => {
+    (fields || []).forEach((field: IFormField<string>) => {
       if (field) {
         const value = FormUtil.getFieldValue(field, dataEntities);
         const minValidators = field.min
@@ -88,7 +89,7 @@ export class FormUtil {
   }
 
   static getFieldValue(
-    field: FormField<string>,
+    field: IFormField<string>,
     dataEntities: Record<string, any>
   ) {
     const fieldValue = dataEntities

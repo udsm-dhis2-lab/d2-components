@@ -5,10 +5,11 @@
 import { FormGroup } from '@angular/forms';
 import { FormField } from '../models';
 import { useMemo } from 'react';
+import { IFormField } from '../interfaces';
 
 export const useFieldValidation = (props: {
   form: FormGroup;
-  field: FormField<string>;
+  field: IFormField<string>;
   touched: boolean;
   value: string;
 }) => {

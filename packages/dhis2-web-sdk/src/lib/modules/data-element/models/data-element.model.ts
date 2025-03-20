@@ -53,6 +53,7 @@ export class DataElement extends IdentifiableObject<DataElement> {
   optionSetValue?: boolean;
   optionSet?: OptionSet;
   programStageId?: string;
+  allowFutureDate?: boolean;
   isProgramStageRepeatable?: boolean;
 
   constructor(dataElement: Partial<DataElement>) {

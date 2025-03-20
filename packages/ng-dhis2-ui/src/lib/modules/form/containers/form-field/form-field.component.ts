@@ -18,6 +18,7 @@ import { find } from 'lodash';
 import moment from 'moment';
 import { Subject, takeUntil } from 'rxjs';
 import { FieldConfig, FormField, IMetadataRuleAction } from '../../models';
+import { IFormField } from '../../interfaces';
 
 @Component({
   selector: 'ng-dhis2-ui-form-field',
@@ -26,7 +27,7 @@ import { FieldConfig, FormField, IMetadataRuleAction } from '../../models';
   standalone: false,
 })
 export class FormFieldComponent implements OnInit, OnChanges, OnDestroy {
-  field = input.required<FormField<string>>();
+  field = input.required<IFormField<string>>();
   @Input() fieldConfig!: FieldConfig;
   @Input() form!: FormGroup;
   @Input() isCheckBoxButton!: boolean;

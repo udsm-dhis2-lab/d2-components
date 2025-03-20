@@ -21,6 +21,7 @@ export interface IFormField<T> {
   maxLength?: number | string;
   hidden: boolean;
   units?: string;
+  generated?: boolean;
   isDataElement?: boolean;
   isAttribute?: boolean;
   isOrgUnit?: boolean;
@@ -38,4 +39,7 @@ export interface IFormField<T> {
   unique?: boolean;
   metaType?: FormFieldMetaType;
   stepId?: string;
+  availableOptionsLabel?: string;
+  selectedOptionsLabel?: string;
+  allowFutureDate?: boolean;
 }

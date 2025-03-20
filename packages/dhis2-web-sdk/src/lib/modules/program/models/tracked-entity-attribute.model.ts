@@ -41,6 +41,7 @@ export class TrackedEntityAttribute extends IdentifiableObject<TrackedEntityAttr
   optionSetValue?: boolean;
   optionSetValueCount?: number;
   optionSet?: OptionSet;
+  allowFutureDate?: boolean;
 
   constructor(trackedEntityAttribute: Partial<TrackedEntityAttribute>) {
     super(trackedEntityAttribute);

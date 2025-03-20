@@ -1,15 +1,15 @@
 import { FormGroup } from '@angular/forms';
 import { find } from 'lodash';
-import { FormField } from './form-field.model';
+import { IFormField } from '../interfaces';
 
 export class FormValue {
   form: FormGroup;
-  fields: FormField<string>[];
-  changedField?: FormField<string>;
+  fields: IFormField<string>[];
+  changedField?: IFormField<string>;
   constructor(
     form: FormGroup,
-    fields: FormField<string>[],
-    changedField?: FormField<string>
+    fields: IFormField<string>[],
+    changedField?: IFormField<string>
   ) {
     this.form = form;
     this.fields = fields;
