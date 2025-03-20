@@ -1,5 +1,6 @@
 import {
   Component,
+  EffectRef,
   EventEmitter,
   Input,
   OnChanges,
@@ -7,14 +8,16 @@ import {
   OnInit,
   Output,
   SimpleChanges,
+  effect,
   input,
+  model,
   signal,
 } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { find } from 'lodash';
 import moment from 'moment';
 import { Subject, takeUntil } from 'rxjs';
-import { FieldConfig, FormField } from '../../models';
+import { FieldConfig, FormField, IMetadataRuleAction } from '../../models';
 
 @Component({
   selector: 'ng-dhis2-ui-form-field',
@@ -28,7 +31,7 @@ export class FormFieldComponent implements OnInit, OnChanges, OnDestroy {
   @Input() form!: FormGroup;
   @Input() isCheckBoxButton!: boolean;
   @Input() fieldClass!: string;
-  @Input() programRuleActions!: any[];
+  programRuleActions = input<IMetadataRuleAction[]>([]);
   @Input() dataEntities: any;
   @Input() minDate: any;
   @Input() maxDate = new Date();
@@ -48,6 +51,14 @@ export class FormFieldComponent implements OnInit, OnChanges, OnDestroy {
   fieldFilterControl: FormControl = new FormControl();
   protected _onDestroy = new Subject<void>();
   optionSearchTerm!: string;
+  isValueAssigned = signal<boolean>(false);
+
+  ruleProcessor: EffectRef;
+  constructor() {
+    this.ruleProcessor = effect(() => {
+      this.#processRules(this.programRuleActions());
+    });
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes && changes['dataEntities'] && this.field()?.dependentField) {
@@ -78,9 +89,36 @@ export class FormFieldComponent implements OnInit, OnChanges, OnDestroy {
       });
   }
 
+  #processRules(ruleActions: IMetadataRuleAction[]) {
+    ruleActions
+      .filter((ruleAction) => ruleAction.field === this.field().id)
+      .forEach((ruleAction) => {
+        switch (ruleAction.actionType) {
+          case 'ASSIGN': {
+            if (ruleAction.assignedData) {
+              const currentValue = this.form?.get(this.field().key)?.value;
+
+              if (currentValue != ruleAction.assignedData) {
+                this.form
+                  ?.get(this.field().key)
+                  ?.setValue(ruleAction.assignedData);
+                this.isValueAssigned.set(true);
+                this.onValueChange();
+              }
+            }
+            break;
+          }
+
+          default:
+            break;
+        }
+      });
+  }
+
   ngOnDestroy() {
     this._onDestroy.next();
     this._onDestroy.complete();
+    this.ruleProcessor.destroy();
   }
 
   get isValid(): boolean {
