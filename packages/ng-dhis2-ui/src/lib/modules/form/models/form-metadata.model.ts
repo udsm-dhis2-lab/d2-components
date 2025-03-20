@@ -20,6 +20,7 @@ export class FormMetaData implements IFormMetadata {
       locale?: string;
       splitRegistrationSection?: boolean;
       includeAllProgramStages?: boolean;
+      disableEnrollmentDate?: boolean;
       programStage?: string;
       customFormMetaData?: Partial<FormMetaData>;
     }
@@ -103,6 +104,8 @@ export class FormMetaData implements IFormMetadata {
         ];
       })
     );
+
+    console.log(sections);
 
     if (sections.length === 0) {
       return [];
@@ -211,6 +214,7 @@ export class FormMetaData implements IFormMetadata {
                 code: 'enrollmentDate',
                 key: 'enrollmentDate',
                 required: true,
+                disabled: this.params.disableEnrollmentDate,
               }),
               program.displayIncidentDate
                 ? new DateField({
@@ -300,6 +304,7 @@ export class FormMetaData implements IFormMetadata {
                 code: 'enrollmentDate',
                 key: 'enrollmentDate',
                 required: true,
+                disabled: this.params.disableEnrollmentDate,
               }),
               program.displayIncidentDate
                 ? new DateField({
