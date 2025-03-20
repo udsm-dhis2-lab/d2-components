@@ -9,6 +9,7 @@ import {
   IdentifiableObject,
 } from '../../../shared';
 import { TrackedEntityAttribute } from '../models';
+import { OptionGroup, Option } from '../../option-set';
 
 export type ProgramRuleActionField =
   | IdentifiableField
@@ -19,6 +20,8 @@ export type ProgramRuleActionField =
   | 'evaluationTime'
   | 'dataElement'
   | 'trackedEntityAttribute'
+  | 'optionGroup'
+  | 'option'
   | 'programRule';
 
 export class ProgramRuleAction extends IdentifiableObject<ProgramRuleAction> {
@@ -34,6 +37,8 @@ export class ProgramRuleAction extends IdentifiableObject<ProgramRuleAction> {
     'evaluationTime',
     'dataElement',
     'trackedEntityAttribute',
+    'optionGroup',
+    'option',
     'programRule',
   ];
 
@@ -44,5 +49,7 @@ export class ProgramRuleAction extends IdentifiableObject<ProgramRuleAction> {
   evaluationTime?: string;
   dataElement?: Partial<DataElement>;
   trackedEntityAttribute?: Partial<TrackedEntityAttribute>;
+  optionGroup?: Partial<OptionGroup>;
+  option?: Partial<Option>;
   programRule!: any;
 }

@@ -3,3 +3,4 @@
 // license that can be found in the LICENSE file.
 export * from './option-set.query';
 export * from './option.query';
+export * from './option-group.query';

@@ -23,7 +23,7 @@
                   [fields]="fieldGroup.fields"
                   [form]="formGroup"
                   [dataEntities]="dataValueEntities()"
-                  [programRuleActions]="ruleActions"
+                  [programRuleActions]="ruleActions()"
                   [isFormHorizontal]="fieldGroup.isFormHorizontal || false"
                   (formUpdate)="onFormUpdate($event, fieldGroup.id)"
                 ></ng-dhis2-ui-form>
@@ -50,7 +50,7 @@
                       [form]="formGroup"
                       [program]="formSection.program || ''"
                       [programStage]="fieldGroup.repeatableStage"
-                      [programRuleActions]="ruleActions"
+                      [programRuleActions]="ruleActions()"
                       [numberOfRows]="+dataParams.numberOfRows"
                       [repeatDependentField]="
                         fieldGroup.repeatDependentField || ''
@@ -69,7 +69,7 @@
                   [form]="formGroup"
                   [program]="formSection.program || ''"
                   [programStage]="fieldGroup.repeatableStage"
-                  [programRuleActions]="ruleActions"
+                  [programRuleActions]="ruleActions()"
                   [numberOfRows]="1"
                   [repeatDependentField]="fieldGroup.repeatDependentField || ''"
                   [events]="dataValueEntities()[fieldGroup.dataKey!]"

@@ -1,16 +1,26 @@
 import {
   Component,
+  EffectRef,
   EventEmitter,
   Input,
   OnChanges,
+  OnDestroy,
   Output,
+  SimpleChanges,
   ViewChildren,
   computed,
+  effect,
   input,
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { head } from 'lodash';
-import { FieldsData, FormConfig, FormField, FormValue } from '../../models';
+import {
+  FieldsData,
+  FormConfig,
+  FormField,
+  FormValue,
+  IMetadataRuleAction,
+} from '../../models';
 import { FormFieldComponent } from '../form-field/form-field.component';
 
 @Component({
@@ -19,7 +29,7 @@ import { FormFieldComponent } from '../form-field/form-field.component';
   styleUrls: ['./form.component.scss'],
   standalone: false,
 })
-export class FormComponent implements OnChanges {
+export class FormComponent implements OnChanges, OnDestroy {
   formConfig = input<FormConfig>();
   @Input() fields!: FormField<string>[];
   @Input() form!: FormGroup;
@@ -28,7 +38,7 @@ export class FormComponent implements OnChanges {
   @Input() fieldsData!: FieldsData;
   @Input() fieldClass!: string;
   @Input() shouldRenderAsCheckBoxesButton!: boolean;
-  @Input() programRuleActions!: any[];
+  programRuleActions = input<IMetadataRuleAction[]>([]);
   @Input() dataEntities: any;
 
   configuration = computed(() => {
@@ -62,13 +72,10 @@ export class FormComponent implements OnChanges {
       }
 
       const availableRule = head(
-        (this.programRuleActions || []).filter((ruleAction) => {
-          const fieldId = ruleAction.field || ruleAction[type]?.id;
-
+        (this.programRuleActions() || []).filter((ruleAction) => {
           return (
-            fieldId === elementItem.id &&
-            (ruleAction.programRuleActionType === 'HIDEFIELD' ||
-              ruleAction.actionType === 'HIDEFIELD')
+            ruleAction.field === elementItem.id &&
+            ruleAction.actionType === 'HIDEFIELD'
           );
         })
       );
@@ -77,10 +84,7 @@ export class FormComponent implements OnChanges {
         return true;
       }
 
-      const actionType =
-        availableRule?.programRuleActionType || availableRule?.actionType;
-
-      return actionType !== 'HIDEFIELD';
+      return availableRule.actionType !== 'HIDEFIELD';
     });
   }
 
@@ -102,39 +106,19 @@ export class FormComponent implements OnChanges {
     return 'col-sm-4';
   }
 
-  onUpdateFields(programRuleActions: any) {
-    this.fields = (this.fields || []).filter((field: any) => {
-      const type = field.isDataElement
-        ? 'dataElement'
-        : 'trackedEntityAttribute';
-
-      const elementItem = field[type] || field;
-      if (!elementItem) {
-        return true;
-      }
-
-      const availableRule: any = head(
-        (programRuleActions || []).filter((rule: any) => {
-          return (
-            rule[type] &&
-            rule[type].id === elementItem.id &&
-            rule.programRuleActionType === 'HIDEFIELD'
-          );
-        })
-      );
-
-      if (!availableRule) {
-        return true;
-      }
-
-      return (
-        availableRule && availableRule.programRuleActionType !== 'HIDEFIELD'
-      );
+  ruleProcessor: EffectRef;
+  constructor() {
+    this.ruleProcessor = effect(() => {
+      this.#processRules(this.programRuleActions());
     });
   }
 
-  ngOnChanges(): void {
+  ngOnChanges(changes: SimpleChanges): void {
     this.values = this.form.getRawValue();
+  }
+
+  #processRules(ruleActions: IMetadataRuleAction[]) {
+    console.log(ruleActions);
   }
 
   onSubmit(): void {
@@ -171,5 +155,9 @@ export class FormComponent implements OnChanges {
 
       fieldToUpdate?.onUpdateRuntimeOptions(parentOption?.options || []);
     }
+  }
+
+  ngOnDestroy(): void {
+    this.ruleProcessor.destroy();
   }
 }
