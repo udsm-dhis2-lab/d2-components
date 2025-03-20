@@ -64,63 +64,14 @@ export class BaseFormFieldComponent
   fieldConfig = input<FieldConfig>(new FieldConfig());
   form = model.required<FormGroup>();
   isValid = input<boolean>();
+  isValueAssigned = input<boolean>();
 
   uploadedFiles: any = [];
 
   value = model<string>();
   protected value$ = toObservable(this.value);
+  protected isValueAssigned$ = toObservable(this.isValueAssigned);
 
-  FieldOrgUnitSelector = (props: {
-    selectedOrgUnits: any;
-    onSelectOrgUnit: (selectedOrgUnits: any) => void;
-  }) => {
-    const { onSelectOrgUnit, selectedOrgUnits } = props;
-    const [selected, setSelected] = useState(selectedOrgUnits);
-    const [rootOrgUnits, setRootOrgUnits] = useState<string[]>();
-    const [config, setConfig] = useState<any>();
-
-    useEffect(() => {
-      zip(this.getAppConfig(), this.getRootOrgUnits()).subscribe({
-        next: ([appConfig, rootOrgUnits]) => {
-          setConfig(appConfig);
-          setRootOrgUnits(rootOrgUnits);
-        },
-        error: (error) => console.error(error),
-      });
-    }, []);
-    return config ? (
-      <Provider
-        config={config}
-        plugin={false}
-        parentAlertsAdd={undefined}
-        showAlertsInPlugin={false}
-      >
-        {
-          <Modal position="middle" large>
-            <ModalTitle>Select {this.field().label}</ModalTitle>
-            <ModalContent>
-              <OrgUnitDimension
-                selected={selected}
-                allowSingleSelection={true}
-                hideGroupSelect={this.orgUnitSelectionConfig.hideGroupSelect}
-                hideLevelSelect={this.orgUnitSelectionConfig.hideLevelSelect}
-                hideUserOrgUnits={this.orgUnitSelectionConfig.hideUserOrgUnits}
-                onSelect={(selectionEvent: any) => {
-                  setSelected(selectionEvent.items);
-                  onSelectOrgUnit(selectionEvent.items);
-                }}
-                orgUnitGroupPromise={this.getOrgUnitGroups()}
-                orgUnitLevelPromise={this.getOrgUnitLevels()}
-                roots={rootOrgUnits}
-              />
-            </ModalContent>
-          </Modal>
-        }
-      </Provider>
-    ) : (
-      <CircularLoader small />
-    );
-  };
   showOrgUnitTree = signal<boolean>(false);
   orgUnitSelectionConfig: OrganisationUnitSelectionConfig = {
     hideGroupSelect: true,
@@ -172,10 +123,22 @@ export class BaseFormFieldComponent
         this.form().get(this.field().id)?.value ||
           this.form().get(this.field().key)?.value
       );
-      const [displayValue, setDisplayValue] = useState(null);
+
       const [selected, setSelected] = useState();
       const [touched, setTouched] = useState(false);
-      const [showOrgUnit, setShowOrgUnit] = useState<boolean>(false);
+      const [disabled, setDisabled] = useState<boolean>(
+        this.field()?.disabled ?? this.field()?.generated ?? false
+      );
+
+      useEffect(() => {
+        if (this.isValueAssigned()) {
+          setDisabled(true);
+          setValue(
+            this.form().get(this.field().id)?.value ||
+              this.form().get(this.field().key)?.value
+          );
+        }
+      }, [this.isValueAssigned()]);
 
       const onChange = (payload: {
         selected: React.SetStateAction<undefined>;
@@ -305,12 +268,7 @@ export class BaseFormFieldComponent
               error={hasError}
               label={this.label()}
               name={this.field().id}
-              disabled={
-                this.field()?.disabled ||
-                this.field()?.generated ||
-                this.field()?.unique ||
-                false
-              }
+              disabled={disabled}
               onChange={(event: any) => {
                 this.ngZone.run(() => {
                   (
@@ -336,12 +294,7 @@ export class BaseFormFieldComponent
               error={hasError}
               validationText={validationError}
               inputWidth={this.fieldConfig()?.inputWidth}
-              disabled={
-                this.field()?.disabled ||
-                this.field()?.generated ||
-                this.field()?.unique ||
-                false
-              }
+              disabled={disabled}
               required={this.field().required}
               className="select"
               label={this.label()}
@@ -381,12 +334,7 @@ export class BaseFormFieldComponent
               error={hasError}
               validationText={validationError}
               inputWidth={this.fieldConfig()?.inputWidth}
-              disabled={
-                this.field()?.disabled ||
-                this.field()?.generated ||
-                this.field()?.unique ||
-                false
-              }
+              disabled={disabled}
               label={this.label()}
               required={this.field().required}
               loadingText="Loading options"
@@ -457,12 +405,7 @@ export class BaseFormFieldComponent
               max={this.field().max?.toString()}
               placeholder={this.placeholder()}
               value={value}
-              disabled={
-                this.field()?.disabled ?? this.field()?.generated ?? false
-              }
-              readOnly={
-                this.field()?.disabled ?? this.field()?.generated ?? false
-              }
+              readOnly={disabled}
               onChange={(event: any) => {
                 this.ngZone.run(() => {
                   (

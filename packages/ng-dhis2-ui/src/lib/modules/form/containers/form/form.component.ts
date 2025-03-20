@@ -118,7 +118,24 @@ export class FormComponent implements OnChanges, OnDestroy {
   }
 
   #processRules(ruleActions: IMetadataRuleAction[]) {
-    console.log(ruleActions);
+    ruleActions.forEach((ruleAction) => {
+      switch (ruleAction.actionType) {
+        case 'HIDEFIELD': {
+          const fieldToRemove = this.fields.find(
+            (field) => field.id === ruleAction.field
+          );
+
+          if (fieldToRemove) {
+            this.form.get(fieldToRemove.key)?.setValue('');
+            this.onFieldUpdate(this.form, fieldToRemove);
+          }
+          break;
+        }
+
+        default:
+          break;
+      }
+    });
   }
 
   onSubmit(): void {
