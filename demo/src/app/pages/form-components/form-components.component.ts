@@ -88,18 +88,15 @@ export class FormComponentsComponent {
   }
 
   async ngOnInit() {
-    const result = await this.d2.trackerModule.trackedEntity
-      .setProgram('lw9fZTamYec')
-      .setTrackedEntity('i9h2cFraNvL')
-      .get();
-
-    console.log(result.data);
-
-    const eventResult = await this.d2.eventModule.event
-      .setProgramStage('k4ZFqYqRNDF')
-      .setEvent('ctmcl4b26Mk')
-      .get();
-
-    console.log(eventResult.data);
+    // const result = await this.d2.trackerModule.trackedEntity
+    //   .setProgram('lw9fZTamYec')
+    //   .setTrackedEntity('i9h2cFraNvL')
+    //   .get();
+    // console.log(result.data);
+    // const eventResult = await this.d2.eventModule.event
+    //   .setProgramStage('k4ZFqYqRNDF')
+    //   .setEvent('ctmcl4b26Mk')
+    //   .get();
+    // console.log(eventResult.data);
   }
 }
