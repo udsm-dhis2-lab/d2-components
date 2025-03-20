@@ -58,7 +58,11 @@ export const getTrackedEntityData = (
   programId: string,
   pager: any,
   filters?: FilterConfig[]
-): { columns: ColumnDefinition[]; data: TableRow[]; filteredEntityColumns: ColumnDefinition[] } => {
+): {
+  columns: ColumnDefinition[];
+  data: TableRow[];
+  filteredEntityColumns: ColumnDefinition[];
+} => {
   let teis = (response.data as TrackedEntityInstancesResponse)
     .trackedEntityInstances;
 
@@ -69,7 +73,10 @@ export const getTrackedEntityData = (
 
   //a Map to efficiently look up orgUnit names by ID
   const orgUnitMap = new Map<string, string>(
-    orgUnitsFromMetaData.map((ou: { id: string; name: string }) => [ou.id, ou.name])
+    orgUnitsFromMetaData.map((ou: { id: string; name: string }) => [
+      ou.id,
+      ou.name,
+    ])
   );
 
   const mappedProgramMetadataAttributes = programMetaData.map((attr) => ({
@@ -139,7 +146,7 @@ export const getTrackedEntityData = (
     key: 'orgUnit',
   });
 
-  const searchableAttributes =  mappedProgramMetadataAttributes
+  const searchableAttributes = mappedProgramMetadataAttributes
     .filter((attr) => attr.searchable && attr.displayInList)
     .map((attr) => ({
       //  label: attr.trackedEntityAttribute.displayName,
@@ -171,12 +178,18 @@ export const getTrackedEntityData = (
 
     attributesToUse.forEach((attr: any) => (row[attr.attribute] = attr.value));
 
+    //include orgUnit in the row for id access
+    row['orgUnitId'] = tei.orgUnit;
     // Access the name of the orgUnit using the Map
     row['orgUnit'] = orgUnitMap.get(tei.orgUnit) || tei.orgUnit || 'N/A';
 
     return row;
   });
-  return { columns: entityColumns, data: attributesData, filteredEntityColumns: filteredEntityColumns };
+  return {
+    columns: entityColumns,
+    data: attributesData,
+    filteredEntityColumns: filteredEntityColumns,
+  };
 };
 
 export const getEventData = (
