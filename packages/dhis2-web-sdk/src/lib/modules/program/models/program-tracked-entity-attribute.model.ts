@@ -15,7 +15,8 @@ export type ProgramTrackedEntityAttributeField =
   | 'renderOptionsAsRadio'
   | 'sortOrder'
   | 'mandatory'
-  | 'displayInList';
+  | 'displayInList'
+  | 'allowFutureDate';
 
 export class ProgramTrackedEntityAttribute extends IdentifiableObject<ProgramTrackedEntityAttribute> {
   static resourceName = 'programTrackedEntityAttributes';
@@ -29,6 +30,7 @@ export class ProgramTrackedEntityAttribute extends IdentifiableObject<ProgramTra
     'sortOrder',
     'mandatory',
     'displayInList',
+    'allowFutureDate',
   ];
   trackedEntityAttribute!: TrackedEntityAttribute;
   searchable?: boolean;
@@ -36,6 +38,7 @@ export class ProgramTrackedEntityAttribute extends IdentifiableObject<ProgramTra
   sortOrder!: number;
   mandatory?: boolean;
   displayInList?: boolean;
+  allowFutureDate?: boolean;
 
   constructor(
     programTrackedEntityAttribute: Partial<ProgramTrackedEntityAttribute>

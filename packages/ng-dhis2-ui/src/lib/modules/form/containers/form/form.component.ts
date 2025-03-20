@@ -22,6 +22,7 @@ import {
   IMetadataRuleAction,
 } from '../../models';
 import { FormFieldComponent } from '../form-field/form-field.component';
+import { IFormField } from '../../interfaces';
 
 @Component({
   selector: 'ng-dhis2-ui-form',
@@ -31,7 +32,7 @@ import { FormFieldComponent } from '../form-field/form-field.component';
 })
 export class FormComponent implements OnChanges, OnDestroy {
   formConfig = input<FormConfig>();
-  @Input() fields!: FormField<string>[];
+  @Input() fields!: IFormField<string>[];
   @Input() form!: FormGroup;
   @Input() isFormHorizontal!: boolean;
   @Input() showSaveButton!: boolean;
@@ -57,7 +58,7 @@ export class FormComponent implements OnChanges, OnDestroy {
 
   values: any;
 
-  get sanitizedFields(): FormField<string>[] {
+  get sanitizedFields(): IFormField<string>[] {
     return (this.fields || []).filter((field: any) => {
       if (field.hidden) {
         return false;
@@ -142,7 +143,7 @@ export class FormComponent implements OnChanges, OnDestroy {
     this.formUpdate.emit(this.form.getRawValue());
   }
 
-  onFieldUpdate(form: FormGroup, field: FormField<string>): void {
+  onFieldUpdate(form: FormGroup, field: IFormField<string>): void {
     if (!this.showSaveButton && form) {
       this.formUpdate.emit(new FormValue(this.form, this.fields, field));
 

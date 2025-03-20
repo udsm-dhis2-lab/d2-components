@@ -13,7 +13,7 @@ import {
 import { toObservable } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
-import { IFormFieldGroup } from '../../interfaces';
+import { IFormField, IFormFieldGroup } from '../../interfaces';
 import { FormField, FormValue } from '../../models';
 import { FormUtil } from '../../utils';
 
@@ -77,7 +77,7 @@ export class RepeatableFormComponent implements OnInit {
     this.repeatableEvents = ((this.events() as any[]) || []).map(
       (event: any, index: number) => {
         const fieldControls = (this.fieldGroup().fields || []).reduce(
-          (fieldObject: any, field: FormField<string>) => {
+          (fieldObject: any, field: IFormField<string>) => {
             const value = (event.dataValueEntities || {})[field.key] || '';
 
             return {

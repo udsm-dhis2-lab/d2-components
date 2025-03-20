@@ -35,6 +35,7 @@ export class FormMetadataSection implements IFormMetadataSection {
         ] as Record<string, unknown>) || {})['name'],
         sortOrder: programTrackedEntityAttribute['sortOrder'],
         mandatory: programTrackedEntityAttribute['mandatory'],
+        allowFutureDate: programTrackedEntityAttribute['allowFutureDate'],
         metaType: 'ATTRIBUTE',
       };
     });
@@ -56,6 +57,7 @@ export class FormMetadataSection implements IFormMetadataSection {
             ...((stageDataElement['dataElement'] as Record<string, unknown>) ||
               {}),
             mandatory: stageDataElement['compulsory'],
+            allowFutureDate: stageDataElement['allowFutureDate'],
             stepId: programStage['id'],
             metaType: 'DATA_ELEMENT',
           };

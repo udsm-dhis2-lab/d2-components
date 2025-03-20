@@ -3,54 +3,39 @@
 // license that can be found in the LICENSE file.
 
 import {
+  computed,
   Directive,
   EventEmitter,
+  inject,
+  input,
+  model,
   NgZone,
   OnChanges,
   Output,
   Signal,
   SimpleChanges,
-  computed,
-  inject,
-  input,
-  model,
-  signal,
 } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { FormGroup } from '@angular/forms';
 import {
   Checkbox,
-  FileInputField,
-  FileListItem,
   InputField,
+  MultiSelectField,
+  MultiSelectOption,
   SingleSelectField,
   SingleSelectOption,
   TextAreaField,
   Transfer,
-  Button,
-  ButtonStrip,
-  Modal,
-  ModalActions,
-  ModalContent,
-  ModalTitle,
-  CircularLoader,
-  IconDimensionOrgUnit16,
-  OrganisationUnitTree,
-  MultiSelectField,
-  MultiSelectOption,
 } from '@dhis2/ui';
-import { Provider } from '@dhis2/app-runtime';
+import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
 import React, { useEffect, useMemo, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { ReactWrapperModule } from '../../react-wrapper/react-wrapper.component';
-import { FieldConfig, FormField } from '../models';
-import { OrganisationUnitSelectionConfig } from '../../organisation-unit-selector';
-import OrgUnitDimension from '../../organisation-unit-selector/components/OrgUnitDimension';
-import { firstValueFrom, map, Observable, zip } from 'rxjs';
-import { NgxDhis2HttpClientService, User } from '@iapps/ngx-dhis2-http-client';
 import { useFieldValidation } from '../hooks';
-import { OrgUnitFormField } from './org-unit-form-field.component';
+import { IFormField } from '../interfaces';
+import { FieldConfig } from '../models';
 import { FileUploadField } from './file-upload-field.component';
+import { OrgUnitFormField } from './org-unit-form-field.component';
 
 @Directive()
 export class BaseFormFieldComponent
@@ -60,28 +45,15 @@ export class BaseFormFieldComponent
   ngZone = inject(NgZone);
   httpClient = inject(NgxDhis2HttpClientService);
   fieldType = 'textbox';
-  field = input.required<FormField<string>>();
+  field = input.required<IFormField<string>>();
   fieldConfig = input<FieldConfig>(new FieldConfig());
   form = model.required<FormGroup>();
   isValid = input<boolean>();
   isValueAssigned = input<boolean>();
 
-  uploadedFiles: any = [];
-
   value = model<string>();
   protected value$ = toObservable(this.value);
   protected isValueAssigned$ = toObservable(this.isValueAssigned);
-
-  showOrgUnitTree = signal<boolean>(false);
-  orgUnitSelectionConfig: OrganisationUnitSelectionConfig = {
-    hideGroupSelect: true,
-    hideLevelSelect: true,
-    hideUserOrgUnits: true,
-    allowSingleSelection: true,
-    usageType: 'DATA_ENTRY',
-  };
-  selectedOrgUnit = signal<any>(null);
-  selectedOrgUnit$ = toObservable(this.selectedOrgUnit);
 
   label: Signal<string | undefined> = computed(() => {
     return !this.fieldConfig()?.hideLabel ? this.field().label : undefined;
@@ -433,82 +405,5 @@ export class BaseFormFieldComponent
 
   onChange(event: any): void {
     this.value.set(event);
-  }
-
-  onSelectOrgUnit(selectedOrgUnits: Record<string, string>[]) {
-    this.showOrgUnitTree.set(false);
-
-    if ((selectedOrgUnits || [])[0]) {
-      this.selectedOrgUnit.set(selectedOrgUnits[0]);
-    }
-  }
-  onCancelOrgUnit() {
-    this.showOrgUnitTree.set(false);
-  }
-
-  private getAppConfig(): Observable<any> {
-    return this.httpClient.systemInfo().pipe(
-      map((response) => {
-        const systemInfo = response as unknown as Record<string, unknown>;
-        return {
-          baseUrl: (document?.location?.host?.includes('localhost')
-            ? `${document.location.protocol}//${document.location.host}`
-            : systemInfo['contextPath']) as string,
-          apiVersion: Number(
-            (((systemInfo['version'] as string) || '')?.split('.') || [])[1]
-          ),
-        };
-      })
-    );
-  }
-
-  getOrgUnitAttributeByUsage(usageType: string) {
-    switch (usageType) {
-      case 'DATA_ENTRY':
-        return 'organisationUnits';
-
-      case 'DATA_VIEW':
-        return 'dataViewOrganisationUnits';
-
-      default:
-        return 'organisationUnits';
-    }
-  }
-
-  getRootOrgUnits(): Observable<string[]> {
-    const orgUnitAttribute = this.getOrgUnitAttributeByUsage(
-      this.orgUnitSelectionConfig.usageType
-    );
-    return this.httpClient
-      .me()
-      .pipe(
-        map((user: User) =>
-          (user ? user[orgUnitAttribute] : []).map((orgUnit) => orgUnit.id)
-        )
-      );
-  }
-
-  getOrgUnitGroups(): Promise<any> {
-    return firstValueFrom(
-      this.httpClient
-        .get(
-          'organisationUnitGroups.json?fields=id,displayName,name&paging=false'
-        )
-        .pipe(
-          map((res: Record<string, unknown>) => res?.['organisationUnitGroups'])
-        )
-    );
-  }
-
-  getOrgUnitLevels(): Promise<any> {
-    return firstValueFrom(
-      this.httpClient
-        .get(
-          'organisationUnitLevels.json?fields=id,level,displayName,name&paging=false'
-        )
-        .pipe(
-          map((res: Record<string, unknown>) => res?.['organisationUnitLevels'])
-        )
-    );
   }
 }
