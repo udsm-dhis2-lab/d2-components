@@ -3,3 +3,6 @@
 // license that can be found in the LICENSE file.
 export * from './event-data-type.interface';
 export * from './assigned-user-mode.interface';
+export * from './event-field-property.interface';
+export * from './event-assigned-user.interface';
+export * from './event-status.interface';

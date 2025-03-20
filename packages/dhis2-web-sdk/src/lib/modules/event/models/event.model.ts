@@ -3,21 +3,26 @@ import { EventUtil } from '../utils/event.util';
 import { BaseTrackerSDKModel } from '../../tracker/models/base.model';
 import { DataValue } from './data-value.model';
 import { generateUid } from '../../../shared';
+import {
+  DHIS2EventAssignedUser,
+  DHIS2EventStatus,
+  EventFieldProperty,
+} from '../interfaces';
 
-export type DHIS2EventStatus =
-  | 'ACTIVE'
-  | 'COMPLETED'
-  | 'OVERDUE'
-  | 'SKIPPED'
-  | 'SCHEDULE'
-  | 'VISITED';
-
-export interface DHIS2EventAssignedUser {
-  uid: string;
-  username?: string;
-  firstName?: string;
-  surname?: string;
-}
+const DEFAULT_FIELD_PROPERTIES: Record<string, EventFieldProperty> = {
+  occurredAt: {
+    id: 'occurredAt',
+    type: 'OCCURRED_DATE',
+  },
+  scheduledAt: {
+    id: 'scheduledAt',
+    type: 'SCHEDULED_DATE',
+  },
+  orgUnit: {
+    id: 'orgUnit',
+    type: 'ORG_UNIT',
+  },
+};
 
 export interface IDHIS2Event {
   storedBy?: string;
@@ -50,6 +55,8 @@ export interface IDHIS2Event {
   relationships?: any[];
   [key: string]: any;
   isCompleted: boolean;
+  metaData?: Record<string, unknown>;
+  fields?: Record<string, EventFieldProperty>;
   setDataValue?: (options: {
     dataElement: string;
     value: string;
@@ -93,7 +100,7 @@ export class DHIS2Event
   notes?: any[];
   relationships?: any[];
   [key: string]: any;
-
+  fields: Record<string, EventFieldProperty> = DEFAULT_FIELD_PROPERTIES;
   dataValueEntities?: Record<string, DataValue>;
 
   constructor(
@@ -181,6 +188,31 @@ export class DHIS2Event
     return (this.dataValues || []).find(
       (dataValue) => dataValue.dataElement === dataElement
     ) as any;
+  }
+
+  updateDataValues(dataValueEntities: Record<string, unknown>) {
+    const dataValueKeys = Object.keys(dataValueEntities);
+
+    dataValueKeys.forEach((key) => {
+      const dataValue = dataValueEntities[key] as string;
+      if (dataValue && dataValue.length > 0) {
+        const field = (this.fields || {})[key];
+        switch (field?.type) {
+          case 'DATA_ELEMENT':
+            this.setDataValue({ dataElement: field.id, value: dataValue });
+            break;
+          case 'OCCURRED_DATE':
+            this.occurredAt = dataValue;
+            break;
+          case 'SCHEDULED_DATE':
+            this.scheduledAt = dataValue;
+            break;
+          case 'ORG_UNIT':
+            this.orgUnit = dataValue;
+            break;
+        }
+      }
+    });
   }
 
   setStatus(status?: string) {

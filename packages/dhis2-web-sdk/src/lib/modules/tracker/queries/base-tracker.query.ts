@@ -265,12 +265,6 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
   }
 
   async #saveAll() {
-    const reservedValues = await this.generateReservedValues();
-
-    (reservedValues || []).forEach((reserved) => {
-      this.instance.setAttributeValue(reserved.ownerUid, reserved.value);
-    });
-
     const data = await this.httpClient.post('tracker?async=false', {
       trackedEntities: [this.instance.toObject!()],
     });
