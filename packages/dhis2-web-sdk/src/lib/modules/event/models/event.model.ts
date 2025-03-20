@@ -195,22 +195,21 @@ export class DHIS2Event
 
     dataValueKeys.forEach((key) => {
       const dataValue = dataValueEntities[key] as string;
-      if (dataValue && dataValue.length > 0) {
-        const field = (this.fields || {})[key];
-        switch (field?.type) {
-          case 'DATA_ELEMENT':
-            this.setDataValue({ dataElement: field.id, value: dataValue });
-            break;
-          case 'OCCURRED_DATE':
-            this.occurredAt = dataValue;
-            break;
-          case 'SCHEDULED_DATE':
-            this.scheduledAt = dataValue;
-            break;
-          case 'ORG_UNIT':
-            this.orgUnit = dataValue;
-            break;
-        }
+
+      const field = (this.fields || {})[key];
+      switch (field?.type) {
+        case 'DATA_ELEMENT':
+          this.setDataValue({ dataElement: field.id, value: dataValue });
+          break;
+        case 'OCCURRED_DATE':
+          this.occurredAt = dataValue;
+          break;
+        case 'SCHEDULED_DATE':
+          this.scheduledAt = dataValue;
+          break;
+        case 'ORG_UNIT':
+          this.orgUnit = dataValue;
+          break;
       }
     });
   }

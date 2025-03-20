@@ -355,37 +355,37 @@ export class TrackedEntityInstance
     dataValueKeys.forEach((key) => {
       const dataValue = dataValueEntities[key] as string;
       const field = (this.fields || {})[key];
-      console.log('DATA VALUE HERE', dataValue, field);
-      if (dataValue && dataValue.length > 0) {
-        switch (field?.type) {
-          case 'ATTRIBUTE':
-            this.setAttributeValue(field.id, dataValue);
-            break;
-          case 'DATA_ELEMENT':
-            this.setDataValue(field.id, dataValue, field.stageId!);
-            break;
-          case 'ENROLLMENT_DATE':
-            this.setEnrollmentDate(dataValue);
-            break;
-          case 'INCIDENT_DATE':
-            this.setIncidentDate(dataValue);
-            break;
-          case 'ORG_UNIT':
-            this.setOrgUnit(dataValue);
-            break;
 
-          default: {
-            if (isArray(dataValue)) {
-              (dataValue as Record<string, unknown>[]).forEach((data) => {
-                this.updateDataValues(data);
-              });
-            } else if (isPlainObject(dataValue)) {
-              this.updateDataValues(
-                dataValue as unknown as Record<string, unknown>
-              );
-            }
-            break;
+      switch (field?.type) {
+        case 'ATTRIBUTE': {
+          this.setAttributeValue(field.id, dataValue);
+          break;
+        }
+        case 'DATA_ELEMENT': {
+          this.setDataValue(field.id, dataValue, field.stageId!);
+          break;
+        }
+        case 'ENROLLMENT_DATE':
+          this.setEnrollmentDate(dataValue);
+          break;
+        case 'INCIDENT_DATE':
+          this.setIncidentDate(dataValue);
+          break;
+        case 'ORG_UNIT':
+          this.setOrgUnit(dataValue);
+          break;
+
+        default: {
+          if (isArray(dataValue)) {
+            (dataValue as Record<string, unknown>[]).forEach((data) => {
+              this.updateDataValues(data);
+            });
+          } else if (isPlainObject(dataValue)) {
+            this.updateDataValues(
+              dataValue as unknown as Record<string, unknown>
+            );
           }
+          break;
         }
       }
     });
