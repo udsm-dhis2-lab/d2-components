@@ -458,16 +458,10 @@ export class BaseFormFieldComponent
               placeholder={this.placeholder()}
               value={value}
               disabled={
-                this.field()?.disabled ||
-                this.field()?.generated ||
-                this.field()?.unique ||
-                false
+                this.field()?.disabled ?? this.field()?.generated ?? false
               }
               readOnly={
-                this.field()?.disabled ||
-                this.field()?.generated ||
-                this.field()?.unique ||
-                false
+                this.field()?.disabled ?? this.field()?.generated ?? false
               }
               onChange={(event: any) => {
                 this.ngZone.run(() => {
