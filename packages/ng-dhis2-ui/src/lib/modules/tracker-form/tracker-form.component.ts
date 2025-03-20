@@ -38,6 +38,7 @@ export class TrackerFormComponent implements OnInit {
       this.formMetaData = new FormMetaData({
         programs: [program],
         programStage: this.programStage(),
+        disableEnrollmentDate: true,
       }).toJson();
 
       console.log(this.formMetaData, this.instance.enrollmentDate);

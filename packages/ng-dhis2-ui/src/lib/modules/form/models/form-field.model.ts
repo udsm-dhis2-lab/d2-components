@@ -57,7 +57,7 @@ export class FormField<T> implements IFormField<T> {
     this.controlType = options.controlType as FieldControlType;
     this.type = options.type || '';
     this.options = options.options || [];
-    this.disabled = options.disabled || false;
+    this.disabled = options.disabled ?? false;
     this.placeholder = options.placeholder || '';
     this.min = options.min;
     this.max =
