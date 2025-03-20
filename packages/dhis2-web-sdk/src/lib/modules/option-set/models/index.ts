@@ -3,3 +3,4 @@
 // license that can be found in the LICENSE file.
 export * from './option.model';
 export * from './option-set.model';
+export * from './option-group.model';

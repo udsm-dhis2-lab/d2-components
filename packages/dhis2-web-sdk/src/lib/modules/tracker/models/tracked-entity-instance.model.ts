@@ -354,8 +354,9 @@ export class TrackedEntityInstance
 
     dataValueKeys.forEach((key) => {
       const dataValue = dataValueEntities[key] as string;
+      const field = (this.fields || {})[key];
+      console.log('DATA VALUE HERE', dataValue, field);
       if (dataValue && dataValue.length > 0) {
-        const field = (this.fields || {})[key];
         switch (field?.type) {
           case 'ATTRIBUTE':
             this.setAttributeValue(field.id, dataValue);

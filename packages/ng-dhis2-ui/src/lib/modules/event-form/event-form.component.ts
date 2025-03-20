@@ -38,14 +38,17 @@ export class EventFormComponent implements OnInit {
           .data as DHIS2Event) || (await this.eventQuery.create())
       : await this.eventQuery.create();
 
-    console.log('EVENT RESULT', this.instance);
-
     if (program) {
       this.formMetaData = new FormMetaData({
         programs: [program],
         programStage: this.programStage(),
       }).toJson();
     }
+  }
+
+  onFormUpdate(values: any) {
+    const instance = this.instance as DHIS2Event;
+    instance?.updateDataValues(values);
   }
 
   onSave(event: any) {}

@@ -2,6 +2,7 @@
 <ng-dhis2-ui-section-form
   [formMetaData]="formMetaData"
   [dataValueEntities]="instance"
+  (formUpdate)="onFormUpdate($event)"
   (save)="onSave($event)"
   (cancel)="onCancel()"
 />

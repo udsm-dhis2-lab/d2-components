@@ -32,7 +32,7 @@ export class SectionFormComponent implements OnInit {
   formGroups: Record<string, FormGroup> = {};
   formValueEntity: Record<string, FormValue> = {};
   repeatableFormValueEntity: Record<string, Record<number, FormValue>> = {};
-  ruleActions: Record<string, unknown>[] = [];
+  ruleActions = signal<any[]>([]);
 
   @Output() save = new EventEmitter<Record<string, unknown>>();
   @Output() formUpdate = new EventEmitter<Record<string, unknown>>();
@@ -71,10 +71,12 @@ export class SectionFormComponent implements OnInit {
 
       this.inValid.set(this.checkIfInValid());
 
-      this.ruleActions = new ProgramRuleEngine()
-        .setRules(this.formMetaData().rules)
-        .setDataValues(this.#getDataValue())
-        .execute();
+      this.ruleActions.set(
+        new ProgramRuleEngine()
+          .setRules(this.formMetaData().rules)
+          .setDataValues(this.#getDataValue())
+          .execute()
+      );
     }
   }
 
@@ -98,10 +100,12 @@ export class SectionFormComponent implements OnInit {
 
     const dataValues = this.#getDataValue();
 
-    this.ruleActions = new ProgramRuleEngine()
-      .setRules(this.formMetaData().rules)
-      .setDataValues(dataValues)
-      .execute();
+    this.ruleActions.set(
+      new ProgramRuleEngine()
+        .setRules(this.formMetaData().rules)
+        .setDataValues(dataValues)
+        .execute()
+    );
 
     this.formUpdate.emit(dataValues);
   }

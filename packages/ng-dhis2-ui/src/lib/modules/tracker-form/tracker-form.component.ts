@@ -40,9 +40,12 @@ export class TrackerFormComponent implements OnInit {
         programStage: this.programStage(),
         disableEnrollmentDate: true,
       }).toJson();
-
-      console.log(this.formMetaData, this.instance.enrollmentDate);
     }
+  }
+
+  onFormUpdate(values: any) {
+    const instance = this.instance as TrackedEntityInstance;
+    instance?.updateDataValues(values);
   }
 
   onSave(event: any) {}

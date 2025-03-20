@@ -285,6 +285,21 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
       const d2 = (window as unknown as D2Window).d2Web;
       const metaDataResponse = await Promise.all([
         d2.programModule.program
+          .select([
+            'id',
+            'code',
+            'name',
+            'captureCoordinates',
+            'featureType',
+            'enrollmentDateLabel',
+            'incidentDateLabel',
+            'displayIncidentDate',
+            'onlyEnrollOnce',
+            'orgUnitLabel',
+            'programType',
+            'useFirstStageDuringRegistration',
+            'trackedEntityType',
+          ])
           .byId(this.program as string)
           .with(
             d2.programModule.programStage
@@ -338,6 +353,13 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
           })
           .with(
             d2.programModule.programRuleAction
+              .select([
+                'id',
+                'programRuleActionType',
+                'data',
+                'displayContent',
+                'content',
+              ])
               .with(
                 d2.dataElementModule.dataElement.select(['id', 'code', 'name']),
                 'ToOne'
@@ -348,6 +370,23 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
                   'code',
                   'name',
                 ]),
+                'ToOne'
+              )
+              .with(
+                d2.optionSetModule.optionGroup
+                  .select(['id'])
+                  .with(
+                    d2.optionSetModule.option.select([
+                      'id',
+                      'code',
+                      'displayName',
+                    ]),
+                    'ToMany'
+                  ),
+                'ToOne'
+              )
+              .with(
+                d2.optionSetModule.option.select(['id', 'code', 'displayName']),
                 'ToOne'
               )
           )
