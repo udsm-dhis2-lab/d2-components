@@ -72,6 +72,7 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() buttonLabel: string = '';
   @Output() firstValue = new EventEmitter<string>();
   @Input() buttonFilter!: string;
+  @Input() filterRootOrgUnit: boolean = false;
 
   setReactStateUpdaters = (updaters: any) => {
     this.reactStateUpdaters = updaters;
@@ -189,7 +190,8 @@ export class LineListTableComponent extends ReactWrapperModule {
           // this.attributeFilters,
           this.startDate,
           this.endDate,
-          this.ouMode
+          this.ouMode,
+          this.filterRootOrgUnit
         )
         .subscribe((response: LineListResponse) => {
           let entityColumns: ColumnDefinition[] = [];

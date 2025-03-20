@@ -29,6 +29,7 @@ export class LineListService {
     startDate?: string,
     endDate?: string,
     ouMode?: string,
+    filterRootOrgUnit?: boolean
   ): Observable<TrackedEntityInstancesResponse> {
     const filterParams = buildFilters(filters);
     const dateFilter = startDate && endDate ? `&programStartDate=${startDate}&programEndDate=${endDate}` : '';
@@ -37,11 +38,21 @@ export class LineListService {
       `trackedEntityInstances.json?program=${programId}&ou=${orgUnit}${ouModeIdentifier}&page=${page}&pageSize=${pageSize}&fields=trackedEntityInstance,orgUnit,attributes[*,displayInList],enrollments[*]&totalPages=true&${filterParams}${dateFilter}&order=created:desc`
     ).pipe(
       map((response: any) => {
-       //TODO: use the api to to order by desc
-      // response.trackedEntityInstances.reverse();
+        if (filterRootOrgUnit) {
+          response.trackedEntityInstances = response.trackedEntityInstances.filter(
+            (tei: any) => tei.orgUnit !== orgUnit // Exclude TEIs with the root orgUnit
+          );
+        }
         return response;
       })
     );
+    // pipe(
+    //   map((response: any) => {
+    //    //TODO: use the api to to order by desc
+    //   // response.trackedEntityInstances.reverse();
+    //     return response;
+    //   })
+    // );
   }
 
   private getEvents(
@@ -90,6 +101,7 @@ export class LineListService {
     startDate?: string,
     endDate?: string,
     ouMode?: string,
+    filterRootOrgUnit?: boolean
   ): Observable<LineListResponse> {
     return this.getProgramMetadata(programId).pipe(
       switchMap((programMetadata: ProgramMetadata) => {
@@ -103,7 +115,7 @@ export class LineListService {
         }
 
         if (programMetadata.programType === 'WITH_REGISTRATION') {
-          return this.getTrackedEntityInstances(programId, orgUnit, page, pageSize, filters, startDate, endDate, ouMode).pipe(
+          return this.getTrackedEntityInstances(programId, orgUnit, page, pageSize, filters, startDate, endDate, ouMode, filterRootOrgUnit).pipe(
             map((teis: TrackedEntityInstancesResponse) => ({
               metadata: programMetadata,
               data: teis,
