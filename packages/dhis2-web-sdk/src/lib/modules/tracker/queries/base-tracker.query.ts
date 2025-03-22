@@ -21,6 +21,8 @@ import {
   TrackerUrlGenerator,
 } from '../models';
 
+export type TrackerFetchScope = 'TRACKED_ENTITY' | 'ENROLLMENT';
+
 export class BaseTrackerQuery<T extends TrackedEntityInstance> {
   protected orgUnit?: string;
   protected ouMode: OuMode = 'ALL';
@@ -169,8 +171,12 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
 
     return [];
   }
-  async get(): Promise<D2TrackerResponse<T>> {
-    const response = await this.fetchData();
+  async get(config?: {
+    fetchScope: TrackerFetchScope;
+  }): Promise<D2TrackerResponse<T>> {
+    const response = await this.fetchData(
+      config?.fetchScope || 'TRACKED_ENTITY'
+    );
 
     return new D2TrackerResponse<T>(response, this.identifiable);
   }
@@ -230,9 +236,14 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
     return this.instance;
   }
 
-  protected async fetchData() {
+  protected async fetchData(fetchScope: TrackerFetchScope) {
+    const baseUrl =
+      fetchScope === 'ENROLLMENT'
+        ? 'tracker/enrollments'
+        : 'tracker/trackedEntities';
     return await this.httpClient.get(
       new TrackerUrlGenerator({
+        baseEndpoint: baseUrl,
         program: this.program,
         trackedEntityType: this.trackedEntityType,
         orgUnit: this.orgUnit,
