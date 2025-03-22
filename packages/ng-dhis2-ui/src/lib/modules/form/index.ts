@@ -6,6 +6,7 @@ export * from './containers/form-field/form-field.component';
 export * from './containers/form/form.component';
 export * from './containers/repeatable-form/repeatable-form.component';
 export * from './containers/section-form/section-form.component';
+export * from './containers/flat-form/flat-form.component';
 export * from './models';
 export * from './interfaces';
 export * from './utils';

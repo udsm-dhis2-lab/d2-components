@@ -2,6 +2,5 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-export * from './program-entry-form.config';
-export * from './program-entry-form-metadata';
-export * from './program-entry-form-section.model';
+export * from './program-entry-form-field.util';
+export * from './program-entry-form-section.util';

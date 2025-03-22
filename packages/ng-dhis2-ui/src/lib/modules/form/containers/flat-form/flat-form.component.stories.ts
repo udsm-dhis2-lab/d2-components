@@ -2,17 +2,17 @@
 import { Meta, StoryObj } from '@storybook/angular';
 import { StoryFnAngularReturnType } from '@storybook/angular/dist/client/types';
 
-import { ProgramEntryFormComponent } from './program-entry-form.component';
+import { FlatFormComponent } from './flat-form.component';
 
-type ComponentWithCustomControls = ProgramEntryFormComponent; // & {};
+type ComponentWithCustomControls = FlatFormComponent; // & {};
 
 const meta: Meta<ComponentWithCustomControls> = {
   // TODO: Make sure this title path is correct, uncomment tile, then remove this comment. OR remove both comment and title
-  // title: 'Components/Program Entry Form',
-  component: ProgramEntryFormComponent,
+  // title: 'Components/Flat Form',
+  component: FlatFormComponent,
   // decorators: [moduleMetadata({ imports: [] }), applicationConfig({ providers: [ importProvidersFrom() ]})],
   parameters: {
-    docs: { description: { component: `ProgramEntryForm` } },
+    docs: { description: { component: `FlatForm` } },
     // layout: 'fullscreen',
   },
   argTypes: {
@@ -29,7 +29,7 @@ const meta: Meta<ComponentWithCustomControls> = {
 };
 export default meta;
 
-export const ProgramEntryForm: StoryObj<ComponentWithCustomControls> = {
+export const FlatForm: StoryObj<ComponentWithCustomControls> = {
   render: (args): StoryFnAngularReturnType => ({ props: args }),
   // play: async ({ canvasElement }) => { const canvasElement = within(canvasElement) },
 }
