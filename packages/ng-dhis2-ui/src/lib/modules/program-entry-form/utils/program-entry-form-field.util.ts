@@ -1,0 +1,146 @@
+// Copyright 2025 UDSM DHIS2 Lab. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+import { Program, TrackedEntityAttribute } from '@iapps/d2-web-sdk';
+import { ProgramEntryFormConfig } from '../models';
+import {
+  DateField,
+  FieldDropdown,
+  FieldUtil,
+  FormField,
+  FormFieldMetaType,
+  IFormField,
+} from '../../form';
+import { camelCase, flatten } from 'lodash';
+
+export class ProgramEntryFormFieldUtil {
+  constructor(
+    private program: Program,
+    private config: ProgramEntryFormConfig
+  ) {}
+
+  get attributes() {
+    return (this.program.programTrackedEntityAttributes || []).map(
+      (programTrackedEntityAttribute) => {
+        return {
+          ...programTrackedEntityAttribute.trackedEntityAttribute,
+          sortOrder: programTrackedEntityAttribute.sortOrder,
+          mandatory: programTrackedEntityAttribute.mandatory,
+          allowFutureDate: programTrackedEntityAttribute.allowFutureDate,
+          metaType: 'ATTRIBUTE',
+          stepId: null,
+        };
+      }
+    );
+  }
+
+  get dataElements() {
+    return flatten(
+      (this.program.programStages || []).map((programStage) => {
+        return (programStage.programStageDataElements || []).map(
+          (stageDataElement) => {
+            return {
+              ...stageDataElement.dataElement,
+              sortOrder: stageDataElement.sortOrder,
+              mandatory: stageDataElement.compulsory,
+              allowFutureDate: stageDataElement.allowFutureDate,
+              stepId: programStage.id,
+              metaType: 'DATA_ELEMENT',
+            };
+          }
+        );
+      })
+    );
+  }
+
+  #getOrgUniField() {
+    if (this.config.hideRegistrationUnit) {
+      return null;
+    }
+
+    return new FormField<string>({
+      id: 'orgUnit',
+      key: 'orgUnit',
+      label: this.program.orgUnitLabel || 'Registering unit',
+      code: 'orgUnit',
+      required: true,
+      controlType: 'org-unit',
+      disabled: this.config.disableRegistrationUnit,
+    });
+  }
+
+  #getEnrollmentDateField() {
+    if (this.config.hideEnrollmentDate) {
+      return null;
+    }
+
+    return new FormField<string>({
+      id: 'enrollmentDate',
+      label: this.program.enrollmentDateLabel || 'Enrollment date',
+      code: 'enrollmentDate',
+      key: 'enrollmentDate',
+      required: true,
+      type: 'date',
+      controlType: 'date',
+      disabled: this.config.disableEnrollmentDate,
+    });
+  }
+
+  #getIncidentDateField() {
+    if (!this.program.displayIncidentDate) {
+      return null;
+    }
+
+    return new DateField({
+      id: 'incidentDate',
+      label: this.program.incidentDateLabel || 'Incident date',
+      code: 'incidentDate',
+      key: 'incidentDate',
+      required: true,
+      type: 'date',
+      controlType: 'date',
+      disabled: this.config.disabledIncidentDate,
+    });
+  }
+
+  get reportFields() {
+    return [
+      this.#getOrgUniField(),
+      this.#getEnrollmentDateField(),
+      this.#getIncidentDateField(),
+    ].filter((field) => field != null);
+  }
+
+  get fields(): IFormField<string>[] {
+    const fields = [...this.attributes, ...this.dataElements]
+      .map((field) => {
+        const options = FieldDropdown.getDropdownOptions(field);
+
+        const hasOptions = options?.length > 0;
+
+        return new FormField<string>({
+          ...field,
+          id: field.id,
+          code: field.code,
+          label: field.formName || field.name,
+          key: field.code ? camelCase(field.code) : field.id,
+          required: field.mandatory,
+          type: field.valueType,
+          options,
+          disabled: (field as TrackedEntityAttribute).generated,
+          order: field.sortOrder,
+          hasOptions,
+          controlType: FieldUtil.getFieldControlType(
+            field.valueType,
+            hasOptions
+          ),
+          metaType: field.metaType as FormFieldMetaType,
+          stepId: (field as { stepId: string }).stepId,
+        });
+      })
+      .sort((a, b) => a.order ?? 0 - (b.order ?? 0));
+
+    return [...this.reportFields, ...fields];
+  }
+}

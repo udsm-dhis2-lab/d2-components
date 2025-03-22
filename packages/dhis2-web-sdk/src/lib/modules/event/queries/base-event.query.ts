@@ -165,6 +165,7 @@ export class BaseEventQuery<T extends DHIS2Event> {
             enrollment: this.enrollment,
             program: this.program,
             programStage: this.programStage,
+            orgUnit: this.orgUnit,
           },
           { generateIdIfNotExists: true }
         );

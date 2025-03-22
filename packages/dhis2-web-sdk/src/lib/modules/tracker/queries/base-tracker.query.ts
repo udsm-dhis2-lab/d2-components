@@ -190,6 +190,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
           trackedEntity: generateUid(),
           trackedEntityType: program.trackedEntityType?.id,
           program: program.id,
+          orgUnit: this.orgUnit,
         });
 
         this.instance.fields = {

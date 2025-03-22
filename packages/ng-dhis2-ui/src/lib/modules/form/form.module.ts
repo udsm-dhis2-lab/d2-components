@@ -8,6 +8,7 @@ import { RepeatableFormComponent } from './containers/repeatable-form/repeatable
 import { SectionFormComponent } from './containers/section-form/section-form.component';
 import { OrganisationUnitSelectorModule } from '../organisation-unit-selector';
 import { ReactWrapperModule } from '../react-wrapper/react-wrapper.component';
+import { FlatFormComponent } from './containers/flat-form/flat-form.component';
 
 @NgModule({
   declarations: [
@@ -15,6 +16,7 @@ import { ReactWrapperModule } from '../react-wrapper/react-wrapper.component';
     FormComponent,
     RepeatableFormComponent,
     SectionFormComponent,
+    FlatFormComponent,
     FormFieldItemComponent,
   ],
   imports: [
@@ -28,6 +30,7 @@ import { ReactWrapperModule } from '../react-wrapper/react-wrapper.component';
     FormComponent,
     RepeatableFormComponent,
     SectionFormComponent,
+    FlatFormComponent,
   ],
 })
 export class D2FormModule {}
