@@ -29,6 +29,7 @@ import { AttributeFilter } from '../models/attribute-filter.model';
 import { FilterConfig } from '../models/filter-config.model';
 import {
   ColumnDefinition,
+  EnrollmentsResponse,
   EventsResponse,
   LineListResponse,
   Pager,
@@ -38,6 +39,7 @@ import {
 import { LineListService } from '../services/line-list.service';
 import {
   addActionsColumn,
+  getEnrollmentData,
   getEventData,
   getProgramStageData,
   getTrackedEntityData,
@@ -179,6 +181,7 @@ export class LineListTableComponent extends ReactWrapperModule {
 
     useEffect(() => {
       setLoading(true);
+      console.log('in the use effect', attributeFiltersState);
       this.lineListService
         .getLineListData(
           this.programId,
@@ -187,7 +190,6 @@ export class LineListTableComponent extends ReactWrapperModule {
           pager.page,
           pager.pageSize,
           attributeFiltersState,
-          // this.attributeFilters,
           this.startDate,
           this.endDate,
           this.ouMode,
@@ -198,7 +200,7 @@ export class LineListTableComponent extends ReactWrapperModule {
           let responsePager: Pager;
           let entityData: TableRow[] = [];
           let filteredDataColumns: ColumnDefinition[] = [];
-
+          console.log('this is not being triggered the second time');
           if (this.programStageId) {
             responsePager = (response.data as EventsResponse).pager;
             const { columns, data } = getProgramStageData(
@@ -208,12 +210,54 @@ export class LineListTableComponent extends ReactWrapperModule {
             );
             entityColumns = columns;
             entityData = data;
-          } else if ('trackedEntityInstances' in response.data) {
-            responsePager = (response.data as TrackedEntityInstancesResponse)
+          }
+          //  else if ('trackedEntityInstances' in response.data) {
+          //   responsePager = (response.data as TrackedEntityInstancesResponse)
+          //     .pager;
+
+          //   const { columns, data, filteredEntityColumns } =
+          //     getTrackedEntityData(
+          //       response,
+          //       this.programId,
+          //       pager,
+          //       this.filters
+          //     );
+          //   entityColumns = columns;
+          //   entityData = data;
+          //   //TODO: Should be done on the parent
+          //   let checkValues = [
+          //     ...new Set(
+          //       (
+          //         response.data as TrackedEntityInstancesResponse
+          //       )?.trackedEntityInstances?.[0]?.enrollments?.[0]?.events?.flatMap(
+          //         (event) =>
+          //           event.dataValues
+          //             .filter((dataValue) =>
+          //               /^[A-Za-z]{3}$/.test(dataValue.value)
+          //             )
+          //             .map((dataValue) => dataValue.value)
+          //       )
+          //     ),
+          //   ];
+            
+          //   if (checkValues) {
+          //     // this.firstValue.emit(firstTei);
+          //     setCheckValue(checkValues);
+          //     setValuesMatch(!checkValues.includes(this.buttonFilter));
+          //   }
+          //   //  setFilteredColumns(filteredEntityColumns);
+          //   // Ensure filter inputs do not disappear when no data is returned
+          //   // If filteredEntityColumns is empty, keep the previous columns instead of clearing them
+          //   setFilteredColumns((prev) =>
+          //     filteredEntityColumns.length > 0 ? filteredEntityColumns : prev
+          //   );
+          //   filteredDataColumns = filteredEntityColumns;}
+          else if ('enrollments' in response.data) {
+            responsePager = (response.data as EnrollmentsResponse)
               .pager;
 
             const { columns, data, filteredEntityColumns } =
-              getTrackedEntityData(
+            getEnrollmentData(
                 response,
                 this.programId,
                 pager,
@@ -225,8 +269,8 @@ export class LineListTableComponent extends ReactWrapperModule {
             let checkValues = [
               ...new Set(
                 (
-                  response.data as TrackedEntityInstancesResponse
-                )?.trackedEntityInstances?.[0]?.enrollments?.[0]?.events?.flatMap(
+                  response.data as EnrollmentsResponse
+                )?.enrollments?.[0]?.events?.flatMap(
                   (event) =>
                     event.dataValues
                       .filter((dataValue) =>
@@ -249,7 +293,9 @@ export class LineListTableComponent extends ReactWrapperModule {
               filteredEntityColumns.length > 0 ? filteredEntityColumns : prev
             );
             filteredDataColumns = filteredEntityColumns;
-          } else {
+            console.log('in the enrollments check', attributeFiltersState);
+          }
+           else {
             responsePager = (response.data as EventsResponse).pager;
             const { columns, data } = getEventData(response, pager);
             entityColumns = columns;
@@ -287,6 +333,7 @@ export class LineListTableComponent extends ReactWrapperModule {
       }));
     };
 
+    //TODO: to be done on the parent
     const handleApprovalClick = () => {
       setIsButtonLoading(true);
       this.lineListService
@@ -346,7 +393,7 @@ export class LineListTableComponent extends ReactWrapperModule {
         const updatedFilters = value.trim()
           ? [...filteredFilters, { attribute: key, operator: 'like', value }]
           : filteredFilters;
-
+       console.log('what are the update filters', updatedFilters);
         return updatedFilters;
       });
     };

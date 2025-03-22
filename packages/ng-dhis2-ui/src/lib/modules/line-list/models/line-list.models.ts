@@ -4,12 +4,11 @@ export interface Pager {
   total: number;
   pageCount: number;
 }
-
 export interface Attribute {
-  lastUpdated: string;
+  updatedAt: string;
   code: string;
   displayName: string;
-  created: string;
+  createdAt: string;
   valueType: string;
   attribute: string;
   value: string;
@@ -27,7 +26,7 @@ export interface Event {
   programStage?: string;
   orgUnit: string;
   enrollment: string;
-  trackedEntityInstance: string;
+  trackedEntity: string;
   enrollmentStatus: string;
   orgUnitName: string;
   status: string;
@@ -39,38 +38,50 @@ export interface Event {
   followup: boolean;
   deleted: boolean;
   attributeOptionCombo: string;
+  createdAt: string;
+  updatedAt: string;
   completedBy: string;
+  createdBy: CreatedByUserInfo;
+  updatedBy: LastUpdatedByUserInfo;
   lastUpdatedByUserInfo: LastUpdatedByUserInfo;
   createdByUserInfo: CreatedByUserInfo;
   dataValues: DataValue[];
   notes: any[];
   relationships: any[];
+  followUp: boolean;
+  scheduledAt: string;
 }
-
 export interface DataValue {
   lastUpdated: string;
   created: string;
   dataElement: string;
   value: string;
   providedElsewhere: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Enrollment {
   program: string;
   lastUpdated: string;
-  created: string;
+  createdAt: string;
+  updatedAt: string;
   orgUnit: string;
   enrollment: string;
-  trackedEntityInstance: string;
+  trackedEntity: string;
   trackedEntityType: string;
   orgUnitName: string;
   enrollmentDate: string;
-  followup: boolean;
+  enrolledAt: string;
+  occurredAt: string;
+  followUp: boolean;
   deleted: boolean;
+  completedBy?: string;
+  completedAt?: string;
   incidentDate: string;
   status: string;
-  lastUpdatedByUserInfo: LastUpdatedByUserInfo;
-  createdByUserInfo: CreatedByUserInfo;
+  updatedBy: LastUpdatedByUserInfo;
+  createdBy: CreatedByUserInfo;
   notes: any[];
   relationships: any[];
   events: Event[];
@@ -80,11 +91,15 @@ export interface Enrollment {
 export interface TrackedEntityInstance {
   trackedEntityInstance: string;
   attributes: { attribute: string; value: string; displayName?: string }[];
-  enrollments: Enrollment[]; 
+  enrollments: Enrollment[];
 }
 
 export interface TrackedEntityInstancesResponse {
   trackedEntityInstances: TrackedEntityInstance[];
+  pager: Pager;
+}
+export interface EnrollmentsResponse {
+  enrollments: Enrollment[];
   pager: Pager;
 }
 
@@ -102,12 +117,12 @@ export interface ProgramMetadata {
   programType: string;
   programStages: ProgramStage[];
   organisationUnits: { id: string; name: string }[];
-  programTrackedEntityAttributes: ProgramTrackedEntityAttribute[]
+  programTrackedEntityAttributes: ProgramTrackedEntityAttribute[];
 }
 
 export interface LineListResponse {
   metadata: ProgramMetadata;
-  data: EventsResponse | TrackedEntityInstancesResponse;
+  data: EventsResponse | TrackedEntityInstancesResponse | EnrollmentsResponse;
 }
 
 export interface TableRow {
@@ -142,20 +157,20 @@ export interface ProgramTrackedEntityAttribute {
     delete: boolean;
     write: boolean;
   };
-  attributeValues: any[]; 
+  attributeValues: any[];
   created: string;
   displayInList: boolean;
   displayName: string;
   displayShortName: string;
   externalAccess: boolean;
   favorite: boolean;
-  favorites: any[]; 
+  favorites: any[];
   id: string;
   lastUpdated: string;
   mandatory: boolean;
   name: string;
   program: { id: string };
-  programTrackedEntityAttributeGroups: any[]; 
+  programTrackedEntityAttributeGroups: any[];
   renderOptionsAsRadio: boolean;
   searchable: boolean;
   sharing: { userGroups: any; external: boolean; users: any };
@@ -165,12 +180,11 @@ export interface ProgramTrackedEntityAttribute {
     name: string;
     valueType: string;
   };
-  translations: any[]; 
+  translations: any[];
   userAccesses: any[];
   userGroupAccesses: any[];
   valueType: string;
 }
-
 
 // // //line-list.models.ts
 // // src/models/line-list.models.ts
@@ -214,17 +228,14 @@ export interface ProgramTrackedEntityAttribute {
 // }
 
 //   export interface TableRow {
-//     [key: string]: string | number; 
-//     index: number; 
+//     [key: string]: string | number;
+//     index: number;
 //   }
-  
+
 //   export interface ColumnDefinition {
 //     label: string;
 //     key: string;
 //   }
-
-
-
 
 // // Base DHIS2 Object (common fields across many entities)
 // interface Dhis2Base {
@@ -237,65 +248,65 @@ export interface ProgramTrackedEntityAttribute {
 //     href?: string;
 //     [key: string]: any; // For any additional DHIS2 fields
 //   }
-  
+
 //   export interface DataElement extends Dhis2Base {
 //     id: string;
-//     name: string; 
+//     name: string;
 //     shortName?: string;
 //     description?: string;
 //     valueType?: string;
 //     domainType?: string;
 //     aggregationType?: string;
 //   }
-  
+
 //   export interface ProgramStageDataElement extends Dhis2Base {
-//     dataElement: DataElement; 
+//     dataElement: DataElement;
 //     compulsory?: boolean;
 //     allowProvidedElsewhere?: boolean;
 //     displayInReports?: boolean;
 //   }
-  
+
 //   export interface ProgramStage extends Dhis2Base {
-//     id: string; 
-//     name: string; 
-//     programStageDataElements: ProgramStageDataElement[]; 
+//     id: string;
+//     name: string;
+//     programStageDataElements: ProgramStageDataElement[];
 //     description?: string;
 //     repeatable?: boolean;
 //     program?: Dhis2Base; // Reference to Program
 //     executionDateLabel?: string;
 //   }
-  
+
 //   export interface OrganisationUnit extends Dhis2Base {
-//     id: string; 
-//     name: string; 
+//     id: string;
+//     name: string;
 //     path?: string;
 //     level?: number;
 //     parent?: OrganisationUnit;
 //     children?: OrganisationUnit[];
 //   }
-  
+
 //   export interface ProgramMetadata extends Dhis2Base {
-//     programType: 'WITH_REGISTRATION' | 'WITHOUT_REGISTRATION'; 
-//     programStages: ProgramStage[]; 
-//     organisationUnits: OrganisationUnit[]; 
+//     programType: 'WITH_REGISTRATION' | 'WITHOUT_REGISTRATION';
+//     programStages: ProgramStage[];
+//     organisationUnits: OrganisationUnit[];
 //     name?: string;
 //     description?: string;
 //     trackedEntityType?: Dhis2Base;
 //     categoryCombo?: Dhis2Base;
 //   }
-  
+
 //   // Data Value (required fields: dataElement, value)
 //   export interface DataValue {
-//     dataElement: string; 
-//     value: string; 
+//     dataElement: string;
+//     value: string;
 //     providedElsewhere?: boolean;
 //     storedBy?: string;
 //     lastUpdated?: string;
 //   }
-  
+
 //   export interface Event extends Dhis2Base {
-//     event: string; 
-//     dataValues: DataValue[]; 
+//     event: string;
+//     dataValues: DataValue[];
 //     program?: string;
 //     programStage?: string;
 //     orgUnit?: string;
@@ -304,9 +315,9 @@ export interface ProgramTrackedEntityAttribute {
 //     dueDate?: string;
 //     coordinate?: { latitude: number; longitude: number };
 //   }
-  
+
 //   export interface EventsResponse {
-//     events: Event[]; 
+//     events: Event[];
 //     pager?: {
 //       page: number;
 //       pageCount: number;
@@ -314,15 +325,15 @@ export interface ProgramTrackedEntityAttribute {
 //       pageSize: number;
 //     };
 //   }
-  
+
 //   export interface Attribute {
-//     attribute: string; 
-//     value: string; 
-//     displayName?: string; 
+//     attribute: string;
+//     value: string;
+//     displayName?: string;
 //     created?: string;
 //     lastUpdated?: string;
 //   }
-  
+
 //   export interface Enrollment extends Dhis2Base {
 //     enrollment?: string;
 //     trackedEntityInstance?: string;
@@ -331,20 +342,20 @@ export interface ProgramTrackedEntityAttribute {
 //     enrollmentDate?: string;
 //     incidentDate?: string;
 //   }
-  
+
 //   export interface TrackedEntityInstance extends Dhis2Base {
-//     trackedEntityInstance: string; 
-//     attributes: Attribute[]; 
-//     enrollments: Enrollment[]; 
+//     trackedEntityInstance: string;
+//     attributes: Attribute[];
+//     enrollments: Enrollment[];
 //     trackedEntityType?: string;
 //     orgUnit?: string;
 //     createdAtClient?: string;
 //     lastUpdatedAtClient?: string;
 //     inactive?: boolean;
 //   }
-  
+
 //   export interface TrackedEntityInstancesResponse {
-//     trackedEntityInstances: TrackedEntityInstance[]; 
+//     trackedEntityInstances: TrackedEntityInstance[];
 //     pager?: {
 //       page: number;
 //       pageCount: number;
@@ -352,17 +363,17 @@ export interface ProgramTrackedEntityAttribute {
 //       pageSize: number;
 //     };
 //   }
-  
+
 //   export interface LineListResponse {
-//     metadata: ProgramMetadata; 
-//     data: EventsResponse | TrackedEntityInstancesResponse; 
+//     metadata: ProgramMetadata;
+//     data: EventsResponse | TrackedEntityInstancesResponse;
 //   }
-  
+
 //   export interface TableRow {
-//     [key: string]: string | number; 
-//     index: number; 
+//     [key: string]: string | number;
+//     index: number;
 //   }
-  
+
 //   export interface ColumnDefinition {
 //     label: string;
 //     key: string;
