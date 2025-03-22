@@ -10,3 +10,4 @@ export * from './lib/modules/form';
 export * from './lib/modules/selection-filters-ui';
 export * from './lib/modules/tracker-form';
 export * from './lib/modules/event-form';
+export * from './lib/modules/program-entry-form';

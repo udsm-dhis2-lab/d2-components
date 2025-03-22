@@ -1,11 +1,5 @@
 import { Component, input, OnInit } from '@angular/core';
-import {
-  BaseEventQuery,
-  BaseTrackerQuery,
-  D2Window,
-  DHIS2Event,
-  TrackedEntityInstance,
-} from '@iapps/d2-web-sdk';
+import { BaseEventQuery, D2Window, DHIS2Event } from '@iapps/d2-web-sdk';
 import { FormMetaData, IFormMetadata } from '../form';
 
 @Component({
