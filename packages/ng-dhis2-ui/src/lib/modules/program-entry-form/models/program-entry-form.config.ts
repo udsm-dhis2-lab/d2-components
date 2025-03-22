@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+type AutoAssignedValues = { field: string; value: string };
+
 export interface IProgramEntryFormConfig {
   program: string;
   programStage?: string;
@@ -21,6 +23,7 @@ export interface IProgramEntryFormConfig {
   hideSubmitButton?: boolean;
   hideCancelButton?: boolean;
   ignoreRepeatability?: boolean;
+  autoAssignedValues?: AutoAssignedValues;
 }
 export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   program!: string;
@@ -41,6 +44,7 @@ export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   hideSubmitButton?: boolean;
   hideCancelButton?: boolean;
   ignoreRepeatability?: boolean;
+  autoAssignedValues?: AutoAssignedValues;
 
   constructor(config: IProgramEntryFormConfig) {
     Object.assign(this, config);

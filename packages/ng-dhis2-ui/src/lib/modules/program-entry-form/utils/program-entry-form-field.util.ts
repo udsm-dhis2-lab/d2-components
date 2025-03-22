@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import { Program, TrackedEntityAttribute } from '@iapps/d2-web-sdk';
+import {
+  DataElement,
+  Program,
+  TrackedEntityAttribute,
+} from '@iapps/d2-web-sdk';
 import { ProgramEntryFormConfig } from '../models';
 import {
   DateField,
@@ -12,7 +16,7 @@ import {
   FormFieldMetaType,
   IFormField,
 } from '../../form';
-import { camelCase, flatten } from 'lodash';
+import { camelCase, flatten, isUndefined } from 'lodash';
 
 export class ProgramEntryFormFieldUtil {
   constructor(
@@ -128,7 +132,7 @@ export class ProgramEntryFormFieldUtil {
           required: field.mandatory,
           type: field.valueType,
           options,
-          disabled: (field as TrackedEntityAttribute).generated,
+          disabled: this.#getDisabledStatus(field),
           order: field.sortOrder,
           hasOptions,
           controlType: FieldUtil.getFieldControlType(
@@ -142,5 +146,21 @@ export class ProgramEntryFormFieldUtil {
       .sort((a, b) => a.order ?? 0 - (b.order ?? 0));
 
     return [...this.reportFields, ...fields];
+  }
+
+  #getDisabledStatus(field: TrackedEntityAttribute | DataElement): boolean {
+    if (field?.generated) {
+      return true;
+    }
+
+    if (this.config.autoAssignedValues) {
+      const key = field.code ? camelCase(field.code) : field.id;
+
+      const assignedValue = this.config.autoAssignedValues[key];
+
+      return !isUndefined(assignedValue);
+    }
+
+    return false;
   }
 }

@@ -146,6 +146,10 @@ export class ProgramEntryFormModule {
       const instance = await this.#getInstance();
       this.instance.set(instance);
 
+      if (this.config().autoAssignedValues) {
+        this.#updateInstance(this.config().autoAssignedValues);
+      }
+
       this.loading.set(false);
     } catch (err) {
       this.loading.set(false);
@@ -163,6 +167,7 @@ export class ProgramEntryFormModule {
 
   onValidityUpdate(isFormValid: boolean) {
     this.isFormValid.set(isFormValid);
+    this.formValidityUpdate.emit(isFormValid);
   }
 
   onCancel() {
