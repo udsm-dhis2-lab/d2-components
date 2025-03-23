@@ -153,10 +153,15 @@ export class ProgramEntryFormFieldUtil {
       return true;
     }
 
-    if (this.config.autoAssignedValues) {
+    if (
+      this.config.autoAssignedValues &&
+      this.config.autoAssignedValues.length > 0
+    ) {
       const key = field.code ? camelCase(field.code) : field.id;
 
-      const assignedValue = this.config.autoAssignedValues[key];
+      const assignedValue = (this.config.autoAssignedValues || []).find(
+        (assignedValue) => assignedValue.field === key
+      )?.value;
 
       return !isUndefined(assignedValue);
     }

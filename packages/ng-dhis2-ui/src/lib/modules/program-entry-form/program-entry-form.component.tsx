@@ -10,6 +10,7 @@ import {
   signal,
 } from '@angular/core';
 import {
+  AutoAssignedValues,
   IProgramEntryFormMetaData,
   ProgramEntryFormConfig,
   ProgramEntryFormMetaData,
@@ -147,7 +148,9 @@ export class ProgramEntryFormModule {
       this.instance.set(instance);
 
       if (this.config().autoAssignedValues) {
-        this.#updateInstance(this.config().autoAssignedValues);
+        this.#updateInstanceWithAutoAssignedValues(
+          this.config().autoAssignedValues
+        );
       }
 
       this.loading.set(false);
@@ -174,6 +177,20 @@ export class ProgramEntryFormModule {
     this.formCancel.emit();
   }
 
+  #updateInstanceWithAutoAssignedValues(
+    autoAssignedValues: AutoAssignedValues[]
+  ) {
+    const assignedDataValues = autoAssignedValues.reduce(
+      (entities, assignedValue) => {
+        return {
+          ...entities,
+          [assignedValue.field]: assignedValue.value,
+        };
+      },
+      {}
+    );
+    this.#updateInstance(assignedDataValues);
+  }
   #updateInstance(dataValues: Record<string, unknown>) {
     this.instance.update((instance) => {
       instance?.updateDataValues(dataValues);
