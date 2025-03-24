@@ -117,6 +117,13 @@ export class FormFieldComponent implements OnInit, OnChanges, OnDestroy {
 
         case 'SHOWERROR': {
           runtimeError = ruleAction.displayedContent;
+          (
+            this.form.controls[this.field().id] ||
+            this.form.controls[this.field().key]
+          )?.setErrors({
+            customError: runtimeError,
+          });
+
           break;
         }
 
