@@ -36,7 +36,9 @@ export class FormMetadataSection implements IFormMetadataSection {
         sortOrder: programTrackedEntityAttribute['sortOrder'],
         mandatory: programTrackedEntityAttribute['mandatory'],
         allowFutureDate: programTrackedEntityAttribute['allowFutureDate'],
-        trackedEntityType: this.params.program['trackedEntityType'],
+        trackedEntityType: (this.params.program['trackedEntityType'] || {})[
+          'id'
+        ],
         metaType: 'ATTRIBUTE',
       };
     });
