@@ -130,7 +130,7 @@ export class ProgramEntryFormFieldUtil {
           label: field.formName || field.name,
           key: field.code ? camelCase(field.code) : field.id,
           required: field.mandatory,
-          type: field.valueType,
+          type: FieldUtil.getFieldType(field.valueType),
           options,
           disabled: this.#getDisabledStatus(field),
           order: field.sortOrder,

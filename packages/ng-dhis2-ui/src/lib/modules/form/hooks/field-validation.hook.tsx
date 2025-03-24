@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 import { FormGroup } from '@angular/forms';
-import { FormField } from '../models';
 import { useMemo } from 'react';
 import { IFormField } from '../interfaces';
 
@@ -12,13 +11,23 @@ export const useFieldValidation = (props: {
   field: IFormField<string>;
   touched: boolean;
   value: string;
+  initialError?: string;
 }) => {
-  const { form, touched, field, value } = props;
+  const { form, touched, field, value, initialError } = props;
+
   const hasError = useMemo(() => {
+    if (initialError && value) {
+      return true;
+    }
+
     return touched && (form.get(field.id) || form.get(field.key))?.invalid;
-  }, [value, touched]);
+  }, [value, touched, initialError]);
 
   const validationError = useMemo(() => {
+    if (initialError && value) {
+      return initialError;
+    }
+
     if (!touched) {
       return undefined;
     }
@@ -33,24 +42,30 @@ export const useFieldValidation = (props: {
       return `${field.label || 'Value'} should not be less than ${
         error['min'].min
       }!`;
-    } else if (error['max']) {
+    }
+
+    if (error['max']) {
       return `${field.label || 'Value'} should not be greater than ${
         error['max'].max
       }!`;
-    } else if (error['pattern']) {
+    }
+
+    if (error['pattern']) {
       if (field.type === 'email') {
         return `The email address provided is not valid`;
-      } else if (field.type === 'tel') {
-        return 'Phone number provided is not valid';
-      } else {
-        return `${field.label || 'Value'} should have appropriate format`;
       }
+
+      if (field.type === 'tel') {
+        return 'Phone number provided is not valid';
+      }
+
+      return `${field.label || 'Value'} should have appropriate format`;
     }
 
     return error['required']
       ? `${field.label || 'Value'} is required`
       : undefined;
-  }, [hasError]);
+  }, [touched, value, initialError]);
 
-  return { hasError, validationError };
+  return { validationError, hasError };
 };

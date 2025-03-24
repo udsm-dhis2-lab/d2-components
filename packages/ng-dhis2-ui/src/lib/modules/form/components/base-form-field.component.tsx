@@ -36,6 +36,7 @@ import { IFormField } from '../interfaces';
 import { FieldConfig } from '../models';
 import { FileUploadField } from './file-upload-field.component';
 import { OrgUnitFormField } from './org-unit-form-field.component';
+import { filter } from 'rxjs';
 
 @Directive()
 export class BaseFormFieldComponent
@@ -46,6 +47,7 @@ export class BaseFormFieldComponent
   httpClient = inject(NgxDhis2HttpClientService);
   fieldType = 'textbox';
   field = input.required<IFormField<string>>();
+  fieldError = input<string | undefined>();
   fieldConfig = input<FieldConfig>(new FieldConfig());
   form = model.required<FormGroup>();
   isValid = input<boolean>();
@@ -54,6 +56,7 @@ export class BaseFormFieldComponent
   value = model<string>();
   protected value$ = toObservable(this.value);
   protected isValueAssigned$ = toObservable(this.isValueAssigned);
+  protected fieldError$ = toObservable(this.fieldError);
 
   label: Signal<string | undefined> = computed(() => {
     return !this.fieldConfig()?.hideLabel ? this.field().label : undefined;
@@ -101,6 +104,7 @@ export class BaseFormFieldComponent
       const [disabled, setDisabled] = useState<boolean>(
         this.field()?.disabled ?? this.field()?.generated ?? false
       );
+      const [initialError, setInitialError] = useState<string>();
 
       useEffect(() => {
         if (this.isValueAssigned()) {
@@ -111,6 +115,20 @@ export class BaseFormFieldComponent
           );
         }
       }, [this.isValueAssigned()]);
+
+      useEffect(() => {
+        const fieldErrorSubscription = this.fieldError$
+          .pipe(filter((error) => error !== initialError))
+          .subscribe({
+            next: (error: string | undefined) => {
+              setInitialError(error);
+            },
+          });
+
+        return () => {
+          fieldErrorSubscription.unsubscribe();
+        };
+      });
 
       const onChange = (payload: {
         selected: React.SetStateAction<undefined>;
@@ -124,9 +142,10 @@ export class BaseFormFieldComponent
         return [];
       }, [value]);
 
-      const { hasError, validationError } = useFieldValidation({
+      const { validationError, hasError } = useFieldValidation({
         field: this.field(),
         form: this.form(),
+        initialError,
         value,
         touched,
       });

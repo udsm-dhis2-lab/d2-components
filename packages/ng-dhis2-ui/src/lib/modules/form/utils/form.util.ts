@@ -25,9 +25,15 @@ export class FormUtil {
           ? [Validators.max(field.max as number)]
           : [];
 
-        const phoneNumberValidator =
-          field.type === 'tel'
-            ? [Validators.pattern('\\+255[6-7][1-9][0-9]{7}$')]
+        const phoneNumberValidator = field.type === 'tel' ? [] : [];
+
+        const emailValidator =
+          field.type === 'email'
+            ? [
+                Validators.pattern(
+                  '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$'
+                ),
+              ]
             : [];
 
         group[field.key] = field.required
@@ -39,6 +45,7 @@ export class FormUtil {
                   ...minValidators,
                   ...maxValidators,
                   ...phoneNumberValidator,
+                  ...emailValidator,
                 ],
                 updateOn: 'change',
               }
@@ -50,6 +57,7 @@ export class FormUtil {
                   ...minValidators,
                   ...maxValidators,
                   ...phoneNumberValidator,
+                  ...emailValidator,
                 ],
               }
             );
@@ -67,6 +75,7 @@ export class FormUtil {
                     ...minValidators,
                     ...maxValidators,
                     ...phoneNumberValidator,
+                    ...emailValidator,
                   ],
                   updateOn: 'change',
                 }
@@ -78,6 +87,7 @@ export class FormUtil {
                     ...minValidators,
                     ...maxValidators,
                     ...phoneNumberValidator,
+                    ...emailValidator,
                   ],
                 }
               );
