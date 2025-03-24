@@ -46,6 +46,7 @@ export class FormFieldComponent implements OnInit, OnChanges, OnDestroy {
   @Output() runtimeOptionChange: EventEmitter<any> = new EventEmitter<any>();
 
   value = signal<any>('');
+  runtimeError = signal<string | undefined>(undefined);
 
   private _runtimeOptions: any[] = [];
   runtimeOptions: any = [];
@@ -91,29 +92,41 @@ export class FormFieldComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   #processRules(ruleActions: IMetadataRuleAction[]) {
-    ruleActions
-      .filter((ruleAction) => ruleAction.field === this.field().id)
-      .forEach((ruleAction) => {
-        switch (ruleAction.actionType) {
-          case 'ASSIGN': {
-            if (ruleAction.assignedData) {
-              const currentValue = this.form?.get(this.field().key)?.value;
+    const fieldRuleActions = ruleActions.filter(
+      (ruleAction) => ruleAction.field === this.field().id
+    );
 
-              if (currentValue != ruleAction.assignedData) {
-                this.form
-                  ?.get(this.field().key)
-                  ?.setValue(ruleAction.assignedData);
-                this.isValueAssigned.set(true);
-                this.onValueChange();
-              }
+    let runtimeError;
+    let isValueAssigned = false;
+    fieldRuleActions.forEach((ruleAction) => {
+      switch (ruleAction.actionType) {
+        case 'ASSIGN': {
+          if (ruleAction.assignedData) {
+            const currentValue = this.form?.get(this.field().key)?.value;
+
+            if (currentValue != ruleAction.assignedData) {
+              this.form
+                ?.get(this.field().key)
+                ?.setValue(ruleAction.assignedData);
+              isValueAssigned = true;
+              this.onValueChange();
             }
-            break;
           }
-
-          default:
-            break;
+          break;
         }
-      });
+
+        case 'SHOWERROR': {
+          runtimeError = ruleAction.displayedContent;
+          break;
+        }
+
+        default:
+          break;
+      }
+    });
+
+    this.runtimeError.set(runtimeError);
+    this.isValueAssigned.set(isValueAssigned);
   }
 
   ngOnDestroy() {

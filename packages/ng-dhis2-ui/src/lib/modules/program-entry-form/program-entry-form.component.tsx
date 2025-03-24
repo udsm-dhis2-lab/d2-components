@@ -30,7 +30,6 @@ import {
   DHIS2Event,
   TrackedEntityInstance,
 } from '@iapps/d2-web-sdk';
-import { on } from 'events';
 
 @Component({
   selector: 'ng-dhis2-ui-program-entry-form',
@@ -149,7 +148,7 @@ export class ProgramEntryFormModule {
 
       if (this.config().autoAssignedValues) {
         this.#updateInstanceWithAutoAssignedValues(
-          this.config().autoAssignedValues
+          this.config().autoAssignedValues || []
         );
       }
 
