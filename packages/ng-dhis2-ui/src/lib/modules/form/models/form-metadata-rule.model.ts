@@ -108,6 +108,10 @@ export class MetadataRule
         (variable) => variable.name === ruleVariable
       );
 
+      if (!ruleVariableObject) {
+        return `{${ruleVariable}}`;
+      }
+
       const code =
         camelCase(ruleVariableObject?.dataElement?.code) ||
         ruleVariableObject?.dataElement?.id ||
