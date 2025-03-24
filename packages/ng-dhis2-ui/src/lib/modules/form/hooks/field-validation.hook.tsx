@@ -62,6 +62,10 @@ export const useFieldValidation = (props: {
       return `${field.label || 'Value'} should have appropriate format`;
     }
 
+    if (error['customError']) {
+      return error['customError'];
+    }
+
     return error['required']
       ? `${field.label || 'Value'} is required`
       : undefined;
