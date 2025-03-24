@@ -12,18 +12,27 @@ export const useFieldValidation = (props: {
   touched: boolean;
   value: string;
   initialError?: string;
+  recordExistError?: string;
 }) => {
-  const { form, touched, field, value, initialError } = props;
+  const { form, touched, field, value, initialError, recordExistError } = props;
 
   const hasError = useMemo(() => {
+    if (recordExistError) {
+      return true;
+    }
+
     if (initialError && value) {
       return true;
     }
 
     return touched && (form.get(field.id) || form.get(field.key))?.invalid;
-  }, [value, touched, initialError]);
+  }, [value, touched, initialError, recordExistError]);
 
   const validationError = useMemo(() => {
+    if (recordExistError) {
+      return recordExistError;
+    }
+
     if (initialError && value) {
       return initialError;
     }
@@ -69,7 +78,7 @@ export const useFieldValidation = (props: {
     return error['required']
       ? `${field.label || 'Value'} is required`
       : undefined;
-  }, [touched, value, initialError]);
+  }, [touched, value, initialError, recordExistError]);
 
   return { validationError, hasError };
 };

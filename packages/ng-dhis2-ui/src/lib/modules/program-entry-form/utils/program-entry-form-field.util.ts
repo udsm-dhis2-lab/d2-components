@@ -32,6 +32,7 @@ export class ProgramEntryFormFieldUtil {
           sortOrder: programTrackedEntityAttribute.sortOrder,
           mandatory: programTrackedEntityAttribute.mandatory,
           allowFutureDate: programTrackedEntityAttribute.allowFutureDate,
+          trackedEntityType: this.program.trackedEntityType?.id,
           metaType: 'ATTRIBUTE',
           stepId: null,
         };
