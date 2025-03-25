@@ -162,7 +162,7 @@ export const getTrackedEntityData = (
 
   const attributesData = teis.map((tei: any, idx: number) => {
     let row: TableRow = {
-      trackedEntityInstance: tei.trackedEntityInstance,
+      trackedEntityInstance: tei.trackedEntity,
       index: (pager.page - 1) * pager.pageSize + idx + 1,
     };
 
