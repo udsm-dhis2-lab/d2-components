@@ -1,9 +1,9 @@
-[data-test='dhis2-uiwidgets-pagination'] {
-  display: flex !important;
-  flex-direction: row !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-}
+// [data-test='dhis2-uiwidgets-pagination'] {
+//   display: flex !important;
+//   flex-direction: row !important;
+//   justify-content: space-between !important;
+//   align-items: center !important;
+// }
 
 ::ng-deep .custom-input {
   display: flex !important;
@@ -26,4 +26,8 @@
 ::ng-deep .custom-input label {
   color: grey !important;
   opacity: 1;
+}
+::ng-deep .table-top-toolbar {
+  background-color: var(--colors-grey100) !important; 
+  color: var(--colors-grey900) !important;
 }
