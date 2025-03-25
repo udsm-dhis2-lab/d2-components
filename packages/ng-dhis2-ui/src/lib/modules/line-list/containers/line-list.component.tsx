@@ -53,7 +53,7 @@ import {
 import debounce from 'lodash/debounce';
 import { OrgUnitFormField } from '../components/org-unit-form-field.component';
 @Component({
-  selector: 'app-line-list',
+  selector: 'ng-dhis2-ui-line-list',
   template: '<ng-content></ng-content>',
   styleUrls: ['./line-list.component.scss'],
   standalone: false,
