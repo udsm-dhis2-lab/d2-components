@@ -1,6 +1,6 @@
 import { AttributeFilter } from '../models/attribute-filter.model';
 import { FilterConfig } from '../models/filter-config.model';
-import { Enrollment, TrackedEntityInstance } from '../models/line-list.models';
+import { TrackedEntity, TrackedEntityInstance } from '../models/line-list.models';
 
 // export function buildFilters(filters: AttributeFilter[]): string {
 //   return filters
@@ -64,7 +64,6 @@ const matchesCondition = (
   }
 };
 
-//w.v impl
 // export const getFilteredTrackedEntityInstances = (
 //   trackedEntityInstance: TrackedEntityInstance[],
 //   filters: FilterConfig[]
@@ -90,8 +89,6 @@ const matchesCondition = (
 //           )
 //   );
 // };
-
-
 export const getFilteredTrackedEntityInstances = (
     trackedEntityInstances: TrackedEntityInstance[],
     filters: FilterConfig[]
@@ -114,24 +111,25 @@ export const getFilteredTrackedEntityInstances = (
       )
     );
   };
-
-export const getFilteredEnrollments = (
-  enrollments: Enrollment[], 
-  filters: FilterConfig[]
-): Enrollment[] => {
-  if (!filters.length) return enrollments;
-
-  return enrollments.filter((enrollment) =>
-    filters.every((filter) =>
-      enrollment.events?.some(
-        (event) =>
-          event.programStage === filter.programStage &&
-          event.dataValues?.some(
-            (dataValue) =>
-              dataValue.dataElement === filter.dataElement &&
-              matchesCondition(dataValue.value, filter.operator, filter.value)
+  export const getFilteredTrackedEntites = (
+    trackedEntities: TrackedEntity[],
+    filters: FilterConfig[]
+  ): TrackedEntity[] => {
+    if (!filters.length) return trackedEntities;
+  
+    return trackedEntities.filter((tei) =>
+      filters.every((filter) =>
+        tei.enrollments?.some((enrollment) =>
+          enrollment.events?.some(
+            (event) =>
+              event.programStage === filter.programStage &&
+              event.dataValues?.some(
+                (dataValue) =>
+                  dataValue.dataElement === filter.dataElement &&
+                  matchesCondition(dataValue.value, filter.operator, filter.value)
+              )
           )
+        )
       )
-    )
-  );
-};
+    );
+  };
