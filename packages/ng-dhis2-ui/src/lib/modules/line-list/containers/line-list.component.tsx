@@ -177,23 +177,6 @@ export class LineListTableComponent extends ReactWrapperModule {
     }, []);
 
     useEffect(() => {
-      if (!loading) {
-        setTimeout(() => {
-          const paginationContainer = document.querySelector(
-            '[data-test="dhis2-uiwidgets-pagination"]'
-          ) as HTMLElement;
-
-          if (paginationContainer) {
-            paginationContainer.style.display = 'flex';
-            paginationContainer.style.flexDirection = 'row';
-            paginationContainer.style.justifyContent = 'space-between';
-            paginationContainer.style.alignItems = 'center';
-          }
-        }, 500); // Short delay to ensure styles apply after data renders
-      }
-    }, [loading]);
-
-    useEffect(() => {
       setLoading(true);
       this.lineListService
         .getLineListData(
@@ -468,10 +451,7 @@ export class LineListTableComponent extends ReactWrapperModule {
             </Modal>
             {this.showFilters && (
               <DataTableToolbar
-                style={{
-                  backgroundColor: 'var(--colors-grey100)',
-                  color: 'var(--colors-grey900)',
-                }}
+              className="table-top-toolbar"
               >
                 <div
                   style={{
@@ -554,6 +534,7 @@ export class LineListTableComponent extends ReactWrapperModule {
                     onClick={() => setShowAllFilters(!showAllFilters)}
                     className="custom-button"
                     secondary
+                    large
                   >
                     {showAllFilters ? 'Less Filters' : 'More Filters'}
                   </Button>
