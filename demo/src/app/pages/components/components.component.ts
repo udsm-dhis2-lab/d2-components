@@ -5,6 +5,7 @@ import {
   BreadcrumbItem,
   FormValue,
   OrganisationUnitSelectionConfig,
+  TableRow,
 } from '@iapps/ng-dhis2-ui';
 import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
 import { Period } from '@iapps/period-utilities';
@@ -44,11 +45,17 @@ export class ComponentsComponent implements OnInit {
     }, 10000);
   }
 
-  onActionSelected(emitActionResponse: any) {
-    console.log(
-      'ON ACTION SELECTED::: ',
-      JSON.stringify(emitActionResponse, null, 4)
-    );
+  // onActionSelected(emitActionResponse: any) {
+  //   console.log(
+  //     'ON ACTION SELECTED::: ',
+  //     JSON.stringify(emitActionResponse, null, 4)
+  //   );
+  // }
+
+  onActionSelected(event: { action: string; row: TableRow }) {
+    if (event.action === 'View') {
+      this.onView(event.row);
+    }
   }
 
   formValuePayload: any;

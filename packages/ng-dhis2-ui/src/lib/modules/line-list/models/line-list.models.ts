@@ -104,7 +104,6 @@ export interface TrackedEntityInstance {
 }
 
 export interface TrackedEntity {
-  trackedEntityInstance: string;
   attributes: Attribute[];
   enrollments: Enrollment[];
   trackedEntity: string;
