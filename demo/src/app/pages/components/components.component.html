@@ -243,11 +243,11 @@
     ]"
     (approvalSelected)="onApprovalSelected($event)"
     [dispatchTeis]="true"
-    [showFilterButton]="true"
     [buttonLabel]="'approve applicants'"
     [isButtonLoading]="isButtonLoading"
     [attributeFilters]="attributeFilters"
     (firstValue)="onFirstValueEmitted($event)"
+    [showFilters]="true"
     [buttonFilter]="'RASI'"
   ></app-line-list>
 </div>
@@ -282,11 +282,10 @@
     ]"
     (approvalSelected)="onApprovalSelected($event)"
     [dispatchTeis]="true"
-    [showFilterButton]="true"
     [buttonLabel]="'approve applicants'"
     [isButtonLoading]="isButtonLoading"
     [ouMode]="'DESCENDANTS'"
-  
+    [showFilters]="true"
   ></app-line-list>
 
   <!-- breadcrumb -->

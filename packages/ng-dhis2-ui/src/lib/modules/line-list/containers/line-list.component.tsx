@@ -69,7 +69,6 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() filters?: FilterConfig[];
   @Input() ouMode?: string;
   @Input() dispatchTeis: boolean = false;
-  @Input() showFilterButton: boolean = false;
   @Output() actionSelected = new EventEmitter<{
     action: string;
     row: TableRow;
@@ -83,6 +82,7 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Output() firstValue = new EventEmitter<string>();
   @Input() buttonFilter!: string;
   @Input() filterRootOrgUnit: boolean = false;
+  @Input() showFilters: boolean = false;
 
   setReactStateUpdaters = (updaters: any) => {
     this.reactStateUpdaters = updaters;
@@ -398,28 +398,6 @@ export class LineListTableComponent extends ReactWrapperModule {
                 {this.buttonLabel}
               </Button>
             ))}
-
-          {this.showFilterButton && (
-            <Button
-              style={{
-                backgroundColor: '#6b7280',
-                color: 'white',
-                padding: '8px 16px',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-              }}
-              onClick={() => {
-                setFilters(!filters);
-              }}
-              secondary
-            >
-              <IconFilter16 />
-              {filters ? 'Hide Filters' : 'Show Filters'}
-            </Button>
-          )}
         </div>
 
         {/* {filters && (
@@ -488,201 +466,101 @@ export class LineListTableComponent extends ReactWrapperModule {
                 </ButtonStrip>
               </ModalActions>
             </Modal>
-
-            <DataTableToolbar
-              style={{
-                backgroundColor: 'var(--colors-grey100)',
-                color: 'var(--colors-grey900)',
-              }}
-            >
-              <div
+            {this.showFilters && (
+              <DataTableToolbar
                 style={{
-                  display: 'flex',
-                  gap: '10px',
-                  flexWrap: 'wrap',
+                  backgroundColor: 'var(--colors-grey100)',
+                  color: 'var(--colors-grey900)',
                 }}
               >
-                {/* Static Fields */}
-                {/* <InputField
-                  key="startDate"
-                  placeholder="Start Date"
-                  type="date"
-                  value={inputValues['startDate'] || ''}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setInputValues((prevValues) => ({
-                      ...prevValues,
-                      startDate: e.target.value,
-                    }))
-                  }
-                  onBlur={() =>
-                    handleInputChange(
-                      'startDate',
-                      inputValues['startDate'] || ''
-                    )
-                  }
-                /> */}
-                {/* <InputField
-                  key="startDate"
-                  placeholder="Start Date"
-                  type="date"
-                  value={startDateState}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    console.log('Selected Start Date:', e.target.value); // Log selected date
-                    setStartDateState(e.target.value);
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: '10px',
+                    flexWrap: 'wrap',
                   }}
-                  // onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  //   setStartDateState(e.target.value)
-                  // }
-                /> */}
-                {/* <InputField
-                  key="startDate"
-                  placeholder="Start Date"
-                  type="date"
-                  value={startDateState}
-                  onChange={(
-                    e: React.ChangeEvent<HTMLInputElement> | { value?: string }
-                  ) => {
-                    if ('target' in e && e.target) {
-                      // Standard React event
-                      console.log('Selected Start Date:', e.target.value);
-                      setStartDateState(e.target.value);
-                    } else if ('value' in e) {
-                      // Custom event with value property
-                      console.log('Selected Start Date:', e.value);
-                      setStartDateState(e.value ?? '');
-                    } else {
-                      console.error('Unexpected event format:', e);
-                    }
-                  }}
-                /> */}
-
-                <InputField
-                  key="location"
-                  label="Location:"
-                  value={selectedOrgUnit}
-                  onFocus={() => setHide(false)}
-                  className="custom-input"
-                />
-                <CalendarInput
-                  label="Start Date:"
-                  calendar="gregory"
-                  locale="en-GB"
-                  timeZone="Africa/Dar_es_Salaam"
-                  className="custom-input"
-                  date={startDateState}
-                  onDateSelect={(selectedDate: any) => {
-                  //  console.log('Selected Start Date:', selectedDate);
-                    setStartDateState(selectedDate.calendarDateString);
-                  }}
-                />
-
-                <CalendarInput
-                  label="End Date:"
-                  calendar="gregory"
-                  locale="en-GB"
-                  timeZone="Africa/Dar_es_Salaam"
-                  className="custom-input"
-                  date={endDateState}
-                  onDateSelect={(selectedDate: any) => {
-                  //  console.log('Selected End Date:', selectedDate);
-                    setEndDateState(selectedDate.calendarDateString);
-                  }}
-                />
-
-                {/* <InputField
-                  key="endDate"
-                  placeholder="End Date"
-                  type="date"
-                  value={endDateState}
-                  onChange={(
-                    e: React.ChangeEvent<HTMLInputElement> | { value?: string }
-                  ) => {
-                    if ('target' in e && e.target) {
-                      // Standard React event
-                      console.log('Selected End Date:', e.target.value);
-                      setEndDateState(e.target.value);
-                    } else if ('value' in e) {
-                      // Custom event with value property
-                      console.log('Selected end Date:', e.value);
-                      setEndDateState(e.value ?? '');
-                    } else {
-                      console.error('Unexpected event format:', e);
-                    }
-                  }}
-                /> */}
-                {/* Dynamic Fields */}
-                {(visibleFilters ?? []).map(({ label, key }) => (
+                >
                   <InputField
-                    key={key}
-                    label={`${label}:`}
+                    key="location"
+                    label="Location:"
+                    value={selectedOrgUnit}
+                    onFocus={() => setHide(false)}
                     className="custom-input"
-                    value={inputValues[key] || ''}
-                    onChange={(
-                      e:
-                        | React.ChangeEvent<HTMLInputElement>
-                        | { value?: string }
-                    ) => {
-                      if ('target' in e && e.target) {
-                        // Standard input event (React.ChangeEvent)
-                        setInputValues((prevValues) => ({
-                          ...prevValues,
-                          [key]: (e as React.ChangeEvent<HTMLInputElement>)
-                            .target.value,
-                        }));
-                      } else if ('value' in e) {
-                        // Direct value (if using another controlled component)
-                        setInputValues((prevValues) => ({
-                          ...prevValues,
-                          [key]: e.value ?? '',
-                        }));
-                      }
-                    }}
-                    // onBlur={(
-                    //   e:
-                    //     | React.ChangeEvent<HTMLInputElement>
-                    //     | { value?: string }
-                    // ) => {
-                    //   // Fire the function only when the input loses focus
-
-                    //   console.log('on blur', e);
-                    //   handleInputChange(key, inputValues[key] || '');
-                    // }}
-                    onBlur={(
-                      e:
-                        | React.ChangeEvent<HTMLInputElement>
-                        | { value?: string }
-                    ) => {
-                      let currentValue = '';
-
-                      if ('target' in e && e.target) {
-                        // Standard input event (React.ChangeEvent)
-                        currentValue = e.target.value;
-                      } else if ('value' in e) {
-                        // Custom event format (like DHIS2 InputField)
-                        currentValue = e.value ?? '';
-                      }
-
-                   //   console.log('onBlur event:', e);
-                   //   console.log('Captured Value:', currentValue);
-
-                      // Only trigger handleInputChange if the value actually changed
-                     // if (currentValue !== inputValues[key]) {
-                        handleInputChange(key, currentValue);
-                     // }
+                  />
+                  <CalendarInput
+                    label="Start Date:"
+                    calendar="gregory"
+                    locale="en-GB"
+                    timeZone="Africa/Dar_es_Salaam"
+                    className="custom-input"
+                    date={startDateState}
+                    onDateSelect={(selectedDate: any) => {
+                      setStartDateState(selectedDate.calendarDateString);
                     }}
                   />
-                ))}
-                {/* Toggle Button */}
+                  <CalendarInput
+                    label="End Date:"
+                    calendar="gregory"
+                    locale="en-GB"
+                    timeZone="Africa/Dar_es_Salaam"
+                    className="custom-input"
+                    date={endDateState}
+                    onDateSelect={(selectedDate: any) => {
+                      setEndDateState(selectedDate.calendarDateString);
+                    }}
+                  />
+                  {(visibleFilters ?? []).map(({ label, key }) => (
+                    <InputField
+                      key={key}
+                      label={`${label}:`}
+                      className="custom-input"
+                      value={inputValues[key] || ''}
+                      onChange={(
+                        e:
+                          | React.ChangeEvent<HTMLInputElement>
+                          | { value?: string }
+                      ) => {
+                        if ('target' in e && e.target) {
+                          setInputValues((prevValues) => ({
+                            ...prevValues,
+                            [key]: (e as React.ChangeEvent<HTMLInputElement>)
+                              .target.value,
+                          }));
+                        } else if ('value' in e) {
+                          setInputValues((prevValues) => ({
+                            ...prevValues,
+                            [key]: e.value ?? '',
+                          }));
+                        }
+                      }}
+                      onBlur={(
+                        e:
+                          | React.ChangeEvent<HTMLInputElement>
+                          | { value?: string }
+                      ) => {
+                        let currentValue = '';
 
-                <Button
-                  onClick={() => setShowAllFilters(!showAllFilters)}
-                  className="custom-button"
-                  secondary
-                >
-                  {showAllFilters ? 'Less Filters' : 'More Filters'}
-                </Button>
-              </div>
-            </DataTableToolbar>
+                        if ('target' in e && e.target) {
+                          currentValue = e.target.value;
+                        } else if ('value' in e) {
+                          currentValue = e.value ?? '';
+                        }
+
+                        handleInputChange(key, currentValue);
+                      }}
+                    />
+                  ))}
+                  <Button
+                    onClick={() => setShowAllFilters(!showAllFilters)}
+                    className="custom-button"
+                    secondary
+                  >
+                    {showAllFilters ? 'Less Filters' : 'More Filters'}
+                  </Button>
+                </div>
+              </DataTableToolbar>
+            )}
+
             <DataTable>
               <TableHead>
                 <DataTableRow>
