@@ -1,4 +1,4 @@
-<!-- <app-line-list
+<!-- <ng-dhis2-ui-line-list
   [programId]="'piWUQa85ell'"
   [orgUnit]="'m0frOspS7JY'"
   [actionOptions]="[
@@ -9,7 +9,7 @@
   [ouMode]="'DESCENDANTS'"
   [startDate]="'2024-03-01'"
   [endDate]="'2025-02-28'"
-></app-line-list> -->
+></ng-dhis2-ui-line-list> -->
 
 <!-- <h5>Header Bar component</h5>
 <ng-dhis2-ui-header-bar></ng-dhis2-ui-header-bar>
@@ -224,7 +224,7 @@
 >
 </app-data-table-ui> -->
 
-<!-- <app-line-list
+<!-- <ng-dhis2-ui-line-list
   [programId]="'piWUQa85ell'"
   [orgUnit]="'m0frOspS7JY'"
   [actionOptions]="[
@@ -233,9 +233,9 @@
     { label: 'Delete', destructive: true, onClick: onDelete }
   ]"
   [showApprovalButton]="true"
-></app-line-list>  -->
+></ng-dhis2-ui-line-list>  -->
 <div class="p-4">
-  <app-line-list
+  <ng-dhis2-ui-line-list
     [programId]="'lw9fZTamYec'"
     [orgUnit]="'lgZ6HfZaj3f'"
     [actionOptions]="[
@@ -249,7 +249,7 @@
     (firstValue)="onFirstValueEmitted($event)"
     [showFilters]="true"
     [buttonFilter]="'RASI'"
-  ></app-line-list>
+  ></ng-dhis2-ui-line-list>
 </div>
 
 <ng-dhis2-ui-form
@@ -274,7 +274,7 @@
   class="w-full"
 />
 <div class="p-4">
-  <app-line-list
+  <ng-dhis2-ui-line-list
     [programId]="'oUiYTdbtOuh'"
     [orgUnit]="'xrku9x3XnV9'"
     [actionOptions]="[
@@ -283,7 +283,7 @@
     (approvalSelected)="onApprovalSelected($event)"
     [ouMode]="'DESCENDANTS'"
     [showFilters]="true"
-  ></app-line-list>
+  ></ng-dhis2-ui-line-list>
 
   <!-- breadcrumb -->
   <div class="p-3">
