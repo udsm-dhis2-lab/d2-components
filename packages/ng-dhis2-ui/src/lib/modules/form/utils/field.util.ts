@@ -46,6 +46,8 @@ export class FieldUtil {
         return 'number';
       case FieldType.PHONE_NUMBER:
         return 'tel';
+      case FieldType.EMAIL:
+        return 'email';
       case FieldType.ORG_UNIT:
         return 'org-unit';
       case FieldType.DATE:

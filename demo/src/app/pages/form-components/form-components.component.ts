@@ -9,6 +9,7 @@ import {
   TrackerFormModule,
   EventFormModule,
   ProgramEntryFormModule,
+  ProgramEntryFormConfig,
 } from '@iapps/ng-dhis2-ui';
 
 @Component({
@@ -87,6 +88,13 @@ export class FormComponentsComponent {
 
   form = FormUtil.getFormGroup(this.fields, {
     name: 'Rajabu',
+  });
+
+  programEntryConfig = new ProgramEntryFormConfig({
+    program: 'lw9fZTamYec',
+    displayType: 'FLAT',
+    formType: 'TRACKER',
+    excludeProgramStages: true,
   });
 
   onUpdate(event: FormValue) {

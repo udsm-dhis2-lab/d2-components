@@ -4,3 +4,4 @@
 
 export * from './program-entry-form.config';
 export * from './program-entry-form-metadata';
+export * from './program-entry-form-section.model';

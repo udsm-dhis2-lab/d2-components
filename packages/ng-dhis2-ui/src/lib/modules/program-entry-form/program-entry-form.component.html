@@ -1,3 +1,35 @@
-<pre>
-  app-program-entry-form
-</pre>
+@if (loading()) {
+<div className="program-entry__form-loader">
+  <ng-dhis2-ui-wrapper [component]="FormLoader" />
+</div>
+} @else if(metaData()) {
+
+<div>
+  <!-- Form content -->
+  @switch (config().displayType) {
+
+  <!-- Flat display -->
+  @case ('FLAT') {
+  <ng-dhis2-ui-flat-form
+    [name]="metaData()!.name"
+    [dataValues]="instance()!"
+    [rules]="metaData()!.rules"
+    [fields]="metaData()!.formFields"
+    (formUpdate)="onFormUpdate($event)"
+    (formValidityUpdate)="onValidityUpdate($event)"
+  />
+  }
+
+  <!-- SECTION display -->
+  @case ('SECTION') { Section form }
+
+  <!-- CUSTOM FORM -->
+  @case ('CUSTOM') { } }
+
+  <!-- Action buttons -->
+
+  @if(!config().hideActionButtons) {
+  <ng-dhis2-ui-wrapper [component]="FormActionButtons()" />
+  }
+</div>
+}

@@ -39,6 +39,7 @@ export class FormField<T> implements IFormField<T>, FormFieldFunction<T> {
   programStage?: string;
   program?: string;
   trackedEntityInstance?: string;
+  trackedEntityType?: string;
   hasOptions?: boolean;
   dependentField?: any;
   fieldOptionsDependsOn?: string;
@@ -79,6 +80,7 @@ export class FormField<T> implements IFormField<T>, FormFieldFunction<T> {
     this.programStage = options.programStage;
     this.program = options.program;
     this.trackedEntityInstance = options.trackedEntityInstance;
+    this.trackedEntityType = options.trackedEntityType;
     this.hasOptions = options.hasOptions;
     this.dependentField = options.dependentField;
     this.displayInList = options.displayInList;

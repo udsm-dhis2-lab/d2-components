@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import { camelCase } from 'lodash';
+import { camelCase, isArray } from 'lodash';
 import { D2Window } from '../../../d2-web-sdk';
 import {
   D2HttpClient,
@@ -44,12 +44,9 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
   }
 
   setOrgUnit(orgUnitValue: string | string[]): BaseTrackerQuery<T> {
-    if (orgUnitValue) {
-      this.orgUnit =
-        typeof orgUnitValue === 'object'
-          ? orgUnitValue.join(';')
-          : (orgUnitValue as string);
-    }
+    this.orgUnit = isArray(orgUnitValue)
+      ? orgUnitValue.join(';')
+      : orgUnitValue;
 
     return this;
   }
@@ -190,6 +187,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
           trackedEntity: generateUid(),
           trackedEntityType: program.trackedEntityType?.id,
           program: program.id,
+          orgUnit: this.orgUnit,
         });
 
         this.instance.fields = {

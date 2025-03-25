@@ -1,0 +1,17 @@
+<!-- <ng-dhis2-ui-form
+*ngIf="fieldGroup.fields.length > 0"
+[fields]="fieldGroup.fields"
+[form]="formGroup"
+[dataEntities]="dataValueEntities()"
+[programRuleActions]="ruleActions()"
+[isFormHorizontal]="fieldGroup.isFormHorizontal || false"
+(formUpdate)="onFormUpdate($event, fieldGroup.id)"
+></ng-dhis2-ui-form> -->
+
+<ng-dhis2-ui-form
+  [fields]="fields()"
+  [form]="formGroup"
+  [dataEntities]="dataValues()"
+  [programRuleActions]="ruleActions()"
+  (formUpdate)="onFormUpdate()"
+/>

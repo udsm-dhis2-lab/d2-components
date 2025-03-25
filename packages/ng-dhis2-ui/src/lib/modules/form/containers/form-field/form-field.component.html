@@ -1,6 +1,7 @@
 <div *ngIf="field()" class="form-field-item">
   <ng-dhis2-ui-form-field-item
     [field]="field()"
+    [fieldError]="runtimeError()"
     [isValueAssigned]="isValueAssigned()"
     [fieldConfig]="fieldConfig"
     [(form)]="form"
