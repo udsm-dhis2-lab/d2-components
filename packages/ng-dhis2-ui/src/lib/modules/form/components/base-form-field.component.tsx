@@ -26,6 +26,8 @@ import {
   SingleSelectOption,
   TextAreaField,
   Transfer,
+  CircularLoader,
+  colors,
 } from '@dhis2/ui';
 import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -36,6 +38,12 @@ import { IFormField } from '../interfaces';
 import { FieldConfig } from '../models';
 import { FileUploadField } from './file-upload-field.component';
 import { OrgUnitFormField } from './org-unit-form-field.component';
+import { filter } from 'rxjs';
+import {
+  D2Window,
+  DataFilterCondition,
+  DataQueryFilter,
+} from '@iapps/d2-web-sdk';
 
 @Directive()
 export class BaseFormFieldComponent
@@ -46,6 +54,7 @@ export class BaseFormFieldComponent
   httpClient = inject(NgxDhis2HttpClientService);
   fieldType = 'textbox';
   field = input.required<IFormField<string>>();
+  fieldError = input<string | undefined>();
   fieldConfig = input<FieldConfig>(new FieldConfig());
   form = model.required<FormGroup>();
   isValid = input<boolean>();
@@ -54,6 +63,7 @@ export class BaseFormFieldComponent
   value = model<string>();
   protected value$ = toObservable(this.value);
   protected isValueAssigned$ = toObservable(this.isValueAssigned);
+  protected fieldError$ = toObservable(this.fieldError);
 
   label: Signal<string | undefined> = computed(() => {
     return !this.fieldConfig()?.hideLabel ? this.field().label : undefined;
@@ -101,16 +111,36 @@ export class BaseFormFieldComponent
       const [disabled, setDisabled] = useState<boolean>(
         this.field()?.disabled ?? this.field()?.generated ?? false
       );
+      const [initialError, setInitialError] = useState<string>();
+      const [recordExistError, setRecordExistError] = useState<
+        string | undefined
+      >();
+      const [checkingUniqueness, setCheckingUniqueness] = useState<boolean>();
 
       useEffect(() => {
         if (this.isValueAssigned()) {
-          setDisabled(true);
-          setValue(
+          const value =
             this.form().get(this.field().id)?.value ||
-              this.form().get(this.field().key)?.value
-          );
+            this.form().get(this.field().key)?.value;
+          setDisabled(true);
+          setValue(value);
+          checkValueUniqueness();
         }
       }, [this.isValueAssigned()]);
+
+      useEffect(() => {
+        const fieldErrorSubscription = this.fieldError$
+          .pipe(filter((error) => error !== initialError))
+          .subscribe({
+            next: (error: string | undefined) => {
+              setInitialError(error);
+            },
+          });
+
+        return () => {
+          fieldErrorSubscription.unsubscribe();
+        };
+      });
 
       const onChange = (payload: {
         selected: React.SetStateAction<undefined>;
@@ -124,281 +154,358 @@ export class BaseFormFieldComponent
         return [];
       }, [value]);
 
-      const { hasError, validationError } = useFieldValidation({
+      const { validationError, hasError } = useFieldValidation({
         field: this.field(),
         form: this.form(),
+        initialError,
+        recordExistError,
         value,
         touched,
       });
 
-      switch (this.field().controlType) {
-        case 'textarea':
-          return (
-            <TextAreaField
-              error={hasError}
-              validationText={validationError}
-              inputWidth={this.fieldConfig()?.inputWidth}
-              required={this.field().required}
-              name={this.field().id}
-              label={this.label()}
-              rows={5}
-              placeholder={this.placeholder()}
-              value={value}
-              onChange={(event: any) => {
-                this.ngZone.run(() => {
-                  (
-                    this.form().get(this.field().id) ||
-                    this.form().get(this.field().key)
-                  )?.setValue(event.value);
+      const checkValueUniqueness = async () => {
+        if (this.field().unique && this.field().trackedEntityType) {
+          setCheckingUniqueness(true);
+          setRecordExistError(undefined);
+          const d2 = (window as unknown as D2Window).d2Web;
+          try {
+            const response = (
+              await d2.trackerModule.trackedEntity
+                .setTrackedEntityType(this.field().trackedEntityType as string)
+                .setOuMode('ACCESSIBLE')
+                .setFilters([
+                  new DataQueryFilter()
+                    .setAttribute(this.field().id)
+                    .setCondition(DataFilterCondition.Equal)
+                    .setValue(value),
+                ])
+                .get()
+            )?.data;
 
-                  this.immediateUpdate.emit({
-                    form: this.form(),
-                    value: event.value,
-                  });
-                });
-                setValue(event.value);
-                setTouched(true);
-              }}
-              onBlur={() => {
-                this.ngZone.run(() => {
-                  this.update.emit({ form: this.form(), value });
-                });
-              }}
-            />
-          );
+            setCheckingUniqueness(false);
 
-        case 'org-unit':
-          return (
-            <OrgUnitFormField
-              label={this.label()}
-              key={this.field().id}
-              required={this.field().required}
-              onSelectOrgUnit={(selectedOrgUnit: string) => {
-                this.ngZone.run(() => {
-                  (
-                    this.form().get(this.field().id) ||
-                    this.form().get(this.field().key)
-                  )?.setValue(selectedOrgUnit);
+            if (response?.length > 0) {
+              const customError = `Record with this ${this.label()} is already registered`;
+              (
+                this.form().controls[this.field().id] ||
+                this.form().controls[this.field().key]
+              )?.setErrors({
+                customError,
+              });
+              setRecordExistError(customError);
+            }
+          } catch (e) {
+            setCheckingUniqueness(false);
+            setRecordExistError(undefined);
+          }
+        }
+      };
 
-                  this.update.emit({
-                    form: this.form(),
-                    value: selectedOrgUnit,
-                  });
-                });
-                setValue(selectedOrgUnit);
-                setTouched(true);
-              }}
-              selected={value}
-            />
-          );
-
-        case 'transfer':
-          return (
-            <Transfer
-              filterable
-              filterPlaceholder="Search"
-              selected={selected}
-              leftHeader={
-                <div
-                  style={{
-                    fontSize: 14,
-                    padding: '8px 4px',
-                  }}
-                >
-                  {this.field().availableOptionsLabel}
-                </div>
-              }
-              rightHeader={
-                <div
-                  style={{
-                    fontSize: 14,
-                    padding: '8px 4px',
-                  }}
-                >
-                  {this.field().selectedOptionsLabel}
-                </div>
-              }
-              options={this.field().options}
-              onChange={(event: any) => {
-                onChange({ selected: event.selected });
-                this.ngZone.run(() => {
-                  (
-                    this.form().get(this.field().id) ||
-                    this.form().get(this.field().key)
-                  )?.setValue(event.selected);
-                });
-                setValue(event.selected);
-                setTouched(true);
-                this.update.emit({ form: this.form(), value });
-              }}
-            />
-          );
-        case 'checkbox':
-          return (
-            <Checkbox
-              checked={Boolean(value)}
-              error={hasError}
-              label={this.label()}
-              name={this.field().id}
-              disabled={disabled}
-              onChange={(event: any) => {
-                this.ngZone.run(() => {
-                  (
-                    this.form().get(this.field().id) ||
-                    this.form().get(this.field().key)
-                  )?.setValue(event.checked);
-                });
-                setValue(event.checked);
-                setTouched(true);
-              }}
-              onBlur={() => {
-                this.ngZone.run(() => {
-                  this.update.emit({ form: this.form(), value });
-                });
-              }}
-            />
-          );
-        case 'dropdown':
-          return (
-            <SingleSelectField
-              filterable={(this.field().options || []).length > 5}
-              clearable
-              error={hasError}
-              validationText={validationError}
-              inputWidth={this.fieldConfig()?.inputWidth}
-              disabled={disabled}
-              required={this.field().required}
-              className="select"
-              label={this.label()}
-              selected={value}
-              onChange={(event: any) => {
-                this.ngZone.run(() => {
-                  (
-                    this.form().get(this.field().id) ||
-                    this.form().get(this.field().key)
-                  )?.setValue(event.selected);
-                  this.update.emit({
-                    form: this.form(),
-                    value: event.selected,
-                  });
-                });
-                setValue(event.selected);
-                setTouched(true);
-              }}
-            >
-              {(this.field().options || []).map((option) => (
-                <SingleSelectOption
-                  key={crypto.randomUUID() || option.key}
-                  label={option.label}
-                  value={option.value}
-                />
-              ))}
-            </SingleSelectField>
-          );
-        case 'multi-dropdown':
-          return (
-            <MultiSelectField
-              clearText="Clear"
-              clearable
-              empty="No data found"
-              filterable={(this.field().options || []).length > 5}
-              filterPlaceholder="Type to filter options"
-              error={hasError}
-              validationText={validationError}
-              inputWidth={this.fieldConfig()?.inputWidth}
-              disabled={disabled}
-              label={this.label()}
-              required={this.field().required}
-              loadingText="Loading options"
-              noMatchText="No options found"
-              onChange={(event: { selected: string[] }) => {
-                const selectedValue = (event.selected || []).join(',');
-                this.ngZone.run(() => {
-                  (
-                    this.form().get(this.field().id) ||
-                    this.form().get(this.field().key)
-                  )?.setValue(selectedValue);
-                  this.update.emit({
-                    form: this.form(),
-                    value: selectedValue,
-                  });
-                });
-                setValue(selectedValue);
-                setTouched(true);
-              }}
-              selected={arrayValue}
-            >
-              {(this.field().options || []).map((option) => (
-                <MultiSelectOption
-                  key={option.key}
-                  label={option.label}
-                  value={option.value}
-                />
-              ))}
-            </MultiSelectField>
-          );
-        case 'file':
-          return (
-            <>
-              <FileUploadField
-                label={this.label()}
-                id={this.field().id}
-                hasError={hasError}
-                required={this.field().required}
+      const formFieldContent = () => {
+        switch (this.field().controlType) {
+          case 'textarea':
+            return (
+              <TextAreaField
+                error={hasError}
                 validationText={validationError}
-                performUpload={true}
-                uploadUrl={'fileResources'}
-                onUploadSuccess={(fileId: string) => {
+                inputWidth={this.fieldConfig()?.inputWidth}
+                required={this.field().required}
+                name={this.field().id}
+                label={this.label()}
+                rows={5}
+                placeholder={this.placeholder()}
+                value={value}
+                onChange={(event: any) => {
                   this.ngZone.run(() => {
-                    this.form().get(this.field().id) ||
-                      this.form().get(this.field().key)?.setValue(fileId);
-                    this.update.emit({
+                    (
+                      this.form().get(this.field().id) ||
+                      this.form().get(this.field().key)
+                    )?.setValue(event.value);
+
+                    this.immediateUpdate.emit({
                       form: this.form(),
-                      value: fileId,
+                      value: event.value,
                     });
                   });
-                  setValue(fileId);
+                  setValue(event.value);
+
                   setTouched(true);
                 }}
-              />
-            </>
-          );
-        default:
-          return (
-            <InputField
-              error={hasError}
-              validationText={validationError}
-              type={this.field().type as any}
-              inputWidth={this.fieldConfig()?.inputWidth}
-              required={this.field().required}
-              name={this.field().id}
-              label={this.label()}
-              min={this.field().min?.toString()}
-              max={this.field().max?.toString()}
-              placeholder={this.placeholder()}
-              value={value}
-              readOnly={disabled}
-              onChange={(event: any) => {
-                this.ngZone.run(() => {
-                  (
-                    this.form().get(this.field().id) ||
-                    this.form().get(this.field().key)
-                  )?.setValue(event.value);
-                  this.immediateUpdate.emit({
-                    form: this.form(),
-                    value: event.value,
+                onBlur={() => {
+                  checkValueUniqueness();
+                  this.ngZone.run(() => {
+                    this.update.emit({ form: this.form(), value });
                   });
-                });
-                setValue(event.value);
-                setTouched(true);
-              }}
-              onBlur={() => {
-                this.ngZone.run(() => {
+                }}
+              />
+            );
+
+          case 'org-unit':
+            return (
+              <OrgUnitFormField
+                label={this.label()}
+                key={this.field().id}
+                required={this.field().required}
+                onSelectOrgUnit={(selectedOrgUnit: string) => {
+                  this.ngZone.run(() => {
+                    (
+                      this.form().get(this.field().id) ||
+                      this.form().get(this.field().key)
+                    )?.setValue(selectedOrgUnit);
+
+                    this.update.emit({
+                      form: this.form(),
+                      value: selectedOrgUnit,
+                    });
+                  });
+                  setValue(selectedOrgUnit);
+                  setTouched(true);
+                }}
+                selected={value}
+              />
+            );
+
+          case 'transfer':
+            return (
+              <Transfer
+                filterable
+                filterPlaceholder="Search"
+                selected={selected}
+                leftHeader={
+                  <div
+                    style={{
+                      fontSize: 14,
+                      padding: '8px 4px',
+                    }}
+                  >
+                    {this.field().availableOptionsLabel}
+                  </div>
+                }
+                rightHeader={
+                  <div
+                    style={{
+                      fontSize: 14,
+                      padding: '8px 4px',
+                    }}
+                  >
+                    {this.field().selectedOptionsLabel}
+                  </div>
+                }
+                options={this.field().options}
+                onChange={(event: any) => {
+                  onChange({ selected: event.selected });
+                  this.ngZone.run(() => {
+                    (
+                      this.form().get(this.field().id) ||
+                      this.form().get(this.field().key)
+                    )?.setValue(event.selected);
+                  });
+                  setValue(event.selected);
+                  setTouched(true);
                   this.update.emit({ form: this.form(), value });
-                });
-              }}
-            />
-          );
+                }}
+              />
+            );
+          case 'checkbox':
+            return (
+              <Checkbox
+                checked={Boolean(value)}
+                error={hasError}
+                label={this.label()}
+                name={this.field().id}
+                disabled={disabled}
+                onChange={(event: any) => {
+                  this.ngZone.run(() => {
+                    (
+                      this.form().get(this.field().id) ||
+                      this.form().get(this.field().key)
+                    )?.setValue(event.checked);
+                  });
+                  setValue(event.checked);
+
+                  setTouched(true);
+                }}
+                onBlur={() => {
+                  checkValueUniqueness();
+                  this.ngZone.run(() => {
+                    this.update.emit({ form: this.form(), value });
+                  });
+                }}
+              />
+            );
+          case 'dropdown':
+            return (
+              <SingleSelectField
+                filterable={(this.field().options || []).length > 5}
+                clearable
+                error={hasError}
+                validationText={validationError}
+                inputWidth={this.fieldConfig()?.inputWidth}
+                disabled={disabled}
+                required={this.field().required}
+                className="select"
+                label={this.label()}
+                selected={value}
+                onChange={(event: any) => {
+                  this.ngZone.run(() => {
+                    (
+                      this.form().get(this.field().id) ||
+                      this.form().get(this.field().key)
+                    )?.setValue(event.selected);
+                    this.update.emit({
+                      form: this.form(),
+                      value: event.selected,
+                    });
+                  });
+                  setValue(event.selected);
+                  setTouched(true);
+                }}
+                onBlur={() => {
+                  checkValueUniqueness();
+                }}
+              >
+                {(this.field().options || []).map((option) => (
+                  <SingleSelectOption
+                    key={crypto.randomUUID() || option.key}
+                    label={option.label}
+                    value={option.value}
+                  />
+                ))}
+              </SingleSelectField>
+            );
+          case 'multi-dropdown':
+            return (
+              <MultiSelectField
+                clearText="Clear"
+                clearable
+                empty="No data found"
+                filterable={(this.field().options || []).length > 5}
+                filterPlaceholder="Type to filter options"
+                error={hasError}
+                validationText={validationError}
+                inputWidth={this.fieldConfig()?.inputWidth}
+                disabled={disabled}
+                label={this.label()}
+                required={this.field().required}
+                loadingText="Loading options"
+                noMatchText="No options found"
+                onChange={(event: { selected: string[] }) => {
+                  const selectedValue = (event.selected || []).join(',');
+                  this.ngZone.run(() => {
+                    (
+                      this.form().get(this.field().id) ||
+                      this.form().get(this.field().key)
+                    )?.setValue(selectedValue);
+                    this.update.emit({
+                      form: this.form(),
+                      value: selectedValue,
+                    });
+                  });
+                  setValue(selectedValue);
+                  setTouched(true);
+                }}
+                onBlur={() => {
+                  checkValueUniqueness();
+                }}
+                selected={arrayValue}
+              >
+                {(this.field().options || []).map((option) => (
+                  <MultiSelectOption
+                    key={option.key}
+                    label={option.label}
+                    value={option.value}
+                  />
+                ))}
+              </MultiSelectField>
+            );
+          case 'file':
+            return (
+              <>
+                <FileUploadField
+                  label={this.label()}
+                  id={this.field().id}
+                  hasError={hasError}
+                  required={this.field().required}
+                  validationText={validationError}
+                  performUpload={true}
+                  uploadUrl={'fileResources'}
+                  onUploadSuccess={(fileId: string) => {
+                    this.ngZone.run(() => {
+                      this.form().get(this.field().id) ||
+                        this.form().get(this.field().key)?.setValue(fileId);
+                      this.update.emit({
+                        form: this.form(),
+                        value: fileId,
+                      });
+                    });
+                    setValue(fileId);
+                    setTouched(true);
+                  }}
+                />
+              </>
+            );
+          default:
+            return (
+              <InputField
+                error={hasError}
+                validationText={validationError}
+                type={this.field().type as any}
+                inputWidth={this.fieldConfig()?.inputWidth}
+                required={this.field().required}
+                name={this.field().id}
+                label={this.label()}
+                min={this.field().min?.toString()}
+                max={this.field().max?.toString()}
+                placeholder={this.placeholder()}
+                value={value}
+                readOnly={disabled}
+                onChange={(event: any) => {
+                  this.ngZone.run(() => {
+                    (
+                      this.form().get(this.field().id) ||
+                      this.form().get(this.field().key)
+                    )?.setValue(event.value);
+                    this.immediateUpdate.emit({
+                      form: this.form(),
+                      value: event.value,
+                    });
+                  });
+                  setValue(event.value);
+
+                  setTouched(true);
+                }}
+                onBlur={() => {
+                  checkValueUniqueness();
+                  this.ngZone.run(() => {
+                    this.update.emit({ form: this.form(), value });
+                  });
+                }}
+              />
+            );
+        }
+      };
+
+      {
+        return (
+          <React.Fragment>
+            {formFieldContent()}
+            {checkingUniqueness && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  paddingTop: 8,
+                }}
+              >
+                <CircularLoader small />
+                <div style={{ color: colors.grey800, fontSize: 14 }}>
+                  Checking...
+                </div>
+              </div>
+            )}
+          </React.Fragment>
+        );
       }
     };
   }

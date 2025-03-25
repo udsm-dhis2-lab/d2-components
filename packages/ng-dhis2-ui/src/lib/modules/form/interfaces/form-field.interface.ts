@@ -30,6 +30,7 @@ export interface IFormField<T> {
   programStage?: string;
   program?: string;
   trackedEntityInstance?: string;
+  trackedEntityType?: string;
   hasOptions?: boolean;
   dependentField?: any;
   fieldOptionsDependsOn?: string;
