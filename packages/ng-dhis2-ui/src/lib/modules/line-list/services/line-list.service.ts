@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import {
   ProgramMetadata,
   EventsResponse,
   TrackedEntityInstancesResponse,
   LineListResponse,
-  EnrollmentsResponse,
+  TrackedEntityResponse,
 } from '../models/line-list.models';
 import { buildFilters } from '../utils/filter-builder';
 import { AttributeFilter } from '../models/attribute-filter.model';
@@ -17,40 +17,41 @@ export class LineListService {
   constructor(private httpClient: NgxDhis2HttpClientService) {}
   private getProgramMetadata(programId: string): Observable<ProgramMetadata> {
     return this.httpClient.get(
-      `programs/${programId}.json?fields=programType,programStages[id,name,programStageDataElements[dataElement[id,name]]],organisationUnits[id,name],*`
+      `programs/${programId}.json?fields=programType,programStages[id,name,programStageDataElements[dataElement[id,name]]],programTrackedEntityAttributes[*]`
     );
   }
 
-  // programStartDate programEndDate	
-  // enrolledAfter    enrolledBefore
-
-  private getEnrollments(
-    programId: string,
-    orgUnit: string,
-    page: number,
-    pageSize: number,
-    filters: AttributeFilter[] = [],
-    startDate?: string,  
-    endDate?: string,
-    ouMode?: string,
-    filterRootOrgUnit?: boolean
-  ): Observable<EnrollmentsResponse> {
-    const filterParams = buildFilters(filters);
-    const dateFilter = startDate && endDate ? `&enrolledAfter=${startDate}&enrolledBefore=${endDate}` : '';
-    const ouModeIdentifier = ouMode ? `&orgUnitMode=${ouMode}`: ``;
-    return this.httpClient.get(
-      `tracker/enrollments.json?program=${programId}&orgUnit=${orgUnit}${ouModeIdentifier}&page=${page}&pageSize=${pageSize}&fields=orgUnit,attributes[*]&totalPages=true&${filterParams}${dateFilter}&order=createdAt:desc`
-    ).pipe(
-      map((response: any) => {
-        if (filterRootOrgUnit) {
-          response.enrollments = response.enrollments.filter(
-            (enrollment: any) => enrollment.orgUnit !== orgUnit // Exclude enrollments with the root orgUnit
-          );
-        }
-        return response;
-      })
-    );
-  }
+  // private getTrackedEntityInstances(
+  //   programId: string,
+  //   orgUnit: string,
+  //   page: number,
+  //   pageSize: number,
+  //   filters: AttributeFilter[] = [],
+  //   startDate?: string,
+  //   endDate?: string,
+  //   ouMode?: string,
+  //   filterRootOrgUnit?: boolean
+  // ): Observable<TrackedEntityResponse> {
+  //   const filterParams = buildFilters(filters);
+  //  // const dateFilter = startDate || endDate ? `enrollmentEnrolledAfter=${startDate}&enrollmentEnrolledBefore=${endDate}` : '';
+  //  const dateFilter = [
+  //   startDate ? `enrollmentEnrolledAfter=${startDate}` : '',
+  //   endDate ? `enrollmentEnrolledBefore=${endDate}` : '',
+  // ].filter(Boolean).join('&');
+  //   const ouModeIdentifier = ouMode ? `&orgUnitMode=${ouMode}`: ``;
+  //   return this.httpClient.get(
+  //     `tracker/trackedEntities.json?program=${programId}&orgUnit=${orgUnit}${ouModeIdentifier}&page=${page}&pageSize=${pageSize}&fields=trackedEntity,orgUnit,attributes[*],enrollments[*]&totalPages=true&${filterParams}${dateFilter}&order=createdAt:desc`
+  //   ).pipe(
+  //     map((response: any) => {
+  //       if (filterRootOrgUnit) {
+  //         response.trackedEntities = response.trackedEntities.filter(
+  //           (tei: any) => tei.orgUnit !== orgUnit // Exclude TEIs with the root orgUnit
+  //         );
+  //       }
+  //       return response;
+  //     })
+  //   );
+  // }
 
   private getTrackedEntityInstances(
     programId: string,
@@ -62,23 +63,73 @@ export class LineListService {
     endDate?: string,
     ouMode?: string,
     filterRootOrgUnit?: boolean
-  ): Observable<TrackedEntityInstancesResponse> {
+  ): Observable<TrackedEntityResponse> {
     const filterParams = buildFilters(filters);
-    const dateFilter = startDate && endDate ? `&programStartDate=${startDate}&programEndDate=${endDate}` : '';
-    const ouModeIdentifier = ouMode ? `&ouMode=${ouMode}`: ``;
-    return this.httpClient.get(
-      `trackedEntityInstances.json?program=${programId}&ou=${orgUnit}${ouModeIdentifier}&page=${page}&pageSize=${pageSize}&fields=trackedEntityInstance,orgUnit,attributes[*,displayInList],enrollments[*]&totalPages=true&${filterParams}${dateFilter}&order=created:desc`
-    ).pipe(
-      map((response: any) => {
-        if (filterRootOrgUnit) {
-          response.trackedEntityInstances = response.trackedEntityInstances.filter(
-            (tei: any) => tei.orgUnit !== orgUnit // Exclude TEIs with the root orgUnit
+    const dateFilter = [
+      startDate ? `enrollmentEnrolledAfter=${startDate}` : '',
+      endDate ? `enrollmentEnrolledBefore=${endDate}` : '',
+    ].filter(Boolean).join('&');
+    const ouModeIdentifier = ouMode ? `&orgUnitMode=${ouMode}` : '';
+  
+    return this.httpClient
+      .get(
+        `tracker/trackedEntities.json?program=${programId}&orgUnit=${orgUnit}${ouModeIdentifier}&page=${page}&pageSize=${pageSize}&fields=trackedEntity,orgUnit,attributes[*],enrollments[*]&totalPages=true&${filterParams}${dateFilter}&order=createdAt:desc`
+      )
+      .pipe(
+        switchMap((response: any) => {
+          if (filterRootOrgUnit) {
+            response.trackedEntities = response.trackedEntities.filter(
+              (tei: any) => tei.orgUnit !== orgUnit
+            );
+          }
+  
+          // **Step 1:** Extract unique orgUnits from enrollments
+          const uniqueOrgUnitIds = new Set<string>();
+          response.trackedEntities.forEach((tei: any) => {
+            tei.enrollments?.forEach((enrollment: any) => {
+              if (enrollment.program === programId) {
+                uniqueOrgUnitIds.add(enrollment.orgUnit);
+              }
+            });
+          });
+  
+          // If no unique orgUnits found, return immediately
+          if (uniqueOrgUnitIds.size === 0) {
+            return of({ ...response, orgUnitsMap: new Map<string, string>() });
+          }
+  
+          // **Step 2:** Fetch orgUnit names in a single request
+          return this.fetchOrgUnits(Array.from(uniqueOrgUnitIds)).pipe(
+            map((orgUnitsMap: Map<string, string>) => ({
+              ...response,
+              orgUnitsMap, // Attach orgUnitId → orgUnitName map
+            }))
           );
-        }
-        return response;
-      })
-    );
+        })
+      );
   }
+  //filter=id:in:[id1,id2,id3]
+
+  /**
+   * Fetch orgUnit names for given orgUnit IDs
+   */
+  private fetchOrgUnits(orgUnitIds: string[]): Observable<Map<string, string>> {
+    const idsQuery = `filter=id:in:[${orgUnitIds}]`;
+    return this.httpClient
+      .get(
+        `organisationUnits.json?fields=id,name&paging=false&${idsQuery}`
+      )
+      .pipe(
+        map((response) => {
+          const orgUnitsMap = new Map<string, string>();
+            response.organisationUnits.forEach((orgUnit: { id: string; name: string }) => {
+            orgUnitsMap.set(orgUnit.id, orgUnit.name);
+            });
+          return orgUnitsMap;
+        })
+      );
+  }
+  
 
   private getEvents(
     programId: string,
@@ -140,10 +191,11 @@ export class LineListService {
         }
 
         if (programMetadata.programType === 'WITH_REGISTRATION') {
-          return this.getEnrollments(programId, orgUnit, page, pageSize, filters, startDate, endDate, ouMode, filterRootOrgUnit).pipe(
-            map((enrollments: EnrollmentsResponse) => ({
+          return this.getTrackedEntityInstances(programId, orgUnit, page, pageSize, filters, startDate, endDate, ouMode, filterRootOrgUnit).pipe(
+            map((teis: TrackedEntityResponse) => ({
               metadata: programMetadata,
-              data: enrollments,
+              data: teis,
+              orgUnits: teis.orgUnitsMap
             }))
           );
         } else {

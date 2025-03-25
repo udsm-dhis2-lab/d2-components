@@ -20,8 +20,15 @@ import {
   Button,
   InputField,
   IconFilter16,
+  DataTableToolbar,
+  CalendarInput,
+  Modal,
+  ModalTitle,
+  ModalContent,
+  ModalActions,
+  ButtonStrip,
 } from '@dhis2/ui';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { ReactWrapperModule } from '../../react-wrapper/react-wrapper.component';
 import { DropdownMenu, DropdownMenuOption } from '../components/dropdown-menu';
@@ -29,21 +36,22 @@ import { AttributeFilter } from '../models/attribute-filter.model';
 import { FilterConfig } from '../models/filter-config.model';
 import {
   ColumnDefinition,
-  EnrollmentsResponse,
   EventsResponse,
   LineListResponse,
   Pager,
   TableRow,
   TrackedEntityInstancesResponse,
+  TrackedEntityResponse,
 } from '../models/line-list.models';
 import { LineListService } from '../services/line-list.service';
 import {
   addActionsColumn,
-  getEnrollmentData,
   getEventData,
   getProgramStageData,
   getTrackedEntityData,
 } from '../utils/line-list-utils';
+import debounce from 'lodash/debounce';
+import { OrgUnitFormField } from '../components/org-unit-form-field.component';
 @Component({
   selector: 'app-line-list',
   template: '<ng-content></ng-content>',
@@ -146,6 +154,12 @@ export class LineListTableComponent extends ReactWrapperModule {
     //TODO: this will be migrated on the parent component
     const [checkValue, setCheckValue] = useState<string[]>([]);
     const [valueMatch, setValuesMatch] = useState<boolean>(false);
+    const [selectedOrgUnit, setSelectedOrgUnit] = useState<string>(''); // for testing purposes to be removed
+    const [hide, setHide] = useState<boolean>(true);
+    const [showAllFilters, setShowAllFilters] = useState(false);
+    const visibleFilters = showAllFilters
+      ? filteredColumns ?? []
+      : (filteredColumns ?? []).slice(0, 2);
 
     // Store updaters in refs for Angular to access
     const updateRefs = useRef({
@@ -181,17 +195,16 @@ export class LineListTableComponent extends ReactWrapperModule {
 
     useEffect(() => {
       setLoading(true);
-      console.log('in the use effect', attributeFiltersState);
       this.lineListService
         .getLineListData(
           this.programId,
-          this.orgUnit,
+          orgUnitState,
           this.programStageId,
           pager.page,
           pager.pageSize,
           attributeFiltersState,
-          this.startDate,
-          this.endDate,
+          startDateState,
+          endDateState,
           this.ouMode,
           this.filterRootOrgUnit
         )
@@ -200,7 +213,7 @@ export class LineListTableComponent extends ReactWrapperModule {
           let responsePager: Pager;
           let entityData: TableRow[] = [];
           let filteredDataColumns: ColumnDefinition[] = [];
-          console.log('this is not being triggered the second time');
+
           if (this.programStageId) {
             responsePager = (response.data as EventsResponse).pager;
             const { columns, data } = getProgramStageData(
@@ -210,54 +223,11 @@ export class LineListTableComponent extends ReactWrapperModule {
             );
             entityColumns = columns;
             entityData = data;
-          }
-          //  else if ('trackedEntityInstances' in response.data) {
-          //   responsePager = (response.data as TrackedEntityInstancesResponse)
-          //     .pager;
-
-          //   const { columns, data, filteredEntityColumns } =
-          //     getTrackedEntityData(
-          //       response,
-          //       this.programId,
-          //       pager,
-          //       this.filters
-          //     );
-          //   entityColumns = columns;
-          //   entityData = data;
-          //   //TODO: Should be done on the parent
-          //   let checkValues = [
-          //     ...new Set(
-          //       (
-          //         response.data as TrackedEntityInstancesResponse
-          //       )?.trackedEntityInstances?.[0]?.enrollments?.[0]?.events?.flatMap(
-          //         (event) =>
-          //           event.dataValues
-          //             .filter((dataValue) =>
-          //               /^[A-Za-z]{3}$/.test(dataValue.value)
-          //             )
-          //             .map((dataValue) => dataValue.value)
-          //       )
-          //     ),
-          //   ];
-            
-          //   if (checkValues) {
-          //     // this.firstValue.emit(firstTei);
-          //     setCheckValue(checkValues);
-          //     setValuesMatch(!checkValues.includes(this.buttonFilter));
-          //   }
-          //   //  setFilteredColumns(filteredEntityColumns);
-          //   // Ensure filter inputs do not disappear when no data is returned
-          //   // If filteredEntityColumns is empty, keep the previous columns instead of clearing them
-          //   setFilteredColumns((prev) =>
-          //     filteredEntityColumns.length > 0 ? filteredEntityColumns : prev
-          //   );
-          //   filteredDataColumns = filteredEntityColumns;}
-          else if ('enrollments' in response.data) {
-            responsePager = (response.data as EnrollmentsResponse)
-              .pager;
+          } else if ('trackedEntities' in response.data) {
+            responsePager = (response.data as TrackedEntityResponse).pager;
 
             const { columns, data, filteredEntityColumns } =
-            getEnrollmentData(
+              getTrackedEntityData(
                 response,
                 this.programId,
                 pager,
@@ -269,8 +239,8 @@ export class LineListTableComponent extends ReactWrapperModule {
             let checkValues = [
               ...new Set(
                 (
-                  response.data as EnrollmentsResponse
-                )?.enrollments?.[0]?.events?.flatMap(
+                  response.data as TrackedEntityResponse
+                )?.trackedEntities?.[0]?.enrollments?.[0]?.events?.flatMap(
                   (event) =>
                     event.dataValues
                       .filter((dataValue) =>
@@ -280,7 +250,7 @@ export class LineListTableComponent extends ReactWrapperModule {
                 )
               ),
             ];
-            
+
             if (checkValues) {
               // this.firstValue.emit(firstTei);
               setCheckValue(checkValues);
@@ -293,9 +263,7 @@ export class LineListTableComponent extends ReactWrapperModule {
               filteredEntityColumns.length > 0 ? filteredEntityColumns : prev
             );
             filteredDataColumns = filteredEntityColumns;
-            console.log('in the enrollments check', attributeFiltersState);
-          }
-           else {
+          } else {
             responsePager = (response.data as EventsResponse).pager;
             const { columns, data } = getEventData(response, pager);
             entityColumns = columns;
@@ -333,7 +301,6 @@ export class LineListTableComponent extends ReactWrapperModule {
       }));
     };
 
-    //TODO: to be done on the parent
     const handleApprovalClick = () => {
       setIsButtonLoading(true);
       this.lineListService
@@ -349,10 +316,10 @@ export class LineListTableComponent extends ReactWrapperModule {
           this.ouMode
         )
         .subscribe((response: LineListResponse) => {
-          if ('trackedEntityInstances' in response.data) {
+          if ('trackedEntities' in response.data) {
             const trackedEntityInstances = (
-              response.data as TrackedEntityInstancesResponse
-            ).trackedEntityInstances;
+              response.data as TrackedEntityResponse
+            ).trackedEntities;
 
             // Map TEIs to objects with teiId and enrollmentId
             const teiEnrollmentList = trackedEntityInstances
@@ -365,7 +332,7 @@ export class LineListTableComponent extends ReactWrapperModule {
                 // Return object with teiId and enrollmentId (if found)
                 return matchingEnrollment
                   ? {
-                      teiId: tei.trackedEntityInstance,
+                      teiId: tei.trackedEntity,
                       enrollmentId: matchingEnrollment.enrollment,
                     }
                   : null;
@@ -393,7 +360,7 @@ export class LineListTableComponent extends ReactWrapperModule {
         const updatedFilters = value.trim()
           ? [...filteredFilters, { attribute: key, operator: 'like', value }]
           : filteredFilters;
-       console.log('what are the update filters', updatedFilters);
+
         return updatedFilters;
       });
     };
@@ -401,15 +368,15 @@ export class LineListTableComponent extends ReactWrapperModule {
     return (
       <div>
         <div
-          // style={{
-          //   width: '100%',
-          //   display: 'flex',
-          //   justifyContent: 'flex-end',
-          //   alignItems: 'center',
-          //   gap: 8,
-          //   padding: 8,
-          //   marginBottom: 16,
-          // }}
+        // style={{
+        //   width: '100%',
+        //   display: 'flex',
+        //   justifyContent: 'flex-end',
+        //   alignItems: 'center',
+        //   gap: 8,
+        //   padding: 8,
+        //   marginBottom: 16,
+        // }}
         >
           {valueMatch &&
             this.dispatchTeis &&
@@ -434,16 +401,16 @@ export class LineListTableComponent extends ReactWrapperModule {
 
           {this.showFilterButton && (
             <Button
-              // style={{
-              //   backgroundColor: '#6b7280', 
-              //   color: 'white',
-              //   padding: '8px 16px',
-              //   borderRadius: '4px',
-              //   cursor: 'pointer',
-              //   display: 'flex',
-              //   alignItems: 'center',
-              //   gap: 8,
-              // }}
+              style={{
+                backgroundColor: '#6b7280',
+                color: 'white',
+                padding: '8px 16px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}
               onClick={() => {
                 setFilters(!filters);
               }}
@@ -455,39 +422,18 @@ export class LineListTableComponent extends ReactWrapperModule {
           )}
         </div>
 
-        {filters && (
+        {/* {filters && (
           <div
-            // style={{
-            //   display: 'flex',
-            //   gap: '10px',
-            //   flexWrap: 'wrap',
-            //   paddingBottom: '16px',
-            // }}
+            style={{
+              display: 'flex',
+              gap: '10px',
+              flexWrap: 'wrap',
+              paddingBottom: '16px',
+            }}
           >
-            {(filteredColumns ?? []).map(({ label, key }) => (
-              <InputField
-                key={key}
-                label={label}
-                value={inputValues[key] || ''}
-                onChange={(
-                  e: React.ChangeEvent<HTMLInputElement> | { value?: string }
-                ) => {
-                  // Check if it's a standard event with target.value
-                  if ('target' in e && e.target) {
-                    handleInputChange(
-                      key,
-                      (e as React.ChangeEvent<HTMLInputElement>).target.value
-                    );
-                  }
-                  // Check if it's an event with direct value
-                  else if ('value' in e) {
-                    handleInputChange(key, e.value ?? '');
-                  }
-                }}
-              />
-            ))}
+            
           </div>
-        )}
+        )} */}
 
         {loading ? (
           <div
@@ -508,80 +454,310 @@ export class LineListTableComponent extends ReactWrapperModule {
             </div>
           </div>
         ) : (
-          <DataTable>
-            <TableHead>
-              <DataTableRow>
-                {columns.map((col) => (
-                  <DataTableColumnHeader key={col.key}>
-                    {col.label}
-                  </DataTableColumnHeader>
-                ))}
-              </DataTableRow>
-            </TableHead>
+          // <div>
+          //   <div/>
+          <div>
+            <Modal hide={hide}>
+              <ModalTitle>Select organization unit</ModalTitle>
 
-            <TableBody>
-              {data.length > 0 ? (
-                data.map((row) => (
-                  <DataTableRow key={row.index}>
-                    {columns.map((col) => (
-                      <DataTableCell key={col.key}>
-                        {col.key === 'actions' ? (
-                          <DropdownMenu
-                            dropdownOptions={getDropdownOptions(row)}
-                            onClick={(option) => option.onClick?.()}
-                          />
-                        ) : (
-                          row[col.key] || '--' // Display '--' if value is undefined or null
-                        )}
-                      </DataTableCell>
-                    ))}
-                  </DataTableRow>
-                ))
-              ) : (
-                <DataTableRow>
-                  <DataTableCell
-                    colSpan={columns.length?.toString()}
-                    style={{
-                      textAlign: 'center',
-                      fontWeight: 'bold',
-                      color: 'grey',
-                      padding: '20px',
+              <ModalContent>
+                <OrgUnitFormField
+                  //  label="Select organization unit"
+                  key={selectedOrgUnit}
+                  onSelectOrgUnit={(selectedOrgUnit: any) => {
+                    // console.log(
+                    //   'this is the selected org unit key',
+                    //   selectedOrgUnit
+                    // );
+                    setSelectedOrgUnit(selectedOrgUnit.displayName);
+                    setOrgUnitState(selectedOrgUnit.id);
+                    setHide(true);
+                  }}
+                />
+              </ModalContent>
+
+              <ModalActions>
+                <ButtonStrip end>
+                  {/* <Button onClick={() => setHide(false)} secondary>
+                Close modal
+            </Button> */}
+
+                  <Button onClick={() => setHide(true)} secondary>
+                    Close
+                  </Button>
+                </ButtonStrip>
+              </ModalActions>
+            </Modal>
+
+            <DataTableToolbar
+              style={{
+                backgroundColor: 'var(--colors-grey100)',
+                color: 'var(--colors-grey900)',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '10px',
+                  flexWrap: 'wrap',
+                }}
+              >
+                {/* Static Fields */}
+                {/* <InputField
+                  key="startDate"
+                  placeholder="Start Date"
+                  type="date"
+                  value={inputValues['startDate'] || ''}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setInputValues((prevValues) => ({
+                      ...prevValues,
+                      startDate: e.target.value,
+                    }))
+                  }
+                  onBlur={() =>
+                    handleInputChange(
+                      'startDate',
+                      inputValues['startDate'] || ''
+                    )
+                  }
+                /> */}
+                {/* <InputField
+                  key="startDate"
+                  placeholder="Start Date"
+                  type="date"
+                  value={startDateState}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    console.log('Selected Start Date:', e.target.value); // Log selected date
+                    setStartDateState(e.target.value);
+                  }}
+                  // onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  //   setStartDateState(e.target.value)
+                  // }
+                /> */}
+                {/* <InputField
+                  key="startDate"
+                  placeholder="Start Date"
+                  type="date"
+                  value={startDateState}
+                  onChange={(
+                    e: React.ChangeEvent<HTMLInputElement> | { value?: string }
+                  ) => {
+                    if ('target' in e && e.target) {
+                      // Standard React event
+                      console.log('Selected Start Date:', e.target.value);
+                      setStartDateState(e.target.value);
+                    } else if ('value' in e) {
+                      // Custom event with value property
+                      console.log('Selected Start Date:', e.value);
+                      setStartDateState(e.value ?? '');
+                    } else {
+                      console.error('Unexpected event format:', e);
+                    }
+                  }}
+                /> */}
+
+                <InputField
+                  key="location"
+                  label="Location:"
+                  value={selectedOrgUnit}
+                  onFocus={() => setHide(false)}
+                  className="custom-input"
+                />
+                <CalendarInput
+                  label="Start Date:"
+                  calendar="gregory"
+                  locale="en-GB"
+                  timeZone="Africa/Dar_es_Salaam"
+                  className="custom-input"
+                  date={startDateState}
+                  onDateSelect={(selectedDate: any) => {
+                  //  console.log('Selected Start Date:', selectedDate);
+                    setStartDateState(selectedDate.calendarDateString);
+                  }}
+                />
+
+                <CalendarInput
+                  label="End Date:"
+                  calendar="gregory"
+                  locale="en-GB"
+                  timeZone="Africa/Dar_es_Salaam"
+                  className="custom-input"
+                  date={endDateState}
+                  onDateSelect={(selectedDate: any) => {
+                  //  console.log('Selected End Date:', selectedDate);
+                    setEndDateState(selectedDate.calendarDateString);
+                  }}
+                />
+
+                {/* <InputField
+                  key="endDate"
+                  placeholder="End Date"
+                  type="date"
+                  value={endDateState}
+                  onChange={(
+                    e: React.ChangeEvent<HTMLInputElement> | { value?: string }
+                  ) => {
+                    if ('target' in e && e.target) {
+                      // Standard React event
+                      console.log('Selected End Date:', e.target.value);
+                      setEndDateState(e.target.value);
+                    } else if ('value' in e) {
+                      // Custom event with value property
+                      console.log('Selected end Date:', e.value);
+                      setEndDateState(e.value ?? '');
+                    } else {
+                      console.error('Unexpected event format:', e);
+                    }
+                  }}
+                /> */}
+                {/* Dynamic Fields */}
+                {(visibleFilters ?? []).map(({ label, key }) => (
+                  <InputField
+                    key={key}
+                    label={`${label}:`}
+                    className="custom-input"
+                    value={inputValues[key] || ''}
+                    onChange={(
+                      e:
+                        | React.ChangeEvent<HTMLInputElement>
+                        | { value?: string }
+                    ) => {
+                      if ('target' in e && e.target) {
+                        // Standard input event (React.ChangeEvent)
+                        setInputValues((prevValues) => ({
+                          ...prevValues,
+                          [key]: (e as React.ChangeEvent<HTMLInputElement>)
+                            .target.value,
+                        }));
+                      } else if ('value' in e) {
+                        // Direct value (if using another controlled component)
+                        setInputValues((prevValues) => ({
+                          ...prevValues,
+                          [key]: e.value ?? '',
+                        }));
+                      }
                     }}
-                  >
-                    No data found
+                    // onBlur={(
+                    //   e:
+                    //     | React.ChangeEvent<HTMLInputElement>
+                    //     | { value?: string }
+                    // ) => {
+                    //   // Fire the function only when the input loses focus
+
+                    //   console.log('on blur', e);
+                    //   handleInputChange(key, inputValues[key] || '');
+                    // }}
+                    onBlur={(
+                      e:
+                        | React.ChangeEvent<HTMLInputElement>
+                        | { value?: string }
+                    ) => {
+                      let currentValue = '';
+
+                      if ('target' in e && e.target) {
+                        // Standard input event (React.ChangeEvent)
+                        currentValue = e.target.value;
+                      } else if ('value' in e) {
+                        // Custom event format (like DHIS2 InputField)
+                        currentValue = e.value ?? '';
+                      }
+
+                   //   console.log('onBlur event:', e);
+                   //   console.log('Captured Value:', currentValue);
+
+                      // Only trigger handleInputChange if the value actually changed
+                     // if (currentValue !== inputValues[key]) {
+                        handleInputChange(key, currentValue);
+                     // }
+                    }}
+                  />
+                ))}
+                {/* Toggle Button */}
+
+                <Button
+                  onClick={() => setShowAllFilters(!showAllFilters)}
+                  className="custom-button"
+                  secondary
+                >
+                  {showAllFilters ? 'Less Filters' : 'More Filters'}
+                </Button>
+              </div>
+            </DataTableToolbar>
+            <DataTable>
+              <TableHead>
+                <DataTableRow>
+                  {columns.map((col) => (
+                    <DataTableColumnHeader key={col.key}>
+                      {col.label}
+                    </DataTableColumnHeader>
+                  ))}
+                </DataTableRow>
+              </TableHead>
+
+              <TableBody>
+                {data.length > 0 ? (
+                  data.map((row) => (
+                    <DataTableRow key={row.index}>
+                      {columns.map((col) => (
+                        <DataTableCell key={col.key}>
+                          {col.key === 'actions' ? (
+                            <DropdownMenu
+                              dropdownOptions={getDropdownOptions(row)}
+                              onClick={(option) => option.onClick?.()}
+                            />
+                          ) : (
+                            row[col.key] || '--' // Display '--' if value is undefined or null
+                          )}
+                        </DataTableCell>
+                      ))}
+                    </DataTableRow>
+                  ))
+                ) : (
+                  <DataTableRow>
+                    <DataTableCell
+                      colSpan={columns.length?.toString()}
+                      style={{
+                        textAlign: 'center',
+                        fontWeight: 'bold',
+                        color: 'grey',
+                        padding: '20px',
+                      }}
+                    >
+                      No data found
+                    </DataTableCell>
+                  </DataTableRow>
+                )}
+              </TableBody>
+
+              <TableFoot>
+                <DataTableRow>
+                  {/* <DataTableCell colSpan={columns.length}> */}
+                  <DataTableCell colSpan={columns.length.toString()}>
+                    <div>
+                      <Pagination
+                        page={pager.page}
+                        pageCount={pager.pageCount}
+                        pageSize={pager.pageSize}
+                        total={pager.total}
+                        onPageChange={(page: number) =>
+                          setPager((prev) => ({ ...prev, page }))
+                        }
+                        onPageSizeChange={(pageSize: number) => {
+                          const newPageSize = Number(pageSize);
+                          setPager((prev) => ({
+                            ...prev,
+                            page: 1,
+                            pageSize: newPageSize,
+                          }));
+                        }}
+                        pageSizes={['10', '20', '50', '100', '500']}
+                      />
+                    </div>
                   </DataTableCell>
                 </DataTableRow>
-              )}
-            </TableBody>
-
-            <TableFoot>
-              <DataTableRow>
-                {/* <DataTableCell colSpan={columns.length}> */}
-                <DataTableCell colSpan={columns.length.toString()}>
-                  <div>
-                    <Pagination
-                      page={pager.page}
-                      pageCount={pager.pageCount}
-                      pageSize={pager.pageSize}
-                      total={pager.total}
-                      onPageChange={(page: number) =>
-                        setPager((prev) => ({ ...prev, page }))
-                      }
-                      onPageSizeChange={(pageSize: number) => {
-                        const newPageSize = Number(pageSize);
-                        setPager((prev) => ({
-                          ...prev,
-                          page: 1,
-                          pageSize: newPageSize,
-                        }));
-                      }}
-                      pageSizes={['5', '10', '20', '50']}
-                    />
-                  </div>
-                </DataTableCell>
-              </DataTableRow>
-            </TableFoot>
-          </DataTable>
+              </TableFoot>
+            </DataTable>
+          </div>
         )}
       </div>
     );
