@@ -64,11 +64,12 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() programStageId?: string;
   @Input() actionOptions?: DropdownMenuOption[];
   @Input() attributeFilters?: AttributeFilter[];
+  @Input() useOuModeWithOlderDHIS2Instance?: boolean;
   @Input() startDate?: string;
   @Input() endDate?: string;
   @Input() filters?: FilterConfig[];
   @Input() ouMode?: string;
-  @Input() dispatchTeis: boolean = false;
+  @Input() dispatchTeis = false;
   @Output() actionSelected = new EventEmitter<{
     action: string;
     row: TableRow;
@@ -77,12 +78,12 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Output() approvalSelected = new EventEmitter<
     { teiId: string; enrollmentId: string }[]
   >();
-  @Input() isButtonLoading: boolean = false;
-  @Input() buttonLabel: string = '';
+  @Input() isButtonLoading = false;
+  @Input() buttonLabel = '';
   @Output() firstValue = new EventEmitter<string>();
   @Input() buttonFilter!: string;
-  @Input() filterRootOrgUnit: boolean = false;
-  @Input() showFilters: boolean = false;
+  @Input() filterRootOrgUnit = false;
+  @Input() showFilters = false;
 
   setReactStateUpdaters = (updaters: any) => {
     this.reactStateUpdaters = updaters;
@@ -189,7 +190,8 @@ export class LineListTableComponent extends ReactWrapperModule {
           startDateState,
           endDateState,
           this.ouMode,
-          this.filterRootOrgUnit
+          this.filterRootOrgUnit,
+          this.useOuModeWithOlderDHIS2Instance
         )
         .subscribe((response: LineListResponse) => {
           let entityColumns: ColumnDefinition[] = [];
@@ -206,8 +208,18 @@ export class LineListTableComponent extends ReactWrapperModule {
             );
             entityColumns = columns;
             entityData = data;
-          } else if ('trackedEntities' in response.data) {
-            responsePager = (response.data as TrackedEntityResponse).pager;
+          } else if (
+            'trackedEntities' in response.data ||
+            'instances' in response.data
+          ) {
+            const responseData: any = response.data as TrackedEntityResponse;
+
+            responsePager = (response.data as TrackedEntityResponse).pager || {
+              page: responseData.page,
+              pageSize: responseData.pageSize,
+              total: responseData.total,
+              pageCount: responseData.pageCount,
+            };
 
             const { columns, data, filteredEntityColumns } =
               getTrackedEntityData(
@@ -218,8 +230,9 @@ export class LineListTableComponent extends ReactWrapperModule {
               );
             entityColumns = columns;
             entityData = data;
+
             //TODO: Should be done on the parent
-            let checkValues = [
+            const checkValues = [
               ...new Set(
                 (
                   response.data as TrackedEntityResponse
@@ -230,7 +243,17 @@ export class LineListTableComponent extends ReactWrapperModule {
                         /^[A-Za-z]{3}$/.test(dataValue.value)
                       )
                       .map((dataValue) => dataValue.value)
-                )
+                ) ??
+                  (
+                    response.data as TrackedEntityResponse
+                  )?.instances?.[0]?.enrollments?.[0]?.events?.flatMap(
+                    (event) =>
+                      event.dataValues
+                        .filter((dataValue) =>
+                          /^[A-Za-z]{3}$/.test(dataValue.value)
+                        )
+                        .map((dataValue) => dataValue.value)
+                  )
               ),
             ];
 
@@ -299,7 +322,10 @@ export class LineListTableComponent extends ReactWrapperModule {
           this.ouMode
         )
         .subscribe((response: LineListResponse) => {
-          if ('trackedEntities' in response.data) {
+          if (
+            'trackedEntities' in response.data ||
+            'instances' in response.data
+          ) {
             const trackedEntityInstances = (
               response.data as TrackedEntityResponse
             ).trackedEntities;
@@ -450,9 +476,7 @@ export class LineListTableComponent extends ReactWrapperModule {
               </ModalActions>
             </Modal>
             {this.showFilters && (
-              <DataTableToolbar
-              className="table-top-toolbar"
-              >
+              <DataTableToolbar className="table-top-toolbar">
                 <div
                   style={{
                     display: 'flex',
