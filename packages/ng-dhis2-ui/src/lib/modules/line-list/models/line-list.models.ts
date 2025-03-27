@@ -131,6 +131,7 @@ export interface TrackedEntityInstancesResponse {
 
 export interface TrackedEntityResponse {
   trackedEntities: TrackedEntity[];
+  instances?: TrackedEntity[],
   pager: Pager;
   orgUnitsMap?: Map<string, string>;
 }

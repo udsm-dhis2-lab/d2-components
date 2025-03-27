@@ -8,7 +8,10 @@ import {
   TrackedEntityInstancesResponse,
   TrackedEntityResponse,
 } from '../models/line-list.models';
-import { getFilteredTrackedEntites, getFilteredTrackedEntityInstances } from './filter-builder';
+import {
+  getFilteredTrackedEntites,
+  getFilteredTrackedEntityInstances,
+} from './filter-builder';
 
 export const getProgramStageData = (
   response: LineListResponse,
@@ -40,7 +43,7 @@ export const getProgramStageData = (
   );
 
   const dataElementsData: TableRow[] = events.map((event: any, idx: number) => {
-    let row: TableRow = {
+    const row: TableRow = {
       event: event.event,
       index: (pager.page - 1) * pager.pageSize + idx + 1,
     };
@@ -64,10 +67,12 @@ export const getTrackedEntityData = (
   data: TableRow[];
   filteredEntityColumns: ColumnDefinition[];
 } => {
-  let teis = (response.data as TrackedEntityResponse)
-    .trackedEntities;
+  let teis =
+    (response.data as TrackedEntityResponse)?.trackedEntities ??
+    (response.data as TrackedEntityResponse)?.instances ??
+    [];
 
-  let programMetaData = response.metadata.programTrackedEntityAttributes;
+  const programMetaData = response.metadata.programTrackedEntityAttributes;
 
   // //organisation units from metadata
   // let orgUnitsFromMetaData = response.metadata.organisationUnits;
@@ -80,7 +85,7 @@ export const getTrackedEntityData = (
   //   ])
   // );
 
-   const orgUnitMap = (response.data as TrackedEntityResponse).orgUnitsMap;
+  const orgUnitMap = (response.data as TrackedEntityResponse).orgUnitsMap;
 
   const mappedProgramMetadataAttributes = programMetaData.map((attr) => ({
     displayInList: attr.displayInList,
@@ -161,7 +166,7 @@ export const getTrackedEntityData = (
   );
 
   const attributesData = teis.map((tei: any, idx: number) => {
-    let row: TableRow = {
+    const row: TableRow = {
       trackedEntityInstance: tei.trackedEntity,
       index: (pager.page - 1) * pager.pageSize + idx + 1,
     };
@@ -180,13 +185,12 @@ export const getTrackedEntityData = (
     //include orgUnit in the row for id access
     row['orgUnitId'] = matchingEnrollment.orgUnit;
     // Access the name of the orgUnit using the Map
-  //  row['orgUnit'] = matchingEnrollment.orgUnitName;
-   row['orgUnit'] = orgUnitMap?.get(matchingEnrollment.orgUnit) || 'N/A';
-  //  row['orgUnit'] =
-  // orgUnitMap && orgUnitMap[matchingEnrollment.orgUnit]
-  //   ? orgUnitMap[matchingEnrollment.orgUnit]
-  //   : 'N/A';
-
+    //  row['orgUnit'] = matchingEnrollment.orgUnitName;
+    row['orgUnit'] = orgUnitMap?.get(matchingEnrollment.orgUnit) || 'N/A';
+    //  row['orgUnit'] =
+    // orgUnitMap && orgUnitMap[matchingEnrollment.orgUnit]
+    //   ? orgUnitMap[matchingEnrollment.orgUnit]
+    //   : 'N/A';
     return row;
   });
   return {
@@ -202,8 +206,8 @@ export const getEventData = (
 ): { columns: ColumnDefinition[]; data: TableRow[] } => {
   const events = (response.data as EventsResponse).events;
   const uniqueDataElements = new Set<string>();
-  events.forEach((event: any) => {
-    event.dataValues.forEach((dv: any) =>
+  events?.forEach((event: any) => {
+    event?.dataValues.forEach((dv: any) =>
       uniqueDataElements.add(dv.dataElement)
     );
   });
@@ -219,7 +223,7 @@ export const getEventData = (
   );
 
   const dataElementsData = events.map((event: any, idx: number) => {
-    let row: TableRow = {
+    const row: TableRow = {
       event: event.event,
       index: (pager.page - 1) * pager.pageSize + idx + 1,
     };

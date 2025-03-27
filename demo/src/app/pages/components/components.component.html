@@ -236,11 +236,25 @@
 ></ng-dhis2-ui-line-list>  -->
 <div class="p-4">
   <ng-dhis2-ui-line-list
+  [programId]="'oj3Lk0fdHTu'"
+  [orgUnit]="'m0frOspS7JY'"
+  [useOuModeWithOlderDHIS2Instance]="true"
+  [attributeFilters]="[]"
+  [filters]="[]"
+  [ouMode]="'DESCENDANTS'"
+  [actionOptions]="[
+    
+  ]"
+  (actionSelected)="onActionSelected($event)"
+></ng-dhis2-ui-line-list>
+
+  <ng-dhis2-ui-line-list
     [programId]="'lw9fZTamYec'"
     [orgUnit]="'lgZ6HfZaj3f'"
     [actionOptions]="[
     { label: 'View', },
     ]"
+    [ouMode]="'DESCENDANTS'"
     (approvalSelected)="onApprovalSelected($event)"
     [dispatchTeis]="true"
     [buttonLabel]="'approve applicants'"
@@ -252,7 +266,7 @@
   ></ng-dhis2-ui-line-list>
 </div>
 
-<ng-dhis2-ui-form
+<!-- <ng-dhis2-ui-form
   [programRuleActions]="[
     {
       field: 'OhV3SJdy7HV',
@@ -272,7 +286,7 @@
   (formUpdate)="onUpdate($event)"
   [showSaveButton]="false"
   class="w-full"
-/>
+/> -->
 <div class="p-4">
   <ng-dhis2-ui-line-list
     [programId]="'oUiYTdbtOuh'"
@@ -286,7 +300,6 @@
     (actionSelected)="onActionSelected($event)"
   ></ng-dhis2-ui-line-list>
 
-  <!-- breadcrumb -->
   <div class="p-3">
     <ng-dhis2-ui-breadcrumb
       [breadcrumbs]="[

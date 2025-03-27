@@ -387,9 +387,6 @@ export class SelectionFiltersComponent
                 setShowOrgUnit(true);
               }}
               onBlur={() => {
-                this.ngZone.run(() => {
-                  console.log('THIS IS IT::: ');
-                });
                 setTouched(true);
               }}
             />
@@ -461,7 +458,6 @@ export class SelectionFiltersComponent
               readOnly={false}
               onFocus={() => setShowOrgUnit(true)}
               onBlur={() => {
-                this.ngZone.run(() => console.log('THIS IS IT::: '));
                 setTouched(true);
               }}
             />
