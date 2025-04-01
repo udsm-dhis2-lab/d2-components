@@ -38,7 +38,7 @@ import { IFormField } from '../interfaces';
 import { FieldConfig } from '../models';
 import { FileUploadField } from './file-upload-field.component';
 import { OrgUnitFormField } from './org-unit-form-field.component';
-import { filter } from 'rxjs';
+import { filter, take } from 'rxjs';
 import {
   D2Window,
   DataFilterCondition,
@@ -128,19 +128,39 @@ export class BaseFormFieldComponent
         }
       }, [this.isValueAssigned()]);
 
+      // TODO: START: Improve the approach of handling observables 
+      // useEffect(() => {
+      //   const fieldErrorSubscription = this.fieldError$
+      //     .pipe(filter((error) => error !== initialError))
+      //     .subscribe({
+      //       next: (error: string | undefined) => {
+      //         setInitialError(error);
+      //       },
+      //     });
+
+      //   return () => {
+      //     fieldErrorSubscription.unsubscribe();
+      //   };
+      // });
+      // TODO: END: Improve the approach of handling observables 
+
       useEffect(() => {
         const fieldErrorSubscription = this.fieldError$
-          .pipe(filter((error) => error !== initialError))
+          .pipe(
+            filter((error) => error !== initialError),
+            take(1) // Take only the first emitted value, then unsubscribe
+          )
           .subscribe({
             next: (error: string | undefined) => {
               setInitialError(error);
             },
           });
-
+      
         return () => {
           fieldErrorSubscription.unsubscribe();
         };
-      });
+      }, [initialError]); // Add initialError as a dependency to avoid stale closures
+      
 
       const onChange = (payload: {
         selected: React.SetStateAction<undefined>;
