@@ -84,6 +84,7 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() buttonFilter!: string;
   @Input() filterRootOrgUnit = false;
   @Input() showFilters = false;
+  @Input() isOptionSetNameVisible = false;
 
   setReactStateUpdaters = (updaters: any) => {
     this.reactStateUpdaters = updaters;
@@ -93,6 +94,11 @@ export class LineListTableComponent extends ReactWrapperModule {
     if (this.reactStateUpdaters) {
       if (changes['programId']) {
         this.reactStateUpdaters.setProgramIdState(this.programId);
+      }
+      if (changes['isOptionSetNameVisible']) {
+        this.reactStateUpdaters.setOptionSetNameVisible(
+          this.isOptionSetNameVisible
+        );
       }
       if (changes['orgUnit']) {
         this.reactStateUpdaters.setOrgUnitState(this.orgUnit);
@@ -130,6 +136,8 @@ export class LineListTableComponent extends ReactWrapperModule {
     const [programIdState, setProgramIdState] = useState<string>(
       this.programId
     );
+    const [isOptionSetNameVisibleState, setOptionSetNameVisible] =
+      useState<boolean>(this.isOptionSetNameVisible);
     const [orgUnitState, setOrgUnitState] = useState<string>(this.orgUnit);
     const [programStageIdState, setProgramStageIdState] = useState<
       string | undefined
@@ -171,6 +179,7 @@ export class LineListTableComponent extends ReactWrapperModule {
       setStartDateState,
       setEndDateState,
       setIsButtonLoading,
+      setOptionSetNameVisible,
     });
 
     useEffect(() => {
@@ -204,7 +213,8 @@ export class LineListTableComponent extends ReactWrapperModule {
             const { columns, data } = getProgramStageData(
               response,
               this.programStageId,
-              pager
+              pager,
+              this.isOptionSetNameVisible
             );
             entityColumns = columns;
             entityData = data;
@@ -226,6 +236,7 @@ export class LineListTableComponent extends ReactWrapperModule {
                 response,
                 this.programId,
                 pager,
+                this.isOptionSetNameVisible,
                 this.filters
               );
             entityColumns = columns;
@@ -271,7 +282,11 @@ export class LineListTableComponent extends ReactWrapperModule {
             filteredDataColumns = filteredEntityColumns;
           } else {
             responsePager = (response.data as EventsResponse).pager;
-            const { columns, data } = getEventData(response, pager);
+            const { columns, data } = getEventData(
+              response,
+              pager,
+              this.isOptionSetNameVisible
+            );
             entityColumns = columns;
             entityData = data;
           }
@@ -295,6 +310,7 @@ export class LineListTableComponent extends ReactWrapperModule {
       endDateState,
       pager.page,
       pager.pageSize,
+      isOptionSetNameVisibleState,
     ]);
 
     const getDropdownOptions = (row: TableRow): DropdownMenuOption[] => {
