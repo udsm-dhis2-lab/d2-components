@@ -93,7 +93,6 @@ export class LineListService {
           const uniqueOrgUnitIds = new Set<string>();
 
           if (response && response.trackedEntities) {
-            console.log('THIS IS HERE', JSON.stringify(response));
             response.trackedEntities.forEach((tei: any) => {
               tei.enrollments?.forEach((enrollment: any) => {
                 if (enrollment.program === programId) {
@@ -112,9 +111,6 @@ export class LineListService {
               });
             }
           }
-
-
-
 
           // If no unique orgUnits found, return immediately
           if (uniqueOrgUnitIds.size === 0) {
@@ -249,7 +245,6 @@ export class LineListService {
             }))
           );
         } else {
-          
           return this.getEvents(
             programId,
             orgUnit,
