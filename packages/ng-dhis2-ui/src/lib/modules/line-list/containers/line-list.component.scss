@@ -9,18 +9,35 @@
   display: flex !important;
   gap: 4px !important;
   align-items: center !important;
-  border: 1px solid #9FADBA !important;
-  border-radius: 4px !important; 
-  padding-left: 16px;
+  border: 1px solid #9fadba !important;
+  border-radius: 4px !important;
+  padding: 0;
+  margin: 0;
+  padding-left: 8px;
+  background-color: #fff !important;
+
+  div {
+    margin: 0 !important;
+  }
+
+  label {
+    font-size: 12px;
+    padding-right: 0;
+  }
 
   input {
-    border:none !important;
+    border: none !important;
+    font-size: 12px !important;
+    display: flex;
+    align-items: center;
+    padding-left: 4px;
+    height: 40px;
     outline: none !important;
     box-shadow: none !important;
   }
   input:focus {
-    border: none !important;  
-    box-shadow: none !important;           
+    border: none !important;
+    box-shadow: none !important;
   }
 }
 ::ng-deep .custom-input label {
@@ -28,6 +45,6 @@
   opacity: 1;
 }
 ::ng-deep .table-top-toolbar {
-  background-color: var(--colors-grey100) !important; 
+  background-color: var(--colors-grey100) !important;
   color: var(--colors-grey900) !important;
 }
