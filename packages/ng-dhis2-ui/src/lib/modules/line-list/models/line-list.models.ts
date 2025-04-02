@@ -141,7 +141,38 @@ export interface EnrollmentsResponse {
 }
 
 export interface ProgramStageDataElement {
-  dataElement: { id: string; name: string };
+  dataElement: DataElement;
+}
+
+export interface DataElement {
+  code: string;
+  name: string;
+  created: string;
+  lastUpdated: string;
+  translations: any[];
+  favorites: any[];
+  shortName: string;
+  description: string;
+  formName: string;
+  dimensionItemType: string;
+  legendSets: any[];
+  aggregationType: string;
+  valueType: string;
+  domainType: string;
+  dataSetElements: any[];
+  aggregationLevels: any[];
+  zeroIsSignificant: boolean;
+  optionSetValue: boolean;
+  dimensionItem: string;
+  displayShortName: string;
+  displayDescription: string;
+  displayName: string;
+  favorite: boolean;
+  displayFormName: string;
+  id: string;
+  attributeValues: any[];
+  dataElementGroups: any[];
+  optionSet?: OptionSet;
 }
 
 export interface ProgramStage {
@@ -210,14 +241,36 @@ export interface ProgramTrackedEntityAttribute {
   searchable: boolean;
   sharing: { userGroups: any; external: boolean; users: any };
   sortOrder: number;
-  trackedEntityAttribute: {
-    id: string;
-    name: string;
-    valueType: string;
-  };
+  trackedEntityAttribute: TrackedEntityAttribute;
   translations: any[];
   userAccesses: any[];
   userGroupAccesses: any[];
   valueType: string;
+}
+
+export interface TrackedEntityAttribute {
+  code: string;
+  name: string;
+  formName: string;
+  shortName: string;
+  valueType: string;
+  optionSetValue: boolean;
+  id: string;
+  optionSet?: OptionSet;
+  generated: boolean,
+  unique: boolean
+}
+
+export interface OptionSet {
+  name: string;
+  options: Option[];
+  id: string;
+}
+
+export interface Option {
+  code: string;
+  name: string;
+  id: string;
+  value?: string;
 }
 

@@ -32,7 +32,7 @@ import {
   CircularLoader,
 } from '@dhis2/ui';
 import { Provider } from '@dhis2/app-runtime';
-import { firstValueFrom, map, Observable, zip } from 'rxjs';
+import { firstValueFrom, map, Observable, take, zip } from 'rxjs';
 import { NgxDhis2HttpClientService, User } from '@iapps/ngx-dhis2-http-client';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { OrganisationUnitSelectionConfig } from '../../../organisation-unit-selector';
@@ -146,15 +146,34 @@ export class SelectionFiltersComponent
     const [rootOrgUnits, setRootOrgUnits] = useState<string[]>();
     const [config, setConfig] = useState<any>();
 
+    // TODO: START::: Improve approach on handling observables 
+    // useEffect(() => {
+    //   zip(this.getAppConfig(), this.getRootOrgUnits()).subscribe({
+    //     next: ([appConfig, rootOrgUnits]) => {
+    //       setConfig(appConfig);
+    //       setRootOrgUnits(rootOrgUnits);
+    //     },
+    //     error: (error) => console.error(error),
+    //   });
+    // }, []);
+    // TODO: END::: Improve approach on handling observables 
+
     useEffect(() => {
-      zip(this.getAppConfig(), this.getRootOrgUnits()).subscribe({
-        next: ([appConfig, rootOrgUnits]) => {
-          setConfig(appConfig);
-          setRootOrgUnits(rootOrgUnits);
-        },
-        error: (error) => console.error(error),
-      });
+      const subscription = zip(this.getAppConfig(), this.getRootOrgUnits())
+        .pipe(take(1)) // Ensures only one emission
+        .subscribe({
+          next: ([appConfig, rootOrgUnits]) => {
+            setConfig(appConfig);
+            setRootOrgUnits(rootOrgUnits);
+          },
+          error: (error) => console.error(error),
+        });
+    
+      return () => {
+        subscription.unsubscribe(); // Cleanup to avoid memory leaks
+      };
     }, []);
+    
     return config ? (
       <Provider
         config={config}

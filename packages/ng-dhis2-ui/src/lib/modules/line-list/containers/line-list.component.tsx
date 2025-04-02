@@ -52,6 +52,7 @@ import {
 } from '../utils/line-list-utils';
 import debounce from 'lodash/debounce';
 import { OrgUnitFormField } from '../components/org-unit-form-field.component';
+import { take } from 'rxjs';
 @Component({
   selector: 'ng-dhis2-ui-line-list',
   template: '<ng-content></ng-content>',
@@ -85,6 +86,7 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() buttonFilter!: string;
   @Input() filterRootOrgUnit = false;
   @Input() showFilters = false;
+  @Input() isOptionSetNameVisible = false;
 
   setReactStateUpdaters = (updaters: any) => {
     this.reactStateUpdaters = updaters;
@@ -94,6 +96,11 @@ export class LineListTableComponent extends ReactWrapperModule {
     if (this.reactStateUpdaters) {
       if (changes['programId']) {
         this.reactStateUpdaters.setProgramIdState(this.programId);
+      }
+      if (changes['isOptionSetNameVisible']) {
+        this.reactStateUpdaters.setOptionSetNameVisible(
+          this.isOptionSetNameVisible
+        );
       }
       if (changes['orgUnit']) {
         this.reactStateUpdaters.setOrgUnitState(this.orgUnit);
@@ -131,6 +138,8 @@ export class LineListTableComponent extends ReactWrapperModule {
     const [programIdState, setProgramIdState] = useState<string>(
       this.programId
     );
+    const [isOptionSetNameVisibleState, setOptionSetNameVisible] =
+      useState<boolean>(this.isOptionSetNameVisible);
     const [orgUnitState, setOrgUnitState] = useState<string>(this.orgUnit);
     const [programStageIdState, setProgramStageIdState] = useState<
       string | undefined
@@ -172,15 +181,146 @@ export class LineListTableComponent extends ReactWrapperModule {
       setStartDateState,
       setEndDateState,
       setIsButtonLoading,
+      setOptionSetNameVisible,
     });
 
     useEffect(() => {
       this.setReactStateUpdaters?.(updateRefs.current);
     }, []);
 
+    // TODO: START: Improve the approach of handling observables 
+    // useEffect(() => {
+    //   setLoading(true);
+    //   this.lineListService
+    //     .getLineListData(
+    //       this.programId,
+    //       orgUnitState,
+    //       this.programStageId,
+    //       pager.page,
+    //       pager.pageSize,
+    //       attributeFiltersState,
+    //       startDateState,
+    //       endDateState,
+    //       this.ouMode,
+    //       this.filterRootOrgUnit,
+    //       this.useOuModeWithOlderDHIS2Instance
+    //     )
+    //     .subscribe((response: LineListResponse) => {
+    //       let entityColumns: ColumnDefinition[] = [];
+    //       let responsePager: Pager;
+    //       let entityData: TableRow[] = [];
+    //       let filteredDataColumns: ColumnDefinition[] = [];
+
+    //       if (this.programStageId) {
+    //         responsePager = (response.data as EventsResponse).pager;
+    //         const { columns, data } = getProgramStageData(
+    //           response,
+    //           this.programStageId,
+    //           pager,
+    //           this.isOptionSetNameVisible
+    //         );
+    //         entityColumns = columns;
+    //         entityData = data;
+    //       } else if (
+    //         'trackedEntities' in response.data ||
+    //         'instances' in response.data
+    //       ) {
+    //         const responseData: any = response.data as TrackedEntityResponse;
+
+    //         responsePager = (response.data as TrackedEntityResponse).pager || {
+    //           page: responseData.page,
+    //           pageSize: responseData.pageSize,
+    //           total: responseData.total,
+    //           pageCount: responseData.pageCount,
+    //         };
+
+    //         const { columns, data, filteredEntityColumns } =
+    //           getTrackedEntityData(
+    //             response,
+    //             this.programId,
+    //             pager,
+    //             this.isOptionSetNameVisible,
+    //             this.filters
+    //           );
+    //         entityColumns = columns;
+    //         entityData = data;
+
+    //         //TODO: Should be done on the parent
+    //         const checkValues = [
+    //           ...new Set(
+    //             (
+    //               response.data as TrackedEntityResponse
+    //             )?.trackedEntities?.[0]?.enrollments?.[0]?.events?.flatMap(
+    //               (event) =>
+    //                 event.dataValues
+    //                   .filter((dataValue) =>
+    //                     /^[A-Za-z]{3}$/.test(dataValue.value)
+    //                   )
+    //                   .map((dataValue) => dataValue.value)
+    //             ) ??
+    //               (
+    //                 response.data as TrackedEntityResponse
+    //               )?.instances?.[0]?.enrollments?.[0]?.events?.flatMap(
+    //                 (event) =>
+    //                   event.dataValues
+    //                     .filter((dataValue) =>
+    //                       /^[A-Za-z]{3}$/.test(dataValue.value)
+    //                     )
+    //                     .map((dataValue) => dataValue.value)
+    //               )
+    //           ),
+    //         ];
+
+    //         if (checkValues) {
+    //           // this.firstValue.emit(firstTei);
+    //           setCheckValue(checkValues);
+    //           setValuesMatch(!checkValues.includes(this.buttonFilter));
+    //         }
+    //         //  setFilteredColumns(filteredEntityColumns);
+    //         // Ensure filter inputs do not disappear when no data is returned
+    //         // If filteredEntityColumns is empty, keep the previous columns instead of clearing them
+    //         setFilteredColumns((prev) =>
+    //           filteredEntityColumns.length > 0 ? filteredEntityColumns : prev
+    //         );
+    //         filteredDataColumns = filteredEntityColumns;
+    //       } else {
+    //         responsePager = (response.data as EventsResponse).pager;
+    //         const { columns, data } = getEventData(
+    //           response,
+    //           pager,
+    //           this.isOptionSetNameVisible
+    //         );
+    //         entityColumns = columns;
+    //         entityData = data;
+    //       }
+
+    //       const finalColumns: ColumnDefinition[] = addActionsColumn(
+    //         [{ label: '#', key: 'index' }, ...entityColumns],
+    //         this.actionOptions
+    //       );
+
+    //       setLoading(false);
+    //       setColumns(...[finalColumns]);
+    //       setData(...[entityData]);
+    //       setPager(...[responsePager]);
+    //     });
+    // }, [
+    //   programIdState,
+    //   orgUnitState,
+    //   programStageIdState,
+    //   attributeFiltersState,
+    //   startDateState,
+    //   endDateState,
+    //   pager.page,
+    //   pager.pageSize,
+    //   isOptionSetNameVisibleState,
+    // ]);
+    // TODO: END: Improve the approach of handling observables 
+
     useEffect(() => {
       setLoading(true);
-      this.lineListService
+    
+      const subscription = this.lineListService
         .getLineListData(
           this.programId,
           orgUnitState,
@@ -194,99 +334,97 @@ export class LineListTableComponent extends ReactWrapperModule {
           this.filterRootOrgUnit,
           this.useOuModeWithOlderDHIS2Instance
         )
+        .pipe(take(1)) // Automatically unsubscribe after the first emission
         .subscribe((response: LineListResponse) => {
           let entityColumns: ColumnDefinition[] = [];
           let responsePager: Pager;
           let entityData: TableRow[] = [];
           let filteredDataColumns: ColumnDefinition[] = [];
-
+    
           if (this.programStageId) {
             responsePager = (response.data as EventsResponse).pager;
             const { columns, data } = getProgramStageData(
               response,
               this.programStageId,
-              pager
+              pager,
+              this.isOptionSetNameVisible
             );
             entityColumns = columns;
             entityData = data;
           } else if (
-            'trackedEntities' in response.data ||
-            'instances' in response.data
+            "trackedEntities" in response.data ||
+            "instances" in response.data
           ) {
             const responseData: any = response.data as TrackedEntityResponse;
-
-            responsePager = (response.data as TrackedEntityResponse).pager || {
+    
+            responsePager = responseData.pager || {
               page: responseData.page,
               pageSize: responseData.pageSize,
               total: responseData.total,
               pageCount: responseData.pageCount,
             };
-
-            const { columns, data, filteredEntityColumns } =
-              getTrackedEntityData(
-                response,
-                this.programId,
-                pager,
-                this.filters
-              );
+    
+            const { columns, data, filteredEntityColumns } = getTrackedEntityData(
+              response,
+              this.programId,
+              pager,
+              this.isOptionSetNameVisible,
+              this.filters
+            );
             entityColumns = columns;
             entityData = data;
-
-            //TODO: Should be done on the parent
+    
             const checkValues = [
               ...new Set(
-                (
-                  response.data as TrackedEntityResponse
-                )?.trackedEntities?.[0]?.enrollments?.[0]?.events?.flatMap(
+                responseData?.trackedEntities?.[0]?.enrollments?.[0]?.events?.flatMap(
                   (event) =>
                     event.dataValues
-                      .filter((dataValue) =>
-                        /^[A-Za-z]{3}$/.test(dataValue.value)
-                      )
+                      .filter((dataValue) => /^[A-Za-z]{3}$/.test(dataValue.value))
                       .map((dataValue) => dataValue.value)
                 ) ??
-                  (
-                    response.data as TrackedEntityResponse
-                  )?.instances?.[0]?.enrollments?.[0]?.events?.flatMap(
+                  responseData?.instances?.[0]?.enrollments?.[0]?.events?.flatMap(
                     (event) =>
                       event.dataValues
-                        .filter((dataValue) =>
-                          /^[A-Za-z]{3}$/.test(dataValue.value)
-                        )
+                        .filter((dataValue) => /^[A-Za-z]{3}$/.test(dataValue.value))
                         .map((dataValue) => dataValue.value)
                   )
               ),
             ];
-
-            if (checkValues) {
-              // this.firstValue.emit(firstTei);
-              setCheckValue(checkValues);
+    
+            if (checkValues.length > 0) {
+              setCheckValue(checkValues as any);
               setValuesMatch(!checkValues.includes(this.buttonFilter));
             }
-            //  setFilteredColumns(filteredEntityColumns);
-            // Ensure filter inputs do not disappear when no data is returned
-            // If filteredEntityColumns is empty, keep the previous columns instead of clearing them
+    
             setFilteredColumns((prev) =>
               filteredEntityColumns.length > 0 ? filteredEntityColumns : prev
             );
             filteredDataColumns = filteredEntityColumns;
           } else {
             responsePager = (response.data as EventsResponse).pager;
-            const { columns, data } = getEventData(response, pager);
+            const { columns, data } = getEventData(
+              response,
+              pager,
+              this.isOptionSetNameVisible
+            );
             entityColumns = columns;
             entityData = data;
           }
-
+    
           const finalColumns: ColumnDefinition[] = addActionsColumn(
-            [{ label: '#', key: 'index' }, ...entityColumns],
+            [{ label: "#", key: "index" }, ...entityColumns],
             this.actionOptions
           );
-
+    
           setLoading(false);
-          setColumns(...[finalColumns]);
-          setData(...[entityData]);
-          setPager(...[responsePager]);
+          setColumns(finalColumns);
+          setData(entityData);
+          setPager(responsePager);
         });
+    
+      return () => {
+        subscription.unsubscribe(); // Ensure cleanup on unmount
+      };
     }, [
       programIdState,
       orgUnitState,
@@ -296,7 +434,9 @@ export class LineListTableComponent extends ReactWrapperModule {
       endDateState,
       pager.page,
       pager.pageSize,
+      isOptionSetNameVisibleState,
     ]);
+    
 
     const getDropdownOptions = (row: TableRow): DropdownMenuOption[] => {
       return (this.actionOptions || []).map((option) => ({
@@ -308,9 +448,60 @@ export class LineListTableComponent extends ReactWrapperModule {
       }));
     };
 
+    // TODO: START::: Improve the approach on handling observables 
+    // const handleApprovalClick = () => {
+    //   setIsButtonLoading(true);
+    //   this.lineListService
+    //     .getLineListData(
+    //       this.programId,
+    //       this.orgUnit,
+    //       this.programStageId,
+    //       pager.page,
+    //       1000,
+    //       this.attributeFilters,
+    //       this.startDate,
+    //       this.endDate,
+    //       this.ouMode
+    //     )
+    //     .subscribe((response: LineListResponse) => {
+    //       if (
+    //         'trackedEntities' in response.data ||
+    //         'instances' in response.data
+    //       ) {
+    //         const trackedEntityInstances = (
+    //           response.data as TrackedEntityResponse
+    //         ).trackedEntities;
+
+    //         // Map TEIs to objects with teiId and enrollmentId
+    //         const teiEnrollmentList = trackedEntityInstances
+    //           .map((tei) => {
+    //             // Find the enrollment where program matches this.programId
+    //             const matchingEnrollment = tei.enrollments?.find(
+    //               (enrollment) => enrollment.program === this.programId
+    //             );
+
+    //             // Return object with teiId and enrollmentId (if found)
+    //             return matchingEnrollment
+    //               ? {
+    //                   teiId: tei.trackedEntity,
+    //                   enrollmentId: matchingEnrollment.enrollment,
+    //                 }
+    //               : null;
+    //           })
+    //           .filter((item) => item !== null); // Remove null entries (no matching enrollment)
+
+    //         this.approvalSelected.emit(teiEnrollmentList);
+    //       } else {
+    //         this.approvalSelected.emit([]); // Emit empty array if no TEIs
+    //       }
+    //     });
+    // };
+    // TODO: END::: Improve the approach on handling observables 
+
     const handleApprovalClick = () => {
       setIsButtonLoading(true);
-      this.lineListService
+    
+      const subscription = this.lineListService
         .getLineListData(
           this.programId,
           this.orgUnit,
@@ -322,24 +513,20 @@ export class LineListTableComponent extends ReactWrapperModule {
           this.endDate,
           this.ouMode
         )
+        .pipe(take(1)) // Ensures the observable emits only once
         .subscribe((response: LineListResponse) => {
-          if (
-            'trackedEntities' in response.data ||
-            'instances' in response.data
-          ) {
+          if ("trackedEntities" in response.data || "instances" in response.data) {
             const trackedEntityInstances = (
               response.data as TrackedEntityResponse
             ).trackedEntities;
-
+    
             // Map TEIs to objects with teiId and enrollmentId
             const teiEnrollmentList = trackedEntityInstances
               .map((tei) => {
-                // Find the enrollment where program matches this.programId
                 const matchingEnrollment = tei.enrollments?.find(
                   (enrollment) => enrollment.program === this.programId
                 );
-
-                // Return object with teiId and enrollmentId (if found)
+    
                 return matchingEnrollment
                   ? {
                       teiId: tei.trackedEntity,
@@ -347,14 +534,21 @@ export class LineListTableComponent extends ReactWrapperModule {
                     }
                   : null;
               })
-              .filter((item) => item !== null); // Remove null entries (no matching enrollment)
-
+              .filter(Boolean); // Removes null entries
+    
             this.approvalSelected.emit(teiEnrollmentList);
           } else {
             this.approvalSelected.emit([]); // Emit empty array if no TEIs
           }
+    
+          setIsButtonLoading(false); // Stop loading after processing
         });
+    
+      return () => {
+        subscription.unsubscribe(); // Cleanup to avoid potential memory leaks
+      };
     };
+    
 
     const handleInputChange = (key: string, value: string) => {
       setInputValues((prevValues) => ({
