@@ -17,7 +17,9 @@ export class LineListService {
   constructor(private httpClient: NgxDhis2HttpClientService) {}
   private getProgramMetadata(programId: string): Observable<ProgramMetadata> {
     return this.httpClient.get(
-      `programs/${programId}.json?fields=programType,programStages[id,name,programStageDataElements[dataElement[id,name]]],programTrackedEntityAttributes[*]`
+      `programs/${programId}.json?fields=programType,programStages[id,name,programStageDataElements[dataElement[id,name,shortName,formName,code,optionSetValue,valueType,
+    optionSet[id,name,options[id,name,code]]]]],programTrackedEntityAttributes[*,trackedEntityAttribute[id,name,unique,generated,formName,code,optionSetValue
+    ,valueType,optionSet[id,name,options[id,name,code]]]]`
     );
   }
 
