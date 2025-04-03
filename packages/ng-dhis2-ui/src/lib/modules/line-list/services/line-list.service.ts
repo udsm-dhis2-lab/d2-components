@@ -117,9 +117,6 @@ export class LineListService {
             }
           }
 
-
-
-
           // If no unique orgUnits found, return immediately
           if (uniqueOrgUnitIds.size === 0) {
             return of({ ...response, orgUnitsMap: new Map<string, string>() });
@@ -255,7 +252,6 @@ export class LineListService {
             }))
           );
         } else {
-          
           return this.getEvents(
             programId,
             orgUnit,

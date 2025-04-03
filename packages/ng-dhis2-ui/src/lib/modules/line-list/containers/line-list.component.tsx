@@ -64,6 +64,7 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() orgUnit!: string;
   @Input() programStageId?: string;
   @Input() actionOptions?: DropdownMenuOption[];
+  @Input() actionOptionsOrientation?: 'DROPDOWN' | 'FLAT' = 'DROPDOWN';
   @Input() attributeFilters?: AttributeFilter[];
   @Input() useOuModeWithOlderDHIS2Instance?: boolean;
   @Input() startDate?: string;
@@ -571,17 +572,7 @@ export class LineListTableComponent extends ReactWrapperModule {
 
     return (
       <div>
-        <div
-        // style={{
-        //   width: '100%',
-        //   display: 'flex',
-        //   justifyContent: 'flex-end',
-        //   alignItems: 'center',
-        //   gap: 8,
-        //   padding: 8,
-        //   marginBottom: 16,
-        // }}
-        >
+        <div>
           {valueMatch &&
             this.dispatchTeis &&
             (isButtonLoading ? (
@@ -603,19 +594,6 @@ export class LineListTableComponent extends ReactWrapperModule {
               </Button>
             ))}
         </div>
-
-        {/* {filters && (
-          <div
-            style={{
-              display: 'flex',
-              gap: '10px',
-              flexWrap: 'wrap',
-              paddingBottom: '16px',
-            }}
-          >
-            
-          </div>
-        )} */}
 
         {loading ? (
           <div
@@ -644,13 +622,8 @@ export class LineListTableComponent extends ReactWrapperModule {
 
               <ModalContent>
                 <OrgUnitFormField
-                  //  label="Select organization unit"
                   key={selectedOrgUnit}
                   onSelectOrgUnit={(selectedOrgUnit: any) => {
-                    // console.log(
-                    //   'this is the selected org unit key',
-                    //   selectedOrgUnit
-                    // );
                     setSelectedOrgUnit(selectedOrgUnit.displayName);
                     setOrgUnitState(selectedOrgUnit.id);
                     setHide(true);
@@ -660,10 +633,6 @@ export class LineListTableComponent extends ReactWrapperModule {
 
               <ModalActions>
                 <ButtonStrip end>
-                  {/* <Button onClick={() => setHide(false)} secondary>
-                Close modal
-            </Button> */}
-
                   <Button onClick={() => setHide(true)} secondary>
                     Close
                   </Button>
@@ -675,19 +644,21 @@ export class LineListTableComponent extends ReactWrapperModule {
                 <div
                   style={{
                     display: 'flex',
+                    alignItems: 'center',
                     gap: '10px',
                     flexWrap: 'wrap',
                   }}
                 >
                   <InputField
                     key="location"
-                    label="Location:"
+                    label="Registraring unit:"
                     value={selectedOrgUnit}
+                    clearable
                     onFocus={() => setHide(false)}
                     className="custom-input"
                   />
                   <CalendarInput
-                    label="Start Date:"
+                    label="Start date:"
                     calendar="gregory"
                     locale="en-GB"
                     timeZone="Africa/Dar_es_Salaam"
@@ -698,7 +669,7 @@ export class LineListTableComponent extends ReactWrapperModule {
                     }}
                   />
                   <CalendarInput
-                    label="End Date:"
+                    label="End date:"
                     calendar="gregory"
                     locale="en-GB"
                     timeZone="Africa/Dar_es_Salaam"
@@ -714,6 +685,7 @@ export class LineListTableComponent extends ReactWrapperModule {
                       label={`${label}:`}
                       className="custom-input"
                       value={inputValues[key] || ''}
+                      clearable
                       onChange={(
                         e:
                           | React.ChangeEvent<HTMLInputElement>
@@ -749,12 +721,7 @@ export class LineListTableComponent extends ReactWrapperModule {
                       }}
                     />
                   ))}
-                  <Button
-                    onClick={() => setShowAllFilters(!showAllFilters)}
-                    className="custom-button"
-                    secondary
-                    large
-                  >
+                  <Button onClick={() => setShowAllFilters(!showAllFilters)}>
                     {showAllFilters ? 'Less Filters' : 'More Filters'}
                   </Button>
                 </div>
