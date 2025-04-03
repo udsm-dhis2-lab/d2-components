@@ -331,7 +331,8 @@ export class LineListTableComponent extends ReactWrapperModule {
           endDateState,
           this.ouMode,
           this.filterRootOrgUnit,
-          this.useOuModeWithOlderDHIS2Instance
+          this.useOuModeWithOlderDHIS2Instance,
+          this.filters
         )
         .pipe(take(1)) // Automatically unsubscribe after the first emission
         .subscribe((response: LineListResponse) => {
@@ -376,13 +377,13 @@ export class LineListTableComponent extends ReactWrapperModule {
             const checkValues = [
               ...new Set(
                 responseData?.trackedEntities?.[0]?.enrollments?.[0]?.events?.flatMap(
-                  (event) =>
+                  (event: { dataValues: any[]; }) =>
                     event.dataValues
                       .filter((dataValue) => /^[A-Za-z]{3}$/.test(dataValue.value))
                       .map((dataValue) => dataValue.value)
                 ) ??
                   responseData?.instances?.[0]?.enrollments?.[0]?.events?.flatMap(
-                    (event) =>
+                    (event: { dataValues: any[]; }) =>
                       event.dataValues
                         .filter((dataValue) => /^[A-Za-z]{3}$/.test(dataValue.value))
                         .map((dataValue) => dataValue.value)
@@ -535,7 +536,7 @@ export class LineListTableComponent extends ReactWrapperModule {
               })
               .filter(Boolean); // Removes null entries
     
-            this.approvalSelected.emit(teiEnrollmentList);
+            this.approvalSelected.emit(teiEnrollmentList as { teiId: string; enrollmentId: string; }[]);
           } else {
             this.approvalSelected.emit([]); // Emit empty array if no TEIs
           }
