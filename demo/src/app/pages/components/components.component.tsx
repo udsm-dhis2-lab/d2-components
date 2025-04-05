@@ -40,7 +40,15 @@ export class ComponentsComponent implements OnInit {
 
   isButtonLoading: any;
 
-  actionOptions = [{ label: 'View' }, { label: 'Edit', destructive: true }];
+  actionOptions = [
+    {
+      label: 'View',
+      onClick: (data: any) => {
+        console.log('Viewing data item:', data);
+      },
+    },
+    { label: 'Edit', destructive: true },
+  ];
 
   constructor() {
     setInterval(() => {

@@ -2,3 +2,5 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 export * from './action-option-orientation.model';
+export * from './dropdown-menu.model';
+export * from './line-list-action-option.model';

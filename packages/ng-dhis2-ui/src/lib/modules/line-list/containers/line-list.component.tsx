@@ -31,7 +31,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { take } from 'rxjs';
 import { ReactWrapperModule } from '../../react-wrapper/react-wrapper.component';
-import { DropdownMenu, DropdownMenuOption } from '../components/dropdown-menu';
 import { DataTableActions } from '../components/data-table-actions';
 import { OrgUnitFormField } from '../components/org-unit-form-field.component';
 import { AttributeFilter } from '../models/attribute-filter.model';
@@ -51,7 +50,7 @@ import {
   getProgramStageData,
   getTrackedEntityData,
 } from '../utils/line-list-utils';
-import { ActionOptionOrientation } from '../models';
+import { ActionOptionOrientation, LineListActionOption } from '../models';
 @Component({
   selector: 'ng-dhis2-ui-line-list',
   template: '<ng-content></ng-content>',
@@ -62,7 +61,7 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() programId!: string;
   @Input() orgUnit!: string;
   @Input() programStageId?: string;
-  @Input() actionOptions?: DropdownMenuOption[];
+  @Input() actionOptions?: LineListActionOption[];
   @Input() actionOptionOrientation: ActionOptionOrientation = 'DROPDOWN';
   @Input() attributeFilters?: AttributeFilter[];
   @Input() useOuModeWithOlderDHIS2Instance?: boolean;
@@ -569,6 +568,9 @@ export class LineListTableComponent extends ReactWrapperModule {
                                       this.actionOptionOrientation
                                     }
                                     onClick={(option) => {
+                                      if (option.onClick) {
+                                        option.onClick(row);
+                                      }
                                       this.actionSelected.emit({
                                         action: option.label,
                                         row,
