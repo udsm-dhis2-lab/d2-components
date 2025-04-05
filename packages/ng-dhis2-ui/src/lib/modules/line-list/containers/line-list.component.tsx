@@ -8,30 +8,32 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import {
+  Button,
+  ButtonStrip,
+  CalendarInput,
   CircularLoader,
   DataTable,
   DataTableCell,
   DataTableColumnHeader,
   DataTableRow,
+  DataTableToolbar,
+  InputField,
+  Modal,
+  ModalActions,
+  ModalContent,
+  ModalTitle,
   Pagination,
   TableBody,
   TableFoot,
   TableHead,
-  Button,
-  InputField,
-  IconFilter16,
-  DataTableToolbar,
-  CalendarInput,
-  Modal,
-  ModalTitle,
-  ModalContent,
-  ModalActions,
-  ButtonStrip,
 } from '@dhis2/ui';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
+import { take } from 'rxjs';
 import { ReactWrapperModule } from '../../react-wrapper/react-wrapper.component';
 import { DropdownMenu, DropdownMenuOption } from '../components/dropdown-menu';
+import { DataTableActions } from '../components/data-table-actions';
+import { OrgUnitFormField } from '../components/org-unit-form-field.component';
 import { AttributeFilter } from '../models/attribute-filter.model';
 import { FilterConfig } from '../models/filter-config.model';
 import {
@@ -40,7 +42,6 @@ import {
   LineListResponse,
   Pager,
   TableRow,
-  TrackedEntityInstancesResponse,
   TrackedEntityResponse,
 } from '../models/line-list.models';
 import { LineListService } from '../services/line-list.service';
@@ -50,9 +51,7 @@ import {
   getProgramStageData,
   getTrackedEntityData,
 } from '../utils/line-list-utils';
-import debounce from 'lodash/debounce';
-import { OrgUnitFormField } from '../components/org-unit-form-field.component';
-import { take } from 'rxjs';
+import { ActionOptionOrientation } from '../models';
 @Component({
   selector: 'ng-dhis2-ui-line-list',
   template: '<ng-content></ng-content>',
@@ -64,7 +63,7 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() orgUnit!: string;
   @Input() programStageId?: string;
   @Input() actionOptions?: DropdownMenuOption[];
-  @Input() actionOptionsOrientation?: 'DROPDOWN' | 'FLAT' = 'DROPDOWN';
+  @Input() actionOptionOrientation: ActionOptionOrientation = 'DROPDOWN';
   @Input() attributeFilters?: AttributeFilter[];
   @Input() useOuModeWithOlderDHIS2Instance?: boolean;
   @Input() startDate?: string;
@@ -188,138 +187,9 @@ export class LineListTableComponent extends ReactWrapperModule {
       this.setReactStateUpdaters?.(updateRefs.current);
     }, []);
 
-    // TODO: START: Improve the approach of handling observables 
-    // useEffect(() => {
-    //   setLoading(true);
-    //   this.lineListService
-    //     .getLineListData(
-    //       this.programId,
-    //       orgUnitState,
-    //       this.programStageId,
-    //       pager.page,
-    //       pager.pageSize,
-    //       attributeFiltersState,
-    //       startDateState,
-    //       endDateState,
-    //       this.ouMode,
-    //       this.filterRootOrgUnit,
-    //       this.useOuModeWithOlderDHIS2Instance
-    //     )
-    //     .subscribe((response: LineListResponse) => {
-    //       let entityColumns: ColumnDefinition[] = [];
-    //       let responsePager: Pager;
-    //       let entityData: TableRow[] = [];
-    //       let filteredDataColumns: ColumnDefinition[] = [];
-
-    //       if (this.programStageId) {
-    //         responsePager = (response.data as EventsResponse).pager;
-    //         const { columns, data } = getProgramStageData(
-    //           response,
-    //           this.programStageId,
-    //           pager,
-    //           this.isOptionSetNameVisible
-    //         );
-    //         entityColumns = columns;
-    //         entityData = data;
-    //       } else if (
-    //         'trackedEntities' in response.data ||
-    //         'instances' in response.data
-    //       ) {
-    //         const responseData: any = response.data as TrackedEntityResponse;
-
-    //         responsePager = (response.data as TrackedEntityResponse).pager || {
-    //           page: responseData.page,
-    //           pageSize: responseData.pageSize,
-    //           total: responseData.total,
-    //           pageCount: responseData.pageCount,
-    //         };
-
-    //         const { columns, data, filteredEntityColumns } =
-    //           getTrackedEntityData(
-    //             response,
-    //             this.programId,
-    //             pager,
-    //             this.isOptionSetNameVisible,
-    //             this.filters
-    //           );
-    //         entityColumns = columns;
-    //         entityData = data;
-
-    //         //TODO: Should be done on the parent
-    //         const checkValues = [
-    //           ...new Set(
-    //             (
-    //               response.data as TrackedEntityResponse
-    //             )?.trackedEntities?.[0]?.enrollments?.[0]?.events?.flatMap(
-    //               (event) =>
-    //                 event.dataValues
-    //                   .filter((dataValue) =>
-    //                     /^[A-Za-z]{3}$/.test(dataValue.value)
-    //                   )
-    //                   .map((dataValue) => dataValue.value)
-    //             ) ??
-    //               (
-    //                 response.data as TrackedEntityResponse
-    //               )?.instances?.[0]?.enrollments?.[0]?.events?.flatMap(
-    //                 (event) =>
-    //                   event.dataValues
-    //                     .filter((dataValue) =>
-    //                       /^[A-Za-z]{3}$/.test(dataValue.value)
-    //                     )
-    //                     .map((dataValue) => dataValue.value)
-    //               )
-    //           ),
-    //         ];
-
-    //         if (checkValues) {
-    //           // this.firstValue.emit(firstTei);
-    //           setCheckValue(checkValues);
-    //           setValuesMatch(!checkValues.includes(this.buttonFilter));
-    //         }
-    //         //  setFilteredColumns(filteredEntityColumns);
-    //         // Ensure filter inputs do not disappear when no data is returned
-    //         // If filteredEntityColumns is empty, keep the previous columns instead of clearing them
-    //         setFilteredColumns((prev) =>
-    //           filteredEntityColumns.length > 0 ? filteredEntityColumns : prev
-    //         );
-    //         filteredDataColumns = filteredEntityColumns;
-    //       } else {
-    //         responsePager = (response.data as EventsResponse).pager;
-    //         const { columns, data } = getEventData(
-    //           response,
-    //           pager,
-    //           this.isOptionSetNameVisible
-    //         );
-    //         entityColumns = columns;
-    //         entityData = data;
-    //       }
-
-    //       const finalColumns: ColumnDefinition[] = addActionsColumn(
-    //         [{ label: '#', key: 'index' }, ...entityColumns],
-    //         this.actionOptions
-    //       );
-
-    //       setLoading(false);
-    //       setColumns(...[finalColumns]);
-    //       setData(...[entityData]);
-    //       setPager(...[responsePager]);
-    //     });
-    // }, [
-    //   programIdState,
-    //   orgUnitState,
-    //   programStageIdState,
-    //   attributeFiltersState,
-    //   startDateState,
-    //   endDateState,
-    //   pager.page,
-    //   pager.pageSize,
-    //   isOptionSetNameVisibleState,
-    // ]);
-    // TODO: END: Improve the approach of handling observables 
-
     useEffect(() => {
       setLoading(true);
-    
+
       const subscription = this.lineListService
         .getLineListData(
           this.programId,
@@ -340,7 +210,7 @@ export class LineListTableComponent extends ReactWrapperModule {
           let responsePager: Pager;
           let entityData: TableRow[] = [];
           let filteredDataColumns: ColumnDefinition[] = [];
-    
+
           if (this.programStageId) {
             responsePager = (response.data as EventsResponse).pager;
             const { columns, data } = getProgramStageData(
@@ -352,50 +222,55 @@ export class LineListTableComponent extends ReactWrapperModule {
             entityColumns = columns;
             entityData = data;
           } else if (
-            "trackedEntities" in response.data ||
-            "instances" in response.data
+            'trackedEntities' in response.data ||
+            'instances' in response.data
           ) {
             const responseData: any = response.data as TrackedEntityResponse;
-    
+
             responsePager = responseData.pager || {
               page: responseData.page,
               pageSize: responseData.pageSize,
               total: responseData.total,
               pageCount: responseData.pageCount,
             };
-    
-            const { columns, data, filteredEntityColumns } = getTrackedEntityData(
-              response,
-              this.programId,
-              pager,
-              this.isOptionSetNameVisible,
-              this.filters
-            );
+
+            const { columns, data, filteredEntityColumns } =
+              getTrackedEntityData(
+                response,
+                this.programId,
+                pager,
+                this.isOptionSetNameVisible,
+                this.filters
+              );
             entityColumns = columns;
             entityData = data;
-    
+
             const checkValues = [
               ...new Set(
                 responseData?.trackedEntities?.[0]?.enrollments?.[0]?.events?.flatMap(
-                  (event) =>
+                  (event: any) =>
                     event.dataValues
-                      .filter((dataValue) => /^[A-Za-z]{3}$/.test(dataValue.value))
-                      .map((dataValue) => dataValue.value)
+                      .filter((dataValue: any) =>
+                        /^[A-Za-z]{3}$/.test(dataValue.value)
+                      )
+                      .map((dataValue: any) => dataValue.value)
                 ) ??
                   responseData?.instances?.[0]?.enrollments?.[0]?.events?.flatMap(
-                    (event) =>
+                    (event: any) =>
                       event.dataValues
-                        .filter((dataValue) => /^[A-Za-z]{3}$/.test(dataValue.value))
-                        .map((dataValue) => dataValue.value)
+                        .filter((dataValue: any) =>
+                          /^[A-Za-z]{3}$/.test(dataValue.value)
+                        )
+                        .map((dataValue: any) => dataValue.value)
                   )
               ),
             ];
-    
+
             if (checkValues.length > 0) {
               setCheckValue(checkValues as any);
               setValuesMatch(!checkValues.includes(this.buttonFilter));
             }
-    
+
             setFilteredColumns((prev) =>
               filteredEntityColumns.length > 0 ? filteredEntityColumns : prev
             );
@@ -410,18 +285,18 @@ export class LineListTableComponent extends ReactWrapperModule {
             entityColumns = columns;
             entityData = data;
           }
-    
+
           const finalColumns: ColumnDefinition[] = addActionsColumn(
-            [{ label: "#", key: "index" }, ...entityColumns],
+            [{ label: '#', key: 'index' }, ...entityColumns],
             this.actionOptions
           );
-    
+
           setLoading(false);
           setColumns(finalColumns);
           setData(entityData);
           setPager(responsePager);
         });
-    
+
       return () => {
         subscription.unsubscribe(); // Ensure cleanup on unmount
       };
@@ -436,71 +311,10 @@ export class LineListTableComponent extends ReactWrapperModule {
       pager.pageSize,
       isOptionSetNameVisibleState,
     ]);
-    
-
-    const getDropdownOptions = (row: TableRow): DropdownMenuOption[] => {
-      return (this.actionOptions || []).map((option) => ({
-        ...option,
-        onClick: () => {
-          option.onClick?.(row);
-          this.actionSelected.emit({ action: option.label, row });
-        },
-      }));
-    };
-
-    // TODO: START::: Improve the approach on handling observables 
-    // const handleApprovalClick = () => {
-    //   setIsButtonLoading(true);
-    //   this.lineListService
-    //     .getLineListData(
-    //       this.programId,
-    //       this.orgUnit,
-    //       this.programStageId,
-    //       pager.page,
-    //       1000,
-    //       this.attributeFilters,
-    //       this.startDate,
-    //       this.endDate,
-    //       this.ouMode
-    //     )
-    //     .subscribe((response: LineListResponse) => {
-    //       if (
-    //         'trackedEntities' in response.data ||
-    //         'instances' in response.data
-    //       ) {
-    //         const trackedEntityInstances = (
-    //           response.data as TrackedEntityResponse
-    //         ).trackedEntities;
-
-    //         // Map TEIs to objects with teiId and enrollmentId
-    //         const teiEnrollmentList = trackedEntityInstances
-    //           .map((tei) => {
-    //             // Find the enrollment where program matches this.programId
-    //             const matchingEnrollment = tei.enrollments?.find(
-    //               (enrollment) => enrollment.program === this.programId
-    //             );
-
-    //             // Return object with teiId and enrollmentId (if found)
-    //             return matchingEnrollment
-    //               ? {
-    //                   teiId: tei.trackedEntity,
-    //                   enrollmentId: matchingEnrollment.enrollment,
-    //                 }
-    //               : null;
-    //           })
-    //           .filter((item) => item !== null); // Remove null entries (no matching enrollment)
-
-    //         this.approvalSelected.emit(teiEnrollmentList);
-    //       } else {
-    //         this.approvalSelected.emit([]); // Emit empty array if no TEIs
-    //       }
-    //     });
-    // };
-    // TODO: END::: Improve the approach on handling observables 
 
     const handleApprovalClick = () => {
       setIsButtonLoading(true);
-    
+
       const subscription = this.lineListService
         .getLineListData(
           this.programId,
@@ -515,18 +329,21 @@ export class LineListTableComponent extends ReactWrapperModule {
         )
         .pipe(take(1)) // Ensures the observable emits only once
         .subscribe((response: LineListResponse) => {
-          if ("trackedEntities" in response.data || "instances" in response.data) {
+          if (
+            'trackedEntities' in response.data ||
+            'instances' in response.data
+          ) {
             const trackedEntityInstances = (
               response.data as TrackedEntityResponse
             ).trackedEntities;
-    
+
             // Map TEIs to objects with teiId and enrollmentId
             const teiEnrollmentList = trackedEntityInstances
               .map((tei) => {
                 const matchingEnrollment = tei.enrollments?.find(
                   (enrollment) => enrollment.program === this.programId
                 );
-    
+
                 return matchingEnrollment
                   ? {
                       teiId: tei.trackedEntity,
@@ -535,20 +352,19 @@ export class LineListTableComponent extends ReactWrapperModule {
                   : null;
               })
               .filter(Boolean); // Removes null entries
-    
-            this.approvalSelected.emit(teiEnrollmentList);
+
+            this.approvalSelected.emit(teiEnrollmentList as any);
           } else {
             this.approvalSelected.emit([]); // Emit empty array if no TEIs
           }
-    
+
           setIsButtonLoading(false); // Stop loading after processing
         });
-    
+
       return () => {
         subscription.unsubscribe(); // Cleanup to avoid potential memory leaks
       };
     };
-    
 
     const handleInputChange = (key: string, value: string) => {
       setInputValues((prevValues) => ({
@@ -744,14 +560,24 @@ export class LineListTableComponent extends ReactWrapperModule {
                     <DataTableRow key={row.index}>
                       {columns.map((col) => (
                         <DataTableCell key={col.key}>
-                          {col.key === 'actions' ? (
-                            <DropdownMenu
-                              dropdownOptions={getDropdownOptions(row)}
-                              onClick={(option) => option.onClick?.()}
-                            />
-                          ) : (
-                            row[col.key] || '--' // Display '--' if value is undefined or null
-                          )}
+                          {
+                            col.key === 'actions'
+                              ? this.actionOptions && (
+                                  <DataTableActions
+                                    actionOptions={this.actionOptions}
+                                    actionOptionOrientation={
+                                      this.actionOptionOrientation
+                                    }
+                                    onClick={(option) => {
+                                      this.actionSelected.emit({
+                                        action: option.label,
+                                        row,
+                                      });
+                                    }}
+                                  />
+                                )
+                              : row[col.key] || '--' // Display '--' if value is undefined or null
+                          }
                         </DataTableCell>
                       ))}
                     </DataTableRow>

@@ -236,24 +236,21 @@
 ></ng-dhis2-ui-line-list>  -->
 <div class="p-4">
   <ng-dhis2-ui-line-list
-  [programId]="'oj3Lk0fdHTu'"
-  [orgUnit]="'m0frOspS7JY'"
-  [useOuModeWithOlderDHIS2Instance]="true"
-  [attributeFilters]="[]"
-  [filters]="[]"
-  [ouMode]="'DESCENDANTS'"
-  [actionOptions]="[
-    
-  ]"
-  (actionSelected)="onActionSelected($event)"
-></ng-dhis2-ui-line-list>
+    [programId]="'oj3Lk0fdHTu'"
+    [orgUnit]="'m0frOspS7JY'"
+    [useOuModeWithOlderDHIS2Instance]="true"
+    [attributeFilters]="[]"
+    [filters]="[]"
+    [ouMode]="'DESCENDANTS'"
+    [actionOptions]="[]"
+    (actionSelected)="onActionSelected($event)"
+  ></ng-dhis2-ui-line-list>
 
   <ng-dhis2-ui-line-list
     [programId]="'lw9fZTamYec'"
     [orgUnit]="'lgZ6HfZaj3f'"
-    [actionOptions]="[
-    { label: 'View', },
-    ]"
+    [actionOptionOrientation]="'LINK'"
+    [actionOptions]="actionOptions"
     [ouMode]="'DESCENDANTS'"
     (approvalSelected)="onApprovalSelected($event)"
     [dispatchTeis]="true"
