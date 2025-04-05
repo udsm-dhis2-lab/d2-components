@@ -9,6 +9,7 @@ import {
 } from '@iapps/ng-dhis2-ui';
 import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
 import { Period } from '@iapps/period-utilities';
+import { IconView16 } from '@dhis2/ui';
 
 @Component({
   selector: 'ng-dhis2-ui-app-componenent',
@@ -38,6 +39,8 @@ export class ComponentsComponent implements OnInit {
   ];
 
   isButtonLoading: any;
+
+  actionOptions = [{ label: 'View' }, { label: 'Edit', destructive: true }];
 
   constructor() {
     setInterval(() => {
