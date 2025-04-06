@@ -6,18 +6,20 @@ import {
   Layer,
   MenuItem,
   Popper,
-} from "@dhis2/ui";
-import React, { useRef, useState } from "react";
-import { dropdownStyles } from "./dropdown-menu.styles";
-import { useDynamicStyles } from "../../hooks";
+} from '@dhis2/ui';
+import React, { useRef, useState } from 'react';
+import { dropdownStyles } from './dropdown-menu.styles';
+import { useDynamicStyles } from '../../hooks';
 
 export interface DropdownMenuOption {
   id?: string;
   label: string;
+  action?: string;
   description?: string;
+  iconOnly?: boolean;
   icon?: any;
   destructive?: boolean;
-  onClick?: Function;
+  onClick?: () => void;
 }
 
 const useCurrentModal = () => {
@@ -47,7 +49,10 @@ export const ContextMenu = (params: {
   return (
     <>
       {/* <Layer onBackdropClick={onClose} className={styles.layer}> */}
-      <Layer onBackdropClick={(event: any, data: any) => onClose(event, data)} className={styles.layer}>
+      <Layer
+        onBackdropClick={(event: any, data: any) => onClose(event, data)}
+        className={styles.layer}
+      >
         <Popper reference={anchorRef} placement="bottom-start">
           <FlyoutMenu>
             {dropDownOptions.map((dropDownOption, index) => (
@@ -57,7 +62,7 @@ export const ContextMenu = (params: {
                 label={dropDownOption.label}
                 icon={dropDownOption.icon}
                 onClick={() => {
-                 onMenuClick(dropDownOption);
+                  onMenuClick(dropDownOption);
                   onClose();
                 }}
                 dense
@@ -86,7 +91,7 @@ export const DropdownMenu = (props: {
   const [visible, setVisible] = useState(false);
   const { dropdownOptions, onClick } = props;
   return (
-    <div ref={ref as any} style={{ display: "inline-block" }}>
+    <div ref={ref as any} style={{ display: 'inline-block' }}>
       <Button
         small
         secondary
