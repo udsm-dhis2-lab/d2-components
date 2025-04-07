@@ -480,7 +480,8 @@ export class LineListTableComponent extends ReactWrapperModule {
                   /> */}
                   <InputField
                     key="location"
-                    label={orgUnitLabel}
+                    //label={orgUnitLabel}
+                    label={orgUnitLabel ? orgUnitLabel : 'registering unit'}
                     value={selectedOrgUnit}
                     clearable
                     onFocus={() => setHide(false)}
