@@ -48,3 +48,39 @@
   background-color: var(--colors-grey100) !important;
   color: var(--colors-grey900) !important;
 }
+
+::ng-deep .custom-select-input {
+  display: flex !important;
+  gap: 4px !important;
+  align-items: center !important;
+  border: 1px solid #9fadba !important;
+  border-radius: 4px !important;
+  padding: 0;
+  margin: 0;
+  padding-left: 8px;
+  background-color: #fff !important;
+
+  div {
+    margin: 0 !important;
+  }
+
+  label {
+    font-size: 12px;
+    padding-right: 0;
+  }
+
+  // Remove border from DHIS2 SingleSelect internal container
+  // Remove border from SingleSelectField root container
+  [data-test='dhis2-uicore-select-input'] {
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  [data-test='dhis2-uicore-select-input']:focus-within {
+    box-shadow: none !important;
+  }
+  input:focus {
+    border: none !important;
+    box-shadow: none !important;
+  }
+}

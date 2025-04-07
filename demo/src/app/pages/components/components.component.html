@@ -234,27 +234,28 @@
   ]"
   [showApprovalButton]="true"
 ></ng-dhis2-ui-line-list>  -->
-<div class="p-4">
+<!-- <div class="p-4">
   <ng-dhis2-ui-line-list
-    [programId]="'oj3Lk0fdHTu'"
-    [orgUnit]="'m0frOspS7JY'"
+    [programId]="'oUiYTdbtOuh'"
+    [orgUnit]="'xrku9x3XnV9'"
     [useOuModeWithOlderDHIS2Instance]="true"
-    
     [attributeFilters]="[]"
     [filters]="[]"
     [ouMode]="'DESCENDANTS'"
     [actionOptions]="[]"
+    [showFilters]="true"
     (actionSelected)="onActionSelected($event)"
   ></ng-dhis2-ui-line-list>
+</div> -->
   <!-- [teiEnrollmentList]="{onApprovalClick: onApprove}" -->
-     
-  <!-- [teiEnrollmentList]="{ onApprovalClick: onApprove.bind(this) }" -->
+<div>
   <ng-dhis2-ui-line-list
-    [programId]="'oUiYTdbtOuh'"
+    [programId]="'lw9fZTamYec'"
     [orgUnit]="'xrku9x3XnV9'"
     [actionOptions]="actionOptions"
     [ouMode]="'DESCENDANTS'"
     [showFilters]="true"
+    (approvalSelected)="onApprovalSelected($event)"
   ></ng-dhis2-ui-line-list>
 </div>
 
@@ -279,7 +280,7 @@
   [showSaveButton]="false"
   class="w-full"
 /> -->
-<div class="p-4">
+<!-- <div class="p-4">
   <ng-dhis2-ui-line-list
     [programId]="'lw9fZTamYec'"
     [orgUnit]="'xrku9x3XnV9'"
@@ -309,4 +310,4 @@
       (selectBreadcrumb)="onSelectBreadcrumb($event)"
     />
   </div>
-</div>
+</div> -->
