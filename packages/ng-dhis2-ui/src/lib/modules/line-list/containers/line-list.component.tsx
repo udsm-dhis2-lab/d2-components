@@ -641,7 +641,7 @@ export class LineListTableComponent extends ReactWrapperModule {
                             key={key}
                             label={`${label}:`}
                             selected={inputValues[key] || ''}
-                         //   className="custom-select-input"
+                            className="custom-select-input" 
                             clearable
                             onChange={({ selected }: { selected: string }) => {
                               setInputValues((prevValues) => ({
