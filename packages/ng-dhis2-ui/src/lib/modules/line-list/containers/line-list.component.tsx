@@ -489,10 +489,6 @@ export class LineListTableComponent extends ReactWrapperModule {
                     onChange={(event: {
                       value: React.SetStateAction<string>;
                     }) => {
-                      console.log(
-                        'onChange triggered with value:',
-                        event.value
-                      );
                       setSelectedOrgUnit(event.value);
                       setOrgUnitState(defaultOrgUnit);
                     }}
