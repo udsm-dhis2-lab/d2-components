@@ -84,7 +84,7 @@ export class LineListService {
 
     return this.httpClient
       .get(
-        `tracker/trackedEntities.json?program=${programId}&orgUnit=${orgUnit}${ouModeIdentifier}&page=${page}&pageSize=${pageSize}&fields=trackedEntity,orgUnit,attributes[*],enrollments[*]&totalPages=true&${filterParams}${filterParamsFromEvents}${dateFilter}&order=createdAt:desc`
+        `tracker/trackedEntities.json?program=${programId}&orgUnit=${orgUnit}${ouModeIdentifier}&page=${page}&pageSize=${pageSize}&fields=trackedEntity,orgUnit,attributes[*],enrollments[*]&totalPages=true&${filterParams}${filterParamsFromEvents}&${dateFilter}&order=createdAt:desc`
       )
       .pipe(
         switchMap((response: any) => {
