@@ -392,7 +392,7 @@ export const getTrackedEntityData = (
   const filteredEntityColumns = entityColumns.filter((column) =>
     searchableKeys.has(column.key)
   );
-  console.log('teis', teis);
+
   const attributesData = teis.map((tei: any, idx: number) => {
     const row: TableRow = {
       trackedEntityInstance: tei.trackedEntity,
@@ -400,7 +400,7 @@ export const getTrackedEntityData = (
     };
 
     allAttributes.forEach((attrId: string) => (row[attrId] = ''));
-    console.log('all attributes', allAttributes);
+ 
     const matchingEnrollment = tei.enrollments.find(
       (enrollment: any) => enrollment.program === programId
     );
@@ -466,7 +466,7 @@ export const getTrackedEntityData = (
     return row;
   });
 
-  console.log('entity columns', entityColumns);
+ 
 
   if (teis.length === 0) {
     entityColumns = [
@@ -483,7 +483,8 @@ export const getTrackedEntityData = (
         })),
     ];
   }
-  console.log('filtered entity columns', filteredEntityColumns);
+
+  
   return {
     columns: entityColumns,
     data: attributesData,
