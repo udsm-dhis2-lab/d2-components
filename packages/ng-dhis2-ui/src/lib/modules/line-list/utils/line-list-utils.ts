@@ -356,9 +356,8 @@ export const getTrackedEntityData = (
 
   entityColumns = entityColumns
     .filter((column) => {
-     
       return mappedProgramMetadataAttributes
-        .filter((attr) => attr.displayInList) 
+        .filter((attr) => attr.displayInList)
         .some((attr) => attr.id === column.key); // Ensure the column's key matches an id in the filtered list
     })
     .sort((a, b) => {
@@ -375,7 +374,6 @@ export const getTrackedEntityData = (
       return sortOrderA - sortOrderB; // Ascending order based on sortOrder
     });
 
-
   entityColumns.unshift({
     label: orgUnitLabel || 'registering unit',
     key: 'orgUnit',
@@ -389,10 +387,51 @@ export const getTrackedEntityData = (
 
   const searchableKeys = new Set(searchableAttributes.map((attr) => attr.key));
 
-  const filteredEntityColumns = entityColumns.filter((column) =>
-    searchableKeys.has(column.key)
-  );
+  const filteredEntityColumns = Array.from(allAttributes)
+    .map((attrId: string) => {
+      const foundAttribute = teis
+        .flatMap((tei: any) => {
+          const matchingEnrollment = tei.enrollments.find(
+            (enrollment: any) => enrollment.program === programId
+          );
+          return matchingEnrollment
+            ? matchingEnrollment.attributes
+            : tei.attributes;
+        })
+        .find((attr: any) => attr.attribute === attrId);
+      // Find the corresponding attribute in mappedProgramMetadataAttributes
+      const mappedAttr = mappedProgramMetadataAttributes.find(
+        (attr) => attr.id === attrId
+      );
 
+      return {
+        label: foundAttribute?.displayName || attrId,
+        key: attrId,
+        valueType: foundAttribute?.valueType,
+        options: mappedAttr?.optionSet ?? undefined 
+      };
+    })
+    .filter((column) => {
+      return mappedProgramMetadataAttributes
+        .filter((attr) => attr.displayInList)
+        .some((attr) => attr.id === column.key);
+    })
+    .sort((a, b) => {
+      const sortOrderA = Number(
+        mappedProgramMetadataAttributes.find((attr) => attr.id === a.key)
+          ?.sortOrder ?? 0
+      );
+      const sortOrderB = Number(
+        mappedProgramMetadataAttributes.find((attr) => attr.id === b.key)
+          ?.sortOrder ?? 0
+      );
+
+      return sortOrderA - sortOrderB;
+    })
+    .filter((column) => searchableKeys.has(column.key));
+
+    console.log('filtered entity columns', filteredEntityColumns);
+  
   const attributesData = teis.map((tei: any, idx: number) => {
     const row: TableRow = {
       trackedEntityInstance: tei.trackedEntity,
@@ -400,7 +439,7 @@ export const getTrackedEntityData = (
     };
 
     allAttributes.forEach((attrId: string) => (row[attrId] = ''));
- 
+
     const matchingEnrollment = tei.enrollments.find(
       (enrollment: any) => enrollment.program === programId
     );
@@ -466,15 +505,12 @@ export const getTrackedEntityData = (
     return row;
   });
 
- 
-
   if (teis.length === 0) {
     entityColumns = [
       { label: orgUnitLabel || 'registering unit', key: 'orgUnit' },
       ...mappedProgramMetadataAttributes
-        .filter((attr) => attr.displayInList === true) 
+        .filter((attr) => attr.displayInList === true)
         .sort((a, b) => {
-          
           return Number(a.sortOrder) - Number(b.sortOrder);
         })
         .map((attr) => ({
@@ -484,7 +520,8 @@ export const getTrackedEntityData = (
     ];
   }
 
-  
+  console.log('filtered entity columns', filteredEntityColumns);
+
   return {
     columns: entityColumns,
     data: attributesData,

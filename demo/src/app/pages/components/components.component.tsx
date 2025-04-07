@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ProgramRuleEngine } from '@iapps/d2-web-sdk';
 import {
@@ -10,6 +10,7 @@ import {
 import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
 import { Period } from '@iapps/period-utilities';
 import { IconView16 } from '@dhis2/ui';
+//import { LineListTableComponent } from '../../../../../packages/ng-dhis2-ui/src/lib/modules/line-list/containers/line-list.component';
 
 @Component({
   selector: 'ng-dhis2-ui-app-componenent',

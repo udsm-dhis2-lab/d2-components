@@ -202,6 +202,8 @@ export interface TableRow {
 export interface ColumnDefinition {
   label: string;
   key: string;
+  valueType?: string;
+  options?: OptionSet;
 }
 
 export interface LastUpdatedByUserInfo {
