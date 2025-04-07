@@ -19,7 +19,8 @@ export interface DropdownMenuOption {
   iconOnly?: boolean;
   icon?: any;
   destructive?: boolean;
-  onClick?: () => void;
+  //onClick?: () => void;
+  onClick?: Function;
 }
 
 const useCurrentModal = () => {
