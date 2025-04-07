@@ -239,27 +239,22 @@
     [programId]="'oj3Lk0fdHTu'"
     [orgUnit]="'m0frOspS7JY'"
     [useOuModeWithOlderDHIS2Instance]="true"
+    
     [attributeFilters]="[]"
     [filters]="[]"
     [ouMode]="'DESCENDANTS'"
     [actionOptions]="[]"
     (actionSelected)="onActionSelected($event)"
   ></ng-dhis2-ui-line-list>
-
+  <!-- [teiEnrollmentList]="{onApprovalClick: onApprove}" -->
+     
+  <!-- [teiEnrollmentList]="{ onApprovalClick: onApprove.bind(this) }" -->
   <ng-dhis2-ui-line-list
     [programId]="'lw9fZTamYec'"
-    [orgUnit]="'lgZ6HfZaj3f'"
-    [actionOptionOrientation]="'LINK'"
+    [orgUnit]="'xrku9x3XnV9'"
     [actionOptions]="actionOptions"
     [ouMode]="'DESCENDANTS'"
-    (approvalSelected)="onApprovalSelected($event)"
-    [dispatchTeis]="true"
-    [buttonLabel]="'approve applicants'"
-    [isButtonLoading]="isButtonLoading"
-    [attributeFilters]="attributeFilters"
-    (firstValue)="onFirstValueEmitted($event)"
     [showFilters]="true"
-    [buttonFilter]="'RASI'"
   ></ng-dhis2-ui-line-list>
 </div>
 

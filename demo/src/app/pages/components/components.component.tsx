@@ -297,6 +297,12 @@ export class ComponentsComponent implements OnInit {
     console.log('Delete', row);
   }
 
+
+
+  onApprove(row: any) {
+    console.log('Approve', row);
+  }
+
   onGenerateReport(row: any): void {
     console.log('Delete', row);
   }

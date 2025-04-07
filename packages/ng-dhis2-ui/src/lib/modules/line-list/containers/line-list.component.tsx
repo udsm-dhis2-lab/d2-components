@@ -160,16 +160,19 @@ export class LineListTableComponent extends ReactWrapperModule {
       useState<ColumnDefinition[]>();
     const [inputValues, setInputValues] = useState<Record<string, string>>({});
     const [filters, setFilters] = useState<boolean>(false);
+    const [orgUnitLabel, setOrgUnitLabel] = useState<string>('');
 
     //TODO: this will be migrated on the parent component
     const [checkValue, setCheckValue] = useState<string[]>([]);
     const [valueMatch, setValuesMatch] = useState<boolean>(false);
-    const [selectedOrgUnit, setSelectedOrgUnit] = useState<string>(''); // for testing purposes to be removed
+    const [selectedOrgUnit, setSelectedOrgUnit] = useState<string>('');
     const [hide, setHide] = useState<boolean>(true);
     const [showAllFilters, setShowAllFilters] = useState(false);
     const visibleFilters = showAllFilters
       ? filteredColumns ?? []
       : (filteredColumns ?? []).slice(0, 2);
+    const defaultOrgUnit = this.orgUnit;
+    const [prevValue, setPrevValue] = useState<string>();
 
     // Store updaters in refs for Angular to access
     const updateRefs = useRef({
@@ -235,7 +238,7 @@ export class LineListTableComponent extends ReactWrapperModule {
               pageCount: responseData.pageCount,
             };
 
-            const { columns, data, filteredEntityColumns } =
+            const { columns, data, filteredEntityColumns, orgUnitLabel } =
               getTrackedEntityData(
                 response,
                 this.programId,
@@ -245,6 +248,7 @@ export class LineListTableComponent extends ReactWrapperModule {
               );
             entityColumns = columns;
             entityData = data;
+            setOrgUnitLabel(orgUnitLabel);
 
             const checkValues = [
               ...new Set(
@@ -465,13 +469,32 @@ export class LineListTableComponent extends ReactWrapperModule {
                     flexWrap: 'wrap',
                   }}
                 >
-                  <InputField
+                  {/* <InputField
                     key="location"
                     label="Registraring unit:"
                     value={selectedOrgUnit}
                     clearable
                     onFocus={() => setHide(false)}
                     className="custom-input"
+                    onChange={(event: { value: React.SetStateAction<string>; }) => setSelectedOrgUnit(event.value)}
+                  /> */}
+                  <InputField
+                    key="location"
+                    label={orgUnitLabel}
+                    value={selectedOrgUnit}
+                    clearable
+                    onFocus={() => setHide(false)}
+                    className="custom-input"
+                    onChange={(event: {
+                      value: React.SetStateAction<string>;
+                    }) => {
+                      console.log(
+                        'onChange triggered with value:',
+                        event.value
+                      );
+                      setSelectedOrgUnit(event.value);
+                      setOrgUnitState(defaultOrgUnit);
+                    }}
                   />
                   <CalendarInput
                     label="Start date:"
@@ -507,19 +530,44 @@ export class LineListTableComponent extends ReactWrapperModule {
                           | React.ChangeEvent<HTMLInputElement>
                           | { value?: string }
                       ) => {
+                        let currentValue = '';
+
                         if ('target' in e && e.target) {
-                          setInputValues((prevValues) => ({
-                            ...prevValues,
-                            [key]: (e as React.ChangeEvent<HTMLInputElement>)
-                              .target.value,
-                          }));
+                          currentValue = (
+                            e as React.ChangeEvent<HTMLInputElement>
+                          ).target.value;
                         } else if ('value' in e) {
-                          setInputValues((prevValues) => ({
-                            ...prevValues,
-                            [key]: e.value ?? '',
-                          }));
+                          currentValue = e.value ?? '';
+                        }
+
+                        setInputValues((prevValues) => ({
+                          ...prevValues,
+                          [key]: currentValue,
+                        }));
+
+                        // Trigger change immediately if the input is cleared
+                        if (currentValue === '') {
+                          handleInputChange(key, '');
                         }
                       }}
+                      // onChange={(
+                      //   e:
+                      //     | React.ChangeEvent<HTMLInputElement>
+                      //     | { value?: string }
+                      // ) => {
+                      //   if ('target' in e && e.target) {
+                      //     setInputValues((prevValues) => ({
+                      //       ...prevValues,
+                      //       [key]: (e as React.ChangeEvent<HTMLInputElement>)
+                      //         .target.value,
+                      //     }));
+                      //   } else if ('value' in e) {
+                      //     setInputValues((prevValues) => ({
+                      //       ...prevValues,
+                      //       [key]: e.value ?? '',
+                      //     }));
+                      //   }
+                      // }}
                       onBlur={(
                         e:
                           | React.ChangeEvent<HTMLInputElement>
@@ -532,8 +580,10 @@ export class LineListTableComponent extends ReactWrapperModule {
                         } else if ('value' in e) {
                           currentValue = e.value ?? '';
                         }
-
-                        handleInputChange(key, currentValue);
+                        if (currentValue !== '' && currentValue !== prevValue) {
+                          handleInputChange(key, currentValue);
+                          setPrevValue(currentValue);
+                        }
                       }}
                     />
                   ))}

@@ -89,7 +89,7 @@ export interface Enrollment {
 }
 export interface TrackedEntityInstance {
   trackedEntityInstance: string;
-  attributes: { attribute: string; value: string; displayName?: string }[];
+  attributes:  Attribute[];
   enrollments: Enrollment[];
   trackedEntity: string;
   trackedEntityType: string;
@@ -186,6 +186,7 @@ export interface ProgramMetadata {
   programStages: ProgramStage[];
   organisationUnits: { id: string; name: string }[];
   programTrackedEntityAttributes: ProgramTrackedEntityAttribute[];
+  orgUnitLabel: string;
 }
 
 export interface LineListResponse {
@@ -240,7 +241,7 @@ export interface ProgramTrackedEntityAttribute {
   renderOptionsAsRadio: boolean;
   searchable: boolean;
   sharing: { userGroups: any; external: boolean; users: any };
-  sortOrder: number;
+  sortOrder: string;
   trackedEntityAttribute: TrackedEntityAttribute;
   translations: any[];
   userAccesses: any[];

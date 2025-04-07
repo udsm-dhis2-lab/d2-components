@@ -20,7 +20,7 @@ export class LineListService {
     return this.httpClient.get(
       `programs/${programId}.json?fields=programType,programStages[id,name,programStageDataElements[dataElement[id,name,shortName,formName,code,optionSetValue,valueType,
     optionSet[id,name,options[id,name,code]]]]],programTrackedEntityAttributes[*,trackedEntityAttribute[id,name,unique,generated,formName,code,optionSetValue
-    ,valueType,optionSet[id,name,options[id,name,code]]]]`
+    ,valueType,optionSet[id,name,options[id,name,code]]]],orgUnitLabel`
     );
   }
 
