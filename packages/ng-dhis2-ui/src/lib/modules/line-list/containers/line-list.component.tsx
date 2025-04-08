@@ -663,7 +663,7 @@ export class LineListTableComponent extends ReactWrapperModule {
                               <SingleSelectOption
                                 key={opt.id}
                                 label={opt.name}
-                                value={opt.code ?? opt.id} // Use code if available, fallback to id
+                                value={opt.code} 
                               />
                             ))}
                           </SingleSelectField>
