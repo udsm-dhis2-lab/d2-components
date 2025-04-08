@@ -1,10 +1,3 @@
-// [data-test='dhis2-uiwidgets-pagination'] {
-//   display: flex !important;
-//   flex-direction: row !important;
-//   justify-content: space-between !important;
-//   align-items: center !important;
-// }
-
 ::ng-deep .custom-input {
   display: flex !important;
   gap: 4px !important;
@@ -64,15 +57,19 @@
     margin: 0 !important;
   }
 
-  label {
+  [data-test='dhis2-uiwidgets-singleselectfield-label'] {
     font-size: 12px;
-    padding-right: 0;
+    color: grey !important;
   }
 
-  // Remove border from DHIS2 SingleSelect internal container
-  // Remove border from SingleSelectField root container
   [data-test='dhis2-uicore-select-input'] {
     border: none !important;
+    font-size: 12px !important;
+    display: flex;
+    align-items: center;
+    padding-left: 4px;
+    height: 40px;
+    outline: none !important;
     box-shadow: none !important;
   }
 
