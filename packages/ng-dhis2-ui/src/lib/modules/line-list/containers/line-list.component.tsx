@@ -51,6 +51,8 @@ import {
   getTrackedEntityData,
 } from '../utils/line-list-utils';
 import { ActionOptionOrientation, LineListActionOption } from '../models';
+import { SingleSelectField, SingleSelectOption } from '@dhis2/ui';
+
 @Component({
   selector: 'ng-dhis2-ui-line-list',
   template: '<ng-content></ng-content>',
@@ -159,16 +161,20 @@ export class LineListTableComponent extends ReactWrapperModule {
       useState<ColumnDefinition[]>();
     const [inputValues, setInputValues] = useState<Record<string, string>>({});
     const [filters, setFilters] = useState<boolean>(false);
+    const [orgUnitLabel, setOrgUnitLabel] = useState<string>('');
 
     //TODO: this will be migrated on the parent component
     const [checkValue, setCheckValue] = useState<string[]>([]);
     const [valueMatch, setValuesMatch] = useState<boolean>(false);
-    const [selectedOrgUnit, setSelectedOrgUnit] = useState<string>(''); // for testing purposes to be removed
+    const [selectedOrgUnit, setSelectedOrgUnit] = useState<string>('');
     const [hide, setHide] = useState<boolean>(true);
     const [showAllFilters, setShowAllFilters] = useState(false);
     const visibleFilters = showAllFilters
       ? filteredColumns ?? []
       : (filteredColumns ?? []).slice(0, 2);
+    const defaultOrgUnit = this.orgUnit;
+    const [prevValue, setPrevValue] = useState<string>();
+    const [dateStates, setDateStates] = useState<{ [key: string]: string }>({});
 
     // Store updaters in refs for Angular to access
     const updateRefs = useRef({
@@ -201,7 +207,8 @@ export class LineListTableComponent extends ReactWrapperModule {
           endDateState,
           this.ouMode,
           this.filterRootOrgUnit,
-          this.useOuModeWithOlderDHIS2Instance
+          this.useOuModeWithOlderDHIS2Instance,
+          this.filters
         )
         .pipe(take(1)) // Automatically unsubscribe after the first emission
         .subscribe((response: LineListResponse) => {
@@ -233,7 +240,7 @@ export class LineListTableComponent extends ReactWrapperModule {
               pageCount: responseData.pageCount,
             };
 
-            const { columns, data, filteredEntityColumns } =
+            const { columns, data, filteredEntityColumns, orgUnitLabel } =
               getTrackedEntityData(
                 response,
                 this.programId,
@@ -243,6 +250,7 @@ export class LineListTableComponent extends ReactWrapperModule {
               );
             entityColumns = columns;
             entityData = data;
+            setOrgUnitLabel(orgUnitLabel);
 
             const checkValues = [
               ...new Set(
@@ -326,7 +334,7 @@ export class LineListTableComponent extends ReactWrapperModule {
           this.endDate,
           this.ouMode
         )
-        .pipe(take(1)) // Ensures the observable emits only once
+        .pipe(take(1))
         .subscribe((response: LineListResponse) => {
           if (
             'trackedEntities' in response.data ||
@@ -350,18 +358,18 @@ export class LineListTableComponent extends ReactWrapperModule {
                     }
                   : null;
               })
-              .filter(Boolean); // Removes null entries
+              .filter(Boolean);
 
             this.approvalSelected.emit(teiEnrollmentList as any);
           } else {
-            this.approvalSelected.emit([]); // Emit empty array if no TEIs
+            this.approvalSelected.emit([]);
           }
 
-          setIsButtonLoading(false); // Stop loading after processing
+          setIsButtonLoading(false);
         });
 
       return () => {
-        subscription.unsubscribe(); // Cleanup to avoid potential memory leaks
+        subscription.unsubscribe();
       };
     };
 
@@ -379,6 +387,32 @@ export class LineListTableComponent extends ReactWrapperModule {
         const updatedFilters = value.trim()
           ? [...filteredFilters, { attribute: key, operator: 'like', value }]
           : filteredFilters;
+
+        return updatedFilters;
+      });
+    };
+
+    const handleDateSelect = (key: string, selectedDate: any) => {
+      const selectedDateString = selectedDate?.calendarDateString ?? ''; // Default to empty string if null
+
+      // Update dateStates
+      setDateStates((prevDateStates) => ({
+        ...prevDateStates,
+        [key]: selectedDateString, // Will set it to empty if date is cleared
+      }));
+
+      // Update attributeFiltersState to remove filter if date is cleared
+      setAttributeFiltersState((prevFilters = []) => {
+        // Remove old filter for this key if the date is empty
+        const filteredFilters = prevFilters.filter((f) => f.attribute !== key);
+
+        // Only add a filter if the date is not empty
+        const updatedFilters = selectedDateString.trim()
+          ? [
+              ...filteredFilters,
+              { attribute: key, operator: 'like', value: selectedDateString },
+            ]
+          : filteredFilters; // If empty, just keep the filteredFilters as they are
 
         return updatedFilters;
       });
@@ -431,7 +465,7 @@ export class LineListTableComponent extends ReactWrapperModule {
           // <div>
           //   <div/>
           <div>
-            <Modal hide={hide}>
+            <Modal hide={hide} position="middle">
               <ModalTitle>Select organization unit</ModalTitle>
 
               <ModalContent>
@@ -463,13 +497,29 @@ export class LineListTableComponent extends ReactWrapperModule {
                     flexWrap: 'wrap',
                   }}
                 >
-                  <InputField
+                  {/* <InputField
                     key="location"
                     label="Registraring unit:"
                     value={selectedOrgUnit}
                     clearable
                     onFocus={() => setHide(false)}
                     className="custom-input"
+                    onChange={(event: { value: React.SetStateAction<string>; }) => setSelectedOrgUnit(event.value)}
+                  /> */}
+                  <InputField
+                    key="location"
+                    //label={orgUnitLabel}
+                    label={orgUnitLabel ? orgUnitLabel : 'registering unit'}
+                    value={selectedOrgUnit}
+                    clearable
+                    onFocus={() => setHide(false)}
+                    className="custom-input"
+                    onChange={(event: {
+                      value: React.SetStateAction<string>;
+                    }) => {
+                      setSelectedOrgUnit(event.value);
+                      setOrgUnitState(defaultOrgUnit);
+                    }}
                   />
                   <CalendarInput
                     label="Start date:"
@@ -493,7 +543,192 @@ export class LineListTableComponent extends ReactWrapperModule {
                       setEndDateState(selectedDate.calendarDateString);
                     }}
                   />
-                  {(visibleFilters ?? []).map(({ label, key }) => (
+                  {/* {(visibleFilters ?? []).map(
+                    ({ label, key, valueType, options }) =>
+                      valueType === 'DATE' ? (
+                        <CalendarInput
+                          key={key}
+                          label={`${label}:`}
+                          calendar="gregory"
+                          locale="en-GB"
+                          timeZone="Africa/Dar_es_Salaam"
+                          className="custom-input"
+                          date={dateStates[key] || ''} // Use the specific date for this field
+                          onDateSelect={(selectedDate: any) =>
+                            handleDateSelect(key, selectedDate)
+                          } 
+                        />
+                      ) : (
+                        <InputField
+                          key={key}
+                          label={`${label}:`}
+                          className="custom-input"
+                          value={inputValues[key] || ''}
+                          clearable
+                          onChange={(
+                            e:
+                              | React.ChangeEvent<HTMLInputElement>
+                              | { value?: string }
+                          ) => {
+                            let currentValue = '';
+
+                            if ('target' in e && e.target) {
+                              currentValue = (
+                                e as React.ChangeEvent<HTMLInputElement>
+                              ).target.value;
+                            } else if ('value' in e) {
+                              currentValue = e.value ?? '';
+                            }
+
+                            setInputValues((prevValues) => ({
+                              ...prevValues,
+                              [key]: currentValue,
+                            }));
+
+                            // Trigger change immediately if the input is cleared
+                            if (currentValue === '') {
+                              handleInputChange(key, '');
+                            }
+                          }}
+                          onBlur={(
+                            e:
+                              | React.ChangeEvent<HTMLInputElement>
+                              | { value?: string }
+                          ) => {
+                            let currentValue = '';
+
+                            if ('target' in e && e.target) {
+                              currentValue = e.target.value;
+                            } else if ('value' in e) {
+                              currentValue = e.value ?? '';
+                            }
+                            if (
+                              currentValue !== '' &&
+                              currentValue !== prevValue
+                            ) {
+                              handleInputChange(key, currentValue);
+                              setPrevValue(currentValue);
+                            }
+                          }}
+                        />
+                      )
+                  )} */}
+                  {(visibleFilters ?? []).map(
+                    ({ label, key, valueType, options }) => {
+                      // Render CalendarInput for DATE fields
+                      if (valueType === 'DATE') {
+                        return (
+                          <CalendarInput
+                            key={key}
+                            label={`${label}:`}
+                            calendar="gregory"
+                            locale="en-GB"
+                            timeZone="Africa/Dar_es_Salaam"
+                            className="custom-input"
+                            date={dateStates[key] || ''}
+                            onDateSelect={(selectedDate: any) =>
+                              handleDateSelect(key, selectedDate)
+                            }
+                          />
+                        );
+                      }
+
+                      // Render SingleSelectField if options exist
+                      if (options && options.options.length > 0) {
+                        return (
+                          <SingleSelectField
+                            key={key}
+                            label={`${label}:`}
+                            selected={inputValues[key] || ''}
+                            className="custom-select-input"
+                            clearable
+                            onChange={({ selected }: { selected: string }) => {
+                              setInputValues((prevValues) => ({
+                                ...prevValues,
+                                [key]: selected ?? '',
+                              }));
+
+                              handleInputChange(key, selected ?? '');
+                            }}
+                            // onClear={() => {
+                            //   setInputValues((prevValues) => ({
+                            //     ...prevValues,
+                            //     [key]: '',
+                            //   }));
+                            //   handleInputChange(key, '');
+                            // }}
+                          >
+                            {(options.options ?? []).map((opt: any) => (
+                              <SingleSelectOption
+                                key={opt.id}
+                                label={opt.name}
+                                value={opt.code}
+                              />
+                            ))}
+                          </SingleSelectField>
+                        );
+                      }
+
+                      // Fallback: default InputField
+                      return (
+                        <InputField
+                          key={key}
+                          label={`${label}:`}
+                          className="custom-input"
+                          value={inputValues[key] || ''}
+                          clearable
+                          onChange={(
+                            e:
+                              | React.ChangeEvent<HTMLInputElement>
+                              | { value?: string }
+                          ) => {
+                            let currentValue = '';
+
+                            if ('target' in e && e.target) {
+                              currentValue = (
+                                e as React.ChangeEvent<HTMLInputElement>
+                              ).target.value;
+                            } else if ('value' in e) {
+                              currentValue = e.value ?? '';
+                            }
+
+                            setInputValues((prevValues) => ({
+                              ...prevValues,
+                              [key]: currentValue,
+                            }));
+
+                            if (currentValue === '') {
+                              handleInputChange(key, '');
+                            }
+                          }}
+                          onBlur={(
+                            e:
+                              | React.ChangeEvent<HTMLInputElement>
+                              | { value?: string }
+                          ) => {
+                            let currentValue = '';
+
+                            if ('target' in e && e.target) {
+                              currentValue = e.target.value;
+                            } else if ('value' in e) {
+                              currentValue = e.value ?? '';
+                            }
+
+                            if (
+                              currentValue !== '' &&
+                              currentValue !== prevValue
+                            ) {
+                              handleInputChange(key, currentValue);
+                              setPrevValue(currentValue);
+                            }
+                          }}
+                        />
+                      );
+                    }
+                  )}
+
+                  {/* {(visibleFilters ?? []).map(({ label, key, valueType, options }) => (
+                   
                     <InputField
                       key={key}
                       label={`${label}:`}
@@ -505,17 +740,24 @@ export class LineListTableComponent extends ReactWrapperModule {
                           | React.ChangeEvent<HTMLInputElement>
                           | { value?: string }
                       ) => {
+                        let currentValue = '';
+
                         if ('target' in e && e.target) {
-                          setInputValues((prevValues) => ({
-                            ...prevValues,
-                            [key]: (e as React.ChangeEvent<HTMLInputElement>)
-                              .target.value,
-                          }));
+                          currentValue = (
+                            e as React.ChangeEvent<HTMLInputElement>
+                          ).target.value;
                         } else if ('value' in e) {
-                          setInputValues((prevValues) => ({
-                            ...prevValues,
-                            [key]: e.value ?? '',
-                          }));
+                          currentValue = e.value ?? '';
+                        }
+
+                        setInputValues((prevValues) => ({
+                          ...prevValues,
+                          [key]: currentValue,
+                        }));
+
+                        // Trigger change immediately if the input is cleared
+                        if (currentValue === '') {
+                          handleInputChange(key, '');
                         }
                       }}
                       onBlur={(
@@ -530,11 +772,13 @@ export class LineListTableComponent extends ReactWrapperModule {
                         } else if ('value' in e) {
                           currentValue = e.value ?? '';
                         }
-
-                        handleInputChange(key, currentValue);
+                        if (currentValue !== '' && currentValue !== prevValue) {
+                          handleInputChange(key, currentValue);
+                          setPrevValue(currentValue);
+                        }
                       }}
                     />
-                  ))}
+                  ))} */}
                   <Button onClick={() => setShowAllFilters(!showAllFilters)}>
                     {showAllFilters ? 'Less Filters' : 'More Filters'}
                   </Button>

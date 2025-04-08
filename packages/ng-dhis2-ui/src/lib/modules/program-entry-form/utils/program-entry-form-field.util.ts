@@ -25,7 +25,24 @@ export class ProgramEntryFormFieldUtil {
   ) {}
 
   get attributes() {
-    return (this.program.programTrackedEntityAttributes || []).map(
+    let programTrackedEntityAttributes =
+      this.program.programTrackedEntityAttributes || [];
+
+    if (this.config.excludeInheritedAttributes) {
+      programTrackedEntityAttributes = programTrackedEntityAttributes.filter(
+        (programTrackedEntityAttribute) => {
+          return !(
+            this.program.trackedEntityType?.trackedEntityTypeAttributes || []
+          ).find(
+            (inheritedAttribute) =>
+              inheritedAttribute.trackedEntityAttribute?.id ===
+              programTrackedEntityAttribute?.trackedEntityAttribute?.id
+          );
+        }
+      );
+    }
+
+    return programTrackedEntityAttributes.map(
       (programTrackedEntityAttribute) => {
         return {
           ...programTrackedEntityAttribute.trackedEntityAttribute,

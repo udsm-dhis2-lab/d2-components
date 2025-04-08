@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ProgramRuleEngine } from '@iapps/d2-web-sdk';
 import {
@@ -10,6 +10,7 @@ import {
 import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
 import { Period } from '@iapps/period-utilities';
 import { IconView16 } from '@dhis2/ui';
+//import { LineListTableComponent } from '../../../../../packages/ng-dhis2-ui/src/lib/modules/line-list/containers/line-list.component';
 
 @Component({
   selector: 'ng-dhis2-ui-app-componenent',
@@ -80,6 +81,27 @@ export class ComponentsComponent implements OnInit {
     },
   ];
 
+  rasFilters = [
+    {
+      programStage: 'k4ZFqYqRNDF',
+      dataElement: 'Z4LwppfGhjI',
+      operator: 'EQ',
+      value: 'Approved',
+    },
+    {
+      programStage: 'k4ZFqYqRNDF',
+      dataElement: 'EBUF7spbIY1',
+      operator: 'EQ',
+      value: 'DED',
+    },
+    {
+      programStage: 'NtZXBym2KfD',
+      dataElement: 'lj3cQAle9Fo',
+      operator: '',
+      value: 'Qualified',
+    },
+  ];
+
   onApprovalSelected(data: any) {
     console.log('these are all the tei', data);
   }
@@ -124,26 +146,26 @@ export class ComponentsComponent implements OnInit {
     { name: 'Jane Smith', age: 34, country: 'Kenya' },
   ];
 
-  rasFilters = [
-    {
-      programStage: 'k4ZFqYqRNDF',
-      dataElement: 'Z4LwppfGhjI',
-      operator: '=',
-      value: 'Approved',
-    },
-    // {
-    //   programStage: 'k4ZFqYqRNDF',
-    //   dataElement: 'EBUF7spbIY1',
-    //   operator: '=',
-    //   value: 'DED',
-    // },
-    {
-      programStage: 'NtZXBym2KfD',
-      dataElement: 'lj3cQAle9Fo',
-      operator: '=',
-      value: 'Qualified',
-    },
-  ];
+  // rasFilters = [
+  //   {
+  //     programStage: 'k4ZFqYqRNDF',
+  //     dataElement: 'Z4LwppfGhjI',
+  //     operator: '=',
+  //     value: 'Approved',
+  //   },
+  //   // {
+  //   //   programStage: 'k4ZFqYqRNDF',
+  //   //   dataElement: 'EBUF7spbIY1',
+  //   //   operator: '=',
+  //   //   value: 'DED',
+  //   // },
+  //   {
+  //     programStage: 'NtZXBym2KfD',
+  //     dataElement: 'lj3cQAle9Fo',
+  //     operator: '=',
+  //     value: 'Qualified',
+  //   },
+  // ];
 
   ourRules = [
     {
@@ -282,6 +304,12 @@ export class ComponentsComponent implements OnInit {
 
   onDelete(row: any) {
     console.log('Delete', row);
+  }
+
+
+
+  onApprove(row: any) {
+    console.log('Approve', row);
   }
 
   onGenerateReport(row: any): void {
