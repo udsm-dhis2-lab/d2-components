@@ -353,7 +353,6 @@ export class FormMetaData implements IFormMetadata {
   }
 
   toJson(): IFormMetadata {
-    console.log(this.sections);
     return {
       id: this.params.customFormMetaData?.id as string,
       name: TranslationUtil.getTranslatedFormName(

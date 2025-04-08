@@ -408,7 +408,7 @@ export const getTrackedEntityData = (
         label: foundAttribute?.displayName || attrId,
         key: attrId,
         valueType: foundAttribute?.valueType,
-        options: mappedAttr?.optionSet ?? undefined 
+        options: mappedAttr?.optionSet ?? undefined,
       };
     })
     .filter((column) => {
@@ -430,8 +430,6 @@ export const getTrackedEntityData = (
     })
     .filter((column) => searchableKeys.has(column.key));
 
-    console.log('filtered entity columns', filteredEntityColumns);
-  
   const attributesData = teis.map((tei: any, idx: number) => {
     const row: TableRow = {
       trackedEntityInstance: tei.trackedEntity,
@@ -519,8 +517,6 @@ export const getTrackedEntityData = (
         })),
     ];
   }
-
-  console.log('filtered entity columns', filteredEntityColumns);
 
   return {
     columns: entityColumns,

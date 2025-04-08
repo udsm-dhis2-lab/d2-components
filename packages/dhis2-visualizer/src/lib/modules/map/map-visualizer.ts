@@ -130,8 +130,6 @@ export class MapVisualizer extends BaseVisualizer implements Visualizer {
               data: layer.featureCollection,
             });
 
-            console.log('FEATURE', layer.featureCollection);
-
             switch (layer.fillType) {
               case 'line': {
                 this.map.addLayer({
