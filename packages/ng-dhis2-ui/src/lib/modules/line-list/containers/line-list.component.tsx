@@ -466,7 +466,7 @@ export class LineListTableComponent extends ReactWrapperModule {
           // <div>
           //   <div/>
           <div>
-            <Modal hide={hide}>
+            <Modal hide={hide} position="middle">
               <ModalTitle>Select organization unit</ModalTitle>
 
               <ModalContent>
