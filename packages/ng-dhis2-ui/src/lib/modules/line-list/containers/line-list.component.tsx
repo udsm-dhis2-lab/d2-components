@@ -651,13 +651,13 @@ export class LineListTableComponent extends ReactWrapperModule {
 
                               handleInputChange(key, selected ?? '');
                             }}
-                            onClear={() => {
-                              setInputValues((prevValues) => ({
-                                ...prevValues,
-                                [key]: '',
-                              }));
-                              handleInputChange(key, '');
-                            }}
+                            // onClear={() => {
+                            //   setInputValues((prevValues) => ({
+                            //     ...prevValues,
+                            //     [key]: '',
+                            //   }));
+                            //   handleInputChange(key, '');
+                            // }}
                           >
                             {(options.options ?? []).map((opt: any) => (
                               <SingleSelectOption
