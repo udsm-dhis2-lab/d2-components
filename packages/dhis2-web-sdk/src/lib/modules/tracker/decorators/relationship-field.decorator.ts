@@ -8,7 +8,7 @@ import { TrackedEntityInstance, TrackerRelationship } from '../models';
 import { generateUid } from '../../../shared';
 import { DHIS2Event } from '../../event';
 
-export function RelationshipField(
+export function RelationshipFieldDecorator(
   relationshipType: string,
   RelationshipClass?: typeof TrackedEntityInstance | typeof DHIS2Event,
   multiple?: boolean
