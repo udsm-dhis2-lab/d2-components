@@ -6,7 +6,7 @@ import { TrackedEntityInstance } from '../../tracker';
 import { DHIS2Event } from '../models';
 import { isEmpty } from 'lodash';
 
-export function EventField(
+export function EventFieldDecorator(
   programStage: string,
   EventClass?: typeof DHIS2Event,
   multiple?: boolean

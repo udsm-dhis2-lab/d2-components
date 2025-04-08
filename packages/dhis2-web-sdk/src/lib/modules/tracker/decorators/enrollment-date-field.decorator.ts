@@ -1,6 +1,6 @@
 import { TrackedEntityInstance } from '../models';
 
-export function EnrollmentDateField(): PropertyDecorator {
+export function EnrollmentDateFieldDecorator(): PropertyDecorator {
   return function () {
     const adjustedDescripter: PropertyDescriptor = {
       configurable: true,

@@ -1,7 +1,7 @@
 import { TrackedEntityInstance } from '../models';
 import { AttributeUtil } from '../utils';
 
-export function AttributeField(
+export function AttributeFieldDecorator(
   attributeId: string,
   generated?: boolean
 ): PropertyDecorator {

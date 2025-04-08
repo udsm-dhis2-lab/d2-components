@@ -5,7 +5,7 @@
 import { TrackedEntityInstance } from '../../tracker';
 import { DHIS2Event, IDHIS2Event } from '../models';
 
-export function DataElementField(
+export function DataElementFieldDecorator(
   dataElement: string,
   programStage?: string,
   fromTracker = false
