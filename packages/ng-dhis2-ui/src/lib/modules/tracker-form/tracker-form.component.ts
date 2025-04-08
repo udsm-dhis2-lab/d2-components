@@ -39,6 +39,7 @@ export class TrackerFormComponent implements OnInit {
         programs: [program],
         programStage: this.programStage(),
         disableEnrollmentDate: true,
+        excludeInheritedAttributes: true,
       }).toJson();
     }
   }

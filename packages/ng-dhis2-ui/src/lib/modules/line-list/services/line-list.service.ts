@@ -9,8 +9,9 @@ import {
   LineListResponse,
   TrackedEntityResponse,
 } from '../models/line-list.models';
-import { buildFilters } from '../utils/filter-builder';
+import { buildFilters, buildFiltersFromEvents } from '../utils/filter-builder';
 import { AttributeFilter } from '../models/attribute-filter.model';
+import { FilterConfig } from '../models/filter-config.model';
 
 @Injectable()
 export class LineListService {
@@ -19,7 +20,7 @@ export class LineListService {
     return this.httpClient.get(
       `programs/${programId}.json?fields=programType,programStages[id,name,programStageDataElements[dataElement[id,name,shortName,formName,code,optionSetValue,valueType,
     optionSet[id,name,options[id,name,code]]]]],programTrackedEntityAttributes[*,trackedEntityAttribute[id,name,unique,generated,formName,code,optionSetValue
-    ,valueType,optionSet[id,name,options[id,name,code]]]]`
+    ,valueType,optionSet[id,name,options[id,name,code]]]],orgUnitLabel`
     );
   }
 
@@ -65,9 +66,11 @@ export class LineListService {
     endDate?: string,
     ouMode?: string,
     filterRootOrgUnit?: boolean,
-    useOuModeWithOlderDHIS2Instance?: boolean
+    useOuModeWithOlderDHIS2Instance?: boolean,
+    filtersFromEvents: FilterConfig[] = []
   ): Observable<TrackedEntityResponse> {
     const filterParams = buildFilters(filters);
+    const filterParamsFromEvents = buildFiltersFromEvents(filtersFromEvents);
     const dateFilter = [
       startDate ? `enrollmentEnrolledAfter=${startDate}` : '',
       endDate ? `enrollmentEnrolledBefore=${endDate}` : '',
@@ -205,7 +208,8 @@ export class LineListService {
     endDate?: string,
     ouMode?: string,
     filterRootOrgUnit?: boolean,
-    useOuModeWithOlderDHIS2Instance?: boolean
+    useOuModeWithOlderDHIS2Instance?: boolean,
+    filtersFromEvents: FilterConfig[] = []
   ): Observable<LineListResponse> {
     return this.getProgramMetadata(programId).pipe(
       switchMap((programMetadata: ProgramMetadata) => {
@@ -238,7 +242,8 @@ export class LineListService {
             endDate,
             ouMode,
             filterRootOrgUnit,
-            useOuModeWithOlderDHIS2Instance
+            useOuModeWithOlderDHIS2Instance,
+            filtersFromEvents
           ).pipe(
             map((teis: TrackedEntityResponse) => ({
               metadata: programMetadata,

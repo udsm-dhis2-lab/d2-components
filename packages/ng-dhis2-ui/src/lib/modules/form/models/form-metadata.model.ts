@@ -21,6 +21,7 @@ export class FormMetaData implements IFormMetadata {
       splitRegistrationSection?: boolean;
       includeAllProgramStages?: boolean;
       disableEnrollmentDate?: boolean;
+      excludeInheritedAttributes?: boolean;
       programStage?: string;
       customFormMetaData?: Partial<FormMetaData>;
     }
@@ -163,6 +164,7 @@ export class FormMetaData implements IFormMetadata {
         },
         program,
         locale: this.params.locale,
+        excludeInheritedAttributes: this.params.excludeInheritedAttributes,
       }).toJson();
     });
   }
@@ -192,6 +194,7 @@ export class FormMetaData implements IFormMetadata {
       },
       program,
       locale: this.params.locale,
+      excludeInheritedAttributes: this.params.excludeInheritedAttributes,
     }).toJson();
   }
 
@@ -229,6 +232,7 @@ export class FormMetaData implements IFormMetadata {
       },
       program,
       locale: this.params.locale,
+      excludeInheritedAttributes: this.params.excludeInheritedAttributes,
     }).toJson();
   }
 
@@ -265,6 +269,7 @@ export class FormMetaData implements IFormMetadata {
       },
       program,
       locale: this.params.locale,
+      excludeInheritedAttributes: this.params.excludeInheritedAttributes,
     }).toJson();
   }
 
@@ -343,10 +348,12 @@ export class FormMetaData implements IFormMetadata {
       },
       program,
       locale: this.params.locale,
+      excludeInheritedAttributes: this.params.excludeInheritedAttributes,
     }).toJson();
   }
 
   toJson(): IFormMetadata {
+    console.log(this.sections);
     return {
       id: this.params.customFormMetaData?.id as string,
       name: TranslationUtil.getTranslatedFormName(
