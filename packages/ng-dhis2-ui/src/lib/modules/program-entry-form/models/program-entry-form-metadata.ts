@@ -53,6 +53,17 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
         'useFirstStageDuringRegistration',
         'trackedEntityType',
       ])
+
+      .with(
+        this.d2.programModule.trackedEntityType
+          .select(['id', 'name'])
+          .with(
+            this.d2.programModule.trackedEntityTypeAttribute.select([
+              'trackedEntityAttribute',
+            ])
+          ),
+        'ToOne'
+      )
       .with(
         this.d2.programModule.programTrackedEntityAttribute.with(
           this.d2.programModule.trackedEntityAttribute.with(

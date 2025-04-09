@@ -2,15 +2,19 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import { ActionOptionOrientation } from '../../models';
-import { DropdownMenu, DropdownMenuOption } from '../dropdown-menu';
+import {
+  ActionOptionOrientation,
+  DropdownMenuOption,
+  LineListActionOption,
+} from '../../models';
+import { DropdownMenu } from '../dropdown-menu';
 import React from 'react';
 import { ButtonStrip, Button, colors } from '@dhis2/ui';
 
 export const DataTableActions = (props: {
-  actionOptions: DropdownMenuOption[];
+  actionOptions: LineListActionOption[];
   actionOptionOrientation: ActionOptionOrientation;
-  onClick: (dropdownOption: DropdownMenuOption) => void;
+  onClick: (dropdownOption: LineListActionOption) => void;
 }) => {
   const { actionOptions, actionOptionOrientation, onClick } = props;
 

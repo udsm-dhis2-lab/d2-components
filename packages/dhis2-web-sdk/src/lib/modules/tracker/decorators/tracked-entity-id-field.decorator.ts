@@ -1,6 +1,6 @@
 import { TrackedEntityInstance } from '../models';
 
-export function TrackedEntityIdField(): PropertyDecorator {
+export function TrackedEntityIdFieldDecorator(): PropertyDecorator {
   return function () {
     const adjustedDescripter: PropertyDescriptor = {
       configurable: true,

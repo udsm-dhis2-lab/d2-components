@@ -10,18 +10,7 @@ import {
 import React, { useRef, useState } from 'react';
 import { dropdownStyles } from './dropdown-menu.styles';
 import { useDynamicStyles } from '../../hooks';
-
-export interface DropdownMenuOption {
-  id?: string;
-  label: string;
-  action?: string;
-  description?: string;
-  iconOnly?: boolean;
-  icon?: any;
-  destructive?: boolean;
-  //onClick?: () => void;
-  onClick?: Function;
-}
+import { DropdownMenuOption } from '../../models';
 
 const useCurrentModal = () => {
   const [CurrentModal, setCurrentModal] = useState();
@@ -39,7 +28,7 @@ const useCurrentModal = () => {
 export const ContextMenu = (params: {
   dropDownOptions: DropdownMenuOption[];
   anchorRef: any;
-  onClose: Function;
+  onClose: (event?: any, data?: any) => void;
   onMenuClick: (dropdownOption: DropdownMenuOption) => void;
 }) => {
   const { onClose, onMenuClick, anchorRef, dropDownOptions } = params;

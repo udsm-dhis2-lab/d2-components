@@ -1,0 +1,12 @@
+// Copyright 2025 UDSM DHIS2 Lab. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+export interface DropdownMenuOption {
+  id?: string;
+  label: string;
+  action?: string;
+  description?: string;
+  iconOnly?: boolean;
+  icon?: any;
+  destructive?: boolean;
+}

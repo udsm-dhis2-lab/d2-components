@@ -9,39 +9,62 @@ export class FormMetadataSection implements IFormMetadataSection {
   sectionStateComplete?: boolean | undefined;
   description?: string | undefined;
   translations?: any;
+  inheritedAttributes = [];
 
   constructor(
     private params: {
       section: Partial<IFormMetadataSection>;
       program: Record<string, unknown>;
       locale?: string;
+      excludeInheritedAttributes?: boolean;
     }
-  ) {}
+  ) {
+    this.inheritedAttributes =
+      ((this.params.program['trackedEntityType'] as any) || {})[
+        'trackedEntityTypeAttributes'
+      ] || [];
+  }
 
   get attributes() {
-    return (
+    let programTrackedEntityAttributes =
       (this.params.program['programTrackedEntityAttributes'] as Record<
         string,
         unknown
-      >[]) || []
-    ).map((programTrackedEntityAttribute) => {
-      return {
-        ...(programTrackedEntityAttribute['trackedEntityAttribute'] as Record<
-          string,
-          unknown
-        >),
-        formName: ((programTrackedEntityAttribute[
-          'trackedEntityAttribute'
-        ] as Record<string, unknown>) || {})['name'],
-        sortOrder: programTrackedEntityAttribute['sortOrder'],
-        mandatory: programTrackedEntityAttribute['mandatory'],
-        allowFutureDate: programTrackedEntityAttribute['allowFutureDate'],
-        trackedEntityType: (this.params.program['trackedEntityType'] as Record<string, unknown> || {})[
-          'id'
-        ],
-        metaType: 'ATTRIBUTE',
-      };
-    });
+      >[]) || [];
+
+    if (this.params.excludeInheritedAttributes) {
+      programTrackedEntityAttributes = programTrackedEntityAttributes.filter(
+        (programTrackedEntityAttribute) => {
+          return !this.inheritedAttributes.find(
+            (inheritedAttribute: any) =>
+              inheritedAttribute['trackedEntityAttribute']?.id ===
+              (programTrackedEntityAttribute['trackedEntityAttribute'] as any)
+                ?.id
+          );
+        }
+      );
+    }
+
+    return programTrackedEntityAttributes.map(
+      (programTrackedEntityAttribute) => {
+        return {
+          ...(programTrackedEntityAttribute['trackedEntityAttribute'] as Record<
+            string,
+            unknown
+          >),
+          formName: ((programTrackedEntityAttribute[
+            'trackedEntityAttribute'
+          ] as Record<string, unknown>) || {})['name'],
+          sortOrder: programTrackedEntityAttribute['sortOrder'],
+          mandatory: programTrackedEntityAttribute['mandatory'],
+          allowFutureDate: programTrackedEntityAttribute['allowFutureDate'],
+          trackedEntityType: ((this.params.program[
+            'trackedEntityType'
+          ] as Record<string, unknown>) || {})['id'],
+          metaType: 'ATTRIBUTE',
+        };
+      }
+    );
   }
 
   get dataElements() {
@@ -83,7 +106,9 @@ export class FormMetadataSection implements IFormMetadataSection {
     return {
       id: this.params.section?.id as string,
       name: this.params.section?.name as string,
-      fieldGroups: this.fieldGroups,
+      fieldGroups: this.fieldGroups.filter(
+        (fieldGroup) => fieldGroup.fields?.length > 0
+      ),
     };
   }
 }

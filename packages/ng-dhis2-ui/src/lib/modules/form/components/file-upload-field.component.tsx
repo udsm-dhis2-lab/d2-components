@@ -84,19 +84,6 @@ export const FileUploadField = (props: {
         } else {
           onChange!(file);
         }
-
-        // this.ngZone.run(() => {
-        //   this.form().get(this.field().id) ||
-        //     this.form()
-        //       .get(this.field().key)
-        //       ?.setValue((event?.files || [])[0]);
-        //   this.update.emit({
-        //     form: this.form(),
-        //     value: (event?.files || [])[0],
-        //   });
-        // });
-        // setValue((event?.files || [])[0]);
-        // setTouched(true);
       }}
     >
       {file && (
