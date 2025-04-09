@@ -1,6 +1,6 @@
 import { DHIS2Event } from '../models';
 
-export function EventDateField(): PropertyDecorator {
+export function EventDateFieldDecorator(): PropertyDecorator {
   return function () {
     const adjustedDescripter: PropertyDescriptor = {
       configurable: true,

@@ -311,6 +311,16 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
           ])
           .byId(this.program as string)
           .with(
+            d2.programModule.trackedEntityType
+              .select(['id', 'name'])
+              .with(
+                d2.programModule.trackedEntityTypeAttribute.select([
+                  'trackedEntityAttribute',
+                ])
+              ),
+            'ToOne'
+          )
+          .with(
             d2.programModule.programStage
               .with(d2.programModule.programStageSection)
               .with(

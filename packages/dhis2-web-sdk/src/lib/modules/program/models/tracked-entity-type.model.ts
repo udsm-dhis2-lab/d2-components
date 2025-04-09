@@ -37,7 +37,7 @@ export class TrackedEntityType extends IdentifiableObject<TrackedEntityType> {
     'displayFormName',
   ];
 
-  trackedEntityTypeAttributes!: any;
+  trackedEntityTypeAttributes!: TrackedEntityTypeAttribute[];
   featureType!: string;
   minAttributesRequiredToSearch!: number;
   maxTeiCountToReturn!: number;

@@ -10,6 +10,7 @@ import {
   ProgramStageSectionQuery,
   ProgramTrackedEntityAttributeQuery,
   TrackedEntityAttributeQuery,
+  TrackedEntityTypeAttributeQuery,
   TrackedEntityTypeQuery,
 } from './queries';
 
@@ -57,5 +58,9 @@ export class ProgramModule {
 
   get trackedEntityType(): TrackedEntityTypeQuery {
     return new TrackedEntityTypeQuery(this.httpClient);
+  }
+
+  get trackedEntityTypeAttribute(): TrackedEntityTypeAttributeQuery {
+    return new TrackedEntityTypeAttributeQuery(this.httpClient);
   }
 }

@@ -16,6 +16,7 @@ export interface IProgramEntryFormConfig {
   disableEnrollmentDate?: boolean;
   disabledIncidentDate?: boolean;
   excludeProgramStages?: boolean;
+  excludeInheritedAttributes?: boolean;
   includedProgramStages?: string[];
   submitButtonLabel?: string;
   cancelButtonLabel?: string;
@@ -37,6 +38,7 @@ export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   disableEnrollmentDate?: boolean;
   disabledIncidentDate?: boolean;
   excludeProgramStages?: boolean;
+  excludeInheritedAttributes?: boolean;
   includedProgramStages?: string[];
   submitButtonLabel = 'Submit';
   cancelButtonLabel = 'Cancel';
