@@ -250,11 +250,17 @@
   <!-- [teiEnrollmentList]="{onApprovalClick: onApprove}" -->
 <div>
   <ng-dhis2-ui-line-list
-    [programId]="'lw9fZTamYec'"
+    [programId]="'tOhKbXMiJ1J'"
     [orgUnit]="'xrku9x3XnV9'"
     [actionOptions]="actionOptions"
     [ouMode]="'DESCENDANTS'"
     [showFilters]="true"
+    [filters]="[{
+      programStage: 'DRJRorGWflf',
+      dataElement: 'XuMFMNivMMe',
+      operator: '=',
+      value: 'Completed',
+    },]"
     (approvalSelected)="onApprovalSelected($event)"
   ></ng-dhis2-ui-line-list>
 </div>

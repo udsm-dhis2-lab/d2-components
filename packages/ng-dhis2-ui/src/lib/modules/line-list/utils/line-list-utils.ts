@@ -320,9 +320,9 @@ export const getTrackedEntityData = (
     sortOrder: attr.sortOrder,
   }));
 
-  // if (filters) {
-  //   teis = getFilteredTrackedEntites(teis, filters);
-  // }
+  if (filters) {
+    teis = getFilteredTrackedEntites(teis, filters);
+  }
 
   const allAttributes = new Set<string>();
 
