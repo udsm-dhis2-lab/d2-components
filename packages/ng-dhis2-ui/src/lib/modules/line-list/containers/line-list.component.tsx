@@ -512,7 +512,6 @@ export class LineListTableComponent extends ReactWrapperModule {
                     //label={orgUnitLabel}
                     label={orgUnitLabel ? orgUnitLabel : 'registering unit'}
                     value={selectedOrgUnit}
-                    clearable
                     onFocus={() => setHide(false)}
                     className="custom-input"
                     onChange={(event: {
@@ -530,7 +529,10 @@ export class LineListTableComponent extends ReactWrapperModule {
                     className="custom-input"
                     date={startDateState}
                     onDateSelect={(selectedDate: any) => {
-                      setStartDateState(selectedDate.calendarDateString);
+                      if (selectedDate?.calendarDateString) {
+                        setStartDateState(selectedDate.calendarDateString);
+                      }
+                      //  setStartDateState(selectedDate.calendarDateString);
                     }}
                   />
                   <CalendarInput
@@ -641,7 +643,7 @@ export class LineListTableComponent extends ReactWrapperModule {
                             key={key}
                             label={`${label}:`}
                             selected={inputValues[key] || ''}
-                            className="custom-select-input" 
+                            className="custom-select-input"
                             clearable
                             onChange={({ selected }: { selected: string }) => {
                               setInputValues((prevValues) => ({
@@ -651,19 +653,12 @@ export class LineListTableComponent extends ReactWrapperModule {
 
                               handleInputChange(key, selected ?? '');
                             }}
-                            // onClear={() => {
-                            //   setInputValues((prevValues) => ({
-                            //     ...prevValues,
-                            //     [key]: '',
-                            //   }));
-                            //   handleInputChange(key, '');
-                            // }}
                           >
                             {(options.options ?? []).map((opt: any) => (
                               <SingleSelectOption
                                 key={opt.id}
                                 label={opt.name}
-                                value={opt.code} 
+                                value={opt.code}
                               />
                             ))}
                           </SingleSelectField>
