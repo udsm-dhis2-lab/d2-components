@@ -6,9 +6,10 @@ import {
   IdentifiableField,
   IDENTIFIABLE_FIELDS,
 } from '../../../shared';
-export type OptionField = IdentifiableField;
+export type OptionField = IdentifiableField | 'style';
 export class Option extends IdentifiableObject<Option> {
   static resourceName = 'options';
   static singularResourceName = 'option';
-  static fields: OptionField[] = [...IDENTIFIABLE_FIELDS];
+  style?: {color?: string};
+  static fields: OptionField[] = [...IDENTIFIABLE_FIELDS , 'style'];
 }

@@ -52,6 +52,7 @@ export class DataElement extends IdentifiableObject<DataElement> {
   periodOffset?: number;
   optionSetValue?: boolean;
   optionSet?: OptionSet;
+  sortOrder?: number;
   programStageId?: string;
   allowFutureDate?: boolean;
   isProgramStageRepeatable?: boolean;
