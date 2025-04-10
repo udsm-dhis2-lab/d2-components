@@ -32,6 +32,17 @@
     border: none !important;
     box-shadow: none !important;
   }
+  [data-test='calendar-clear-button'] {
+    background-color: #f2f2f2 !important;;
+    color: #870808 !important;
+    border-radius: 6px !important;
+    padding: 4px 10px !important;
+    font-size: 14px !important;
+
+    &:hover {
+      background-color: #ddd;
+    }
+  }
 }
 ::ng-deep .custom-input label {
   color: grey !important;
