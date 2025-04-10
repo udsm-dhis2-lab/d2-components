@@ -6,6 +6,7 @@ import {
   D2Window,
   DataElement,
   DataFilterCondition,
+  DataOrderCriteria,
   DataQueryFilter,
   ITrackedEntityInstance,
   ModelBaseTrackerQuery,
@@ -83,6 +84,9 @@ export class WebSdkComponent {
           pageSize: 10,
           page: 1,
         })
+      )
+      .setOrderCriteria(
+        new DataOrderCriteria().setField('createdAt').setOrder('desc')
       )
       .get();
 
