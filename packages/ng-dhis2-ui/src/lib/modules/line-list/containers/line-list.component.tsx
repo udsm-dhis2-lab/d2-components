@@ -392,6 +392,26 @@ export class LineListTableComponent extends ReactWrapperModule {
       });
     };
 
+    //TODO: MERGE THIS WITH HANDLE INPUT CHANGE PUT A CHECK FOR IF ITS A SELECT FIELD TO USE EQ
+    const handleInputChangeForSelectField = (key: string, value: string) => {
+      setInputValues((prevValues) => ({
+        ...prevValues,
+        [key]: value ?? '',
+      }));
+
+      setAttributeFiltersState((prevFilters = []) => {
+        // Remove old filter for this key
+        const filteredFilters = prevFilters.filter((f) => f.attribute !== key);
+
+        // Only add new filter if value is not empty
+        const updatedFilters = value.trim()
+          ? [...filteredFilters, { attribute: key, operator: 'eq', value }]
+          : filteredFilters;
+
+        return updatedFilters;
+      });
+    };
+
     const handleDateSelect = (key: string, selectedDate: any) => {
       const selectedDateString = selectedDate?.calendarDateString ?? ''; // Default to empty string if null
 
@@ -511,7 +531,6 @@ export class LineListTableComponent extends ReactWrapperModule {
                     //label={orgUnitLabel}
                     label={orgUnitLabel ? orgUnitLabel : 'registering unit'}
                     value={selectedOrgUnit}
-                    clearable
                     onFocus={() => setHide(false)}
                     className="custom-input"
                     onChange={(event: {
@@ -529,7 +548,10 @@ export class LineListTableComponent extends ReactWrapperModule {
                     className="custom-input"
                     date={startDateState}
                     onDateSelect={(selectedDate: any) => {
-                      setStartDateState(selectedDate.calendarDateString);
+                      if (selectedDate?.calendarDateString) {
+                        setStartDateState(selectedDate.calendarDateString);
+                      }
+                      //  setStartDateState(selectedDate.calendarDateString);
                     }}
                   />
                   <CalendarInput
@@ -648,15 +670,8 @@ export class LineListTableComponent extends ReactWrapperModule {
                                 [key]: selected ?? '',
                               }));
 
-                              handleInputChange(key, selected ?? '');
+                             handleInputChangeForSelectField(key, selected ?? '');
                             }}
-                            // onClear={() => {
-                            //   setInputValues((prevValues) => ({
-                            //     ...prevValues,
-                            //     [key]: '',
-                            //   }));
-                            //   handleInputChange(key, '');
-                            // }}
                           >
                             {(options.options ?? []).map((opt: any) => (
                               <SingleSelectOption
