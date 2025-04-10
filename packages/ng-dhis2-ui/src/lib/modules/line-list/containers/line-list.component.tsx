@@ -52,6 +52,10 @@ import {
 } from '../utils/line-list-utils';
 import { ActionOptionOrientation, LineListActionOption } from '../models';
 import { SingleSelectField, SingleSelectOption } from '@dhis2/ui';
+import { Data } from '@angular/router';
+import { DataElementFilter } from '../models/data-element-filter.model';
+import { D2Window, Program } from '@iapps/d2-web-sdk';
+import { meta } from '@turf/turf';
 
 @Component({
   selector: 'ng-dhis2-ui-line-list',
@@ -80,9 +84,8 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Output() approvalSelected = new EventEmitter<
     { teiId: string; enrollmentId: string }[]
   >();
+  @Input() dataElementFilter!: DataElementFilter;
   @Input() isButtonLoading = false;
-  @Input() buttonLabel = '';
-  @Output() firstValue = new EventEmitter<string>();
   @Input() buttonFilter!: string;
   @Input() filterRootOrgUnit = false;
   @Input() showFilters = false;
@@ -154,13 +157,10 @@ export class LineListTableComponent extends ReactWrapperModule {
       this.endDate
     );
     const [loading, setLoading] = useState<boolean>(false);
-    const [isButtonLoading, setIsButtonLoading] = useState<boolean>(
-      this.isButtonLoading
-    );
+    const [metaDataLoadng, setMetaDataLoading] = useState<boolean>(false);
     const [filteredColumns, setFilteredColumns] =
       useState<ColumnDefinition[]>();
     const [inputValues, setInputValues] = useState<Record<string, string>>({});
-    const [filters, setFilters] = useState<boolean>(false);
     const [orgUnitLabel, setOrgUnitLabel] = useState<string>('');
 
     //TODO: this will be migrated on the parent component
@@ -175,6 +175,8 @@ export class LineListTableComponent extends ReactWrapperModule {
     const defaultOrgUnit = this.orgUnit;
     const [prevValue, setPrevValue] = useState<string>();
     const [dateStates, setDateStates] = useState<{ [key: string]: string }>({});
+    const [metaData, setMetaData] = useState<Program | null>(null);
+    const d2 = (window as unknown as D2Window).d2Web;
 
     // Store updaters in refs for Angular to access
     const updateRefs = useRef({
@@ -184,7 +186,6 @@ export class LineListTableComponent extends ReactWrapperModule {
       setAttributeFiltersState,
       setStartDateState,
       setEndDateState,
-      setIsButtonLoading,
       setOptionSetNameVisible,
     });
 
@@ -193,8 +194,31 @@ export class LineListTableComponent extends ReactWrapperModule {
     }, []);
 
     useEffect(() => {
-      setLoading(true);
+      setLoading(true)
+      const fetchmetaData = async () => {
+        try {
+          const trackerResponse = (await d2.trackerModule.trackedEntity
+            .setProgram(this.programId)
+            .getMetaData()) as Program;
 
+          const data = trackerResponse;
+          console.log('metadata:', data);
+          setMetaData(data);
+        } catch (error) {
+          console.error('Failed to metadata:', error);
+        }
+      };
+
+      if (this.programId) {
+        fetchmetaData();
+      }
+    }, []);
+
+    useEffect(() => {
+      if (!metaData) {
+        return undefined;
+      }
+      setLoading(true);
       const subscription = this.lineListService
         .getLineListData(
           this.programId,
@@ -232,7 +256,6 @@ export class LineListTableComponent extends ReactWrapperModule {
             'instances' in response.data
           ) {
             const responseData: any = response.data as TrackedEntityResponse;
-
             responsePager = responseData.pager || {
               page: responseData.page,
               pageSize: responseData.pageSize,
@@ -246,7 +269,8 @@ export class LineListTableComponent extends ReactWrapperModule {
                 this.programId,
                 pager,
                 this.isOptionSetNameVisible,
-                this.filters
+                metaData,
+                this.filters,
               );
             entityColumns = columns;
             entityData = data;
@@ -308,6 +332,7 @@ export class LineListTableComponent extends ReactWrapperModule {
         subscription.unsubscribe(); // Ensure cleanup on unmount
       };
     }, [
+      metaData,
       programIdState,
       orgUnitState,
       programStageIdState,
@@ -318,60 +343,6 @@ export class LineListTableComponent extends ReactWrapperModule {
       pager.pageSize,
       isOptionSetNameVisibleState,
     ]);
-
-    const handleApprovalClick = () => {
-      setIsButtonLoading(true);
-
-      const subscription = this.lineListService
-        .getLineListData(
-          this.programId,
-          this.orgUnit,
-          this.programStageId,
-          pager.page,
-          1000,
-          this.attributeFilters,
-          this.startDate,
-          this.endDate,
-          this.ouMode
-        )
-        .pipe(take(1))
-        .subscribe((response: LineListResponse) => {
-          if (
-            'trackedEntities' in response.data ||
-            'instances' in response.data
-          ) {
-            const trackedEntityInstances = (
-              response.data as TrackedEntityResponse
-            ).trackedEntities;
-
-            // Map TEIs to objects with teiId and enrollmentId
-            const teiEnrollmentList = trackedEntityInstances
-              .map((tei) => {
-                const matchingEnrollment = tei.enrollments?.find(
-                  (enrollment) => enrollment.program === this.programId
-                );
-
-                return matchingEnrollment
-                  ? {
-                      teiId: tei.trackedEntity,
-                      enrollmentId: matchingEnrollment.enrollment,
-                    }
-                  : null;
-              })
-              .filter(Boolean);
-
-            this.approvalSelected.emit(teiEnrollmentList as any);
-          } else {
-            this.approvalSelected.emit([]);
-          }
-
-          setIsButtonLoading(false);
-        });
-
-      return () => {
-        subscription.unsubscribe();
-      };
-    };
 
     const handleInputChange = (key: string, value: string) => {
       setInputValues((prevValues) => ({
@@ -440,29 +411,6 @@ export class LineListTableComponent extends ReactWrapperModule {
 
     return (
       <div>
-        <div>
-          {valueMatch &&
-            this.dispatchTeis &&
-            (isButtonLoading ? (
-              <CircularLoader small />
-            ) : (
-              //TODO: this implementation should be done where the library will be consumed
-              <Button
-                style={{
-                  backgroundColor: '#3b82f6',
-                  color: 'white',
-                  padding: '8px 16px',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                }}
-                onClick={handleApprovalClick}
-                primary
-              >
-                {this.buttonLabel}
-              </Button>
-            ))}
-        </div>
-
         {loading ? (
           <div
             style={{
@@ -533,6 +481,7 @@ export class LineListTableComponent extends ReactWrapperModule {
                     value={selectedOrgUnit}
                     onFocus={() => setHide(false)}
                     className="custom-input"
+                    clearable
                     onChange={(event: {
                       value: React.SetStateAction<string>;
                     }) => {
@@ -670,7 +619,10 @@ export class LineListTableComponent extends ReactWrapperModule {
                                 [key]: selected ?? '',
                               }));
 
-                             handleInputChangeForSelectField(key, selected ?? '');
+                              handleInputChangeForSelectField(
+                                key,
+                                selected ?? ''
+                              );
                             }}
                           >
                             {(options.options ?? []).map((opt: any) => (

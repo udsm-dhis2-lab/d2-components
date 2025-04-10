@@ -12,6 +12,8 @@ import {
 import { buildFilters, buildFiltersFromEvents, getFilteredTrackedEntites } from '../utils/filter-builder';
 import { AttributeFilter } from '../models/attribute-filter.model';
 import { FilterConfig } from '../models/filter-config.model';
+import { Data } from '@angular/router';
+import { DataElementFilter } from '../models/data-element-filter.model';
 
 @Injectable()
 export class LineListService {
@@ -56,7 +58,10 @@ export class LineListService {
   //   );
   // }
 
-  //tracker/trackedEntities.json?program=${programId}&orgUnit=${orgUnit}${ouModeIdentifier}&page=${page}&pageSize=${pageSize}&fields=trackedEntity,orgUnit,attributes[*],enrollments[*]&totalPages=true&${filterParams}${dateFilter}&order=createdAt:desc&trackedEntities=uid1,uid2,uid3
+  //https://hrhis.moh.go.tz/test-hrhis/api/41/tracker/events?filter=lj3cQAle9Fo:in:Qualified;Rejected&order=createdAt:desc&page=1&pageSize=15&ouMode=ACCESSIBLE&program=lw9fZTamYec&programStage=NtZXBym2KfD&fields=*
+
+    //tracker/events?filter=lj3cQAle9Fo:in:Qualified;Rejected&order=createdAt:desc&page=1&pageSize=15
+  // &ouMode=ACCESSIBLE&program=lw9fZTamYec&programStage=NtZXBym2KfD&fields=trackedEntity
 
   private getTrackedEntityInstances(
     programId: string,
@@ -69,7 +74,8 @@ export class LineListService {
     ouMode?: string,
     filterRootOrgUnit?: boolean,
     useOuModeWithOlderDHIS2Instance?: boolean,
-    filtersFromEvents: FilterConfig[] = []
+    filtersFromEvents: FilterConfig[] = [],
+    dataElementFilter?: DataElementFilter
   ): Observable<TrackedEntityResponse> {
     const filterParams = buildFilters(filters);
     const filterParamsFromEvents = buildFiltersFromEvents(filtersFromEvents);
@@ -328,7 +334,8 @@ export class LineListService {
     ouMode?: string,
     filterRootOrgUnit?: boolean,
     useOuModeWithOlderDHIS2Instance?: boolean,
-    filtersFromEvents: FilterConfig[] = []
+    filtersFromEvents: FilterConfig[] = [],
+    dataElementFilter?: DataElementFilter
   ): Observable<LineListResponse> {
     return this.getProgramMetadata(programId).pipe(
       switchMap((programMetadata: ProgramMetadata) => {
@@ -362,7 +369,8 @@ export class LineListService {
             ouMode,
             filterRootOrgUnit,
             useOuModeWithOlderDHIS2Instance,
-            filtersFromEvents
+            filtersFromEvents,
+            dataElementFilter
           ).pipe(
             map((teis: TrackedEntityResponse) => ({
               metadata: programMetadata,
