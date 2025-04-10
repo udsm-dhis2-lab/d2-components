@@ -8,6 +8,7 @@
 import { DataQueryFilter } from './data-query-filter.model';
 import { OuMode } from '../interfaces';
 import { Pager } from './pager.model';
+import { DataOrderCriteria } from './data-order-criteria.model';
 
 export abstract class DataUrlGenerator<T extends DataUrlGenerator<T>> {
   abstract baseEndpoint: string;
@@ -16,6 +17,7 @@ export abstract class DataUrlGenerator<T extends DataUrlGenerator<T>> {
   ouMode: OuMode;
   program?: string;
   filters?: DataQueryFilter[];
+  orderCriteria?: DataOrderCriteria;
   enrollmentEnrolledAfter?: string;
   enrollmentEnrolledBefore?: string;
   pager!: Pager;
@@ -28,6 +30,7 @@ export abstract class DataUrlGenerator<T extends DataUrlGenerator<T>> {
     this.enrollmentEnrolledAfter = params.enrollmentEnrolledAfter;
     this.enrollmentEnrolledBefore = params.enrollmentEnrolledBefore;
     this.pager = params.pager || new Pager();
+    this.orderCriteria = params.orderCriteria;
   }
 
   abstract generate(): string;
@@ -98,9 +101,15 @@ export abstract class DataUrlGenerator<T extends DataUrlGenerator<T>> {
   }
 
   addOrder(url: string) {
+    if (!this.orderCriteria) {
+      return url;
+    }
+
     const isThereParams = this.isThereQueryParams(url);
 
-    return url + `${isThereParams ? '&' : '?'}order=updatedAt:desc`;
+    return (
+      url + `${isThereParams ? '&' : '?'}${this.orderCriteria.getQueryParams()}`
+    );
   }
 
   addPager(url: string) {
