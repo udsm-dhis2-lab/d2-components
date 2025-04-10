@@ -20,6 +20,10 @@ import {
   TrackedEntityInstance,
   TrackerUrlGenerator,
 } from '../models';
+import {
+  BaseEventQuery,
+  DHIS2Event,
+} from 'packages/dhis2-web-sdk/src/lib/modules/event';
 
 export type TrackerFetchScope = 'TRACKED_ENTITY' | 'ENROLLMENT';
 
@@ -234,11 +238,66 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
     return this.instance;
   }
 
+  protected async fetchFromEvent(
+    dataElementFilters: DataQueryFilter[],
+    baseUrl: string
+  ) {
+    // TODO: This assumes all data element filters will be of the same program stage, there is currently no support to filter from multiple program stages
+    const programStage = dataElementFilters[0].programStage;
+    const attributeFilters = (this.filters || []).filter(
+      (filter) => filter.attributeType === 'TRACKED_ENTITY_ATTRIBUTE'
+    );
+
+    const eventQuery = await new BaseEventQuery(this.httpClient)
+      .setFields('trackedEntity')
+      .setProgram(this.program as string)
+      .setPagination(this.pager)
+      .setOrgUnit(this.orgUnit as string)
+      .setOuMode(this.ouMode)
+      .setProgramStage(programStage)
+      .setFilters(dataElementFilters)
+      .setAttributeFilters(attributeFilters)
+      .get();
+
+    const trackedEntities = eventQuery?.data?.map(
+      (event: DHIS2Event) => event.trackedEntity
+    );
+
+    if (!trackedEntities) {
+      return new D2HttpResponse({});
+    }
+
+    return await this.httpClient.get(
+      new TrackerUrlGenerator({
+        baseEndpoint: baseUrl,
+        program: this.program,
+        trackedEntityType: this.trackedEntityType,
+        orgUnit: this.orgUnit,
+        ouMode: this.ouMode,
+        filters: [],
+        fields: this.fields,
+        enrollmentEnrolledAfter: this.enrollmentEnrolledAfter,
+        enrollmentEnrolledBefore: this.enrollmentEnrolledBefore,
+        trackedEntity: trackedEntities.join(';'),
+        pager: this.pager,
+      }).generate()
+    );
+  }
+
   protected async fetchData(fetchScope: TrackerFetchScope) {
     const baseUrl =
       fetchScope === 'ENROLLMENT'
         ? 'tracker/enrollments'
         : 'tracker/trackedEntities';
+
+    const dataElementFilters = (this.filters || []).filter(
+      (filter) => filter.attributeType === 'DATA_ELEMENT'
+    );
+
+    if (dataElementFilters.length > 0) {
+      return await this.fetchFromEvent(dataElementFilters, baseUrl);
+    }
+
     return await this.httpClient.get(
       new TrackerUrlGenerator({
         baseEndpoint: baseUrl,
