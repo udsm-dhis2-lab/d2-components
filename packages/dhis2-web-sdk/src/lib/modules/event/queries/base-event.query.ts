@@ -1,6 +1,12 @@
 import { camelCase } from 'lodash';
 import { D2Window } from '../../../d2-web-sdk';
-import { D2HttpClient, DataQueryFilter, OuMode, Pager } from '../../../shared';
+import {
+  D2HttpClient,
+  DataOrderCriteria,
+  DataQueryFilter,
+  OuMode,
+  Pager,
+} from '../../../shared';
 import { Program, ProgramRule } from '../../program';
 import {
   AssignedUserMode,
@@ -33,6 +39,7 @@ export class BaseEventQuery<T extends DHIS2Event> {
   protected assignedUserMode?: AssignedUserMode;
   protected enrollmentEnrolledBefore?: string;
   protected enrollmentEnrolledAfter?: string;
+  protected orderCriteria?: DataOrderCriteria;
   pager = new Pager();
   [key: string]: unknown;
   instance!: T;
@@ -54,6 +61,11 @@ export class BaseEventQuery<T extends DHIS2Event> {
 
   setOuMode(ouMode: OuMode): BaseEventQuery<T> {
     this.ouMode = ouMode;
+    return this;
+  }
+
+  setOrderCriteria(orderCriteria: DataOrderCriteria): BaseEventQuery<T> {
+    this.orderCriteria = orderCriteria;
     return this;
   }
 
@@ -227,6 +239,7 @@ export class BaseEventQuery<T extends DHIS2Event> {
         occurredBefore: this.occurredBefore,
         scheduledAfter: this.scheduledAfter,
         scheduledBefore: this.scheduledBefore,
+        orderCriteria: this.orderCriteria,
         pager: this.pager,
       }).generate()
     );
