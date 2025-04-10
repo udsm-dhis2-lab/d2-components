@@ -194,10 +194,26 @@ export interface LineListResponse {
   data: EventsResponse | TrackedEntityInstancesResponse | EnrollmentsResponse | TrackedEntityResponse;
 }
 
+// export interface TableRow {
+//   [key: string]: string | number;
+//   index: number;
+//}
+// export interface TableRow {
+//   [key: string]: { value: string | number; style: string };
+//   index: number;
+// }
+
+
+// export interface TableRow {
+//   [key: string]: string | number | { value: string | number; style?: string };
+//   index: number;
+// }
+
 export interface TableRow {
-  [key: string]: string | number;
-  index: number;
+  [key: string]: { value: string | number; style?: string };
+  index: { value: number; style?: string };
 }
+
 
 export interface ColumnDefinition {
   label: string;

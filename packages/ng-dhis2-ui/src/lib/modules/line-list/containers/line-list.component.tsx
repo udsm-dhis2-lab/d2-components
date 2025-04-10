@@ -767,7 +767,7 @@ export class LineListTableComponent extends ReactWrapperModule {
               <TableBody>
                 {data.length > 0 ? (
                   data.map((row) => (
-                    <DataTableRow key={row.index}>
+                    <DataTableRow key={row.index.value}>
                       {columns.map((col) => (
                         <DataTableCell key={col.key}>
                           {
@@ -789,7 +789,21 @@ export class LineListTableComponent extends ReactWrapperModule {
                                     }}
                                   />
                                 )
-                              : row[col.key] || '--' // Display '--' if value is undefined or null
+                              : 
+                              <>
+                              <div>{row[col.key]?.value || '--'}</div> 
+                              {
+                                // Only render the link if style is set and it's not the default value
+                                row[col.key]?.style && row[col.key]?.style !== 'default-value' && (
+                                  <a
+                                    href="#"
+                                    style={{ color: row[col.key]?.style }} // Apply the color from the style field
+                                  >
+                                    Link
+                                  </a>
+                                )
+                              }
+                            </>
                           }
                         </DataTableCell>
                       ))}

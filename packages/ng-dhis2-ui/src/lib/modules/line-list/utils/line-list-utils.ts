@@ -1,5 +1,5 @@
 // src/utils/line-list-utils.ts
-import { Program } from '@iapps/d2-web-sdk';
+import { DataValue, Program } from '@iapps/d2-web-sdk';
 import { FilterConfig } from '../models/filter-config.model';
 import {
   LineListResponse,
@@ -8,6 +8,9 @@ import {
   EventsResponse,
   TrackedEntityInstancesResponse,
   TrackedEntityResponse,
+  Enrollment,
+  TrackedEntity,
+  Attribute,
 } from '../models/line-list.models';
 import {
   getFilteredTrackedEntites,
@@ -256,14 +259,23 @@ export const getProgramStageData = (
   );
 
   const dataElementsData: TableRow[] = events.map((event: any, idx: number) => {
-    const row: TableRow = {
-      event: event.event,
-      index: (pager.page - 1) * pager.pageSize + idx + 1,
-    };
+    // const row: TableRow = {
+    //   event: event.event,
+    //   index: (pager.page - 1) * pager.pageSize + idx + 1,
+    // };
 
-    allDataElements.forEach(
-      (dataElementId: string) => (row[dataElementId] = '')
-    );
+    // allDataElements.forEach(
+    //   (dataElementId: string) => (row[dataElementId] = '')
+    // );
+
+    const row: TableRow = {
+      event: { value: event.event, style: 'default-style' }, // Example event field with style
+      index: { value: (pager.page - 1) * pager.pageSize + idx + 1, style: 'default-style' }, // Example index field with style
+    };
+    
+    allDataElements.forEach((dataElementId: string) => {
+      row[dataElementId] = { value: '', style: 'default-style' };  // Initialize each data element with value and style
+    });
 
     event.dataValues.forEach((dv: any) => {
       const dataElementMeta = stageFromMetaData.programStageDataElements.find(
@@ -311,16 +323,16 @@ export const getTrackedEntityData = (
   const orgUnitLabel = metaData.orgUnitLabel as string;
   const orgUnitMap = (response.data as TrackedEntityResponse).orgUnitsMap;
 
-  const mappedProgramMetadataAttributes = programMetaData!.map((attr) => ({
-    displayInList: attr.displayInList,
-    searchable: attr.searchable,
-    id: attr.trackedEntityAttribute.id,
-    name: attr.trackedEntityAttribute.name,
-    optionSet: attr.trackedEntityAttribute.optionSetValue
-      ? attr.trackedEntityAttribute.optionSet
-      : null,
-    sortOrder: attr.sortOrder,
-  }));
+  // const mappedProgramMetadataAttributes = programMetaData!.map((attr) => ({
+  //   displayInList: attr.displayInList,
+  //   searchable: attr.searchable,
+  //   id: attr.trackedEntityAttribute.id,
+  //   name: attr.trackedEntityAttribute.name,
+  //   optionSet: attr.trackedEntityAttribute.optionSetValue
+  //     ? attr.trackedEntityAttribute.optionSet
+  //     : null,
+  //   sortOrder: attr.sortOrder,
+  // }));
 
   if (filters) {
     teis = getFilteredTrackedEntites(teis, filters);
@@ -338,215 +350,143 @@ export const getTrackedEntityData = (
     attributes.forEach((attr: any) => allAttributes.add(attr.attribute));
   });
 
-  // let entityColumns = Array.from(allAttributes).map((attrId: string) => {
-  //   const foundAttribute = teis
-  //     .flatMap((tei: any) => {
-  //       const matchingEnrollment = tei.enrollments.find(
-  //         (enrollment: any) => enrollment.program === programId
-  //       );
-  //       return matchingEnrollment
-  //         ? matchingEnrollment.attributes
-  //         : tei.attributes;
-  //     })
-  //     .find((attr: any) => attr.attribute === attrId);
-
-  //   return {
-  //     label: foundAttribute?.displayName || attrId,
-  //     key: attrId,
-  //   };
-  // });
-
   let entityColumns = metaData.displayInListTrackedEntityAttributes
-  .sort((a, b) => a.sortOrder! - b.sortOrder!)
-  .map((attr) => ({
-    label: attr.name,
-    key: attr.id,
+    .sort((a, b) => a.sortOrder! - b.sortOrder!)
+    .map((attr) => ({
+      label: attr.name,
+      key: attr.id,
+    }));
+
+  let dataElementColumns = metaData.displayInListDataElements
+    .sort((a, b) => a.sortOrder! - b.sortOrder!)
+    .map((element) => ({
+      label: element.name,
+      key: element.id,
+    }));
+
+  let dataElementOptions = metaData.displayInListDataElements.map((element) => ({
+     id: element.id,
+     options: element.optionSet?.options.map((opt) => ({
+       name: opt.name,
+       color: opt.style?.color
+     }))
   }));
 
-
-  // let entityColumns = metaData.displayInListTrackedEntityAttributes.map(
-  //   (attr) => ({
-  //     label: attr.name,
-  //     key: attr.id,
-  //   })
-  // ).sort((a, b) => {
-  //   // Ensures sortOrder values are treated as numbers
-  //   const sortOrderA = Number(
-  //     mappedProgramMetadataAttributes.find((attr) => attr.id === a.key)
-  //       ?.sortOrder ?? 0
-  //   ); // Default to 0 if undefined, explicitly cast to number
-  //   const sortOrderB = Number(
-  //     mappedProgramMetadataAttributes.find((attr) => attr.id === b.key)
-  //       ?.sortOrder ?? 0
-  //   ); // Default to 0 if undefined, explicitly cast to number
-
-  //   return sortOrderA - sortOrderB; // Ascending order based on sortOrder
-  // }
-  // );
-
-  // entityColumns = entityColumns
-  //   .filter((column) => {
-  //     return mappedProgramMetadataAttributes
-  //       .filter((attr) => attr.displayInList)
-  //       .some((attr) => attr.id === column.key); // Ensure the column's key matches an id in the filtered list
-  //   })
-  //   .sort((a, b) => {
-  //     // Ensures sortOrder values are treated as numbers
-  //     const sortOrderA = Number(
-  //       mappedProgramMetadataAttributes.find((attr) => attr.id === a.key)
-  //         ?.sortOrder ?? 0
-  //     ); // Default to 0 if undefined, explicitly cast to number
-  //     const sortOrderB = Number(
-  //       mappedProgramMetadataAttributes.find((attr) => attr.id === b.key)
-  //         ?.sortOrder ?? 0
-  //     ); // Default to 0 if undefined, explicitly cast to number
-
-  //     return sortOrderA - sortOrderB; // Ascending order based on sortOrder
-  //   });
+  entityColumns = [...entityColumns, ...dataElementColumns];
 
   entityColumns.unshift({
     label: orgUnitLabel || 'registering unit',
     key: 'orgUnit',
   });
 
-  const searchableAttributes = mappedProgramMetadataAttributes
-    .filter((attr) => attr.searchable && attr.displayInList)
+  const filteredEntityColumns = metaData.searchableTrackedEntityAttributes
+    .sort((a, b) => a.sortOrder! - b.sortOrder!)
     .map((attr) => ({
+      label: attr.name,
       key: attr.id,
+      valueType: attr.valueType,
+      options: attr.optionSet ?? undefined,
     }));
 
-  const searchableKeys = new Set(searchableAttributes.map((attr) => attr.key));
-
-  const filteredEntityColumns = Array.from(allAttributes)
-    .map((attrId: string) => {
-      const foundAttribute = teis
-        .flatMap((tei: any) => {
-          const matchingEnrollment = tei.enrollments.find(
-            (enrollment: any) => enrollment.program === programId
-          );
-          return matchingEnrollment
-            ? matchingEnrollment.attributes
-            : tei.attributes;
-        })
-        .find((attr: any) => attr.attribute === attrId);
-      // Find the corresponding attribute in mappedProgramMetadataAttributes
-      const mappedAttr = mappedProgramMetadataAttributes.find(
-        (attr) => attr.id === attrId
-      );
-
-      return {
-        label: foundAttribute?.displayName || attrId,
-        key: attrId,
-        valueType: foundAttribute?.valueType,
-        options: mappedAttr?.optionSet ?? undefined,
-      };
-    })
-    .filter((column) => {
-      return mappedProgramMetadataAttributes
-        .filter((attr) => attr.displayInList)
-        .some((attr) => attr.id === column.key);
-    })
-    .sort((a, b) => {
-      const sortOrderA = Number(
-        mappedProgramMetadataAttributes.find((attr) => attr.id === a.key)
-          ?.sortOrder ?? 0
-      );
-      const sortOrderB = Number(
-        mappedProgramMetadataAttributes.find((attr) => attr.id === b.key)
-          ?.sortOrder ?? 0
-      );
-
-      return sortOrderA - sortOrderB;
-    })
-    .filter((column) => searchableKeys.has(column.key));
-
-  const attributesData = teis.map((tei: any, idx: number) => {
+  const attributesData = teis.map((tei: TrackedEntity, idx: number) => {
     const row: TableRow = {
-      trackedEntityInstance: tei.trackedEntity,
-      index: (pager.page - 1) * pager.pageSize + idx + 1,
+      trackedEntityInstance: { value: tei.trackedEntity,},
+      index: { value: (pager.page - 1) * pager.pageSize + idx + 1,},
     };
 
-    allAttributes.forEach((attrId: string) => (row[attrId] = ''));
+   // allAttributes.forEach((attrId: string) => (row[attrId] = ''));
 
     const matchingEnrollment = tei.enrollments.find(
-      (enrollment: any) => enrollment.program === programId
+      (enrollment: Enrollment) => enrollment.program === programId
     );
     let attributesToUse = matchingEnrollment
       ? matchingEnrollment.attributes
       : tei.attributes;
 
+    let dataElementsToUse = matchingEnrollment!.events.flatMap(
+      (event) => event.dataValues
+    );
+    // const allDataValues = matchingEnrollment!.events.flatMap((event) => event.dataValues);
+
     //TODO: find a better way to do optimize this date parsing
     //map any date that occur in the attributes to dd-mm-yyyy
-    attributesToUse = attributesToUse.map((attr: any) => {
-      // Check if the attribute is of type DATE
-      if (attr?.valueType === 'DATE' || attr?.valueType === 'date') {
-        try {
-          // Parse the date and format it as dd-MM-yyyy
-          const parsedDate = parse(attr.value, 'yyyy-MM-dd', new Date());
-          const formattedDate = format(parsedDate, 'dd-MM-yyyy');
-          // Update the value to the formatted date
-          return {
-            ...attr,
-            value: formattedDate,
-          };
-        } catch {
-          // If parsing fails, keep the original value
-          return {
-            ...attr,
-            value: attr.value,
-          };
-        }
-      }
+    // attributesToUse = attributesToUse.map((attr: any) => {
+    //   // Check if the attribute is of type DATE
+    //   if (attr?.valueType === 'DATE' || attr?.valueType === 'date') {
+    //     try {
+    //       // Parse the date and format it as dd-MM-yyyy
+    //       const parsedDate = parse(attr.value, 'yyyy-MM-dd', new Date());
+    //       const formattedDate = format(parsedDate, 'dd-MM-yyyy');
+    //       // Update the value to the formatted date
+    //       return {
+    //         ...attr,
+    //         value: formattedDate,
+    //       };
+    //     } catch {
+    //       // If parsing fails, keep the original value
+    //       return {
+    //         ...attr,
+    //         value: attr.value,
+    //       };
+    //     }
+    //   }
 
-      // If not a date, just return the attribute as is
-      return attr;
-    });
+    //   // If not a date, just return the attribute as is
+    //   return attr;
+    // });
 
-    // If option set names are visible, transform the attribute values
-    if (isOptionSetNameVisible) {
-      attributesToUse.forEach((attr: any) => {
-        const attributeMeta = programMetaData!.find(
-          (metadata) => metadata.trackedEntityAttribute.id === attr.attribute
-        );
+    // // If option set names are visible, transform the attribute values
+    // if (isOptionSetNameVisible) {
+    //   attributesToUse.forEach((attr: any) => {
+    //     const attributeMeta = programMetaData!.find(
+    //       (metadata) => metadata.trackedEntityAttribute.id === attr.attribute
+    //     );
 
-        // Check if the attribute has an option set and map value to option name
-        if (attributeMeta?.trackedEntityAttribute.optionSetValue) {
-          const optionSet = attributeMeta?.trackedEntityAttribute?.optionSet;
-          const option = optionSet?.options?.find(
-            (option) => option.code === attr.value
-          );
-          row[attr.attribute] = option ? option.name : attr.value;
-        } else {
-          row[attr.attribute] = attr.value;
-        }
-      });
+    //     // Check if the attribute has an option set and map value to option name
+    //     if (attributeMeta?.trackedEntityAttribute.optionSetValue) {
+    //       const optionSet = attributeMeta?.trackedEntityAttribute?.optionSet;
+    //       const option = optionSet?.options?.find(
+    //         (option) => option.code === attr.value
+    //       );
+    //       row[attr.attribute] = option ? option.name : attr.value;
+    //     } else {
+    //       row[attr.attribute] = attr.value;
+    //     }
+    //   });
+    // } else {
+  // Map attributes to the row with style
+  attributesToUse.forEach((attr: Attribute) => {
+    row[attr.attribute] = { value: attr.value,};
+  });
+
+  dataElementsToUse.forEach((element: DataValue) => {
+    // Check if the data element exists in dataElementOptions
+    const matchingOption = dataElementOptions
+      .flatMap((element) => element.options)  
+      .find((opt) => opt?.name === element.value);  
+  
+   
+    if (matchingOption) {
+      row[element.dataElement] = { 
+        value: element.value, 
+        style: matchingOption.color 
+      };
     } else {
-      attributesToUse.forEach(
-        (attr: any) => (row[attr.attribute] = attr.value)
-      );
+      row[element.dataElement] = { 
+        value: element.value 
+      };
     }
+  });
+//}
 
-    // Include orgUnit in the row for id access
-    row['orgUnitId'] = matchingEnrollment.orgUnit;
-    row['orgUnit'] = orgUnitMap?.get(matchingEnrollment.orgUnit) || 'N/A';
+  // Include orgUnit in the row for id access with style
+  row['orgUnitId'] = { value: matchingEnrollment!.orgUnit };
+  row['orgUnit'] = { value: orgUnitMap?.get(matchingEnrollment!.orgUnit) || 'N/A'};
 
     return row;
   });
 
-  if (teis.length === 0) {
-    entityColumns = [
-      { label: orgUnitLabel || 'registering unit', key: 'orgUnit' },
-      ...mappedProgramMetadataAttributes
-        .filter((attr) => attr.displayInList === true)
-        .sort((a, b) => {
-          return Number(a.sortOrder) - Number(b.sortOrder);
-        })
-        .map((attr) => ({
-          key: attr.id,
-          label: attr.name,
-        })),
-    ];
-  }
+  //dataElementsData
 
   return {
     columns: entityColumns,
@@ -626,14 +566,23 @@ export const getEventData = (
   );
 
   const dataElementsData = events.map((event: any, idx: number) => {
-    const row: TableRow = {
-      event: event.event,
-      index: (pager.page - 1) * pager.pageSize + idx + 1,
-    };
+    // const row: TableRow = {
+    //   event: event.event,
+    //   index: (pager.page - 1) * pager.pageSize + idx + 1,
+    // };
 
-    uniqueDataElements.forEach(
-      (dataElement: string) => (row[dataElement] = '')
-    );
+    // uniqueDataElements.forEach(
+    //   (dataElement: string) => (row[dataElement] = '')
+    // );
+
+    const row: TableRow = {
+      event: { value: event.event, style: 'event-style' },
+      index: { value: (pager.page - 1) * pager.pageSize + idx + 1, style: 'index-style' },
+    };
+    
+    uniqueDataElements.forEach((dataElement: string) => {
+      row[dataElement] = { value: '', style: 'default-style' }; // Assigning default style for each data element
+    });
 
     event.dataValues.forEach((dv: any) => {
       if (isOptionSetNameVisible && dv.optionSetValue) {

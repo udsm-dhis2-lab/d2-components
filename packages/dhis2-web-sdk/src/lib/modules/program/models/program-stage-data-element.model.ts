@@ -39,7 +39,9 @@ export class ProgramStageDataElement extends IdentifiableObject<ProgramStageData
   constructor(programStageDataElement: Partial<ProgramStageDataElement>) {
     super(programStageDataElement);
     this.dataElement = new DataElement(
-      programStageDataElement.dataElement || {}
+     { ...(programStageDataElement.dataElement || {}), sortOrder: programStageDataElement.sortOrder}
     );
   }
 }
+
+
