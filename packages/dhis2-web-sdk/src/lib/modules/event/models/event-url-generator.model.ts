@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 import { AssignedUserMode } from '../interfaces';
-import { DataUrlGenerator } from '../../../shared';
+import { DataQueryFilter, DataUrlGenerator } from '../../../shared';
 
 const DEFAULT_FIELDS = '';
 
@@ -17,6 +17,7 @@ export class EventUrlGenerator extends DataUrlGenerator<EventUrlGenerator> {
   event?: string;
   assignedUserMode?: AssignedUserMode;
   assignedUser?: string;
+  attributeFilters?: DataQueryFilter[];
 
   constructor(params: Partial<EventUrlGenerator>) {
     super(params);
@@ -25,6 +26,7 @@ export class EventUrlGenerator extends DataUrlGenerator<EventUrlGenerator> {
     this.orgUnit = params.orgUnit;
     this.ouMode = params.ouMode || 'SELECTED';
     this.filters = params.filters;
+    this.attributeFilters = params.attributeFilters;
     this.fields = params.fields ?? DEFAULT_FIELDS;
     this.assignedUser = params.assignedUser;
     this.assignedUserMode = params.assignedUserMode;
@@ -121,6 +123,21 @@ export class EventUrlGenerator extends DataUrlGenerator<EventUrlGenerator> {
     );
   }
 
+  addAttributeFilters(url: string): string {
+    if (!this.attributeFilters) {
+      return url;
+    }
+
+    const filterParams = DataQueryFilter.getApiFilters(
+      this.attributeFilters,
+      'filterAttributes'
+    );
+
+    const isThereParams = this.isThereQueryParams(url);
+
+    return url + `${isThereParams ? '&' : '?'}${filterParams}`;
+  }
+
   generate(): string {
     return this.addPager(
       this.addOrder(
@@ -131,9 +148,13 @@ export class EventUrlGenerator extends DataUrlGenerator<EventUrlGenerator> {
                 this.addScheduledDates(
                   this.addFields(
                     this.addOrgUnit(
-                      this.addFilters(
-                        this.addProgramStage(
-                          this.addProgram(this.addEvent(`${this.baseEndpoint}`))
+                      this.addAttributeFilters(
+                        this.addFilters(
+                          this.addProgramStage(
+                            this.addProgram(
+                              this.addEvent(`${this.baseEndpoint}`)
+                            )
+                          )
                         )
                       )
                     )
