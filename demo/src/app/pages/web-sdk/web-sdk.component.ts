@@ -1,11 +1,16 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import {
+  AttributeFieldDecorator,
   D2Web,
   D2Window,
   DataElement,
+  DataFilterCondition,
+  DataQueryFilter,
   ITrackedEntityInstance,
   ModelBaseTrackerQuery,
+  Pager,
+  TrackedEntityDecorator,
   TrackedEntityInstance,
 } from '@iapps/d2-web-sdk';
 import { d2Web } from '@iapps/ng-dhis2-shell';
@@ -26,6 +31,27 @@ class NeedQuery extends ModelBaseTrackerQuery<NeedDistribution> {
   }
 }
 
+@TrackedEntityDecorator({
+  program: 'oUiYTdbtOuh',
+  trackedEntityType: 'TYkuqCFPX43',
+})
+class Applicant extends TrackedEntityInstance {
+  // @AttributeFieldDecorator('xozWLQN3K4m')
+  firstName!: string;
+
+  @AttributeFieldDecorator('MuMwgKIGNKk')
+  middleName!: string;
+
+  @AttributeFieldDecorator('uh5A5BxTVTc')
+  surname!: string;
+
+  get displayName(): string {
+    return [this['firstName'], this['middleName'], this['surname']]
+      .filter((name) => name)
+      .join(' ');
+  }
+}
+
 @Component({
   selector: 'app-web-sdk',
   templateUrl: './web-sdk.component.html',
@@ -35,19 +61,31 @@ export class WebSdkComponent {
   d2 = d2Web;
 
   async ngOnInit() {
-    // console.log(this.d2.appManifest);
-    // const programResponse = await this.d2.programModule.program
-    //   .select(['id', 'name'])
-    //   .get();
+    const trackerQuery = await this.d2.trackerModule.trackedEntity
+      .setEndDate('')
+      .setProgram('lw9fZTamYec')
+      .setOrgUnit('rQS2cX4JH88')
+      .setOuMode('DESCENDANTS')
+      .setFilters([
+        new DataQueryFilter()
+          .setAttribute('tgGvHgQgtQ0')
+          .setCondition(DataFilterCondition.Equal)
+          .setValue('ND_BATCH_32525931'),
+        new DataQueryFilter()
+          .setAttribute('lj3cQAle9Fo')
+          .setCondition(DataFilterCondition.Equal)
+          .setValue('Qualified')
+          .setProgramStage('NtZXBym2KfD')
+          .setType('DATA_ELEMENT'),
+      ])
+      .setPagination(
+        new Pager({
+          pageSize: 10,
+          page: 1,
+        })
+      )
+      .get();
 
-    // console.log(programResponse);
-
-    const needQuery = new NeedQuery();
-
-    const result = (
-      await needQuery.byId('cXEFO5RHN3B').setProgram('oUiYTdbtOuh').get()
-    ).data as NeedDistribution;
-
-    console.log('RESULT', result.batchNumber);
+    console.log(trackerQuery);
   }
 }
