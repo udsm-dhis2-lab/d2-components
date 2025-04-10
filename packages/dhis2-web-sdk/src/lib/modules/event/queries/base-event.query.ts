@@ -20,6 +20,7 @@ export class BaseEventQuery<T extends DHIS2Event> {
   protected program?: string;
   protected programStage?: string;
   protected filters?: DataQueryFilter[];
+  protected attributeFilters?: DataQueryFilter[];
   protected fields?: string;
   protected event?: string;
   protected trackedEntity?: string;
@@ -113,6 +114,11 @@ export class BaseEventQuery<T extends DHIS2Event> {
 
   setFilters(filters: DataQueryFilter[]): BaseEventQuery<T> {
     this.filters = filters;
+    return this;
+  }
+
+  setAttributeFilters(filters: DataQueryFilter[]): BaseEventQuery<T> {
+    this.attributeFilters = filters;
     return this;
   }
 
@@ -213,6 +219,7 @@ export class BaseEventQuery<T extends DHIS2Event> {
         orgUnit: this.orgUnit,
         ouMode: this.ouMode,
         filters: this.filters,
+        attributeFilters: this.attributeFilters,
         fields: this.fields,
         enrollmentEnrolledAfter: this.enrollmentEnrolledAfter,
         enrollmentEnrolledBefore: this.enrollmentEnrolledBefore,
