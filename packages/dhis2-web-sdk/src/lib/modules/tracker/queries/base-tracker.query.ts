@@ -12,6 +12,7 @@ import {
   DataQueryFilter,
   ProgramDateType,
   OuMode,
+  DataOrderCriteria,
 } from '../../../shared';
 import { Program, ProgramRule } from '../../program';
 import {
@@ -20,10 +21,7 @@ import {
   TrackedEntityInstance,
   TrackerUrlGenerator,
 } from '../models';
-import {
-  BaseEventQuery,
-  DHIS2Event,
-} from 'packages/dhis2-web-sdk/src/lib/modules/event';
+import { BaseEventQuery, DHIS2Event } from '../../event';
 
 export type TrackerFetchScope = 'TRACKED_ENTITY' | 'ENROLLMENT';
 
@@ -37,6 +35,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
   protected enrollmentEnrolledAfter?: string;
   protected enrollmentEnrolledBefore?: string;
   protected trackedEntity?: string;
+  protected orderCriteria?: DataOrderCriteria;
   event?: string;
   protected pager = new Pager();
   [key: string]: unknown;
@@ -57,6 +56,11 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
 
   setOuMode(ouMode: OuMode): BaseTrackerQuery<T> {
     this.ouMode = ouMode;
+    return this;
+  }
+
+  setOrderCriteria(orderCriteria: DataOrderCriteria): BaseTrackerQuery<T> {
+    this.orderCriteria = orderCriteria;
     return this;
   }
 
@@ -276,6 +280,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
         ouMode: this.ouMode,
         filters: [],
         fields: this.fields,
+        orderCriteria: this.orderCriteria,
         enrollmentEnrolledAfter: this.enrollmentEnrolledAfter,
         enrollmentEnrolledBefore: this.enrollmentEnrolledBefore,
         trackedEntity: trackedEntities.join(';'),
@@ -307,6 +312,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
         ouMode: this.ouMode,
         filters: this.filters,
         fields: this.fields,
+        orderCriteria: this.orderCriteria,
         enrollmentEnrolledAfter: this.enrollmentEnrolledAfter,
         enrollmentEnrolledBefore: this.enrollmentEnrolledBefore,
         trackedEntity: this.trackedEntity,
