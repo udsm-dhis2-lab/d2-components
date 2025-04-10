@@ -271,7 +271,7 @@ export interface OptionSet {
 }
 
 export interface Option {
-  code: string;
+  code?: string;
   name: string;
   id: string;
   value?: string;

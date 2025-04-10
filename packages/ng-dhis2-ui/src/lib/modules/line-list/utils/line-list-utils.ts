@@ -1,4 +1,5 @@
 // src/utils/line-list-utils.ts
+import { Program } from '@iapps/d2-web-sdk';
 import { FilterConfig } from '../models/filter-config.model';
 import {
   LineListResponse,
@@ -293,6 +294,7 @@ export const getTrackedEntityData = (
   programId: string,
   pager: any,
   isOptionSetNameVisible: boolean,
+  metaData: Program,
   filters?: FilterConfig[]
 ): {
   columns: ColumnDefinition[];
@@ -305,11 +307,11 @@ export const getTrackedEntityData = (
     (response.data as TrackedEntityResponse)?.instances ??
     [];
 
-  const programMetaData = response.metadata.programTrackedEntityAttributes;
-  const orgUnitLabel = response.metadata.orgUnitLabel;
+  const programMetaData = metaData.programTrackedEntityAttributes;
+  const orgUnitLabel = metaData.orgUnitLabel as string;
   const orgUnitMap = (response.data as TrackedEntityResponse).orgUnitsMap;
 
-  const mappedProgramMetadataAttributes = programMetaData.map((attr) => ({
+  const mappedProgramMetadataAttributes = programMetaData!.map((attr) => ({
     displayInList: attr.displayInList,
     searchable: attr.searchable,
     id: attr.trackedEntityAttribute.id,
@@ -336,43 +338,71 @@ export const getTrackedEntityData = (
     attributes.forEach((attr: any) => allAttributes.add(attr.attribute));
   });
 
-  let entityColumns = Array.from(allAttributes).map((attrId: string) => {
-    const foundAttribute = teis
-      .flatMap((tei: any) => {
-        const matchingEnrollment = tei.enrollments.find(
-          (enrollment: any) => enrollment.program === programId
-        );
-        return matchingEnrollment
-          ? matchingEnrollment.attributes
-          : tei.attributes;
-      })
-      .find((attr: any) => attr.attribute === attrId);
+  // let entityColumns = Array.from(allAttributes).map((attrId: string) => {
+  //   const foundAttribute = teis
+  //     .flatMap((tei: any) => {
+  //       const matchingEnrollment = tei.enrollments.find(
+  //         (enrollment: any) => enrollment.program === programId
+  //       );
+  //       return matchingEnrollment
+  //         ? matchingEnrollment.attributes
+  //         : tei.attributes;
+  //     })
+  //     .find((attr: any) => attr.attribute === attrId);
 
-    return {
-      label: foundAttribute?.displayName || attrId,
-      key: attrId,
-    };
-  });
+  //   return {
+  //     label: foundAttribute?.displayName || attrId,
+  //     key: attrId,
+  //   };
+  // });
 
-  entityColumns = entityColumns
-    .filter((column) => {
-      return mappedProgramMetadataAttributes
-        .filter((attr) => attr.displayInList)
-        .some((attr) => attr.id === column.key); // Ensure the column's key matches an id in the filtered list
-    })
-    .sort((a, b) => {
-      // Ensures sortOrder values are treated as numbers
-      const sortOrderA = Number(
-        mappedProgramMetadataAttributes.find((attr) => attr.id === a.key)
-          ?.sortOrder ?? 0
-      ); // Default to 0 if undefined, explicitly cast to number
-      const sortOrderB = Number(
-        mappedProgramMetadataAttributes.find((attr) => attr.id === b.key)
-          ?.sortOrder ?? 0
-      ); // Default to 0 if undefined, explicitly cast to number
+  let entityColumns = metaData.displayInListTrackedEntityAttributes
+  .sort((a, b) => a.sortOrder! - b.sortOrder!)
+  .map((attr) => ({
+    label: attr.name,
+    key: attr.id,
+  }));
 
-      return sortOrderA - sortOrderB; // Ascending order based on sortOrder
-    });
+
+  // let entityColumns = metaData.displayInListTrackedEntityAttributes.map(
+  //   (attr) => ({
+  //     label: attr.name,
+  //     key: attr.id,
+  //   })
+  // ).sort((a, b) => {
+  //   // Ensures sortOrder values are treated as numbers
+  //   const sortOrderA = Number(
+  //     mappedProgramMetadataAttributes.find((attr) => attr.id === a.key)
+  //       ?.sortOrder ?? 0
+  //   ); // Default to 0 if undefined, explicitly cast to number
+  //   const sortOrderB = Number(
+  //     mappedProgramMetadataAttributes.find((attr) => attr.id === b.key)
+  //       ?.sortOrder ?? 0
+  //   ); // Default to 0 if undefined, explicitly cast to number
+
+  //   return sortOrderA - sortOrderB; // Ascending order based on sortOrder
+  // }
+  // );
+
+  // entityColumns = entityColumns
+  //   .filter((column) => {
+  //     return mappedProgramMetadataAttributes
+  //       .filter((attr) => attr.displayInList)
+  //       .some((attr) => attr.id === column.key); // Ensure the column's key matches an id in the filtered list
+  //   })
+  //   .sort((a, b) => {
+  //     // Ensures sortOrder values are treated as numbers
+  //     const sortOrderA = Number(
+  //       mappedProgramMetadataAttributes.find((attr) => attr.id === a.key)
+  //         ?.sortOrder ?? 0
+  //     ); // Default to 0 if undefined, explicitly cast to number
+  //     const sortOrderB = Number(
+  //       mappedProgramMetadataAttributes.find((attr) => attr.id === b.key)
+  //         ?.sortOrder ?? 0
+  //     ); // Default to 0 if undefined, explicitly cast to number
+
+  //     return sortOrderA - sortOrderB; // Ascending order based on sortOrder
+  //   });
 
   entityColumns.unshift({
     label: orgUnitLabel || 'registering unit',
@@ -475,7 +505,7 @@ export const getTrackedEntityData = (
     // If option set names are visible, transform the attribute values
     if (isOptionSetNameVisible) {
       attributesToUse.forEach((attr: any) => {
-        const attributeMeta = programMetaData.find(
+        const attributeMeta = programMetaData!.find(
           (metadata) => metadata.trackedEntityAttribute.id === attr.attribute
         );
 

@@ -45,7 +45,7 @@ export class ProgramTrackedEntityAttribute extends IdentifiableObject<ProgramTra
   ) {
     super(programTrackedEntityAttribute);
     this.trackedEntityAttribute = new TrackedEntityAttribute(
-      programTrackedEntityAttribute.trackedEntityAttribute || {}
+      {...(programTrackedEntityAttribute.trackedEntityAttribute || {}), sortOrder: programTrackedEntityAttribute.sortOrder}
     );
   }
 }
