@@ -74,7 +74,7 @@ export class WebSdkComponent {
           .setValue('ND_BATCH_32525931'),
         new DataQueryFilter()
           .setAttribute('lj3cQAle9Fo')
-          .setCondition(DataFilterCondition.Equal)
+          .setCondition(DataFilterCondition.In)
           .setValue(['Qualified', 'Rejected'])
           .setProgramStage('NtZXBym2KfD')
           .setType('DATA_ELEMENT'),
@@ -85,11 +85,31 @@ export class WebSdkComponent {
           page: 1,
         })
       )
-      .setOrderCriteria(
-        new DataOrderCriteria().setField('createdAt').setOrder('desc')
-      )
+      .setOrderCriterias([
+        new DataOrderCriteria().setField('createdAt').setOrder('desc'),
+      ])
       .get();
 
     console.log(trackerQuery);
+
+    const eventQuery = await this.d2.eventModule.event
+      .setProgram('lw9fZTamYec')
+      .setProgramStage('NtZXBym2KfD')
+      .setPagination(
+        new Pager({
+          pageSize: 10,
+          page: 1,
+        })
+      )
+      .setFilters([
+        new DataQueryFilter()
+          .setAttribute('lj3cQAle9Fo')
+          .setCondition(DataFilterCondition.In)
+          .setValue(['Qualified', 'Rejected'])
+          .setType('DATA_ELEMENT'),
+      ])
+      .get();
+
+    console.log(eventQuery);
   }
 }

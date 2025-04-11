@@ -17,7 +17,7 @@ export abstract class DataUrlGenerator<T extends DataUrlGenerator<T>> {
   ouMode: OuMode;
   program?: string;
   filters?: DataQueryFilter[];
-  orderCriteria?: DataOrderCriteria;
+  orderCriterias?: DataOrderCriteria[];
   enrollmentEnrolledAfter?: string;
   enrollmentEnrolledBefore?: string;
   pager!: Pager;
@@ -30,7 +30,7 @@ export abstract class DataUrlGenerator<T extends DataUrlGenerator<T>> {
     this.enrollmentEnrolledAfter = params.enrollmentEnrolledAfter;
     this.enrollmentEnrolledBefore = params.enrollmentEnrolledBefore;
     this.pager = params.pager || new Pager();
-    this.orderCriteria = params.orderCriteria;
+    this.orderCriterias = params.orderCriterias;
   }
 
   abstract generate(): string;
@@ -101,14 +101,17 @@ export abstract class DataUrlGenerator<T extends DataUrlGenerator<T>> {
   }
 
   addOrder(url: string) {
-    if (!this.orderCriteria) {
+    if (!this.orderCriterias) {
       return url;
     }
 
     const isThereParams = this.isThereQueryParams(url);
 
     return (
-      url + `${isThereParams ? '&' : '?'}${this.orderCriteria.getQueryParams()}`
+      url +
+      `${isThereParams ? '&' : '?'}${this.orderCriterias
+        .map((orderCriteria) => orderCriteria.getQueryParams())
+        .join('&')}`
     );
   }
 

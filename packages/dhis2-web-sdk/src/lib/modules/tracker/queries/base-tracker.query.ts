@@ -35,7 +35,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
   protected enrollmentEnrolledAfter?: string;
   protected enrollmentEnrolledBefore?: string;
   protected trackedEntity?: string;
-  protected orderCriteria?: DataOrderCriteria;
+  protected orderCriterias?: DataOrderCriteria[];
   event?: string;
   protected pager = new Pager();
   [key: string]: unknown;
@@ -59,8 +59,8 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
     return this;
   }
 
-  setOrderCriteria(orderCriteria: DataOrderCriteria): BaseTrackerQuery<T> {
-    this.orderCriteria = orderCriteria;
+  setOrderCriterias(orderCriterias: DataOrderCriteria[]): BaseTrackerQuery<T> {
+    this.orderCriterias = orderCriterias;
     return this;
   }
 
@@ -183,7 +183,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
       config?.fetchScope || 'TRACKED_ENTITY'
     );
 
-    return new D2TrackerResponse<T>(response, this.identifiable);
+    return new D2TrackerResponse<T>(response, this.identifiable, this.program);
   }
 
   async create(): Promise<T> {
@@ -280,7 +280,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
         ouMode: this.ouMode,
         filters: [],
         fields: this.fields,
-        orderCriteria: this.orderCriteria,
+        orderCriterias: this.orderCriterias,
         enrollmentEnrolledAfter: this.enrollmentEnrolledAfter,
         enrollmentEnrolledBefore: this.enrollmentEnrolledBefore,
         trackedEntity: trackedEntities.join(';'),
@@ -312,7 +312,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
         ouMode: this.ouMode,
         filters: this.filters,
         fields: this.fields,
-        orderCriteria: this.orderCriteria,
+        orderCriterias: this.orderCriterias,
         enrollmentEnrolledAfter: this.enrollmentEnrolledAfter,
         enrollmentEnrolledBefore: this.enrollmentEnrolledBefore,
         trackedEntity: this.trackedEntity,
@@ -328,14 +328,18 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
 
     if (selectedEvent) {
       const response = new D2HttpResponse({});
-      return new D2TrackerResponse<T>(response, this.identifiable);
+      return new D2TrackerResponse<T>(
+        response,
+        this.identifiable,
+        this.program
+      );
     }
 
     const data = await this.httpClient.post('tracker?async=false', {
       events: [selectedEvent!.toObject()],
     });
 
-    return new D2TrackerResponse<T>(data, this.identifiable);
+    return new D2TrackerResponse<T>(data, this.identifiable, this.program);
   }
 
   async #saveAll() {
@@ -343,7 +347,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
       trackedEntities: [this.instance.toObject!()],
     });
 
-    return new D2TrackerResponse<T>(data, this.identifiable);
+    return new D2TrackerResponse<T>(data, this.identifiable, this.program);
   }
 
   async save(): Promise<D2TrackerResponse<T>> {
