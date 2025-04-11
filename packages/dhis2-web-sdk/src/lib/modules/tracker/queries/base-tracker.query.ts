@@ -198,38 +198,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
           orgUnit: this.orgUnit,
         });
 
-        this.instance.fields = {
-          ...(this.instance.fields || {}),
-          ...(program.dataElements || []).reduce((fieldObject, dataElement) => {
-            const key = dataElement.code
-              ? camelCase(dataElement.code)
-              : dataElement.id;
-            return {
-              ...fieldObject,
-              [key]: {
-                id: dataElement.id,
-                type: 'DATA_ELEMENT',
-                stageId: dataElement.programStageId,
-              },
-            };
-          }, {}),
-          ...(program.trackedEntityAttributes || []).reduce(
-            (fieldObject, trackedEntityAttribute) => {
-              const key = trackedEntityAttribute.code
-                ? camelCase(trackedEntityAttribute.code)
-                : trackedEntityAttribute.id;
-              return {
-                ...fieldObject,
-                [key]: {
-                  id: trackedEntityAttribute.id,
-                  type: 'ATTRIBUTE',
-                  generated: trackedEntityAttribute.generated,
-                },
-              };
-            },
-            {}
-          ),
-        };
+        this.setInstanceFields(program);
 
         const reservedValues = await this.generateReservedValues();
 
@@ -240,6 +209,10 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
     }
 
     return this.instance;
+  }
+
+  setInstanceFields(program: Program) {
+    this.instance.setFields(program);
   }
 
   protected async fetchFromEvent(

@@ -15,6 +15,7 @@ export interface IProgramEntryFormMetaData {
   id: string;
   name: string;
   description?: string;
+  program: Program;
   formFields: IFormField<string>[];
   sections: IProgramEntryFormSection[];
   rules: IMetadataRule[];
@@ -27,7 +28,7 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
 
   d2 = (window as unknown as D2Window)?.d2Web;
   config!: ProgramEntryFormConfig;
-  metaData!: Program;
+  program!: Program;
 
   setConfig(config: ProgramEntryFormConfig): ProgramEntryFormMetaData {
     this.config = config;
@@ -198,39 +199,40 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
   }
 
   get formFields(): IFormField<string>[] {
-    if (!this.metaData) {
+    if (!this.program) {
       return [];
     }
 
-    return new ProgramEntryFormFieldUtil(this.metaData, this.config).fields;
+    return new ProgramEntryFormFieldUtil(this.program, this.config).fields;
   }
 
   get sections(): IProgramEntryFormSection[] {
-    if (!this.metaData || this.config.displayType !== 'SECTION') {
+    if (!this.program || this.config.displayType !== 'SECTION') {
       return [];
     }
 
-    return new ProgramEntryFormSectionUtil(this.metaData, this.config).sections;
+    return new ProgramEntryFormSectionUtil(this.program, this.config).sections;
   }
 
   get rules(): IMetadataRule[] {
-    if (!this.metaData || !this.metaData.programRules) {
+    if (!this.program || !this.program.programRules) {
       return [];
     }
 
-    return this.metaData.programRules.map((programRule) =>
+    return this.program.programRules.map((programRule) =>
       new MetadataRule(
         programRule,
-        this.metaData.programRuleVariables || []
+        this.program.programRuleVariables || []
       ).toJson()
     );
   }
 
   toJson(): IProgramEntryFormMetaData {
     return {
-      id: this.metaData?.id,
-      name: this.metaData?.name,
-      description: this.metaData?.description,
+      id: this.program?.id,
+      name: this.program?.name,
+      description: this.program?.description,
+      program: this.program,
       formFields: this.formFields,
       sections: this.sections,
       rules: this.rules,
@@ -239,10 +241,10 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
 
   async get() {
     try {
-      const metaData = await this.#getProgramMetaData();
+      const program = await this.#getProgramMetaData();
 
-      if (metaData) {
-        this.metaData = metaData;
+      if (program) {
+        this.program = program;
         return this.toJson();
       }
 
