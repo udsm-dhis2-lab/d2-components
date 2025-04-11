@@ -190,7 +190,6 @@ export interface ProgramMetadata {
 }
 
 export interface LineListResponse {
-  metadata: ProgramMetadata;
   data: EventsResponse | TrackedEntityInstancesResponse | EnrollmentsResponse | TrackedEntityResponse;
 }
 

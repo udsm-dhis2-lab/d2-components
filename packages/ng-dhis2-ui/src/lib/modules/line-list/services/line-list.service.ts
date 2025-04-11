@@ -18,50 +18,6 @@ import { DataElementFilter } from '../models/data-element-filter.model';
 @Injectable()
 export class LineListService {
   constructor(private httpClient: NgxDhis2HttpClientService) {}
-  private getProgramMetadata(programId: string): Observable<ProgramMetadata> {
-    return this.httpClient.get(
-      `programs/${programId}.json?fields=programType,programStages[id,name,programStageDataElements[dataElement[id,name,shortName,formName,code,optionSetValue,valueType,
-    optionSet[id,name,options[id,name,code]]]]],programTrackedEntityAttributes[*,trackedEntityAttribute[id,name,unique,generated,formName,code,optionSetValue
-    ,valueType,optionSet[id,name,options[id,name,code]]]],orgUnitLabel`
-    );
-  }
-
-  // private getTrackedEntityInstances(
-  //   programId: string,
-  //   orgUnit: string,
-  //   page: number,
-  //   pageSize: number,
-  //   filters: AttributeFilter[] = [],
-  //   startDate?: string,
-  //   endDate?: string,
-  //   ouMode?: string,
-  //   filterRootOrgUnit?: boolean
-  // ): Observable<TrackedEntityResponse> {
-  //   const filterParams = buildFilters(filters);
-  //  // const dateFilter = startDate || endDate ? `enrollmentEnrolledAfter=${startDate}&enrollmentEnrolledBefore=${endDate}` : '';
-  //  const dateFilter = [
-  //   startDate ? `enrollmentEnrolledAfter=${startDate}` : '',
-  //   endDate ? `enrollmentEnrolledBefore=${endDate}` : '',
-  // ].filter(Boolean).join('&');
-  //   const ouModeIdentifier = ouMode ? `&orgUnitMode=${ouMode}`: ``;
-  //   return this.httpClient.get(
-  //     `tracker/trackedEntities.json?program=${programId}&orgUnit=${orgUnit}${ouModeIdentifier}&page=${page}&pageSize=${pageSize}&fields=trackedEntity,orgUnit,attributes[*],enrollments[*]&totalPages=true&${filterParams}${dateFilter}&order=createdAt:desc`
-  //   ).pipe(
-  //     map((response: any) => {
-  //       if (filterRootOrgUnit) {
-  //         response.trackedEntities = response.trackedEntities.filter(
-  //           (tei: any) => tei.orgUnit !== orgUnit // Exclude TEIs with the root orgUnit
-  //         );
-  //       }
-  //       return response;
-  //     })
-  //   );
-  // }
-
-  //https://hrhis.moh.go.tz/test-hrhis/api/41/tracker/events?filter=lj3cQAle9Fo:in:Qualified;Rejected&order=createdAt:desc&page=1&pageSize=15&ouMode=ACCESSIBLE&program=lw9fZTamYec&programStage=NtZXBym2KfD&fields=*
-
-    //tracker/events?filter=lj3cQAle9Fo:in:Qualified;Rejected&order=createdAt:desc&page=1&pageSize=15
-  // &ouMode=ACCESSIBLE&program=lw9fZTamYec&programStage=NtZXBym2KfD&fields=trackedEntity
 
   private getTrackedEntityInstances(
     programId: string,
@@ -141,124 +97,6 @@ export class LineListService {
       );
   }
 
-  // private getTrackedEntityInstances(
-  //   programId: string,
-  //   orgUnit: string,
-  //   page: number,
-  //   pageSize: number,
-  //   filters: AttributeFilter[] = [],
-  //   startDate?: string,
-  //   endDate?: string,
-  //   ouMode?: string,
-  //   filterRootOrgUnit?: boolean,
-  //   useOuModeWithOlderDHIS2Instance?: boolean,
-  //   filtersFromEvents: FilterConfig[] = []
-  // ): Observable<TrackedEntityResponse> {
-  //   const filterParams = buildFilters(filters);
-  //   const filterParamsFromEvents = buildFiltersFromEvents(filtersFromEvents);
-  //   const dateFilter = [
-  //     startDate ? `enrollmentEnrolledAfter=${startDate}` : '',
-  //     endDate ? `enrollmentEnrolledBefore=${endDate}` : '',
-  //   ]
-  //     .filter(Boolean)
-  //     .join('&');
-  
-  //   const ouModeIdentifier =
-  //     ouMode && useOuModeWithOlderDHIS2Instance
-  //       ? `&ouMode=${ouMode}`
-  //       : `&orgUnitMode=${ouMode}`;
-      
-  //       let baseUrl='';
-  //       if(filtersFromEvents.length === 0) {
-  //         baseUrl = `tracker/trackedEntities.json?program=${programId}&orgUnit=${orgUnit}${ouModeIdentifier}&page=${page}&pageSize=${pageSize}&fields=trackedEntity,orgUnit,attributes[*],enrollments[*]&totalPages=true&${filterParams}${dateFilter}&order=createdAt:desc`;
-  //       } else {
-  //         baseUrl = `tracker/trackedEntities.json?program=${programId}&orgUnit=${orgUnit}${ouModeIdentifier}&fields=trackedEntity,orgUnit,attributes[*],enrollments[*]&${filterParams}${dateFilter}&order=createdAt:desc&paging=false`;
-  //       }
-  
-  //   return this.httpClient.get(baseUrl).pipe(
-  //     switchMap((response: any) => {
-  //       if (filterRootOrgUnit) {
-  //         response.trackedEntities = response.trackedEntities.filter(
-  //           (tei: any) => tei.orgUnit !== orgUnit
-  //         );
-  //       }
-  
-  //       const uniqueOrgUnitIds = new Set<string>();
-  //       if (response && response.trackedEntities) {
-  //         response.trackedEntities.forEach((tei: any) => {
-  //           tei.enrollments?.forEach((enrollment: any) => {
-  //             if (enrollment.program === programId) {
-  //               uniqueOrgUnitIds.add(enrollment.orgUnit);
-  //             }
-  //           });
-  //         });
-  //       } else {
-  //         response?.instances?.forEach((tei: any) => {
-  //           tei.enrollments?.forEach((enrollment: any) => {
-  //             if (enrollment.program === programId) {
-  //               uniqueOrgUnitIds.add(enrollment.orgUnit);
-  //             }
-  //           });
-  //         });
-  //       }
-  
-  //       if (filtersFromEvents.length === 0) {
-  //         if (uniqueOrgUnitIds.size === 0) {
-  //           return of({ ...response, orgUnitsMap: new Map<string, string>() });
-  //         }
-  
-  //         return this.fetchOrgUnits(Array.from(uniqueOrgUnitIds)).pipe(
-  //           map((orgUnitsMap: Map<string, string>) => ({
-  //             ...response,
-  //             orgUnitsMap,
-  //           }))
-  //         );
-  //       }
-  
-  //       // NEW LOGIC STARTS HERE if filtersFromEvents is present
-  //       const filteredTrackedEntities = getFilteredTrackedEntites( 
-  //         response.trackedEntities,
-  //         filtersFromEvents
-  //       );
-  
-  //       const trackedEntityIds = filteredTrackedEntities
-  //         .map((tei: any) => tei.trackedEntity)
-  //         .join(',');
-  
-  //       if (!trackedEntityIds) {
-  //         return of({
-  //           trackedEntities: [],
-  //           orgUnitsMap: new Map<string, string>(),
-  //         });
-  //       }
-  
-  //       const refetchUrl = `tracker/trackedEntities.json?program=${programId}&orgUnit=${orgUnit}${ouModeIdentifier}&page=${page}&pageSize=${pageSize}&fields=trackedEntity,orgUnit,attributes[*],enrollments[*]&totalPages=true&${filterParams}${dateFilter}&order=createdAt:desc&trackedEntities=${trackedEntityIds}`;
-  
-  //       return this.httpClient.get(refetchUrl).pipe(
-  //         switchMap((filteredResponse: any) => {
-  //           const orgUnitIds = new Set<string>();
-  //           filteredResponse.trackedEntities?.forEach((tei: any) => {
-  //             tei.enrollments?.forEach((enrollment: any) => {
-  //               if (enrollment.program === programId) {
-  //                 orgUnitIds.add(enrollment.orgUnit);
-  //               }
-  //             });
-  //           });
-  
-  //           return this.fetchOrgUnits(Array.from(orgUnitIds)).pipe(
-  //             map((orgUnitsMap: Map<string, string>) => ({
-  //               ...filteredResponse,
-  //               orgUnitsMap,
-  //             }))
-  //           );
-  //         })
-  //       );
-  //     })
-  //   );
-  // }
-  
-
-
   /**
    * Fetch orgUnit names for given orgUnit IDs
    */
@@ -337,66 +175,60 @@ export class LineListService {
     filtersFromEvents: FilterConfig[] = [],
     dataElementFilter?: DataElementFilter
   ): Observable<LineListResponse> {
-    return this.getProgramMetadata(programId).pipe(
-      switchMap((programMetadata: ProgramMetadata) => {
-        if (programStageId) {
-          return this.getEventsByProgramStage(
-            programStageId,
-            orgUnit,
-            page,
-            pageSize,
-            filters,
-            startDate,
-            endDate,
-            ouMode
-          ).pipe(
-            map((events: EventsResponse) => ({
-              metadata: programMetadata,
-              data: events,
-            }))
-          );
-        }
-
-        if (programMetadata.programType === 'WITH_REGISTRATION') {
-          return this.getTrackedEntityInstances(
-            programId,
-            orgUnit,
-            page,
-            pageSize,
-            filters,
-            startDate,
-            endDate,
-            ouMode,
-            filterRootOrgUnit,
-            useOuModeWithOlderDHIS2Instance,
-            filtersFromEvents,
-            dataElementFilter
-          ).pipe(
-            map((teis: TrackedEntityResponse) => ({
-              metadata: programMetadata,
-              data: teis,
-              orgUnits: teis.orgUnitsMap,
-            }))
-          );
-        } else {
-          return this.getEvents(
-            programId,
-            orgUnit,
-            page,
-            pageSize,
-            filters,
-            startDate,
-            endDate,
-            ouMode,
-            useOuModeWithOlderDHIS2Instance
-          ).pipe(
-            map((events: EventsResponse) => ({
-              metadata: programMetadata,
-              data: events,
-            }))
-          );
-        }
-      })
+    if (programStageId) {
+      return this.getEventsByProgramStage(
+        programStageId,
+        orgUnit,
+        page,
+        pageSize,
+        filters,
+        startDate,
+        endDate,
+        ouMode
+      ).pipe(
+        map((events: EventsResponse) => ({
+          data: events,
+        }))
+      );
+    }
+  
+    if (programId) {
+      return this.getTrackedEntityInstances(
+        programId,
+        orgUnit,
+        page,
+        pageSize,
+        filters,
+        startDate,
+        endDate,
+        ouMode,
+        filterRootOrgUnit,
+        useOuModeWithOlderDHIS2Instance,
+        filtersFromEvents,
+        dataElementFilter
+      ).pipe(
+        map((teis: TrackedEntityResponse) => ({
+          data: teis,
+          orgUnits: teis.orgUnitsMap,
+        }))
+      );
+    }
+  
+    return this.getEvents(
+      programId,
+      orgUnit,
+      page,
+      pageSize,
+      filters,
+      startDate,
+      endDate,
+      ouMode,
+      useOuModeWithOlderDHIS2Instance
+    ).pipe(
+      map((events: EventsResponse) => ({
+        data: events,
+      }))
     );
   }
+  
 }
