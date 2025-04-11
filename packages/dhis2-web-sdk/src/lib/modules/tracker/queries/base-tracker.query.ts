@@ -227,6 +227,8 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
 
     const eventQuery = await new BaseEventQuery(this.httpClient)
       .setFields('trackedEntity')
+      .setStartDate(this.enrollmentEnrolledAfter as string)
+      .setEndDate(this.enrollmentEnrolledBefore as string)
       .setProgram(this.program as string)
       .setPagination(this.pager)
       .setOrgUnit(this.orgUnit as string)
@@ -240,8 +242,15 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
       (event: DHIS2Event) => event.trackedEntity
     );
 
-    if (!trackedEntities) {
-      return new D2HttpResponse({});
+    if (!trackedEntities || trackedEntities.length === 0) {
+      const eventResponse = new D2HttpResponse({});
+      eventResponse.responseStatus = eventQuery.responseStatus;
+      eventResponse.data = {
+        ...eventQuery?.pagination,
+        trackedEntities: [],
+      };
+
+      return eventResponse;
     }
 
     return await this.httpClient.get(
