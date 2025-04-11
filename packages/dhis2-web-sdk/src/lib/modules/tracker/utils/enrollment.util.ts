@@ -7,7 +7,7 @@ export class EnrollmentUtil {
     params: { program: string; trackedEntityType: string }
   ): IEnrollment[] {
     const enrollments = (enrollmentResponse || []).map((enrollment) => {
-      if (params.program) {
+      if (!enrollment['program'] && params.program) {
         enrollment['program'] = params.program;
       }
 

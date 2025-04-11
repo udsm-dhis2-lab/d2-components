@@ -183,7 +183,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
       config?.fetchScope || 'TRACKED_ENTITY'
     );
 
-    return new D2TrackerResponse<T>(response, this.identifiable);
+    return new D2TrackerResponse<T>(response, this.identifiable, this.program);
   }
 
   async create(): Promise<T> {
@@ -328,14 +328,18 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
 
     if (selectedEvent) {
       const response = new D2HttpResponse({});
-      return new D2TrackerResponse<T>(response, this.identifiable);
+      return new D2TrackerResponse<T>(
+        response,
+        this.identifiable,
+        this.program
+      );
     }
 
     const data = await this.httpClient.post('tracker?async=false', {
       events: [selectedEvent!.toObject()],
     });
 
-    return new D2TrackerResponse<T>(data, this.identifiable);
+    return new D2TrackerResponse<T>(data, this.identifiable, this.program);
   }
 
   async #saveAll() {
@@ -343,7 +347,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
       trackedEntities: [this.instance.toObject!()],
     });
 
-    return new D2TrackerResponse<T>(data, this.identifiable);
+    return new D2TrackerResponse<T>(data, this.identifiable, this.program);
   }
 
   async save(): Promise<D2TrackerResponse<T>> {

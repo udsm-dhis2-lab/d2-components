@@ -15,12 +15,16 @@ export class D2TrackerResponse<T extends TrackedEntityInstance> {
   pagination?: Pager;
   responseStatus: D2HttpResponseStatus;
 
-  constructor(response: D2HttpResponse, model: ITrackedEntityInstance) {
+  constructor(
+    response: D2HttpResponse,
+    model: ITrackedEntityInstance,
+    program?: string
+  ) {
     this.responseStatus = response.responseStatus;
 
     if (response.data) {
       this.pagination = this.#getPagination(response.data);
-      this.data = this.#getData(response.data, model);
+      this.data = this.#getData(response.data, model, program);
     }
   }
 
@@ -39,7 +43,8 @@ export class D2TrackerResponse<T extends TrackedEntityInstance> {
 
   #getData(
     dataResponse: Record<string, unknown>,
-    model: ITrackedEntityInstance
+    model: ITrackedEntityInstance,
+    program?: string
   ) {
     const data =
       dataResponse['instances'] ||
@@ -47,11 +52,11 @@ export class D2TrackerResponse<T extends TrackedEntityInstance> {
       dataResponse;
 
     if (isPlainObject(data)) {
-      return new (model as any)(data);
+      return new (model as any)({ ...data, program });
     }
 
     return isArray(data)
-      ? data.map((dataItem) => new (model as any)(dataItem))
+      ? data.map((dataItem) => new (model as any)({ ...dataItem, program }))
       : undefined;
   }
 }

@@ -91,7 +91,7 @@ export class FormComponentsComponent {
   });
 
   programEntryConfig = new ProgramEntryFormConfig({
-    program: 'lw9fZTamYec',
+    program: 'oUiYTdbtOuh',
     displayType: 'FLAT',
     formType: 'TRACKER',
     excludeProgramStages: true,

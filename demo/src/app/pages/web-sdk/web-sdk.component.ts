@@ -91,5 +91,25 @@ export class WebSdkComponent {
       .get();
 
     console.log(trackerQuery);
+
+    const eventQuery = await this.d2.eventModule.event
+      .setProgram('lw9fZTamYec')
+      .setProgramStage('NtZXBym2KfD')
+      .setPagination(
+        new Pager({
+          pageSize: 10,
+          page: 1,
+        })
+      )
+      .setFilters([
+        new DataQueryFilter()
+          .setAttribute('lj3cQAle9Fo')
+          .setCondition(DataFilterCondition.In)
+          .setValue(['Qualified', 'Rejected'])
+          .setType('DATA_ELEMENT'),
+      ])
+      .get();
+
+    console.log(eventQuery);
   }
 }
