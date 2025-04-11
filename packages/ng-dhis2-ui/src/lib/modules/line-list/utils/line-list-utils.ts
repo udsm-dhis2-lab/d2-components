@@ -1,5 +1,5 @@
 // src/utils/line-list-utils.ts
-import { DataValue, Program } from '@iapps/d2-web-sdk';
+import { Attribute, DataValue, IEnrollment, Program, TrackedEntityInstance } from '@iapps/d2-web-sdk';
 import { FilterConfig } from '../models/filter-config.model';
 import {
   LineListResponse,
@@ -10,14 +10,12 @@ import {
   TrackedEntityResponse,
   Enrollment,
   TrackedEntity,
-  Attribute,
 } from '../models/line-list.models';
 import {
   getFilteredTrackedEntites,
   getFilteredTrackedEntityInstances,
 } from './filter-builder';
 import { parse, format } from 'date-fns';
-
 
 export const getProgramStageData = (
   response: LineListResponse,
@@ -55,17 +53,16 @@ export const getProgramStageData = (
   );
 
   const dataElementsData: TableRow[] = events.map((event: any, idx: number) => {
-
     const row: TableRow = {
-      event: { value: event.event, style: 'default-style' }, 
+      event: { value: event.event, style: 'default-style' },
       index: {
         value: (pager.page - 1) * pager.pageSize + idx + 1,
         style: 'default-style',
-      }, 
+      },
     };
 
     allDataElements.forEach((dataElementId: string) => {
-      row[dataElementId] = { value: '', style: 'default-style' }; 
+      row[dataElementId] = { value: '', style: 'default-style' };
     });
 
     event.dataValues.forEach((dv: any) => {
@@ -105,31 +102,31 @@ export const getTrackedEntityData = (
   filteredEntityColumns: ColumnDefinition[];
   orgUnitLabel: string;
 } => {
-  let teis =
-    (response.data as TrackedEntityResponse)?.trackedEntities ??
-    (response.data as TrackedEntityResponse)?.instances ??
-    [];
+  let teis =  (response.data as TrackedEntityInstancesResponse).trackedEntityInstances;
+    // (response.data as TrackedEntityResponse)?.trackedEntities ??
+    // (response.data as TrackedEntityResponse)?.instances ??
+    // [];
 
+  console.log('response from utils', teis);
   const programMetaData = metaData.programTrackedEntityAttributes;
   const orgUnitLabel = metaData.orgUnitLabel as string;
   const orgUnitMap = (response.data as TrackedEntityResponse).orgUnitsMap;
 
+  // if (filters) {
+  //   teis = getFilteredTrackedEntites(teis, filters);
+  // }
 
-  if (filters) {
-    teis = getFilteredTrackedEntites(teis, filters);
-  }
+  // const allAttributes = new Set<string>();
 
-  const allAttributes = new Set<string>();
-
-  teis.forEach((tei: any) => {
-    const matchingEnrollment = tei.enrollments.find(
-      (enrollment: any) => enrollment.program === programId
-    );
-    const attributes = matchingEnrollment
-      ? matchingEnrollment.attributes
-      : tei.attributes;
-    attributes.forEach((attr: any) => allAttributes.add(attr.attribute));
-  });
+  // teis.forEach((tei: any) => {
+  //   const matchingEnrollment = tei.enrollments.find(
+  //     (enrollment: any) => enrollment.program === programId
+  //   );
+  //   const attributes = matchingEnrollment
+  //     ? matchingEnrollment.attributes
+  //     : tei.attributes;
+  //   attributes.forEach((attr: any) => allAttributes.add(attr.attribute));
+  // });
 
   let entityColumns = metaData.displayInListTrackedEntityAttributes
     .sort((a, b) => a.sortOrder! - b.sortOrder!)
@@ -162,6 +159,8 @@ export const getTrackedEntityData = (
     key: 'orgUnit',
   });
 
+  console.log('filtered entity columns', entityColumns);
+
   const filteredEntityColumns = metaData.searchableTrackedEntityAttributes
     .sort((a, b) => a.sortOrder! - b.sortOrder!)
     .map((attr) => ({
@@ -171,18 +170,24 @@ export const getTrackedEntityData = (
       options: attr.optionSet ?? undefined,
     }));
 
-  const attributesData = teis.map((tei: TrackedEntity, idx: number) => {
+    console.log('filtered entity columns', filteredEntityColumns);
+
+  const attributesData = teis.map((tei: TrackedEntityInstance, idx: number) => {
     const row: TableRow = {
       trackedEntityInstance: { value: tei.trackedEntity },
       index: { value: (pager.page - 1) * pager.pageSize + idx + 1 },
     };
-
+    console.log('tei to use', tei);
     const matchingEnrollment = tei.enrollments.find(
-      (enrollment: Enrollment) => enrollment.program === programId
+      (enrollment: IEnrollment) => enrollment.program === programId
     );
-    let attributesToUse = matchingEnrollment
-      ? matchingEnrollment.attributes
-      : tei.attributes;
+    console.log('matching enrollment',matchingEnrollment);
+
+    let attributesToUse = tei.attributes; 
+
+    let attributesTo = tei;
+
+      console.log('tei to use', tei.attributes);
 
     let dataElementsToUse = matchingEnrollment!.events.flatMap(
       (event) => event.dataValues
@@ -190,7 +195,7 @@ export const getTrackedEntityData = (
 
     //TODO: find a better way to do optimize this date parsing
     //map any date that occur in the attributes to dd-mm-yyyy
-    attributesToUse = attributesToUse.map((attr: any) => {
+    attributesToUse = attributesToUse!.map((attr: any) => {
       // Check if the attribute is of type DATE
       if (attr?.valueType === 'DATE' || attr?.valueType === 'date') {
         try {
@@ -235,9 +240,14 @@ export const getTrackedEntityData = (
       });
     } else {
       // Map attributes to the row with style
-      attributesToUse.forEach((attr: Attribute) => {
+      // attributesToUse.forEach((attr: Attribute) => {
+      //   row[attr.attribute] = { value: attr.value };
+      // });
+      attributesToUse.forEach((attr: Attribute) => 
+      {
         row[attr.attribute] = { value: attr.value };
-      });
+      }
+      );
 
       dataElementsToUse.forEach((element: DataValue) => {
         // Find the matching data element in dataElementOptions by ID
@@ -281,7 +291,6 @@ export const getTrackedEntityData = (
   };
 };
 
-
 export const getEventData = (
   response: LineListResponse,
   pager: any,
@@ -308,8 +317,6 @@ export const getEventData = (
   );
 
   const dataElementsData = events.map((event: any, idx: number) => {
-
-
     const row: TableRow = {
       event: { value: event.event, style: 'event-style' },
       index: {
@@ -319,13 +326,15 @@ export const getEventData = (
     };
 
     uniqueDataElements.forEach((dataElement: string) => {
-      row[dataElement] = { value: '', style: 'default-style' }; 
+      row[dataElement] = { value: '', style: 'default-style' };
     });
 
     event.dataValues.forEach((dv: any) => {
       if (isOptionSetNameVisible && dv.optionSetValue) {
-        const dataElementMetadata = metaData.programStages!
-          .flatMap((programStage: any) => programStage.programStageDataElements)
+        const dataElementMetadata = metaData
+          .programStages!.flatMap(
+            (programStage: any) => programStage.programStageDataElements
+          )
           .find((psde: any) => psde.dataElement.id === dv.dataElement)
           ?.dataElement.optionSet;
 

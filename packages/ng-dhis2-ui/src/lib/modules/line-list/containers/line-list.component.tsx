@@ -25,11 +25,12 @@ import {
   Pagination,
   TableBody,
   TableFoot,
-  TableHead,colors
+  TableHead,
+  colors,
 } from '@dhis2/ui';
 import React, { useEffect, useRef, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
-import { take } from 'rxjs';
+import { Subscription, take } from 'rxjs';
 import { ReactWrapperModule } from '../../react-wrapper/react-wrapper.component';
 import { DataTableActions } from '../components/data-table-actions';
 import { OrgUnitFormField } from '../components/org-unit-form-field.component';
@@ -39,8 +40,9 @@ import {
   ColumnDefinition,
   EventsResponse,
   LineListResponse,
-  Pager,
+  PagerObject,
   TableRow,
+  TrackedEntityInstancesResponse,
   TrackedEntityResponse,
 } from '../models/line-list.models';
 import { LineListService } from '../services/line-list.service';
@@ -54,7 +56,7 @@ import { ActionOptionOrientation, LineListActionOption } from '../models';
 import { SingleSelectField, SingleSelectOption } from '@dhis2/ui';
 import { Data } from '@angular/router';
 import { DataElementFilter } from '../models/data-element-filter.model';
-import { D2Window, Program } from '@iapps/d2-web-sdk';
+import { D2Window, DataFilterCondition, DataOrderCriteria, DataQueryFilter, OuMode, Pager, Program } from '@iapps/d2-web-sdk';
 import { meta } from '@turf/turf';
 
 @Component({
@@ -131,12 +133,14 @@ export class LineListTableComponent extends ReactWrapperModule {
   LineList = () => {
     const [columns, setColumns] = useState<ColumnDefinition[]>([]);
     const [data, setData] = useState<TableRow[]>([]);
-    const [pager, setPager] = useState<Pager>({
-      page: 1,
-      pageSize: 10,
-      total: 0,
-      pageCount: 1,
-    });
+    const [pager, setPager] = useState<Pager>(
+      new Pager({
+        page: 1,
+        pageSize: 10,
+        total: 0,
+        pageCount: 1,
+      })
+    );
     const paginationRef = useRef<HTMLDivElement>(null);
     const [programIdState, setProgramIdState] = useState<string>(
       this.programId
@@ -218,121 +222,161 @@ export class LineListTableComponent extends ReactWrapperModule {
       if (!metaData) {
         return undefined;
       }
+
       setLoading(true);
-      const subscription = this.lineListService
-        .getLineListData(
-          this.programId,
-          orgUnitState,
-          this.programStageId,
-          pager.page,
-          pager.pageSize,
-          attributeFiltersState,
-          startDateState,
-          endDateState,
-          this.ouMode,
-          this.filterRootOrgUnit,
-          this.useOuModeWithOlderDHIS2Instance,
-          this.filters
-        )
-        .pipe(take(1)) // Automatically unsubscribe after the first emission
-        .subscribe((response: LineListResponse) => {
-          let entityColumns: ColumnDefinition[] = [];
-          let responsePager: Pager;
-          let entityData: TableRow[] = [];
-          let filteredDataColumns: ColumnDefinition[] = [];
 
-          if (this.programStageId) {
-            responsePager = (response.data as EventsResponse).pager;
-            const { columns, data } = getProgramStageData(
-              response,
-              this.programStageId,
-              pager,
-              metaData,
-              this.isOptionSetNameVisible
-            );
-            entityColumns = columns;
-            entityData = data;
-          } else if (
-            metaData.programType === "WITH_REGISTRATION"
-          ) {
-            const responseData: any = response.data as TrackedEntityResponse;
-            responsePager = responseData.pager || {
-              page: responseData.page,
-              pageSize: responseData.pageSize,
-              total: responseData.total,
-              pageCount: responseData.pageCount,
+      let subscription: Subscription | undefined;
+
+      const isTracker = metaData.programType === 'WITH_REGISTRATION';
+
+      if (isTracker) {
+        // ✅ Replace with trackerModule call
+        d2.trackerModule.trackedEntity
+          .setEndDate(endDateState as string)
+          .setProgram(this.programId)
+          .setOrgUnit(orgUnitState)
+          .setOuMode(this.ouMode as OuMode)
+          .setFilters([
+            new DataQueryFilter()
+              .setAttribute('tgGvHgQgtQ0')
+              .setCondition(DataFilterCondition.Equal)
+              .setValue('ND_BATCH_32525931'),
+            new DataQueryFilter()
+              .setAttribute('lj3cQAle9Fo')
+              .setCondition(DataFilterCondition.In)
+              .setValue(['Qualified', 'Rejected'])
+              .setProgramStage('NtZXBym2KfD')
+              .setType('DATA_ELEMENT'),
+          ])
+          .setPagination(
+            new Pager({
+              pageSize: pager.pageSize,
+              page: pager.page,
+            })
+          )
+          .setOrderCriteria(
+            new DataOrderCriteria().setField('createdAt').setOrder('desc')
+          )
+          .get()
+          .then((response) => {
+            console.log('response from new tracker api', response)
+           const respose = response.data!;
+            const trackedEntityResponse: TrackedEntityInstancesResponse = {
+              trackedEntityInstances : respose,
+              pager: pager, // assuming you have `pager` available
             };
-
-           
-
+            console.log('valie in tsx',   trackedEntityResponse.trackedEntityInstances)
             const { columns, data, filteredEntityColumns, orgUnitLabel } =
               getTrackedEntityData(
-                response,
+                { data: trackedEntityResponse }, // wrapped to mimic the same shape
                 this.programId,
                 pager,
                 this.isOptionSetNameVisible,
                 metaData,
                 this.filters
               );
-            entityColumns = columns;
-            entityData = data;
-            setOrgUnitLabel(orgUnitLabel);
 
-            const checkValues = [
-              ...new Set(
-                responseData?.trackedEntities?.[0]?.enrollments?.[0]?.events?.flatMap(
-                  (event: any) =>
-                    event.dataValues
-                      .filter((dataValue: any) =>
-                        /^[A-Za-z]{3}$/.test(dataValue.value)
-                      )
-                      .map((dataValue: any) => dataValue.value)
-                ) ??
-                  responseData?.instances?.[0]?.enrollments?.[0]?.events?.flatMap(
-                    (event: any) =>
-                      event.dataValues
-                        .filter((dataValue: any) =>
-                          /^[A-Za-z]{3}$/.test(dataValue.value)
-                        )
-                        .map((dataValue: any) => dataValue.value)
-                  )
-              ),
-            ];
+            // const checkValues = [
+            //   ...new Set(
+            //     response?.data.trackedEntities?.[0]?.enrollments?.[0]?.events?.flatMap(
+            //       (event: any) =>
+            //         event.dataValues
+            //           .filter((dataValue: any) =>
+            //             /^[A-Za-z]{3}$/.test(dataValue.value)
+            //           )
+            //           .map((dataValue: any) => dataValue.value)
+            //     )
+            //   ),
+            // ];
 
-            if (checkValues.length > 0) {
-              setCheckValue(checkValues as any);
-              setValuesMatch(!checkValues.includes(this.buttonFilter));
-            }
+            // if (checkValues.length > 0) {
+            //   setCheckValue(checkValues as any);
+            //   setValuesMatch(!checkValues.includes(this.buttonFilter));
+            // }
 
             setFilteredColumns((prev) =>
               filteredEntityColumns.length > 0 ? filteredEntityColumns : prev
             );
-            filteredDataColumns = filteredEntityColumns;
-          } else {
-            responsePager = (response.data as EventsResponse).pager;
-            const { columns, data } = getEventData(
-              response,
-              pager,
-              metaData,
-              this.isOptionSetNameVisible
+
+            const finalColumns: ColumnDefinition[] = addActionsColumn(
+              [{ label: '#', key: 'index' }, ...columns],
+              this.actionOptions
             );
-            entityColumns = columns;
-            entityData = data;
-          }
 
-          const finalColumns: ColumnDefinition[] = addActionsColumn(
-            [{ label: '#', key: 'index' }, ...entityColumns],
-            this.actionOptions
-          );
+            const pagerResponse = response.pagination;
 
-          setLoading(false);
-          setColumns(finalColumns);
-          setData(entityData);
-          setPager(responsePager);
-        });
+            setLoading(false);
+            setColumns(finalColumns);
+            setData(data);
+            setPager(new Pager(pagerResponse || {}));
+
+          //  setPager(pagerResponse);
+            setOrgUnitLabel(orgUnitLabel);
+          })
+          .catch((error) => {
+            console.error('Error fetching tracked entity data:', error);
+            setLoading(false);
+          });
+      } else {
+        // ✅ Keep getLineListData for other program types
+        subscription = this.lineListService
+          .getLineListData(
+            this.programId,
+            orgUnitState,
+            this.programStageId,
+            pager.page,
+            pager.pageSize,
+            attributeFiltersState,
+            startDateState,
+            endDateState,
+            this.ouMode,
+            this.filterRootOrgUnit,
+            this.useOuModeWithOlderDHIS2Instance,
+            this.filters
+          )
+          .pipe(take(1))
+          .subscribe((response: LineListResponse) => {
+            let entityColumns: ColumnDefinition[] = [];
+            let responsePager: Pager;
+            let entityData: TableRow[] = [];
+
+            if (this.programStageId) {
+              responsePager = (response.data as EventsResponse).pager;
+              const { columns, data } = getProgramStageData(
+                response,
+                this.programStageId,
+                pager,
+                metaData,
+                this.isOptionSetNameVisible
+              );
+              entityColumns = columns;
+              entityData = data;
+            } else {
+              responsePager = (response.data as EventsResponse).pager;
+              const { columns, data } = getEventData(
+                response,
+                pager,
+                metaData,
+                this.isOptionSetNameVisible
+              );
+              entityColumns = columns;
+              entityData = data;
+            }
+
+            const finalColumns: ColumnDefinition[] = addActionsColumn(
+              [{ label: '#', key: 'index' }, ...entityColumns],
+              this.actionOptions
+            );
+
+            setLoading(false);
+            setColumns(finalColumns);
+            setData(entityData);
+            setPager(responsePager);
+          });
+      }
 
       return () => {
-        subscription.unsubscribe(); 
+        subscription?.unsubscribe();
       };
     }, [
       metaData,
@@ -346,6 +390,137 @@ export class LineListTableComponent extends ReactWrapperModule {
       pager.pageSize,
       isOptionSetNameVisibleState,
     ]);
+
+    // useEffect(() => {
+    //   if (!metaData) {
+    //     return undefined;
+    //   }
+    //   setLoading(true);
+    //   const subscription = this.lineListService
+    //     .getLineListData(
+    //       this.programId,
+    //       orgUnitState,
+    //       this.programStageId,
+    //       pager.page,
+    //       pager.pageSize,
+    //       attributeFiltersState,
+    //       startDateState,
+    //       endDateState,
+    //       this.ouMode,
+    //       this.filterRootOrgUnit,
+    //       this.useOuModeWithOlderDHIS2Instance,
+    //       this.filters
+    //     )
+    //     .pipe(take(1)) // Automatically unsubscribe after the first emission
+    //     .subscribe((response: LineListResponse) => {
+    //       let entityColumns: ColumnDefinition[] = [];
+    //       let responsePager: Pager;
+    //       let entityData: TableRow[] = [];
+    //       let filteredDataColumns: ColumnDefinition[] = [];
+
+    //       if (this.programStageId) {
+    //         responsePager = (response.data as EventsResponse).pager;
+    //         const { columns, data } = getProgramStageData(
+    //           response,
+    //           this.programStageId,
+    //           pager,
+    //           metaData,
+    //           this.isOptionSetNameVisible
+    //         );
+    //         entityColumns = columns;
+    //         entityData = data;
+    //       } else if (
+    //         metaData.programType === "WITH_REGISTRATION"
+    //       ) {
+    //         const responseData: any = response.data as TrackedEntityResponse;
+    //         responsePager = responseData.pager || {
+    //           page: responseData.page,
+    //           pageSize: responseData.pageSize,
+    //           total: responseData.total,
+    //           pageCount: responseData.pageCount,
+    //         };
+
+    //         const { columns, data, filteredEntityColumns, orgUnitLabel } =
+    //           getTrackedEntityData(
+    //             response,
+    //             this.programId,
+    //             pager,
+    //             this.isOptionSetNameVisible,
+    //             metaData,
+    //             this.filters
+    //           );
+    //         entityColumns = columns;
+    //         entityData = data;
+    //         setOrgUnitLabel(orgUnitLabel);
+
+    //         const checkValues = [
+    //           ...new Set(
+    //             responseData?.trackedEntities?.[0]?.enrollments?.[0]?.events?.flatMap(
+    //               (event: any) =>
+    //                 event.dataValues
+    //                   .filter((dataValue: any) =>
+    //                     /^[A-Za-z]{3}$/.test(dataValue.value)
+    //                   )
+    //                   .map((dataValue: any) => dataValue.value)
+    //             ) ??
+    //               responseData?.instances?.[0]?.enrollments?.[0]?.events?.flatMap(
+    //                 (event: any) =>
+    //                   event.dataValues
+    //                     .filter((dataValue: any) =>
+    //                       /^[A-Za-z]{3}$/.test(dataValue.value)
+    //                     )
+    //                     .map((dataValue: any) => dataValue.value)
+    //               )
+    //           ),
+    //         ];
+
+    //         if (checkValues.length > 0) {
+    //           setCheckValue(checkValues as any);
+    //           setValuesMatch(!checkValues.includes(this.buttonFilter));
+    //         }
+
+    //         setFilteredColumns((prev) =>
+    //           filteredEntityColumns.length > 0 ? filteredEntityColumns : prev
+    //         );
+    //         filteredDataColumns = filteredEntityColumns;
+    //       } else {
+    //         responsePager = (response.data as EventsResponse).pager;
+    //         const { columns, data } = getEventData(
+    //           response,
+    //           pager,
+    //           metaData,
+    //           this.isOptionSetNameVisible
+    //         );
+    //         entityColumns = columns;
+    //         entityData = data;
+    //       }
+
+    //       const finalColumns: ColumnDefinition[] = addActionsColumn(
+    //         [{ label: '#', key: 'index' }, ...entityColumns],
+    //         this.actionOptions
+    //       );
+
+    //       setLoading(false);
+    //       setColumns(finalColumns);
+    //       setData(entityData);
+    //       setPager(responsePager);
+    //     });
+
+    //   return () => {
+    //     subscription.unsubscribe();
+    //   };
+    // }, [
+    //   metaData,
+    //   programIdState,
+    //   orgUnitState,
+    //   programStageIdState,
+    //   attributeFiltersState,
+    //   startDateState,
+    //   endDateState,
+    //   pager.page,
+    //   pager.pageSize,
+    //   isOptionSetNameVisibleState,
+    // ]);
 
     const handleInputChange = (key: string, value: string) => {
       setInputValues((prevValues) => ({
@@ -415,19 +590,18 @@ export class LineListTableComponent extends ReactWrapperModule {
     function getTextColorFromBackGround(hex: string): string {
       // Remove the hash if present
       hex = hex.replace('#', '');
-    
+
       // Convert to RGB
       const r = parseInt(hex.substr(0, 2), 16);
       const g = parseInt(hex.substr(2, 2), 16);
       const b = parseInt(hex.substr(4, 2), 16);
-    
+
       // YIQ formula to calculate brightness
       const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-    
+
       // Return black for light backgrounds, white for dark backgrounds
       return yiq >= 128 ? colors.grey700 : '#FFFFFF';
     }
-
 
     return (
       <div>
@@ -681,18 +855,24 @@ export class LineListTableComponent extends ReactWrapperModule {
                               {row[col.key]?.style &&
                               row[col.key]?.style !== 'default-value' ? (
                                 <div
-                                 style={{display: 'flex', justifyContent: 'center'}}
-                                
+                                  style={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                  }}
                                 >
-                                  <span style={{
-                                    backgroundColor: row[col.key]?.style,
-                                    display: 'inline-flex',
-                                    alignItems:'center',
-                                    padding:4,
-                                    borderRadius: 3,
-                                    fontSize: 12,
-                                    color: getTextColorFromBackGround(row[col.key]?.style as string)
-                                  }}>
+                                  <span
+                                    style={{
+                                      backgroundColor: row[col.key]?.style,
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      padding: 4,
+                                      borderRadius: 3,
+                                      fontSize: 12,
+                                      color: getTextColorFromBackGround(
+                                        row[col.key]?.style as string
+                                      ),
+                                    }}
+                                  >
                                     {row[col.key]?.value}
                                   </span>
                                 </div>
@@ -734,16 +914,31 @@ export class LineListTableComponent extends ReactWrapperModule {
                         pageCount={pager.pageCount}
                         pageSize={pager.pageSize}
                         total={pager.total}
+                        // onPageChange={(page: number) =>
+                        //   setPager((prev) => ({ ...prev, page }))
+                        // }
                         onPageChange={(page: number) =>
-                          setPager((prev) => ({ ...prev, page }))
-                        }
+                          setPager((prev) =>
+                            new Pager({
+                              ...prev,
+                              page,
+                            })
+                          )
+                        }                        
                         onPageSizeChange={(pageSize: number) => {
                           const newPageSize = Number(pageSize);
-                          setPager((prev) => ({
-                            ...prev,
-                            page: 1,
-                            pageSize: newPageSize,
-                          }));
+                          setPager((prev) =>
+                            new Pager({
+                              ...prev,
+                              pageSize: newPageSize,
+                              page: 1, // example reset
+                            })
+                          );                          
+                          // setPager((prev) => ({
+                          //   ...prev,
+                          //   page: 1,
+                          //   pageSize: newPageSize,
+                          // }));
                         }}
                         pageSizes={['10', '20', '50', '100', '500']}
                       />
@@ -757,7 +952,6 @@ export class LineListTableComponent extends ReactWrapperModule {
       </div>
     );
   };
-
 
   override async ngAfterViewInit() {
     if (!this.elementRef) throw new Error('No element ref');
