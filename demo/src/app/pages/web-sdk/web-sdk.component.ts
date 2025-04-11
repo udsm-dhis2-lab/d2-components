@@ -74,7 +74,7 @@ export class WebSdkComponent {
           .setValue('ND_BATCH_32525931'),
         new DataQueryFilter()
           .setAttribute('lj3cQAle9Fo')
-          .setCondition(DataFilterCondition.Equal)
+          .setCondition(DataFilterCondition.In)
           .setValue(['Qualified', 'Rejected'])
           .setProgramStage('NtZXBym2KfD')
           .setType('DATA_ELEMENT'),
