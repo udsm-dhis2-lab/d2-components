@@ -177,13 +177,15 @@ export class TrackedEntityInstance
 
       // Spread enrollment data values as standalone attributes of the class
       Object.keys(this.latestEnrollment || {}).forEach((key) => {
-        this[key] = (this.latestEnrollment as any)[key];
+        if (key !== 'orgUnit') {
+          this[key] = (this.latestEnrollment as any)[key];
+        }
       });
 
       this.orgUnitName = this.latestEnrollment?.orgUnitName as string;
       this.relatedEntities = TrackerRelationshipUtil.getRelationships(
         this['relationships'] || [],
-        this.trackedEntity as string
+        this.trackedEntity
       );
 
       this.spreadAttributes!(this.attributes || []);
