@@ -10,6 +10,7 @@ import { BaseTrackerSDKModel } from './base.model';
 import { Enrollment, IEnrollment } from './enrollment.model';
 import { DHIS2Event, IDHIS2Event } from '../../event/models/event.model';
 import { TrackerRelationship } from './tracker-relationship.model';
+import { Program } from '../../program';
 
 export interface ProgramOwner {
   ownerOrgUnit: string;
@@ -307,6 +308,41 @@ export class TrackedEntityInstance
       this.latestEnrollment.occurredAt = incidentDate;
       this.latestEnrollment.incidentDate = incidentDate;
     }
+  }
+
+  setFields(program: Program) {
+    this.fields = {
+      ...(this.fields || {}),
+      ...(program.dataElements || []).reduce((fieldObject, dataElement) => {
+        const key = dataElement.code
+          ? camelCase(dataElement.code)
+          : dataElement.id;
+        return {
+          ...fieldObject,
+          [key]: {
+            id: dataElement.id,
+            type: 'DATA_ELEMENT',
+            stageId: dataElement.programStageId,
+          },
+        };
+      }, {}),
+      ...(program.trackedEntityAttributes || []).reduce(
+        (fieldObject, trackedEntityAttribute) => {
+          const key = trackedEntityAttribute.code
+            ? camelCase(trackedEntityAttribute.code)
+            : trackedEntityAttribute.id;
+          return {
+            ...fieldObject,
+            [key]: {
+              id: trackedEntityAttribute.id,
+              type: 'ATTRIBUTE',
+              generated: trackedEntityAttribute.generated,
+            },
+          };
+        },
+        {}
+      ),
+    };
   }
 
   complete() {

@@ -198,38 +198,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
           orgUnit: this.orgUnit,
         });
 
-        this.instance.fields = {
-          ...(this.instance.fields || {}),
-          ...(program.dataElements || []).reduce((fieldObject, dataElement) => {
-            const key = dataElement.code
-              ? camelCase(dataElement.code)
-              : dataElement.id;
-            return {
-              ...fieldObject,
-              [key]: {
-                id: dataElement.id,
-                type: 'DATA_ELEMENT',
-                stageId: dataElement.programStageId,
-              },
-            };
-          }, {}),
-          ...(program.trackedEntityAttributes || []).reduce(
-            (fieldObject, trackedEntityAttribute) => {
-              const key = trackedEntityAttribute.code
-                ? camelCase(trackedEntityAttribute.code)
-                : trackedEntityAttribute.id;
-              return {
-                ...fieldObject,
-                [key]: {
-                  id: trackedEntityAttribute.id,
-                  type: 'ATTRIBUTE',
-                  generated: trackedEntityAttribute.generated,
-                },
-              };
-            },
-            {}
-          ),
-        };
+        this.setInstanceFields(program);
 
         const reservedValues = await this.generateReservedValues();
 
@@ -240,6 +209,10 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
     }
 
     return this.instance;
+  }
+
+  setInstanceFields(program: Program) {
+    this.instance.setFields(program);
   }
 
   protected async fetchFromEvent(
@@ -254,6 +227,8 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
 
     const eventQuery = await new BaseEventQuery(this.httpClient)
       .setFields('trackedEntity')
+      .setStartDate(this.enrollmentEnrolledAfter as string)
+      .setEndDate(this.enrollmentEnrolledBefore as string)
       .setProgram(this.program as string)
       .setPagination(this.pager)
       .setOrgUnit(this.orgUnit as string)
@@ -267,8 +242,15 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
       (event: DHIS2Event) => event.trackedEntity
     );
 
-    if (!trackedEntities) {
-      return new D2HttpResponse({});
+    if (!trackedEntities || trackedEntities.length === 0) {
+      const eventResponse = new D2HttpResponse({});
+      eventResponse.responseStatus = eventQuery.responseStatus;
+      eventResponse.data = {
+        ...eventQuery?.pagination,
+        trackedEntities: [],
+      };
+
+      return eventResponse;
     }
 
     return await this.httpClient.get(
