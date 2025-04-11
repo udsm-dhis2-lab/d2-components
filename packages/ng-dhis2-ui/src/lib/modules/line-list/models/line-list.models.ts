@@ -129,6 +129,7 @@ export interface TrackedEntityInstancesResponse {
   trackedEntityInstances: TrackedEntityInstance |TrackedEntityInstance[];
   trackedEntity?: TrackedEntity[];
   pager: Pager;
+  orgUnitsMap?: Map<string, string>;
 }
 
 export interface TrackedEntityResponse {

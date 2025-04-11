@@ -56,7 +56,16 @@ import { ActionOptionOrientation, LineListActionOption } from '../models';
 import { SingleSelectField, SingleSelectOption } from '@dhis2/ui';
 import { Data } from '@angular/router';
 import { DataElementFilter } from '../models/data-element-filter.model';
-import { D2Window, DataFilterCondition, DataOrderCriteria, DataQueryFilter, OuMode, Pager, Program } from '@iapps/d2-web-sdk';
+import {
+  D2Window,
+  DataFilterCondition,
+  DataOrderCriteria,
+  DataQueryFilter,
+  OuMode,
+  Pager,
+  Program,
+  TrackedEntityInstance,
+} from '@iapps/d2-web-sdk';
 import { meta } from '@turf/turf';
 
 @Component({
@@ -76,6 +85,7 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() startDate?: string;
   @Input() endDate?: string;
   @Input() filters?: FilterConfig[];
+  @Input() dataQueryFilters? : DataQueryFilter[];
   @Input() ouMode?: string;
   @Input() dispatchTeis = false;
   @Output() actionSelected = new EventEmitter<{
@@ -154,6 +164,7 @@ export class LineListTableComponent extends ReactWrapperModule {
     const [attributeFiltersState, setAttributeFiltersState] = useState<
       AttributeFilter[] | undefined
     >(this.attributeFilters);
+    const [dataQueryFiltersState, setDataQueryFiltersState] = useState<DataQueryFilter[]>(this.dataQueryFilters as DataQueryFilter[]);
     const [startDateState, setStartDateState] = useState<string | undefined>(
       this.startDate
     );
@@ -166,10 +177,6 @@ export class LineListTableComponent extends ReactWrapperModule {
       useState<ColumnDefinition[]>();
     const [inputValues, setInputValues] = useState<Record<string, string>>({});
     const [orgUnitLabel, setOrgUnitLabel] = useState<string>('');
-
-    //TODO: this will be migrated on the parent component
-    const [checkValue, setCheckValue] = useState<string[]>([]);
-    const [valueMatch, setValuesMatch] = useState<boolean>(false);
     const [selectedOrgUnit, setSelectedOrgUnit] = useState<string>('');
     const [hide, setHide] = useState<boolean>(true);
     const [showAllFilters, setShowAllFilters] = useState(false);
@@ -180,6 +187,7 @@ export class LineListTableComponent extends ReactWrapperModule {
     const [prevValue, setPrevValue] = useState<string>();
     const [dateStates, setDateStates] = useState<{ [key: string]: string }>({});
     const [metaData, setMetaData] = useState<Program | null>(null);
+    const [orgUnits, setOrgUnits] = useState<Map<string, string>>();
     const d2 = (window as unknown as D2Window).d2Web;
 
     // Store updaters in refs for Angular to access
@@ -222,7 +230,7 @@ export class LineListTableComponent extends ReactWrapperModule {
       if (!metaData) {
         return undefined;
       }
-
+      
       setLoading(true);
 
       let subscription: Subscription | undefined;
@@ -233,90 +241,154 @@ export class LineListTableComponent extends ReactWrapperModule {
         // ✅ Replace with trackerModule call
         d2.trackerModule.trackedEntity
           .setEndDate(endDateState as string)
+          .setStartDate(startDateState as string)
           .setProgram(this.programId)
           .setOrgUnit(orgUnitState)
           .setOuMode(this.ouMode as OuMode)
-          .setFilters([
-            new DataQueryFilter()
-              .setAttribute('tgGvHgQgtQ0')
-              .setCondition(DataFilterCondition.Equal)
-              .setValue('ND_BATCH_32525931'),
-            new DataQueryFilter()
-              .setAttribute('lj3cQAle9Fo')
-              .setCondition(DataFilterCondition.In)
-              .setValue(['Qualified', 'Rejected'])
-              .setProgramStage('NtZXBym2KfD')
-              .setType('DATA_ELEMENT'),
-          ])
+          .setFilters(dataQueryFiltersState)
+          // .setFilters([
+          //   new DataQueryFilter()
+          //     .setAttribute('tgGvHgQgtQ0')
+          //     .setCondition(DataFilterCondition.Equal)
+          //     .setValue('ND_BATCH_32525931'),
+          //   new DataQueryFilter()
+          //     .setAttribute('lj3cQAle9Fo')
+          //     .setCondition(DataFilterCondition.In)
+          //     .setValue(['Qualified', 'Rejected'])
+          //     .setProgramStage('NtZXBym2KfD')
+          //     .setType('DATA_ELEMENT'),
+          // ])
           .setPagination(
             new Pager({
               pageSize: pager.pageSize,
               page: pager.page,
             })
           )
-          .setOrderCriteria(
-            new DataOrderCriteria().setField('createdAt').setOrder('desc')
-          )
-          .get()
-          .then((response) => {
-            console.log('response from new tracker api', response)
-           const respose = response.data!;
-            const trackedEntityResponse: TrackedEntityInstancesResponse = {
-              trackedEntityInstances : respose,
-              pager: pager, // assuming you have `pager` available
-            };
-            console.log('valie in tsx',   trackedEntityResponse.trackedEntityInstances)
-            const { columns, data, filteredEntityColumns, orgUnitLabel } =
-              getTrackedEntityData(
-                { data: trackedEntityResponse }, // wrapped to mimic the same shape
-                this.programId,
-                pager,
-                this.isOptionSetNameVisible,
-                metaData,
-                this.filters
-              );
-
-            // const checkValues = [
-            //   ...new Set(
-            //     response?.data.trackedEntities?.[0]?.enrollments?.[0]?.events?.flatMap(
-            //       (event: any) =>
-            //         event.dataValues
-            //           .filter((dataValue: any) =>
-            //             /^[A-Za-z]{3}$/.test(dataValue.value)
-            //           )
-            //           .map((dataValue: any) => dataValue.value)
-            //     )
-            //   ),
-            // ];
-
-            // if (checkValues.length > 0) {
-            //   setCheckValue(checkValues as any);
-            //   setValuesMatch(!checkValues.includes(this.buttonFilter));
-            // }
-
-            setFilteredColumns((prev) =>
-              filteredEntityColumns.length > 0 ? filteredEntityColumns : prev
-            );
-
-            const finalColumns: ColumnDefinition[] = addActionsColumn(
-              [{ label: '#', key: 'index' }, ...columns],
-              this.actionOptions
-            );
-
-            const pagerResponse = response.pagination;
-
-            setLoading(false);
-            setColumns(finalColumns);
-            setData(data);
-            setPager(new Pager(pagerResponse || {}));
-
-          //  setPager(pagerResponse);
-            setOrgUnitLabel(orgUnitLabel);
+          .setOrderCriterias([
+            new DataOrderCriteria().setField('createdAt').setOrder('desc'),
+          ])
+          .get().then((response) => {
+            console.log('the entire response', response)
+            console.log('the data element quer filter', new DataQueryFilter()
+            .setAttribute('lj3cQAle9Fo')
+            .setCondition(DataFilterCondition.In)
+            .setValue(['Qualified', 'Rejected'])
+            .setProgramStage('NtZXBym2KfD')
+            .setType('DATA_ELEMENT'),)
+            const trackedEntityInstances = Array.isArray(response.data) ? response.data : [response.data] as TrackedEntityInstance[];;
+            const orgUnitIdsFromEnrollments = new Set(
+              trackedEntityInstances.map((tei: TrackedEntityInstance) => tei.latestEnrollment.orgUnit)
+            ) as Set<string>;
+            const uniqueOrgUnitIds = [...orgUnitIdsFromEnrollments];
+          
+            this.lineListService.fetchOrgUnits(uniqueOrgUnitIds).subscribe({
+              next: (fetchedOrgUnits) => {
+                setOrgUnits(fetchedOrgUnits); 
+          
+                const trackedEntityResponse: TrackedEntityInstancesResponse = {
+                  trackedEntityInstances: response.data!,
+                  pager: pager,
+                  orgUnitsMap: fetchedOrgUnits 
+                };
+          
+                const { columns, data, filteredEntityColumns, orgUnitLabel } =
+                  getTrackedEntityData(
+                    { data: trackedEntityResponse },
+                    this.programId,
+                    pager,
+                    this.isOptionSetNameVisible,
+                    metaData,
+                    this.filters
+                  );
+          
+                setFilteredColumns((prev) =>
+                  filteredEntityColumns.length > 0 ? filteredEntityColumns : prev
+                );
+          
+                const finalColumns: ColumnDefinition[] = addActionsColumn(
+                  [{ label: '#', key: 'index' }, ...columns],
+                  this.actionOptions
+                );
+          
+                const pagerResponse = response.pagination;
+          
+                setLoading(false);
+                setColumns(finalColumns);
+                setData(data);
+                setPager(new Pager(pagerResponse || {}));
+                setOrgUnitLabel(orgUnitLabel);
+              },
+              error: (err) => {
+                console.error('Error fetching org units:', err);
+                setLoading(false);
+              }
+            });
           })
-          .catch((error) => {
-            console.error('Error fetching tracked entity data:', error);
-            setLoading(false);
-          });
+
+          console.log('show loading state', loading);
+          
+          // .then((response) => {
+          //   const orgUnitIdsFromEnrollments = new Set(response.data?.map((tei: TrackedEntityInstance) => tei.latestEnrollment.orgUnit)) as Set<string>;
+          //   const uniqueOrgUnitIds = [...orgUnitIdsFromEnrollments];
+          //   this.lineListService.fetchOrgUnits(uniqueOrgUnitIds).subscribe({
+          //     next: (data) => {
+          //       console.log('thiis is the data', data)
+          //       setOrgUnits(data);
+          //     },
+          //     error: (err) => {
+          //       console.log('an error ha ocurred', err)
+          //     }
+          //   });
+          //   console.log('response from new tracker api', response.data?.map((tei: TrackedEntityInstance) => tei.latestEnrollment.orgUnit));
+          //   console.log('data query filtrer', new DataQueryFilter()
+          //   .setAttribute('tgGvHgQgtQ0')
+          //   .setCondition(DataFilterCondition.Equal)
+          //   .setValue('ND_BATCH_32525931'),)
+          //   const respose = response.data!;
+          //   const trackedEntityResponse: TrackedEntityInstancesResponse = {
+          //     trackedEntityInstances: respose,
+          //     pager: pager,
+          //     orgUnitsMap: orgUnits
+          //    // orgUnitsMap: 
+          //   };
+          //   console.log(
+          //     'value in tsx',
+          //     trackedEntityResponse.trackedEntityInstances
+          //   );
+          //   const { columns, data, filteredEntityColumns, orgUnitLabel } =
+          //     getTrackedEntityData(
+          //       { data: trackedEntityResponse }, // wrapped to mimic the same shape
+          //       this.programId,
+          //       pager,
+          //       this.isOptionSetNameVisible,
+          //       metaData,
+          //       this.filters
+          //     );
+          //     console.log('org units in tsx ',trackedEntityResponse.orgUnitsMap)
+
+          //   setFilteredColumns((prev) =>
+          //     filteredEntityColumns.length > 0 ? filteredEntityColumns : prev
+          //   );
+
+          //   const finalColumns: ColumnDefinition[] = addActionsColumn(
+          //     [{ label: '#', key: 'index' }, ...columns],
+          //     this.actionOptions
+          //   );
+
+          //   const pagerResponse = response.pagination;
+
+          //   setLoading(false);
+          //   setColumns(finalColumns);
+          //   setData(data);
+          //   setPager(new Pager(pagerResponse || {}));
+
+          //   //  setPager(pagerResponse);
+          //   setOrgUnitLabel(orgUnitLabel);
+          // })
+          // .catch((error) => {
+          //   console.error('Error fetching tracked entity data:', error);
+          //   setLoading(false);
+          // });
       } else {
         // ✅ Keep getLineListData for other program types
         subscription = this.lineListService
@@ -389,6 +461,7 @@ export class LineListTableComponent extends ReactWrapperModule {
       pager.page,
       pager.pageSize,
       isOptionSetNameVisibleState,
+      dataQueryFiltersState
     ]);
 
     // useEffect(() => {
@@ -528,16 +601,33 @@ export class LineListTableComponent extends ReactWrapperModule {
         [key]: value ?? '',
       }));
 
-      setAttributeFiltersState((prevFilters = []) => {
+      // setAttributeFiltersState((prevFilters = []) => {
+      //   // Remove old filter for this key
+      //   const filteredFilters = prevFilters.filter((f) => f.attribute !== key);
+
+      //   // Only add new filter if value is not empty
+      //   const updatedFilters = value.trim()
+      //     ? [...filteredFilters, { attribute: key, operator: 'like', value }]
+      //     : filteredFilters;
+
+      //   return updatedFilters;
+      // });
+      setDataQueryFiltersState((prevFilters) => {
         // Remove old filter for this key
         const filteredFilters = prevFilters.filter((f) => f.attribute !== key);
-
+    
         // Only add new filter if value is not empty
         const updatedFilters = value.trim()
-          ? [...filteredFilters, { attribute: key, operator: 'like', value }]
-          : filteredFilters;
-
-        return updatedFilters;
+          ? [
+              ...filteredFilters,
+              new DataQueryFilter()
+                .setAttribute(key) 
+                .setCondition(DataFilterCondition.Like) 
+                .setValue(value) 
+            ]
+          : filteredFilters; // If no value, don't add the filter
+    
+        return updatedFilters; // Return the updated list of filters
       });
     };
 
@@ -548,15 +638,32 @@ export class LineListTableComponent extends ReactWrapperModule {
         [key]: value ?? '',
       }));
 
-      setAttributeFiltersState((prevFilters = []) => {
-        // Remove old filter for this key
-        const filteredFilters = prevFilters.filter((f) => f.attribute !== key);
+      // setAttributeFiltersState((prevFilters = []) => {
+      //   // Remove old filter for this key
+      //   const filteredFilters = prevFilters.filter((f) => f.attribute !== key);
 
+      //   // Only add new filter if value is not empty
+      //   const updatedFilters = value.trim()
+      //     ? [...filteredFilters, { attribute: key, operator: 'eq', value }]
+      //     : filteredFilters;
+
+      //   return updatedFilters;
+      // });
+      setDataQueryFiltersState((prevFilters = []) => {
+        // Remove existing filter for the same key (attribute)
+        const filteredFilters = prevFilters.filter((f) => f.attribute !== key);
+    
         // Only add new filter if value is not empty
         const updatedFilters = value.trim()
-          ? [...filteredFilters, { attribute: key, operator: 'eq', value }]
+          ? [
+              ...filteredFilters,
+              new DataQueryFilter()
+                .setAttribute(key)
+                .setCondition(DataFilterCondition.Equal) // 'eq' like before
+                .setValue(value)
+            ]
           : filteredFilters;
-
+    
         return updatedFilters;
       });
     };
@@ -918,22 +1025,24 @@ export class LineListTableComponent extends ReactWrapperModule {
                         //   setPager((prev) => ({ ...prev, page }))
                         // }
                         onPageChange={(page: number) =>
-                          setPager((prev) =>
-                            new Pager({
-                              ...prev,
-                              page,
-                            })
+                          setPager(
+                            (prev) =>
+                              new Pager({
+                                ...prev,
+                                page,
+                              })
                           )
-                        }                        
+                        }
                         onPageSizeChange={(pageSize: number) => {
                           const newPageSize = Number(pageSize);
-                          setPager((prev) =>
-                            new Pager({
-                              ...prev,
-                              pageSize: newPageSize,
-                              page: 1, // example reset
-                            })
-                          );                          
+                          setPager(
+                            (prev) =>
+                              new Pager({
+                                ...prev,
+                                pageSize: newPageSize,
+                                page: 1, // example reset
+                              })
+                          );
                           // setPager((prev) => ({
                           //   ...prev,
                           //   page: 1,

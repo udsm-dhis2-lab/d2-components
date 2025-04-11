@@ -1,6 +1,10 @@
 import { Component, inject, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ProgramRuleEngine } from '@iapps/d2-web-sdk';
+import {
+  DataFilterCondition,
+  DataQueryFilter,
+  ProgramRuleEngine,
+} from '@iapps/d2-web-sdk';
 import {
   BreadcrumbItem,
   FormValue,
@@ -39,6 +43,24 @@ export class ComponentsComponent implements OnInit {
     },
   ];
 
+ dynamicFilterInputs: DataQueryFilter[] = [
+    // Filter 1
+    new DataQueryFilter()
+      .setAttribute('tgGvHgQgtQ0')
+      .setCondition(DataFilterCondition.Equal)
+      .setValue('ND_BATCH_32525931')
+      .setType('TRACKED_ENTITY_ATTRIBUTE')  // Default type, you can modify if necessary
+      .setProgramStage(''),  // Assuming no program stage for this filter
+  
+    // Filter 2
+    new DataQueryFilter()
+      .setAttribute('lj3cQAle9Fo')
+      .setCondition(DataFilterCondition.In)
+      .setValue(['Qualified', 'Rejected'])
+      .setType('DATA_ELEMENT')
+      .setProgramStage('NtZXBym2KfD'),
+  ];
+  
   isButtonLoading: any;
 
   actionOptions = [
@@ -305,8 +327,6 @@ export class ComponentsComponent implements OnInit {
   onDelete(row: any) {
     console.log('Delete', row);
   }
-
-
 
   onApprove(row: any) {
     console.log('Approve', row);

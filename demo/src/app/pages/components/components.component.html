@@ -255,12 +255,7 @@
     [actionOptions]="actionOptions"
     [ouMode]="'DESCENDANTS'"
     [showFilters]="true"
-    [filters]="[{
-      programStage: 'DRJRorGWflf',
-      dataElement: 'XuMFMNivMMe',
-      operator: '=',
-      value: 'Completed',
-    },]"
+    [dataQueryFilters]="dynamicFilterInputs"
     (approvalSelected)="onApprovalSelected($event)"
   ></ng-dhis2-ui-line-list>
 </div>

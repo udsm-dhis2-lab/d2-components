@@ -9,7 +9,11 @@ import {
   LineListResponse,
   TrackedEntityResponse,
 } from '../models/line-list.models';
-import { buildFilters, buildFiltersFromEvents, getFilteredTrackedEntites } from '../utils/filter-builder';
+import {
+  buildFilters,
+  buildFiltersFromEvents,
+  getFilteredTrackedEntites,
+} from '../utils/filter-builder';
 import { AttributeFilter } from '../models/attribute-filter.model';
 import { FilterConfig } from '../models/filter-config.model';
 import { Data } from '@angular/router';
@@ -100,7 +104,7 @@ export class LineListService {
   /**
    * Fetch orgUnit names for given orgUnit IDs
    */
-  private fetchOrgUnits(orgUnitIds: string[]): Observable<Map<string, string>> {
+   fetchOrgUnits(orgUnitIds: string[]): Observable<Map<string, string>> {
     const idsQuery = `filter=id:in:[${orgUnitIds}]`;
     return this.httpClient
       .get(`organisationUnits.json?fields=id,name&paging=false&${idsQuery}`)
@@ -191,7 +195,7 @@ export class LineListService {
         }))
       );
     }
-  
+
     if (programId) {
       return this.getTrackedEntityInstances(
         programId,
@@ -213,7 +217,7 @@ export class LineListService {
         }))
       );
     }
-  
+
     return this.getEvents(
       programId,
       orgUnit,
@@ -230,5 +234,4 @@ export class LineListService {
       }))
     );
   }
-  
 }

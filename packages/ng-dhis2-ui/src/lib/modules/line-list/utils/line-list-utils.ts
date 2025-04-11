@@ -1,5 +1,11 @@
 // src/utils/line-list-utils.ts
-import { Attribute, DataValue, IEnrollment, Program, TrackedEntityInstance } from '@iapps/d2-web-sdk';
+import {
+  Attribute,
+  DataValue,
+  IEnrollment,
+  Program,
+  TrackedEntityInstance,
+} from '@iapps/d2-web-sdk';
 import { FilterConfig } from '../models/filter-config.model';
 import {
   LineListResponse,
@@ -102,31 +108,16 @@ export const getTrackedEntityData = (
   filteredEntityColumns: ColumnDefinition[];
   orgUnitLabel: string;
 } => {
-  let teis =  (response.data as TrackedEntityInstancesResponse).trackedEntityInstances;
-    // (response.data as TrackedEntityResponse)?.trackedEntities ??
-    // (response.data as TrackedEntityResponse)?.instances ??
-    // [];
+  let teisRaw = (response.data as TrackedEntityInstancesResponse)
+    .trackedEntityInstances;
+  const teis: TrackedEntityInstance[] = Array.isArray(teisRaw)
+    ? teisRaw
+    : [teisRaw];
 
-  console.log('response from utils', teis);
   const programMetaData = metaData.programTrackedEntityAttributes;
   const orgUnitLabel = metaData.orgUnitLabel as string;
-  const orgUnitMap = (response.data as TrackedEntityResponse).orgUnitsMap;
-
-  // if (filters) {
-  //   teis = getFilteredTrackedEntites(teis, filters);
-  // }
-
-  // const allAttributes = new Set<string>();
-
-  // teis.forEach((tei: any) => {
-  //   const matchingEnrollment = tei.enrollments.find(
-  //     (enrollment: any) => enrollment.program === programId
-  //   );
-  //   const attributes = matchingEnrollment
-  //     ? matchingEnrollment.attributes
-  //     : tei.attributes;
-  //   attributes.forEach((attr: any) => allAttributes.add(attr.attribute));
-  // });
+  const orgUnitMap = (response.data as TrackedEntityInstancesResponse)
+    .orgUnitsMap;
 
   let entityColumns = metaData.displayInListTrackedEntityAttributes
     .sort((a, b) => a.sortOrder! - b.sortOrder!)
@@ -170,7 +161,7 @@ export const getTrackedEntityData = (
       options: attr.optionSet ?? undefined,
     }));
 
-    console.log('filtered entity columns', filteredEntityColumns);
+  console.log('filtered entity columns', filteredEntityColumns);
 
   const attributesData = teis.map((tei: TrackedEntityInstance, idx: number) => {
     const row: TableRow = {
@@ -181,13 +172,10 @@ export const getTrackedEntityData = (
     const matchingEnrollment = tei.enrollments.find(
       (enrollment: IEnrollment) => enrollment.program === programId
     );
-    console.log('matching enrollment',matchingEnrollment);
+    console.log('matching enrollment', matchingEnrollment);
 
-    let attributesToUse = tei.attributes; 
-
-    let attributesTo = tei;
-
-      console.log('tei to use', tei.attributes);
+    let attributesToUse = tei.latestEnrollment.attributes;
+    console.log('the attributes', attributesToUse);
 
     let dataElementsToUse = matchingEnrollment!.events.flatMap(
       (event) => event.dataValues
@@ -243,11 +231,9 @@ export const getTrackedEntityData = (
       // attributesToUse.forEach((attr: Attribute) => {
       //   row[attr.attribute] = { value: attr.value };
       // });
-      attributesToUse.forEach((attr: Attribute) => 
-      {
+      attributesToUse.forEach((attr: Attribute) => {
         row[attr.attribute] = { value: attr.value };
-      }
-      );
+      });
 
       dataElementsToUse.forEach((element: DataValue) => {
         // Find the matching data element in dataElementOptions by ID
