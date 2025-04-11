@@ -39,7 +39,7 @@ export class BaseEventQuery<T extends DHIS2Event> {
   protected assignedUserMode?: AssignedUserMode;
   protected enrollmentEnrolledBefore?: string;
   protected enrollmentEnrolledAfter?: string;
-  protected orderCriteria?: DataOrderCriteria;
+  protected orderCriterias?: DataOrderCriteria[];
   pager = new Pager();
   [key: string]: unknown;
   instance!: T;
@@ -64,8 +64,8 @@ export class BaseEventQuery<T extends DHIS2Event> {
     return this;
   }
 
-  setOrderCriteria(orderCriteria: DataOrderCriteria): BaseEventQuery<T> {
-    this.orderCriteria = orderCriteria;
+  setOrderCriterias(orderCriterias: DataOrderCriteria[]): BaseEventQuery<T> {
+    this.orderCriterias = orderCriterias;
     return this;
   }
 
@@ -239,7 +239,7 @@ export class BaseEventQuery<T extends DHIS2Event> {
         occurredBefore: this.occurredBefore,
         scheduledAfter: this.scheduledAfter,
         scheduledBefore: this.scheduledBefore,
-        orderCriteria: this.orderCriteria,
+        orderCriterias: this.orderCriterias,
         pager: this.pager,
       }).generate()
     );
