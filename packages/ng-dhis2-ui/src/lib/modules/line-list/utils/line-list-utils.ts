@@ -18,216 +18,12 @@ import {
 } from './filter-builder';
 import { parse, format } from 'date-fns';
 
-// export const getProgramStageData = (
-//   response: LineListResponse,
-//   programStageId: string,
-//   pager: any,
-//   isOptionSetNameVisible: boolean
-// ): { columns: ColumnDefinition[]; data: TableRow[] } => {
-//   const events = (response.data as EventsResponse).events;
-//   const allDataElements = new Set<string>();
-//   events.forEach((event: any) => {
-//     event.dataValues.forEach((dv: any) => allDataElements.add(dv.dataElement));
-//   });
-
-//   const stageFromMetaData = response.metadata.programStages.find(
-//     (stage: any) => stage.id === programStageId
-//   );
-
-//   if (!stageFromMetaData) {
-//     throw new Error(`Program stage with ID ${programStageId} not found`);
-//   }
-
-//   const entityColumns = Array.from(allDataElements).map(
-//     (dataElementId: string) => ({
-//       label:
-//         stageFromMetaData.programStageDataElements.find(
-//           (psde: any) => psde.dataElement.id === dataElementId
-//         )?.dataElement.name || dataElementId,
-//       key: dataElementId,
-//     })
-//   );
-
-//   const dataElementsData: TableRow[] = events.map((event: any, idx: number) => {
-//     const row: TableRow = {
-//       event: event.event,
-//       index: (pager.page - 1) * pager.pageSize + idx + 1,
-//     };
-//     allDataElements.forEach(
-//       (dataElementId: string) => (row[dataElementId] = '')
-//     );
-
-//     if (isOptionSetNameVisible) {
-//       event.dataValues.forEach((dv: any) => (row[dv.dataElement] = dv.value));
-//     } else {
-//       event.dataValues.forEach((dv: any) => (row[dv.dataElement] = dv.value));
-
-//     }
-//     return row;
-//   });
-
-//   return { columns: entityColumns, data: dataElementsData };
-// };
-
-// export const getTrackedEntityData = (
-//   response: LineListResponse,
-//   programId: string,
-//   pager: any,
-//   isOptionSetNameVisible: boolean,
-//   filters?: FilterConfig[]
-// ): {
-//   columns: ColumnDefinition[];
-//   data: TableRow[];
-//   filteredEntityColumns: ColumnDefinition[];
-// } => {
-//   let teis =
-//     (response.data as TrackedEntityResponse)?.trackedEntities ??
-//     (response.data as TrackedEntityResponse)?.instances ??
-//     [];
-
-//   const programMetaData = response.metadata.programTrackedEntityAttributes;
-
-//   // //organisation units from metadata
-//   // let orgUnitsFromMetaData = response.metadata.organisationUnits;
-
-//   // //a Map to efficiently look up orgUnit names by ID
-//   // const orgUnitMap = new Map<string, string>(
-//   //   orgUnitsFromMetaData.map((ou: { id: string; name: string }) => [
-//   //     ou.id,
-//   //     ou.name,
-//   //   ])
-//   // );
-
-//   const orgUnitMap = (response.data as TrackedEntityResponse).orgUnitsMap;
-
-//   const mappedProgramMetadataAttributes = programMetaData.map((attr) => ({
-//     displayInList: attr.displayInList,
-//     searchable: attr.searchable,
-//     id: attr.trackedEntityAttribute.id,
-//   }));
-
-//   const programAttributesMap = programMetaData.reduce(
-//     (acc: { [key: string]: string }, attribute: any) => {
-//       if (attribute.displayInList) {
-//         acc[attribute.id] = attribute.displayName;
-//       }
-//       return acc;
-//     },
-//     {}
-//   );
-
-//   if (filters) {
-//     teis = getFilteredTrackedEntites(teis, filters);
-//   }
-
-//   const allAttributes = new Set<string>();
-
-//   teis.forEach((tei: any) => {
-//     const matchingEnrollment = tei.enrollments.find(
-//       (enrollment: any) => enrollment.program === programId
-//     );
-//     const attributes = matchingEnrollment
-//       ? matchingEnrollment.attributes
-//       : tei.attributes;
-//     attributes.forEach((attr: any) => allAttributes.add(attr.attribute));
-//   });
-
-//   let entityColumns = Array.from(allAttributes).map((attrId: string) => {
-//     const foundAttribute = teis
-//       .flatMap((tei: any) => {
-//         const matchingEnrollment = tei.enrollments.find(
-//           (enrollment: any) => enrollment.program === programId
-//         );
-//         return matchingEnrollment
-//           ? matchingEnrollment.attributes
-//           : tei.attributes;
-//       })
-//       .find((attr: any) => attr.attribute === attrId);
-
-//     return {
-//       label: foundAttribute?.displayName || attrId,
-//       key: attrId,
-//     };
-//   });
-
-//   entityColumns = entityColumns.filter((column) => {
-//     // Check if the column label is part of any value in programAttributesMap
-//     return Object.values(programAttributesMap).some((value: string) =>
-//       value.includes(column.label)
-//     );
-//   });
-
-//   // Add orgUnit as the first column
-//   entityColumns.unshift({
-//     label: 'Location',
-//     key: 'orgUnit',
-//   });
-
-//   const searchableAttributes = mappedProgramMetadataAttributes
-//     .filter((attr) => attr.searchable && attr.displayInList)
-//     .map((attr) => ({
-//       //  label: attr.trackedEntityAttribute.displayName,
-//       key: attr.id,
-//     }));
-
-//   // Extract keys from searchableAttributes for quick lookup
-//   const searchableKeys = new Set(searchableAttributes.map((attr) => attr.key));
-
-//   // Filter entityColumns to keep only those whose key exists in searchableAttributes
-//   const filteredEntityColumns = entityColumns.filter((column) =>
-//     searchableKeys.has(column.key)
-//   );
-
-//   const attributesData = teis.map((tei: any, idx: number) => {
-//     const row: TableRow = {
-//       trackedEntityInstance: tei.trackedEntity,
-//       index: (pager.page - 1) * pager.pageSize + idx + 1,
-//     };
-
-//     allAttributes.forEach((attrId: string) => (row[attrId] = ''));
-
-//     const matchingEnrollment = tei.enrollments.find(
-//       (enrollment: any) => enrollment.program === programId
-//     );
-//     const attributesToUse = matchingEnrollment
-//       ? matchingEnrollment.attributes
-//       : tei.attributes;
-
-//     console.log('RESPONSE::: ', JSON.stringify(attributesToUse));
-//     console.log('HERE WEARE', JSON.stringify(response.metadata));
-
-//     if (isOptionSetNameVisible) {
-//       attributesToUse.forEach(
-//         (attr: any) => (row[attr.attribute] = attr.value)
-//       );
-//     } else {
-//       attributesToUse.forEach(
-//         (attr: any) => (row[attr.attribute] = attr.value)
-//       );
-//     }
-
-//     //include orgUnit in the row for id access
-//     row['orgUnitId'] = matchingEnrollment.orgUnit;
-//     // Access the name of the orgUnit using the Map
-//     //  row['orgUnit'] = matchingEnrollment.orgUnitName;
-//     row['orgUnit'] = orgUnitMap?.get(matchingEnrollment.orgUnit) || 'N/A';
-//     //  row['orgUnit'] =
-//     // orgUnitMap && orgUnitMap[matchingEnrollment.orgUnit]
-//     //   ? orgUnitMap[matchingEnrollment.orgUnit]
-//     //   : 'N/A';
-//     return row;
-//   });
-//   return {
-//     columns: entityColumns,
-//     data: attributesData,
-//     filteredEntityColumns: filteredEntityColumns,
-//   };
-// };
 
 export const getProgramStageData = (
   response: LineListResponse,
   programStageId: string,
   pager: any,
+  metaData: Program,
   isOptionSetNameVisible: boolean
 ): { columns: ColumnDefinition[]; data: TableRow[] } => {
   const events = (response.data as EventsResponse).events;
@@ -237,7 +33,7 @@ export const getProgramStageData = (
     event.dataValues.forEach((dv: any) => allDataElements.add(dv.dataElement));
   });
 
-  const stageFromMetaData = response.metadata.programStages.find(
+  const stageFromMetaData = metaData.programStages!.find(
     (stage: any) => stage.id === programStageId
   );
 
@@ -247,7 +43,7 @@ export const getProgramStageData = (
 
   const entityColumns = Array.from(allDataElements).map(
     (dataElementId: string) => {
-      const dataElementMeta = stageFromMetaData.programStageDataElements.find(
+      const dataElementMeta = stageFromMetaData.programStageDataElements!.find(
         (psde: any) => psde.dataElement.id === dataElementId
       );
 
@@ -259,26 +55,21 @@ export const getProgramStageData = (
   );
 
   const dataElementsData: TableRow[] = events.map((event: any, idx: number) => {
-    // const row: TableRow = {
-    //   event: event.event,
-    //   index: (pager.page - 1) * pager.pageSize + idx + 1,
-    // };
-
-    // allDataElements.forEach(
-    //   (dataElementId: string) => (row[dataElementId] = '')
-    // );
 
     const row: TableRow = {
-      event: { value: event.event, style: 'default-style' }, // Example event field with style
-      index: { value: (pager.page - 1) * pager.pageSize + idx + 1, style: 'default-style' }, // Example index field with style
+      event: { value: event.event, style: 'default-style' }, 
+      index: {
+        value: (pager.page - 1) * pager.pageSize + idx + 1,
+        style: 'default-style',
+      }, 
     };
-    
+
     allDataElements.forEach((dataElementId: string) => {
-      row[dataElementId] = { value: '', style: 'default-style' };  // Initialize each data element with value and style
+      row[dataElementId] = { value: '', style: 'default-style' }; 
     });
 
     event.dataValues.forEach((dv: any) => {
-      const dataElementMeta = stageFromMetaData.programStageDataElements.find(
+      const dataElementMeta = stageFromMetaData.programStageDataElements!.find(
         (psde: any) => psde.dataElement.id === dv.dataElement
       );
 
@@ -323,16 +114,6 @@ export const getTrackedEntityData = (
   const orgUnitLabel = metaData.orgUnitLabel as string;
   const orgUnitMap = (response.data as TrackedEntityResponse).orgUnitsMap;
 
-  // const mappedProgramMetadataAttributes = programMetaData!.map((attr) => ({
-  //   displayInList: attr.displayInList,
-  //   searchable: attr.searchable,
-  //   id: attr.trackedEntityAttribute.id,
-  //   name: attr.trackedEntityAttribute.name,
-  //   optionSet: attr.trackedEntityAttribute.optionSetValue
-  //     ? attr.trackedEntityAttribute.optionSet
-  //     : null,
-  //   sortOrder: attr.sortOrder,
-  // }));
 
   if (filters) {
     teis = getFilteredTrackedEntites(teis, filters);
@@ -364,13 +145,15 @@ export const getTrackedEntityData = (
       key: element.id,
     }));
 
-  let dataElementOptions = metaData.displayInListDataElements.map((element) => ({
-     id: element.id,
-     options: element.optionSet?.options.map((opt) => ({
-       name: opt.name,
-       color: opt.style?.color
-     }))
-  }));
+  let dataElementOptions = metaData.displayInListDataElements.map(
+    (element) => ({
+      id: element.id,
+      options: element.optionSet?.options.map((opt) => ({
+        name: opt.name,
+        color: opt.style?.color,
+      })),
+    })
+  );
 
   entityColumns = [...entityColumns, ...dataElementColumns];
 
@@ -390,11 +173,9 @@ export const getTrackedEntityData = (
 
   const attributesData = teis.map((tei: TrackedEntity, idx: number) => {
     const row: TableRow = {
-      trackedEntityInstance: { value: tei.trackedEntity,},
-      index: { value: (pager.page - 1) * pager.pageSize + idx + 1,},
+      trackedEntityInstance: { value: tei.trackedEntity },
+      index: { value: (pager.page - 1) * pager.pageSize + idx + 1 },
     };
-
-   // allAttributes.forEach((attrId: string) => (row[attrId] = ''));
 
     const matchingEnrollment = tei.enrollments.find(
       (enrollment: Enrollment) => enrollment.program === programId
@@ -406,87 +187,91 @@ export const getTrackedEntityData = (
     let dataElementsToUse = matchingEnrollment!.events.flatMap(
       (event) => event.dataValues
     );
-    // const allDataValues = matchingEnrollment!.events.flatMap((event) => event.dataValues);
 
     //TODO: find a better way to do optimize this date parsing
     //map any date that occur in the attributes to dd-mm-yyyy
-    // attributesToUse = attributesToUse.map((attr: any) => {
-    //   // Check if the attribute is of type DATE
-    //   if (attr?.valueType === 'DATE' || attr?.valueType === 'date') {
-    //     try {
-    //       // Parse the date and format it as dd-MM-yyyy
-    //       const parsedDate = parse(attr.value, 'yyyy-MM-dd', new Date());
-    //       const formattedDate = format(parsedDate, 'dd-MM-yyyy');
-    //       // Update the value to the formatted date
-    //       return {
-    //         ...attr,
-    //         value: formattedDate,
-    //       };
-    //     } catch {
-    //       // If parsing fails, keep the original value
-    //       return {
-    //         ...attr,
-    //         value: attr.value,
-    //       };
-    //     }
-    //   }
+    attributesToUse = attributesToUse.map((attr: any) => {
+      // Check if the attribute is of type DATE
+      if (attr?.valueType === 'DATE' || attr?.valueType === 'date') {
+        try {
+          // Parse the date and format it as dd-MM-yyyy
+          const parsedDate = parse(attr.value, 'yyyy-MM-dd', new Date());
+          const formattedDate = format(parsedDate, 'dd-MM-yyyy');
+          // Update the value to the formatted date
+          return {
+            ...attr,
+            value: formattedDate,
+          };
+        } catch {
+          // If parsing fails, keep the original value
+          return {
+            ...attr,
+            value: attr.value,
+          };
+        }
+      }
 
-    //   // If not a date, just return the attribute as is
-    //   return attr;
-    // });
+      // If not a date, just return the attribute as is
+      return attr;
+    });
 
     // // If option set names are visible, transform the attribute values
-    // if (isOptionSetNameVisible) {
-    //   attributesToUse.forEach((attr: any) => {
-    //     const attributeMeta = programMetaData!.find(
-    //       (metadata) => metadata.trackedEntityAttribute.id === attr.attribute
-    //     );
+    if (isOptionSetNameVisible) {
+      attributesToUse.forEach((attr: any) => {
+        const attributeMeta = programMetaData!.find(
+          (metadata) => metadata.trackedEntityAttribute.id === attr.attribute
+        );
 
-    //     // Check if the attribute has an option set and map value to option name
-    //     if (attributeMeta?.trackedEntityAttribute.optionSetValue) {
-    //       const optionSet = attributeMeta?.trackedEntityAttribute?.optionSet;
-    //       const option = optionSet?.options?.find(
-    //         (option) => option.code === attr.value
-    //       );
-    //       row[attr.attribute] = option ? option.name : attr.value;
-    //     } else {
-    //       row[attr.attribute] = attr.value;
-    //     }
-    //   });
-    // } else {
-  // Map attributes to the row with style
-  attributesToUse.forEach((attr: Attribute) => {
-    row[attr.attribute] = { value: attr.value,};
-  });
-
-  dataElementsToUse.forEach((element: DataValue) => {
-    // Check if the data element exists in dataElementOptions
-    const matchingOption = dataElementOptions
-      .flatMap((element) => element.options)  
-      .find((opt) => opt?.name === element.value);  
-  
-   
-    if (matchingOption) {
-      row[element.dataElement] = { 
-        value: element.value, 
-        style: matchingOption.color 
-      };
+        //     // Check if the attribute has an option set and map value to option name
+        if (attributeMeta?.trackedEntityAttribute.optionSetValue) {
+          const optionSet = attributeMeta?.trackedEntityAttribute?.optionSet;
+          const option = optionSet?.options?.find(
+            (option) => option.code === attr.value
+          );
+          row[attr.attribute] = option ? option.name : attr.value;
+        } else {
+          row[attr.attribute] = attr.value;
+        }
+      });
     } else {
-      row[element.dataElement] = { 
-        value: element.value 
-      };
-    }
-  });
-//}
+      // Map attributes to the row with style
+      attributesToUse.forEach((attr: Attribute) => {
+        row[attr.attribute] = { value: attr.value };
+      });
 
-  // Include orgUnit in the row for id access with style
-  row['orgUnitId'] = { value: matchingEnrollment!.orgUnit };
-  row['orgUnit'] = { value: orgUnitMap?.get(matchingEnrollment!.orgUnit) || 'N/A'};
+      dataElementsToUse.forEach((element: DataValue) => {
+        // Find the matching data element in dataElementOptions by ID
+        const dataElementOption = dataElementOptions.find(
+          (deo) => deo.id === element.dataElement
+        );
+
+        // Try to find a matching option within that data element's options
+        const matchingOption = dataElementOption?.options?.find(
+          (opt) => opt.name === element.value
+        );
+
+        // Build the row entry with value and optionally style
+        if (matchingOption) {
+          row[element.dataElement] = {
+            value: element.value,
+            style: matchingOption.color,
+          };
+        } else {
+          row[element.dataElement] = {
+            value: element.value,
+          };
+        }
+      });
+    }
+
+    // Include orgUnit in the row for id access with style
+    row['orgUnitId'] = { value: matchingEnrollment!.orgUnit };
+    row['orgUnit'] = {
+      value: orgUnitMap?.get(matchingEnrollment!.orgUnit) || 'N/A',
+    };
 
     return row;
   });
-
-  //dataElementsData
 
   return {
     columns: entityColumns,
@@ -496,54 +281,11 @@ export const getTrackedEntityData = (
   };
 };
 
-// export const getEventData = (
-//   response: LineListResponse,
-//   pager: any,
-//   isOptionSetNameVisible: boolean
-// ): { columns: ColumnDefinition[]; data: TableRow[] } => {
-//   const events = (response.data as EventsResponse).events;
-//   const uniqueDataElements = new Set<string>();
-//   events?.forEach((event: any) => {
-//     event?.dataValues.forEach((dv: any) =>
-//       uniqueDataElements.add(dv.dataElement)
-//     );
-//   });
-
-//   const entityColumns = Array.from(uniqueDataElements).map(
-//     (dataElement: string) => ({
-//       label:
-//         response.metadata.programStages[0].programStageDataElements.find(
-//           (psde: any) => psde.dataElement.id === dataElement
-//         )?.dataElement.name || dataElement,
-//       key: dataElement,
-//     })
-//   );
-
-//   const dataElementsData = events.map((event: any, idx: number) => {
-//     const row: TableRow = {
-//       event: event.event,
-//       index: (pager.page - 1) * pager.pageSize + idx + 1,
-//     };
-//     uniqueDataElements.forEach(
-//       (dataElement: string) => (row[dataElement] = '')
-//     );
-//     event.dataValues.forEach((dv: any) => {
-//       if (isOptionSetNameVisible) {
-//         return (row[dv.dataElement] = dv.value)
-
-//       } else {
-//         return (row[dv.dataElement] = dv.value)
-//       }
-//     });
-//     return row;
-//   });
-
-//   return { columns: entityColumns, data: dataElementsData };
-// };
 
 export const getEventData = (
   response: LineListResponse,
   pager: any,
+  metaData: Program,
   isOptionSetNameVisible: boolean
 ): { columns: ColumnDefinition[]; data: TableRow[] } => {
   const events = (response.data as EventsResponse).events;
@@ -558,7 +300,7 @@ export const getEventData = (
   const entityColumns = Array.from(uniqueDataElements).map(
     (dataElement: string) => ({
       label:
-        response.metadata.programStages[0].programStageDataElements.find(
+        metaData.programStages![0].programStageDataElements!.find(
           (psde: any) => psde.dataElement.id === dataElement
         )?.dataElement.name || dataElement,
       key: dataElement,
@@ -566,27 +308,23 @@ export const getEventData = (
   );
 
   const dataElementsData = events.map((event: any, idx: number) => {
-    // const row: TableRow = {
-    //   event: event.event,
-    //   index: (pager.page - 1) * pager.pageSize + idx + 1,
-    // };
 
-    // uniqueDataElements.forEach(
-    //   (dataElement: string) => (row[dataElement] = '')
-    // );
 
     const row: TableRow = {
       event: { value: event.event, style: 'event-style' },
-      index: { value: (pager.page - 1) * pager.pageSize + idx + 1, style: 'index-style' },
+      index: {
+        value: (pager.page - 1) * pager.pageSize + idx + 1,
+        style: 'index-style',
+      },
     };
-    
+
     uniqueDataElements.forEach((dataElement: string) => {
-      row[dataElement] = { value: '', style: 'default-style' }; // Assigning default style for each data element
+      row[dataElement] = { value: '', style: 'default-style' }; 
     });
 
     event.dataValues.forEach((dv: any) => {
       if (isOptionSetNameVisible && dv.optionSetValue) {
-        const dataElementMetadata = response.metadata.programStages
+        const dataElementMetadata = metaData.programStages!
           .flatMap((programStage: any) => programStage.programStageDataElements)
           .find((psde: any) => psde.dataElement.id === dv.dataElement)
           ?.dataElement.optionSet;

@@ -25,7 +25,7 @@ import {
   Pagination,
   TableBody,
   TableFoot,
-  TableHead,
+  TableHead,colors
 } from '@dhis2/ui';
 import React, { useEffect, useRef, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
@@ -194,7 +194,7 @@ export class LineListTableComponent extends ReactWrapperModule {
     }, []);
 
     useEffect(() => {
-      setLoading(true)
+      setLoading(true);
       const fetchmetaData = async () => {
         try {
           const trackerResponse = (await d2.trackerModule.trackedEntity
@@ -247,13 +247,13 @@ export class LineListTableComponent extends ReactWrapperModule {
               response,
               this.programStageId,
               pager,
+              metaData,
               this.isOptionSetNameVisible
             );
             entityColumns = columns;
             entityData = data;
           } else if (
-            'trackedEntities' in response.data ||
-            'instances' in response.data
+            metaData.programType === "WITH_REGISTRATION"
           ) {
             const responseData: any = response.data as TrackedEntityResponse;
             responsePager = responseData.pager || {
@@ -263,6 +263,8 @@ export class LineListTableComponent extends ReactWrapperModule {
               pageCount: responseData.pageCount,
             };
 
+           
+
             const { columns, data, filteredEntityColumns, orgUnitLabel } =
               getTrackedEntityData(
                 response,
@@ -270,7 +272,7 @@ export class LineListTableComponent extends ReactWrapperModule {
                 pager,
                 this.isOptionSetNameVisible,
                 metaData,
-                this.filters,
+                this.filters
               );
             entityColumns = columns;
             entityData = data;
@@ -311,6 +313,7 @@ export class LineListTableComponent extends ReactWrapperModule {
             const { columns, data } = getEventData(
               response,
               pager,
+              metaData,
               this.isOptionSetNameVisible
             );
             entityColumns = columns;
@@ -329,7 +332,7 @@ export class LineListTableComponent extends ReactWrapperModule {
         });
 
       return () => {
-        subscription.unsubscribe(); // Ensure cleanup on unmount
+        subscription.unsubscribe(); 
       };
     }, [
       metaData,
@@ -389,7 +392,7 @@ export class LineListTableComponent extends ReactWrapperModule {
       // Update dateStates
       setDateStates((prevDateStates) => ({
         ...prevDateStates,
-        [key]: selectedDateString, // Will set it to empty if date is cleared
+        [key]: selectedDateString,
       }));
 
       // Update attributeFiltersState to remove filter if date is cleared
@@ -408,6 +411,23 @@ export class LineListTableComponent extends ReactWrapperModule {
         return updatedFilters;
       });
     };
+
+    function getTextColorFromBackGround(hex: string): string {
+      // Remove the hash if present
+      hex = hex.replace('#', '');
+    
+      // Convert to RGB
+      const r = parseInt(hex.substr(0, 2), 16);
+      const g = parseInt(hex.substr(2, 2), 16);
+      const b = parseInt(hex.substr(4, 2), 16);
+    
+      // YIQ formula to calculate brightness
+      const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+    
+      // Return black for light backgrounds, white for dark backgrounds
+      return yiq >= 128 ? colors.grey700 : '#FFFFFF';
+    }
+
 
     return (
       <div>
@@ -465,15 +485,6 @@ export class LineListTableComponent extends ReactWrapperModule {
                     flexWrap: 'wrap',
                   }}
                 >
-                  {/* <InputField
-                    key="location"
-                    label="Registraring unit:"
-                    value={selectedOrgUnit}
-                    clearable
-                    onFocus={() => setHide(false)}
-                    className="custom-input"
-                    onChange={(event: { value: React.SetStateAction<string>; }) => setSelectedOrgUnit(event.value)}
-                  /> */}
                   <InputField
                     key="location"
                     //label={orgUnitLabel}
@@ -514,76 +525,6 @@ export class LineListTableComponent extends ReactWrapperModule {
                       setEndDateState(selectedDate.calendarDateString);
                     }}
                   />
-                  {/* {(visibleFilters ?? []).map(
-                    ({ label, key, valueType, options }) =>
-                      valueType === 'DATE' ? (
-                        <CalendarInput
-                          key={key}
-                          label={`${label}:`}
-                          calendar="gregory"
-                          locale="en-GB"
-                          timeZone="Africa/Dar_es_Salaam"
-                          className="custom-input"
-                          date={dateStates[key] || ''} // Use the specific date for this field
-                          onDateSelect={(selectedDate: any) =>
-                            handleDateSelect(key, selectedDate)
-                          } 
-                        />
-                      ) : (
-                        <InputField
-                          key={key}
-                          label={`${label}:`}
-                          className="custom-input"
-                          value={inputValues[key] || ''}
-                          clearable
-                          onChange={(
-                            e:
-                              | React.ChangeEvent<HTMLInputElement>
-                              | { value?: string }
-                          ) => {
-                            let currentValue = '';
-
-                            if ('target' in e && e.target) {
-                              currentValue = (
-                                e as React.ChangeEvent<HTMLInputElement>
-                              ).target.value;
-                            } else if ('value' in e) {
-                              currentValue = e.value ?? '';
-                            }
-
-                            setInputValues((prevValues) => ({
-                              ...prevValues,
-                              [key]: currentValue,
-                            }));
-
-                            // Trigger change immediately if the input is cleared
-                            if (currentValue === '') {
-                              handleInputChange(key, '');
-                            }
-                          }}
-                          onBlur={(
-                            e:
-                              | React.ChangeEvent<HTMLInputElement>
-                              | { value?: string }
-                          ) => {
-                            let currentValue = '';
-
-                            if ('target' in e && e.target) {
-                              currentValue = e.target.value;
-                            } else if ('value' in e) {
-                              currentValue = e.value ?? '';
-                            }
-                            if (
-                              currentValue !== '' &&
-                              currentValue !== prevValue
-                            ) {
-                              handleInputChange(key, currentValue);
-                              setPrevValue(currentValue);
-                            }
-                          }}
-                        />
-                      )
-                  )} */}
                   {(visibleFilters ?? []).map(
                     ({ label, key, valueType, options }) => {
                       // Render CalendarInput for DATE fields
@@ -693,59 +634,6 @@ export class LineListTableComponent extends ReactWrapperModule {
                       );
                     }
                   )}
-
-                  {/* {(visibleFilters ?? []).map(({ label, key, valueType, options }) => (
-                   
-                    <InputField
-                      key={key}
-                      label={`${label}:`}
-                      className="custom-input"
-                      value={inputValues[key] || ''}
-                      clearable
-                      onChange={(
-                        e:
-                          | React.ChangeEvent<HTMLInputElement>
-                          | { value?: string }
-                      ) => {
-                        let currentValue = '';
-
-                        if ('target' in e && e.target) {
-                          currentValue = (
-                            e as React.ChangeEvent<HTMLInputElement>
-                          ).target.value;
-                        } else if ('value' in e) {
-                          currentValue = e.value ?? '';
-                        }
-
-                        setInputValues((prevValues) => ({
-                          ...prevValues,
-                          [key]: currentValue,
-                        }));
-
-                        // Trigger change immediately if the input is cleared
-                        if (currentValue === '') {
-                          handleInputChange(key, '');
-                        }
-                      }}
-                      onBlur={(
-                        e:
-                          | React.ChangeEvent<HTMLInputElement>
-                          | { value?: string }
-                      ) => {
-                        let currentValue = '';
-
-                        if ('target' in e && e.target) {
-                          currentValue = e.target.value;
-                        } else if ('value' in e) {
-                          currentValue = e.value ?? '';
-                        }
-                        if (currentValue !== '' && currentValue !== prevValue) {
-                          handleInputChange(key, currentValue);
-                          setPrevValue(currentValue);
-                        }
-                      }}
-                    />
-                  ))} */}
                   <Button onClick={() => setShowAllFilters(!showAllFilters)}>
                     {showAllFilters ? 'Less Filters' : 'More Filters'}
                   </Button>
@@ -770,41 +658,51 @@ export class LineListTableComponent extends ReactWrapperModule {
                     <DataTableRow key={row.index.value}>
                       {columns.map((col) => (
                         <DataTableCell key={col.key}>
-                          {
-                            col.key === 'actions'
-                              ? this.actionOptions && (
-                                  <DataTableActions
-                                    actionOptions={this.actionOptions}
-                                    actionOptionOrientation={
-                                      this.actionOptionOrientation
-                                    }
-                                    onClick={(option) => {
-                                      if (option.onClick) {
-                                        option.onClick(row);
-                                      }
-                                      this.actionSelected.emit({
-                                        action: option.label,
-                                        row,
-                                      });
-                                    }}
-                                  />
-                                )
-                              : 
-                              <>
-                              <div>{row[col.key]?.value || '--'}</div> 
-                              {
-                                // Only render the link if style is set and it's not the default value
-                                row[col.key]?.style && row[col.key]?.style !== 'default-value' && (
-                                  <a
-                                    href="#"
-                                    style={{ color: row[col.key]?.style }} // Apply the color from the style field
-                                  >
-                                    Link
-                                  </a>
-                                )
-                              }
+                          {col.key === 'actions' ? (
+                            this.actionOptions && (
+                              <DataTableActions
+                                actionOptions={this.actionOptions}
+                                actionOptionOrientation={
+                                  this.actionOptionOrientation
+                                }
+                                onClick={(option) => {
+                                  if (option.onClick) {
+                                    option.onClick(row);
+                                  }
+                                  this.actionSelected.emit({
+                                    action: option.label,
+                                    row,
+                                  });
+                                }}
+                              />
+                            )
+                          ) : (
+                            <>
+                              {row[col.key]?.style &&
+                              row[col.key]?.style !== 'default-value' ? (
+                                <div
+                                 style={{display: 'flex', justifyContent: 'center'}}
+                                
+                                >
+                                  <span style={{
+                                    backgroundColor: row[col.key]?.style,
+                                    display: 'inline-flex',
+                                    alignItems:'center',
+                                    padding:4,
+                                    borderRadius: 3,
+                                    fontSize: 12,
+                                    color: getTextColorFromBackGround(row[col.key]?.style as string)
+                                  }}>
+                                    {row[col.key]?.value}
+                                  </span>
+                                </div>
+                              ) : (
+                                <div className="text-sm text-gray-800">
+                                  {row[col.key]?.value || '--'}
+                                </div>
+                              )}
                             </>
-                          }
+                          )}
                         </DataTableCell>
                       ))}
                     </DataTableRow>
@@ -859,6 +757,7 @@ export class LineListTableComponent extends ReactWrapperModule {
       </div>
     );
   };
+
 
   override async ngAfterViewInit() {
     if (!this.elementRef) throw new Error('No element ref');
