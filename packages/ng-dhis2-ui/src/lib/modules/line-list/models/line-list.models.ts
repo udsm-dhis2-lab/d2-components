@@ -1,4 +1,6 @@
-export interface Pager {
+import { Pager, TrackedEntityInstance } from "@iapps/d2-web-sdk";
+
+export interface PagerObject {
   page: number;
   pageSize: number;
   total: number;
@@ -87,21 +89,21 @@ export interface Enrollment {
   events: Event[];
   attributes: Attribute[];
 }
-export interface TrackedEntityInstance {
-  trackedEntityInstance: string;
-  attributes:  Attribute[];
-  enrollments: Enrollment[];
-  trackedEntity: string;
-  trackedEntityType: string;
-  createdAt: string;
-  createdAtClient: string;
-  updatedAt: string;
-  orgUnit: string;
-  inactive: boolean;
-  deleted: boolean;
-  potentialDuplicate: boolean;
-  programOwners: ProgramOwner[];
-}
+// export interface TrackedEntityInstance {
+//   trackedEntityInstance: string;
+//   attributes:  Attribute[];
+//   enrollments: Enrollment[];
+//   trackedEntity: string;
+//   trackedEntityType: string;
+//   createdAt: string;
+//   createdAtClient: string;
+//   updatedAt: string;
+//   orgUnit: string;
+//   inactive: boolean;
+//   deleted: boolean;
+//   potentialDuplicate: boolean;
+//   programOwners: ProgramOwner[];
+// }
 
 export interface TrackedEntity {
   attributes: Attribute[];
@@ -124,8 +126,8 @@ export interface ProgramOwner {
   program: string;
 }
 export interface TrackedEntityInstancesResponse {
-  trackedEntityInstances: TrackedEntityInstance[];
-  trackedEntity: TrackedEntity[];
+  trackedEntityInstances: TrackedEntityInstance |TrackedEntityInstance[];
+  trackedEntity?: TrackedEntity[];
   pager: Pager;
 }
 
@@ -190,7 +192,7 @@ export interface ProgramMetadata {
 }
 
 export interface LineListResponse {
-  data: EventsResponse | TrackedEntityInstancesResponse | EnrollmentsResponse | TrackedEntityResponse;
+  data: EventsResponse | TrackedEntityInstancesResponse | EnrollmentsResponse | TrackedEntityResponse | TrackedEntityInstance | TrackedEntityInstance[];
 }
 
 // export interface TableRow {

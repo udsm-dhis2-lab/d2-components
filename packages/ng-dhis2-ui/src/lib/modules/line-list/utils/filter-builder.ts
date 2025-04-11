@@ -1,8 +1,9 @@
+import { TrackedEntityInstance } from '@iapps/d2-web-sdk';
 import { AttributeFilter } from '../models/attribute-filter.model';
 import { FilterConfig } from '../models/filter-config.model';
 import {
   TrackedEntity,
-  TrackedEntityInstance,
+ 
 } from '../models/line-list.models';
 
 // export function buildFilters(filters: AttributeFilter[]): string {
