@@ -35,7 +35,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
   protected enrollmentEnrolledAfter?: string;
   protected enrollmentEnrolledBefore?: string;
   protected trackedEntity?: string;
-  protected orderCriteria?: DataOrderCriteria;
+  protected orderCriterias?: DataOrderCriteria[];
   event?: string;
   protected pager = new Pager();
   [key: string]: unknown;
@@ -59,8 +59,8 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
     return this;
   }
 
-  setOrderCriteria(orderCriteria: DataOrderCriteria): BaseTrackerQuery<T> {
-    this.orderCriteria = orderCriteria;
+  setOrderCriterias(orderCriterias: DataOrderCriteria[]): BaseTrackerQuery<T> {
+    this.orderCriterias = orderCriterias;
     return this;
   }
 
@@ -280,7 +280,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
         ouMode: this.ouMode,
         filters: [],
         fields: this.fields,
-        orderCriteria: this.orderCriteria,
+        orderCriterias: this.orderCriterias,
         enrollmentEnrolledAfter: this.enrollmentEnrolledAfter,
         enrollmentEnrolledBefore: this.enrollmentEnrolledBefore,
         trackedEntity: trackedEntities.join(';'),
@@ -312,7 +312,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
         ouMode: this.ouMode,
         filters: this.filters,
         fields: this.fields,
-        orderCriteria: this.orderCriteria,
+        orderCriterias: this.orderCriterias,
         enrollmentEnrolledAfter: this.enrollmentEnrolledAfter,
         enrollmentEnrolledBefore: this.enrollmentEnrolledBefore,
         trackedEntity: this.trackedEntity,

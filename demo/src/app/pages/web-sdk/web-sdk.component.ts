@@ -85,9 +85,9 @@ export class WebSdkComponent {
           page: 1,
         })
       )
-      .setOrderCriteria(
-        new DataOrderCriteria().setField('createdAt').setOrder('desc')
-      )
+      .setOrderCriterias([
+        new DataOrderCriteria().setField('createdAt').setOrder('desc'),
+      ])
       .get();
 
     console.log(trackerQuery);
