@@ -95,7 +95,7 @@ export class FormComponentsComponent {
     displayType: 'FLAT',
     formType: 'TRACKER',
     excludeProgramStages: true,
-    excludeInheritedAttributes: true,
+    excludeInheritedAttributes: false,
     hideRegistrationUnit: true,
     hideEnrollmentDate: true,
   });
