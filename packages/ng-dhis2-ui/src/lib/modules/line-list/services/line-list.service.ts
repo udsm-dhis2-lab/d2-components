@@ -1,24 +1,7 @@
 import { Injectable } from '@angular/core';
 import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
 import { Observable, of } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
-import {
-  ProgramMetadata,
-  EventsResponse,
-  TrackedEntityInstancesResponse,
-  LineListResponse,
-  TrackedEntityResponse,
-} from '../models/line-list.models';
-import {
-  buildFilters,
-  buildFiltersFromEvents,
-  getFilteredTrackedEntites,
-} from '../utils/filter-builder';
-import { AttributeFilter } from '../models/attribute-filter.model';
-import { FilterConfig } from '../models/filter-config.model';
-import { Data } from '@angular/router';
-import { DataElementFilter } from '../models/data-element-filter.model';
-
+import { map } from 'rxjs/operators';
 @Injectable()
 export class LineListService {
   constructor(private httpClient: NgxDhis2HttpClientService) {}
