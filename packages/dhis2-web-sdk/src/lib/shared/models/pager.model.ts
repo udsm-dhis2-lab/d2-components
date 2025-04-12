@@ -6,7 +6,7 @@ export class Pager {
   total?: number;
   index?: number;
   pageOffset?: number;
-
+  
   constructor(pager?: Partial<Pager>) {
     this.pageSize = pager?.pageSize || 50;
     this.page = pager?.page || 1;

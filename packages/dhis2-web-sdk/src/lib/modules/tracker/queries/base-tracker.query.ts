@@ -286,6 +286,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
         enrollmentEnrolledBefore: this.enrollmentEnrolledBefore,
         trackedEntity: trackedEntities.join(';'),
         pager: this.pager,
+        preferList: true
       }).generate()
     );
   }
