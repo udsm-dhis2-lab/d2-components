@@ -1,15 +1,19 @@
 import { Component, inject, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ProgramRuleEngine } from '@iapps/d2-web-sdk';
+import {
+  DataFilterCondition,
+  DataQueryFilter,
+  ProgramRuleEngine,
+} from '@iapps/d2-web-sdk';
 import {
   BreadcrumbItem,
   FormValue,
   OrganisationUnitSelectionConfig,
-  TableRow,
 } from '@iapps/ng-dhis2-ui';
 import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
 import { Period } from '@iapps/period-utilities';
 import { IconView16 } from '@dhis2/ui';
+import { TableRow } from 'packages/ng-dhis2-ui/src/lib/modules/line-list/models/line-list.models';
 //import { LineListTableComponent } from '../../../../../packages/ng-dhis2-ui/src/lib/modules/line-list/containers/line-list.component';
 
 @Component({
@@ -39,6 +43,27 @@ export class ComponentsComponent implements OnInit {
     },
   ];
 
+ dynamicFilterInputs: DataQueryFilter[] = [
+    new DataQueryFilter()
+      .setAttribute('tgGvHgQgtQ0')
+      .setCondition(DataFilterCondition.Equal)
+      .setValue('ND_BATCH_32525931'), 
+  
+    new DataQueryFilter()
+      .setAttribute('lj3cQAle9Fo')
+      .setCondition(DataFilterCondition.In)
+      .setValue(['Qualified'])
+      .setType('DATA_ELEMENT')
+      .setProgramStage('NtZXBym2KfD'),
+
+      // new DataQueryFilter()
+      // .setAttribute('lj3cQAle9Fo')
+      // .setCondition(DataFilterCondition.NotEqual)
+      // .setValue('Rejected')
+      // .setType('DATA_ELEMENT')
+      // .setProgramStage('NtZXBym2KfD'),
+  ];
+  
   isButtonLoading: any;
 
   actionOptions = [
@@ -69,6 +94,12 @@ export class ComponentsComponent implements OnInit {
       this.onView(event.row);
     }
   }
+
+  // onActionSelected(event: { action: string; row: TableRow }) {
+  //   if (event.action === 'View') {
+  //     this.onView(event.row);
+  //   }
+  // }
 
   formValuePayload: any;
 
@@ -305,8 +336,6 @@ export class ComponentsComponent implements OnInit {
   onDelete(row: any) {
     console.log('Delete', row);
   }
-
-
 
   onApprove(row: any) {
     console.log('Approve', row);

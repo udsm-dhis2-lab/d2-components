@@ -1,8 +1,9 @@
+import { DataQueryFilter, TrackedEntityInstance } from '@iapps/d2-web-sdk';
 import { AttributeFilter } from '../models/attribute-filter.model';
 import { FilterConfig } from '../models/filter-config.model';
 import {
   TrackedEntity,
-  TrackedEntityInstance,
+ 
 } from '../models/line-list.models';
 
 // export function buildFilters(filters: AttributeFilter[]): string {
@@ -145,3 +146,14 @@ export const getFilteredTrackedEntites = (
     )
   );
 };
+
+export function transformFilters(filters: DataQueryFilter[]) {
+  const dataQueryFilters = filters.map((f) =>
+    new DataQueryFilter()
+      .setAttribute(f.attribute)
+      .setCondition(f.condition)
+      .setValue(f.value)
+      .setType(f.attributeType || 'TRACKED_ENTITY_ATTRIBUTE')
+      .setProgramStage(f.programStage || '')
+  );
+}

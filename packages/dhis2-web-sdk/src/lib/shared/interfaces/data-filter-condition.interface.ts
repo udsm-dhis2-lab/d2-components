@@ -4,6 +4,7 @@
 export enum DataFilterCondition {
   In = 'IN',
   Equal = 'EQ',
+  NotEqual = 'NE',
   Like = 'LIKE',
   Ilike = 'ILIKE',
   LessThan = 'LT',
