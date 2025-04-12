@@ -11,12 +11,14 @@ export class TrackerUrlGenerator extends DataUrlGenerator<TrackerUrlGenerator> {
   baseEndpoint = 'tracker/trackedEntities';
   trackedEntity?: string;
   trackedEntityType?: string;
+  preferList?: boolean
 
   constructor(params: Partial<TrackerUrlGenerator>) {
     super(params);
     this.trackedEntityType = params.trackedEntityType;
     this.fields = params.fields ?? DEFAULT_FIELDS;
     this.trackedEntity = params.trackedEntity;
+    this.preferList = params.preferList
   }
 
   override generate(): string {
@@ -55,7 +57,7 @@ export class TrackerUrlGenerator extends DataUrlGenerator<TrackerUrlGenerator> {
       return url;
     }
 
-    if (this.trackedEntity.split(';').length === 1) {
+    if (this.trackedEntity.split(';').length === 1 && !this.preferList) {
       return url + `/${this.trackedEntity}`;
     }
 

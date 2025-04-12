@@ -9,11 +9,11 @@ import {
   BreadcrumbItem,
   FormValue,
   OrganisationUnitSelectionConfig,
-  TableRow,
 } from '@iapps/ng-dhis2-ui';
 import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
 import { Period } from '@iapps/period-utilities';
 import { IconView16 } from '@dhis2/ui';
+import { TableRow } from 'packages/ng-dhis2-ui/src/lib/modules/line-list/models/line-list.models';
 //import { LineListTableComponent } from '../../../../../packages/ng-dhis2-ui/src/lib/modules/line-list/containers/line-list.component';
 
 @Component({
@@ -44,21 +44,24 @@ export class ComponentsComponent implements OnInit {
   ];
 
  dynamicFilterInputs: DataQueryFilter[] = [
-    // Filter 1
     new DataQueryFilter()
       .setAttribute('tgGvHgQgtQ0')
       .setCondition(DataFilterCondition.Equal)
-      .setValue('ND_BATCH_32525931')
-      .setType('TRACKED_ENTITY_ATTRIBUTE')  // Default type, you can modify if necessary
-      .setProgramStage(''),  // Assuming no program stage for this filter
+      .setValue('ND_BATCH_32525931'), 
   
-    // Filter 2
     new DataQueryFilter()
       .setAttribute('lj3cQAle9Fo')
       .setCondition(DataFilterCondition.In)
-      .setValue(['Qualified', 'Rejected'])
+      .setValue(['Qualified'])
       .setType('DATA_ELEMENT')
       .setProgramStage('NtZXBym2KfD'),
+
+      // new DataQueryFilter()
+      // .setAttribute('lj3cQAle9Fo')
+      // .setCondition(DataFilterCondition.NotEqual)
+      // .setValue('Rejected')
+      // .setType('DATA_ELEMENT')
+      // .setProgramStage('NtZXBym2KfD'),
   ];
   
   isButtonLoading: any;
@@ -91,6 +94,12 @@ export class ComponentsComponent implements OnInit {
       this.onView(event.row);
     }
   }
+
+  // onActionSelected(event: { action: string; row: TableRow }) {
+  //   if (event.action === 'View') {
+  //     this.onView(event.row);
+  //   }
+  // }
 
   formValuePayload: any;
 
