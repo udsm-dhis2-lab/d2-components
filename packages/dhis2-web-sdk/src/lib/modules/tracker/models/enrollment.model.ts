@@ -214,9 +214,7 @@ export class Enrollment
       orgUnit: this?.orgUnit,
       trackedEntity: this.trackedEntity,
       trackedEntityType: this.trackedEntityType,
-      events: this.events
-        .map((event) => event.toObject() as IDHIS2Event)
-        .filter((event) => (event.dataValues || []).length > 0),
+      events: this.events.map((event) => event.toObject() as IDHIS2Event),
       attributes: AttributeUtil.sanitizeAttributes(this.attributes || []),
     };
   }

@@ -19,6 +19,8 @@ export type ProgramStageField =
   | 'hideDueDate'
   | 'repeatable'
   | 'allowGenerateNextVisit'
+  | 'preGenerateUID'
+  | 'openAfterEnrollment'
   | 'minDaysFromStart'
   | 'generatedByEnrollmentDate'
   | 'autoGenerateEvent'
@@ -38,6 +40,8 @@ export class ProgramStage extends IdentifiableObject<ProgramStage> {
     'hideDueDate',
     'repeatable',
     'allowGenerateNextVisit',
+    'preGenerateUID',
+    'openAfterEnrollment',
     'minDaysFromStart',
     'generatedByEnrollmentDate',
     'autoGenerateEvent',
@@ -57,6 +61,8 @@ export class ProgramStage extends IdentifiableObject<ProgramStage> {
   minDaysFromStart?: number;
   generatedByEnrollmentDate?: boolean;
   autoGenerateEvent?: boolean;
+  preGenerateUID?: boolean;
+  openAfterEnrollment?: boolean;
   captureCoordinates?: boolean;
   featureType?: string;
   dueDateLabel?: string;
