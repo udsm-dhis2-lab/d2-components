@@ -8,54 +8,29 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import {
-  Button,
-  ButtonStrip,
-  CalendarInput,
   CircularLoader,
-  DataTable,
-  DataTableCell,
-  DataTableColumnHeader,
-  DataTableRow,
-  DataTableToolbar,
-  InputField,
-  Modal,
-  ModalActions,
-  ModalContent,
-  ModalTitle,
-  Pagination,
-  TableBody,
-  TableFoot,
-  TableHead,
   colors,
 } from '@dhis2/ui';
 import React, { useEffect, useRef, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
-import { Subscription, take } from 'rxjs';
+import { take } from 'rxjs';
 import { ReactWrapperModule } from '../../react-wrapper/react-wrapper.component';
-import { DataTableActions } from '../components/data-table-actions';
-import { OrgUnitFormField } from '../components/org-unit-form-field.component';
 import { AttributeFilter } from '../models/attribute-filter.model';
-import { FilterConfig } from '../models/filter-config.model';
 import {
   ColumnDefinition,
-  EventsResponse,
-  LineListResponse,
-  PagerObject,
   TableRow,
   TrackedEntityInstancesResponse,
-  TrackedEntityResponse,
 } from '../models/line-list.models';
 import { LineListService } from '../services/line-list.service';
 import {
   addActionsColumn,
+  getTrackedEntityTableData,
+} from '../utils/tei-table-data-utils';
+import {
   getEventData,
   getProgramStageData,
-  getTrackedEntityData,
-} from '../utils/line-list-utils';
+} from '../utils/event-table-table-util';
 import { ActionOptionOrientation, LineListActionOption } from '../models';
-import { SingleSelectField, SingleSelectOption } from '@dhis2/ui';
-import { Data } from '@angular/router';
-import { DataElementFilter } from '../models/data-element-filter.model';
 import {
   D2Window,
   DataFilterCondition,
@@ -66,7 +41,9 @@ import {
   Program,
   TrackedEntityInstance,
 } from '@iapps/d2-web-sdk';
-import { meta } from '@turf/turf';
+import { FilterToolbar } from '../components/table/filterToolbar';
+import { LineListTable } from '../components/table/lineListTable';
+import { OrgUnitSelector } from '../components/orgUnitSelector';
 
 @Component({
   selector: 'ng-dhis2-ui-line-list',
@@ -84,10 +61,8 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() useOuModeWithOlderDHIS2Instance?: boolean;
   @Input() startDate?: string;
   @Input() endDate?: string;
-  @Input() filters?: FilterConfig[];
-  @Input() dataQueryFilters? : DataQueryFilter[];
+  @Input() dataQueryFilters?: DataQueryFilter[];
   @Input() ouMode?: string;
-  @Input() dispatchTeis = false;
   @Output() actionSelected = new EventEmitter<{
     action: string;
     row: TableRow;
@@ -96,7 +71,6 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Output() approvalSelected = new EventEmitter<
     { teiId: string; enrollmentId: string }[]
   >();
-  @Input() dataElementFilter!: DataElementFilter;
   @Input() isButtonLoading = false;
   @Input() buttonFilter!: string;
   @Input() filterRootOrgUnit = false;
@@ -151,7 +125,6 @@ export class LineListTableComponent extends ReactWrapperModule {
         pageCount: 1,
       })
     );
-    const paginationRef = useRef<HTMLDivElement>(null);
     const [programIdState, setProgramIdState] = useState<string>(
       this.programId
     );
@@ -164,7 +137,9 @@ export class LineListTableComponent extends ReactWrapperModule {
     const [attributeFiltersState, setAttributeFiltersState] = useState<
       AttributeFilter[] | undefined
     >(this.attributeFilters);
-    const [dataQueryFiltersState, setDataQueryFiltersState] = useState<DataQueryFilter[]>(this.dataQueryFilters as DataQueryFilter[]);
+    const [dataQueryFiltersState, setDataQueryFiltersState] = useState<
+      DataQueryFilter[]
+    >(this.dataQueryFilters as DataQueryFilter[]);
     const [startDateState, setStartDateState] = useState<string | undefined>(
       this.startDate
     );
@@ -187,7 +162,6 @@ export class LineListTableComponent extends ReactWrapperModule {
     const [prevValue, setPrevValue] = useState<string>();
     const [dateStates, setDateStates] = useState<{ [key: string]: string }>({});
     const [metaData, setMetaData] = useState<Program | null>(null);
-    const [orgUnits, setOrgUnits] = useState<Map<string, string>>();
     const d2 = (window as unknown as D2Window).d2Web;
 
     // Store updaters in refs for Angular to access
@@ -212,9 +186,7 @@ export class LineListTableComponent extends ReactWrapperModule {
           const trackerResponse = (await d2.trackerModule.trackedEntity
             .setProgram(this.programId)
             .getMetaData()) as Program;
-
           const data = trackerResponse;
-          console.log('metadata:', data);
           setMetaData(data);
         } catch (error) {
           console.error('Failed to metadata:', error);
@@ -230,34 +202,19 @@ export class LineListTableComponent extends ReactWrapperModule {
       if (!metaData) {
         return undefined;
       }
-      
+
       setLoading(true);
-
-      let subscription: Subscription | undefined;
-
       const isTracker = metaData.programType === 'WITH_REGISTRATION';
+      const endDate = endDateState ?? new Date().toISOString().split('T')[0];
 
       if (isTracker) {
-        // ✅ Replace with trackerModule call
         d2.trackerModule.trackedEntity
-          .setEndDate(endDateState as string)
+          .setEndDate(endDate)
           .setStartDate(startDateState as string)
           .setProgram(this.programId)
           .setOrgUnit(orgUnitState)
           .setOuMode(this.ouMode as OuMode)
           .setFilters(dataQueryFiltersState)
-          // .setFilters([
-          //   new DataQueryFilter()
-          //     .setAttribute('tgGvHgQgtQ0')
-          //     .setCondition(DataFilterCondition.Equal)
-          //     .setValue('ND_BATCH_32525931'),
-          //   new DataQueryFilter()
-          //     .setAttribute('lj3cQAle9Fo')
-          //     .setCondition(DataFilterCondition.In)
-          //     .setValue(['Qualified', 'Rejected'])
-          //     .setProgramStage('NtZXBym2KfD')
-          //     .setType('DATA_ELEMENT'),
-          // ])
           .setPagination(
             new Pager({
               pageSize: pager.pageSize,
@@ -267,51 +224,47 @@ export class LineListTableComponent extends ReactWrapperModule {
           .setOrderCriterias([
             new DataOrderCriteria().setField('createdAt').setOrder('desc'),
           ])
-          .get().then((response) => {
-            console.log('the entire response', response)
-            console.log('the data element quer filter', new DataQueryFilter()
-            .setAttribute('lj3cQAle9Fo')
-            .setCondition(DataFilterCondition.In)
-            .setValue(['Qualified', 'Rejected'])
-            .setProgramStage('NtZXBym2KfD')
-            .setType('DATA_ELEMENT'),)
-            const trackedEntityInstances = Array.isArray(response.data) ? response.data : [response.data] as TrackedEntityInstance[];;
+          .get()
+          .then((response) => {
+            const trackedEntityInstances = Array.isArray(response.data)
+              ? response.data
+              : ([response.data] as TrackedEntityInstance[]);
             const orgUnitIdsFromEnrollments = new Set(
-              trackedEntityInstances.map((tei: TrackedEntityInstance) => tei.latestEnrollment.orgUnit)
+              trackedEntityInstances.map(
+                (tei: TrackedEntityInstance) => tei.latestEnrollment.orgUnit
+              )
             ) as Set<string>;
             const uniqueOrgUnitIds = [...orgUnitIdsFromEnrollments];
-          
+
             this.lineListService.fetchOrgUnits(uniqueOrgUnitIds).subscribe({
               next: (fetchedOrgUnits) => {
-                setOrgUnits(fetchedOrgUnits); 
-          
                 const trackedEntityResponse: TrackedEntityInstancesResponse = {
                   trackedEntityInstances: response.data!,
                   pager: pager,
-                  orgUnitsMap: fetchedOrgUnits 
+                  orgUnitsMap: fetchedOrgUnits,
                 };
-          
+
                 const { columns, data, filteredEntityColumns, orgUnitLabel } =
-                  getTrackedEntityData(
+                  getTrackedEntityTableData(
                     { data: trackedEntityResponse },
                     this.programId,
                     pager,
-                    this.isOptionSetNameVisible,
-                    metaData,
-                    this.filters
+                    metaData
                   );
-          
+
                 setFilteredColumns((prev) =>
-                  filteredEntityColumns.length > 0 ? filteredEntityColumns : prev
+                  filteredEntityColumns.length > 0
+                    ? filteredEntityColumns
+                    : prev
                 );
-          
+
                 const finalColumns: ColumnDefinition[] = addActionsColumn(
                   [{ label: '#', key: 'index' }, ...columns],
                   this.actionOptions
                 );
-          
+
                 const pagerResponse = response.pagination;
-          
+
                 setLoading(false);
                 setColumns(finalColumns);
                 setData(data);
@@ -321,134 +274,11 @@ export class LineListTableComponent extends ReactWrapperModule {
               error: (err) => {
                 console.error('Error fetching org units:', err);
                 setLoading(false);
-              }
+              },
             });
-          })
-
-          console.log('show loading state', loading);
-          
-          // .then((response) => {
-          //   const orgUnitIdsFromEnrollments = new Set(response.data?.map((tei: TrackedEntityInstance) => tei.latestEnrollment.orgUnit)) as Set<string>;
-          //   const uniqueOrgUnitIds = [...orgUnitIdsFromEnrollments];
-          //   this.lineListService.fetchOrgUnits(uniqueOrgUnitIds).subscribe({
-          //     next: (data) => {
-          //       console.log('thiis is the data', data)
-          //       setOrgUnits(data);
-          //     },
-          //     error: (err) => {
-          //       console.log('an error ha ocurred', err)
-          //     }
-          //   });
-          //   console.log('response from new tracker api', response.data?.map((tei: TrackedEntityInstance) => tei.latestEnrollment.orgUnit));
-          //   console.log('data query filtrer', new DataQueryFilter()
-          //   .setAttribute('tgGvHgQgtQ0')
-          //   .setCondition(DataFilterCondition.Equal)
-          //   .setValue('ND_BATCH_32525931'),)
-          //   const respose = response.data!;
-          //   const trackedEntityResponse: TrackedEntityInstancesResponse = {
-          //     trackedEntityInstances: respose,
-          //     pager: pager,
-          //     orgUnitsMap: orgUnits
-          //    // orgUnitsMap: 
-          //   };
-          //   console.log(
-          //     'value in tsx',
-          //     trackedEntityResponse.trackedEntityInstances
-          //   );
-          //   const { columns, data, filteredEntityColumns, orgUnitLabel } =
-          //     getTrackedEntityData(
-          //       { data: trackedEntityResponse }, // wrapped to mimic the same shape
-          //       this.programId,
-          //       pager,
-          //       this.isOptionSetNameVisible,
-          //       metaData,
-          //       this.filters
-          //     );
-          //     console.log('org units in tsx ',trackedEntityResponse.orgUnitsMap)
-
-          //   setFilteredColumns((prev) =>
-          //     filteredEntityColumns.length > 0 ? filteredEntityColumns : prev
-          //   );
-
-          //   const finalColumns: ColumnDefinition[] = addActionsColumn(
-          //     [{ label: '#', key: 'index' }, ...columns],
-          //     this.actionOptions
-          //   );
-
-          //   const pagerResponse = response.pagination;
-
-          //   setLoading(false);
-          //   setColumns(finalColumns);
-          //   setData(data);
-          //   setPager(new Pager(pagerResponse || {}));
-
-          //   //  setPager(pagerResponse);
-          //   setOrgUnitLabel(orgUnitLabel);
-          // })
-          // .catch((error) => {
-          //   console.error('Error fetching tracked entity data:', error);
-          //   setLoading(false);
-          // });
-      } else {
-        // ✅ Keep getLineListData for other program types
-        subscription = this.lineListService
-          .getLineListData(
-            this.programId,
-            orgUnitState,
-            this.programStageId,
-            pager.page,
-            pager.pageSize,
-            attributeFiltersState,
-            startDateState,
-            endDateState,
-            this.ouMode,
-            this.filterRootOrgUnit,
-            this.useOuModeWithOlderDHIS2Instance,
-            this.filters
-          )
-          .pipe(take(1))
-          .subscribe((response: LineListResponse) => {
-            let entityColumns: ColumnDefinition[] = [];
-            let responsePager: Pager;
-            let entityData: TableRow[] = [];
-
-            if (this.programStageId) {
-              responsePager = (response.data as EventsResponse).pager;
-              const { columns, data } = getProgramStageData(
-                response,
-                this.programStageId,
-                pager,
-                metaData,
-                this.isOptionSetNameVisible
-              );
-              entityColumns = columns;
-              entityData = data;
-            } else {
-              responsePager = (response.data as EventsResponse).pager;
-              const { columns, data } = getEventData(
-                response,
-                pager,
-                metaData,
-                this.isOptionSetNameVisible
-              );
-              entityColumns = columns;
-              entityData = data;
-            }
-
-            const finalColumns: ColumnDefinition[] = addActionsColumn(
-              [{ label: '#', key: 'index' }, ...entityColumns],
-              this.actionOptions
-            );
-
-            setLoading(false);
-            setColumns(finalColumns);
-            setData(entityData);
-            setPager(responsePager);
           });
-      }
-
-      return () => {
-        subscription?.unsubscribe();
+      } else {
+      //TODO: TO IMPLEMEMNT EVENT QUERY FOR FILTERING EVENTS WHEN PROGRAM STAGE IS PASSED OR DEALING WITH EVENT PROGRAM USING TRACKER SDK QUERY
       };
     }, [
       metaData,
@@ -461,139 +291,8 @@ export class LineListTableComponent extends ReactWrapperModule {
       pager.page,
       pager.pageSize,
       isOptionSetNameVisibleState,
-      dataQueryFiltersState
+      dataQueryFiltersState,
     ]);
-
-    // useEffect(() => {
-    //   if (!metaData) {
-    //     return undefined;
-    //   }
-    //   setLoading(true);
-    //   const subscription = this.lineListService
-    //     .getLineListData(
-    //       this.programId,
-    //       orgUnitState,
-    //       this.programStageId,
-    //       pager.page,
-    //       pager.pageSize,
-    //       attributeFiltersState,
-    //       startDateState,
-    //       endDateState,
-    //       this.ouMode,
-    //       this.filterRootOrgUnit,
-    //       this.useOuModeWithOlderDHIS2Instance,
-    //       this.filters
-    //     )
-    //     .pipe(take(1)) // Automatically unsubscribe after the first emission
-    //     .subscribe((response: LineListResponse) => {
-    //       let entityColumns: ColumnDefinition[] = [];
-    //       let responsePager: Pager;
-    //       let entityData: TableRow[] = [];
-    //       let filteredDataColumns: ColumnDefinition[] = [];
-
-    //       if (this.programStageId) {
-    //         responsePager = (response.data as EventsResponse).pager;
-    //         const { columns, data } = getProgramStageData(
-    //           response,
-    //           this.programStageId,
-    //           pager,
-    //           metaData,
-    //           this.isOptionSetNameVisible
-    //         );
-    //         entityColumns = columns;
-    //         entityData = data;
-    //       } else if (
-    //         metaData.programType === "WITH_REGISTRATION"
-    //       ) {
-    //         const responseData: any = response.data as TrackedEntityResponse;
-    //         responsePager = responseData.pager || {
-    //           page: responseData.page,
-    //           pageSize: responseData.pageSize,
-    //           total: responseData.total,
-    //           pageCount: responseData.pageCount,
-    //         };
-
-    //         const { columns, data, filteredEntityColumns, orgUnitLabel } =
-    //           getTrackedEntityData(
-    //             response,
-    //             this.programId,
-    //             pager,
-    //             this.isOptionSetNameVisible,
-    //             metaData,
-    //             this.filters
-    //           );
-    //         entityColumns = columns;
-    //         entityData = data;
-    //         setOrgUnitLabel(orgUnitLabel);
-
-    //         const checkValues = [
-    //           ...new Set(
-    //             responseData?.trackedEntities?.[0]?.enrollments?.[0]?.events?.flatMap(
-    //               (event: any) =>
-    //                 event.dataValues
-    //                   .filter((dataValue: any) =>
-    //                     /^[A-Za-z]{3}$/.test(dataValue.value)
-    //                   )
-    //                   .map((dataValue: any) => dataValue.value)
-    //             ) ??
-    //               responseData?.instances?.[0]?.enrollments?.[0]?.events?.flatMap(
-    //                 (event: any) =>
-    //                   event.dataValues
-    //                     .filter((dataValue: any) =>
-    //                       /^[A-Za-z]{3}$/.test(dataValue.value)
-    //                     )
-    //                     .map((dataValue: any) => dataValue.value)
-    //               )
-    //           ),
-    //         ];
-
-    //         if (checkValues.length > 0) {
-    //           setCheckValue(checkValues as any);
-    //           setValuesMatch(!checkValues.includes(this.buttonFilter));
-    //         }
-
-    //         setFilteredColumns((prev) =>
-    //           filteredEntityColumns.length > 0 ? filteredEntityColumns : prev
-    //         );
-    //         filteredDataColumns = filteredEntityColumns;
-    //       } else {
-    //         responsePager = (response.data as EventsResponse).pager;
-    //         const { columns, data } = getEventData(
-    //           response,
-    //           pager,
-    //           metaData,
-    //           this.isOptionSetNameVisible
-    //         );
-    //         entityColumns = columns;
-    //         entityData = data;
-    //       }
-
-    //       const finalColumns: ColumnDefinition[] = addActionsColumn(
-    //         [{ label: '#', key: 'index' }, ...entityColumns],
-    //         this.actionOptions
-    //       );
-
-    //       setLoading(false);
-    //       setColumns(finalColumns);
-    //       setData(entityData);
-    //       setPager(responsePager);
-    //     });
-
-    //   return () => {
-    //     subscription.unsubscribe();
-    //   };
-    // }, [
-    //   metaData,
-    //   programIdState,
-    //   orgUnitState,
-    //   programStageIdState,
-    //   attributeFiltersState,
-    //   startDateState,
-    //   endDateState,
-    //   pager.page,
-    //   pager.pageSize,
-    //   isOptionSetNameVisibleState,
-    // ]);
 
     const handleInputChange = (key: string, value: string) => {
       setInputValues((prevValues) => ({
@@ -601,33 +300,22 @@ export class LineListTableComponent extends ReactWrapperModule {
         [key]: value ?? '',
       }));
 
-      // setAttributeFiltersState((prevFilters = []) => {
-      //   // Remove old filter for this key
-      //   const filteredFilters = prevFilters.filter((f) => f.attribute !== key);
-
-      //   // Only add new filter if value is not empty
-      //   const updatedFilters = value.trim()
-      //     ? [...filteredFilters, { attribute: key, operator: 'like', value }]
-      //     : filteredFilters;
-
-      //   return updatedFilters;
-      // });
       setDataQueryFiltersState((prevFilters) => {
         // Remove old filter for this key
         const filteredFilters = prevFilters.filter((f) => f.attribute !== key);
-    
+
         // Only add new filter if value is not empty
         const updatedFilters = value.trim()
           ? [
               ...filteredFilters,
               new DataQueryFilter()
-                .setAttribute(key) 
-                .setCondition(DataFilterCondition.Like) 
-                .setValue(value) 
+                .setAttribute(key)
+                .setCondition(DataFilterCondition.Like)
+                .setValue(value),
             ]
-          : filteredFilters; // If no value, don't add the filter
-    
-        return updatedFilters; // Return the updated list of filters
+          : filteredFilters; 
+
+        return updatedFilters;
       });
     };
 
@@ -638,38 +326,27 @@ export class LineListTableComponent extends ReactWrapperModule {
         [key]: value ?? '',
       }));
 
-      // setAttributeFiltersState((prevFilters = []) => {
-      //   // Remove old filter for this key
-      //   const filteredFilters = prevFilters.filter((f) => f.attribute !== key);
-
-      //   // Only add new filter if value is not empty
-      //   const updatedFilters = value.trim()
-      //     ? [...filteredFilters, { attribute: key, operator: 'eq', value }]
-      //     : filteredFilters;
-
-      //   return updatedFilters;
-      // });
       setDataQueryFiltersState((prevFilters = []) => {
         // Remove existing filter for the same key (attribute)
         const filteredFilters = prevFilters.filter((f) => f.attribute !== key);
-    
+
         // Only add new filter if value is not empty
         const updatedFilters = value.trim()
           ? [
               ...filteredFilters,
               new DataQueryFilter()
                 .setAttribute(key)
-                .setCondition(DataFilterCondition.Equal) // 'eq' like before
-                .setValue(value)
+                .setCondition(DataFilterCondition.Equal) 
+                .setValue(value),
             ]
           : filteredFilters;
-    
+
         return updatedFilters;
       });
     };
 
     const handleDateSelect = (key: string, selectedDate: any) => {
-      const selectedDateString = selectedDate?.calendarDateString ?? ''; // Default to empty string if null
+      const selectedDateString = selectedDate?.calendarDateString ?? ''; 
 
       // Update dateStates
       setDateStates((prevDateStates) => ({
@@ -677,18 +354,21 @@ export class LineListTableComponent extends ReactWrapperModule {
         [key]: selectedDateString,
       }));
 
-      // Update attributeFiltersState to remove filter if date is cleared
-      setAttributeFiltersState((prevFilters = []) => {
-        // Remove old filter for this key if the date is empty
-        const filteredFilters = prevFilters.filter((f) => f.attribute !== key);
+      // Update dataQueryFilters
+      setDataQueryFiltersState((prevFilters) => {
+        const filteredFilters = (prevFilters || []).filter(
+          (f) => f.attribute !== key
+        );
 
-        // Only add a filter if the date is not empty
         const updatedFilters = selectedDateString.trim()
           ? [
               ...filteredFilters,
-              { attribute: key, operator: 'like', value: selectedDateString },
+              new DataQueryFilter()
+                .setAttribute(key)
+                .setCondition(DataFilterCondition.Equal)
+                .setValue(selectedDateString),
             ]
-          : filteredFilters; // If empty, just keep the filteredFilters as they are
+          : filteredFilters;
 
         return updatedFilters;
       });
@@ -731,331 +411,51 @@ export class LineListTableComponent extends ReactWrapperModule {
             </div>
           </div>
         ) : (
-          // <div>
-          //   <div/>
           <div>
-            <Modal hide={hide} position="middle">
-              <ModalTitle>Select organization unit</ModalTitle>
-
-              <ModalContent>
-                <OrgUnitFormField
-                  key={selectedOrgUnit}
-                  onSelectOrgUnit={(selectedOrgUnit: any) => {
-                    setSelectedOrgUnit(selectedOrgUnit.displayName);
-                    setOrgUnitState(selectedOrgUnit.id);
-                    setHide(true);
-                  }}
-                />
-              </ModalContent>
-
-              <ModalActions>
-                <ButtonStrip end>
-                  <Button onClick={() => setHide(true)} secondary>
-                    Close
-                  </Button>
-                </ButtonStrip>
-              </ModalActions>
-            </Modal>
+            <OrgUnitSelector
+              hide={hide}
+              setHide={setHide}
+              selectedOrgUnit={selectedOrgUnit}
+              setSelectedOrgUnit={setSelectedOrgUnit}
+              setOrgUnitState={setOrgUnitState}
+            />
             {this.showFilters && (
-              <DataTableToolbar className="table-top-toolbar">
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    flexWrap: 'wrap',
-                  }}
-                >
-                  <InputField
-                    key="location"
-                    //label={orgUnitLabel}
-                    label={orgUnitLabel ? orgUnitLabel : 'registering unit'}
-                    value={selectedOrgUnit}
-                    onFocus={() => setHide(false)}
-                    className="custom-input"
-                    clearable
-                    onChange={(event: {
-                      value: React.SetStateAction<string>;
-                    }) => {
-                      setSelectedOrgUnit(event.value);
-                      setOrgUnitState(defaultOrgUnit);
-                    }}
-                  />
-                  <CalendarInput
-                    label="Start date:"
-                    calendar="gregory"
-                    locale="en-GB"
-                    timeZone="Africa/Dar_es_Salaam"
-                    className="custom-input"
-                    date={startDateState}
-                    onDateSelect={(selectedDate: any) => {
-                      if (selectedDate?.calendarDateString) {
-                        setStartDateState(selectedDate.calendarDateString);
-                      }
-                      //  setStartDateState(selectedDate.calendarDateString);
-                    }}
-                  />
-                  <CalendarInput
-                    label="End date:"
-                    calendar="gregory"
-                    locale="en-GB"
-                    timeZone="Africa/Dar_es_Salaam"
-                    className="custom-input"
-                    date={endDateState}
-                    onDateSelect={(selectedDate: any) => {
-                      setEndDateState(selectedDate.calendarDateString);
-                    }}
-                  />
-                  {(visibleFilters ?? []).map(
-                    ({ label, key, valueType, options }) => {
-                      // Render CalendarInput for DATE fields
-                      if (valueType === 'DATE') {
-                        return (
-                          <CalendarInput
-                            key={key}
-                            label={`${label}:`}
-                            calendar="gregory"
-                            locale="en-GB"
-                            timeZone="Africa/Dar_es_Salaam"
-                            className="custom-input"
-                            date={dateStates[key] || ''}
-                            onDateSelect={(selectedDate: any) =>
-                              handleDateSelect(key, selectedDate)
-                            }
-                          />
-                        );
-                      }
-
-                      // Render SingleSelectField if options exist
-                      if (options && options.options.length > 0) {
-                        return (
-                          <SingleSelectField
-                            key={key}
-                            label={`${label}:`}
-                            selected={inputValues[key] || ''}
-                            className="custom-select-input"
-                            clearable
-                            onChange={({ selected }: { selected: string }) => {
-                              setInputValues((prevValues) => ({
-                                ...prevValues,
-                                [key]: selected ?? '',
-                              }));
-
-                              handleInputChangeForSelectField(
-                                key,
-                                selected ?? ''
-                              );
-                            }}
-                          >
-                            {(options.options ?? []).map((opt: any) => (
-                              <SingleSelectOption
-                                key={opt.id}
-                                label={opt.name}
-                                value={opt.code}
-                              />
-                            ))}
-                          </SingleSelectField>
-                        );
-                      }
-
-                      // Fallback: default InputField
-                      return (
-                        <InputField
-                          key={key}
-                          label={`${label}:`}
-                          className="custom-input"
-                          value={inputValues[key] || ''}
-                          clearable
-                          onChange={(
-                            e:
-                              | React.ChangeEvent<HTMLInputElement>
-                              | { value?: string }
-                          ) => {
-                            let currentValue = '';
-
-                            if ('target' in e && e.target) {
-                              currentValue = (
-                                e as React.ChangeEvent<HTMLInputElement>
-                              ).target.value;
-                            } else if ('value' in e) {
-                              currentValue = e.value ?? '';
-                            }
-
-                            setInputValues((prevValues) => ({
-                              ...prevValues,
-                              [key]: currentValue,
-                            }));
-
-                            if (currentValue === '') {
-                              handleInputChange(key, '');
-                            }
-                          }}
-                          onBlur={(
-                            e:
-                              | React.ChangeEvent<HTMLInputElement>
-                              | { value?: string }
-                          ) => {
-                            let currentValue = '';
-
-                            if ('target' in e && e.target) {
-                              currentValue = e.target.value;
-                            } else if ('value' in e) {
-                              currentValue = e.value ?? '';
-                            }
-
-                            if (
-                              currentValue !== '' &&
-                              currentValue !== prevValue
-                            ) {
-                              handleInputChange(key, currentValue);
-                              setPrevValue(currentValue);
-                            }
-                          }}
-                        />
-                      );
-                    }
-                  )}
-                  <Button onClick={() => setShowAllFilters(!showAllFilters)}>
-                    {showAllFilters ? 'Less Filters' : 'More Filters'}
-                  </Button>
-                </div>
-              </DataTableToolbar>
+              <FilterToolbar
+                orgUnitLabel={orgUnitLabel}
+                selectedOrgUnit={selectedOrgUnit}
+                setSelectedOrgUnit={setSelectedOrgUnit}
+                setOrgUnitState={setOrgUnitState}
+                defaultOrgUnit={defaultOrgUnit}
+                setHide={setHide}
+                startDateState={startDateState}
+                setStartDateState={setStartDateState}
+                endDateState={endDateState}
+                setEndDateState={setEndDateState}
+                visibleFilters={visibleFilters}
+                dateStates={dateStates}
+                inputValues={inputValues}
+                setInputValues={setInputValues}
+                handleInputChange={handleInputChange}
+                handleInputChangeForSelectField={
+                  handleInputChangeForSelectField
+                }
+                handleDateSelect={handleDateSelect}
+                prevValue={prevValue}
+                setPrevValue={setPrevValue}
+                showAllFilters={showAllFilters}
+                setShowAllFilters={setShowAllFilters}
+              />
             )}
-
-            <DataTable>
-              <TableHead>
-                <DataTableRow>
-                  {columns.map((col) => (
-                    <DataTableColumnHeader key={col.key}>
-                      {col.label}
-                    </DataTableColumnHeader>
-                  ))}
-                </DataTableRow>
-              </TableHead>
-
-              <TableBody>
-                {data.length > 0 ? (
-                  data.map((row) => (
-                    <DataTableRow key={row.index.value}>
-                      {columns.map((col) => (
-                        <DataTableCell key={col.key}>
-                          {col.key === 'actions' ? (
-                            this.actionOptions && (
-                              <DataTableActions
-                                actionOptions={this.actionOptions}
-                                actionOptionOrientation={
-                                  this.actionOptionOrientation
-                                }
-                                onClick={(option) => {
-                                  if (option.onClick) {
-                                    option.onClick(row);
-                                  }
-                                  this.actionSelected.emit({
-                                    action: option.label,
-                                    row,
-                                  });
-                                }}
-                              />
-                            )
-                          ) : (
-                            <>
-                              {row[col.key]?.style &&
-                              row[col.key]?.style !== 'default-value' ? (
-                                <div
-                                  style={{
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                  }}
-                                >
-                                  <span
-                                    style={{
-                                      backgroundColor: row[col.key]?.style,
-                                      display: 'inline-flex',
-                                      alignItems: 'center',
-                                      padding: 4,
-                                      borderRadius: 3,
-                                      fontSize: 12,
-                                      color: getTextColorFromBackGround(
-                                        row[col.key]?.style as string
-                                      ),
-                                    }}
-                                  >
-                                    {row[col.key]?.value}
-                                  </span>
-                                </div>
-                              ) : (
-                                <div className="text-sm text-gray-800">
-                                  {row[col.key]?.value || '--'}
-                                </div>
-                              )}
-                            </>
-                          )}
-                        </DataTableCell>
-                      ))}
-                    </DataTableRow>
-                  ))
-                ) : (
-                  <DataTableRow>
-                    <DataTableCell
-                      colSpan={columns.length?.toString()}
-                      style={{
-                        textAlign: 'center',
-                        fontWeight: 'bold',
-                        color: 'grey',
-                        padding: '20px',
-                      }}
-                    >
-                      No data found
-                    </DataTableCell>
-                  </DataTableRow>
-                )}
-              </TableBody>
-
-              <TableFoot>
-                <DataTableRow>
-                  {/* <DataTableCell colSpan={columns.length}> */}
-                  <DataTableCell colSpan={columns.length.toString()}>
-                    <div>
-                      <Pagination
-                        page={pager.page}
-                        pageCount={pager.pageCount}
-                        pageSize={pager.pageSize}
-                        total={pager.total}
-                        // onPageChange={(page: number) =>
-                        //   setPager((prev) => ({ ...prev, page }))
-                        // }
-                        onPageChange={(page: number) =>
-                          setPager(
-                            (prev) =>
-                              new Pager({
-                                ...prev,
-                                page,
-                              })
-                          )
-                        }
-                        onPageSizeChange={(pageSize: number) => {
-                          const newPageSize = Number(pageSize);
-                          setPager(
-                            (prev) =>
-                              new Pager({
-                                ...prev,
-                                pageSize: newPageSize,
-                                page: 1, // example reset
-                              })
-                          );
-                          // setPager((prev) => ({
-                          //   ...prev,
-                          //   page: 1,
-                          //   pageSize: newPageSize,
-                          // }));
-                        }}
-                        pageSizes={['10', '20', '50', '100', '500']}
-                      />
-                    </div>
-                  </DataTableCell>
-                </DataTableRow>
-              </TableFoot>
-            </DataTable>
+            <LineListTable
+              columns={columns}
+              data={data}
+              pager={pager}
+              setPager={setPager}
+              getTextColorFromBackGround={getTextColorFromBackGround}
+              actionOptions={this.actionOptions}
+              actionOptionOrientation={this.actionOptionOrientation}
+              actionSelected={this.actionSelected}
+            />
           </div>
         )}
       </div>
