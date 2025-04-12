@@ -34,8 +34,6 @@ export class TrackerFormComponent implements OnInit {
         ).data as TrackedEntityInstance) || (await this.trackerQuery.create())
       : await this.trackerQuery.create();
 
-    console.log(this.instance.toObject());
-
     if (program) {
       this.formMetaData = new FormMetaData({
         programs: [program],
