@@ -3,7 +3,9 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
   DataFilterCondition,
   DataQueryFilter,
+  DHIS2Event,
   ProgramRuleEngine,
+  TrackedEntityInstance,
 } from '@iapps/d2-web-sdk';
 import {
   BreadcrumbItem,
@@ -43,12 +45,12 @@ export class ComponentsComponent implements OnInit {
     },
   ];
 
- dynamicFilterInputs: DataQueryFilter[] = [
+  dynamicFilterInputs: DataQueryFilter[] = [
     new DataQueryFilter()
       .setAttribute('tgGvHgQgtQ0')
       .setCondition(DataFilterCondition.Equal)
-      .setValue('ND_BATCH_32525931'), 
-  
+      .setValue('ND_BATCH_32525931'),
+
     new DataQueryFilter()
       .setAttribute('lj3cQAle9Fo')
       .setCondition(DataFilterCondition.In)
@@ -56,14 +58,14 @@ export class ComponentsComponent implements OnInit {
       .setType('DATA_ELEMENT')
       .setProgramStage('NtZXBym2KfD'),
 
-      // new DataQueryFilter()
-      // .setAttribute('lj3cQAle9Fo')
-      // .setCondition(DataFilterCondition.NotEqual)
-      // .setValue('Rejected')
-      // .setType('DATA_ELEMENT')
-      // .setProgramStage('NtZXBym2KfD'),
+    // new DataQueryFilter()
+    // .setAttribute('lj3cQAle9Fo')
+    // .setCondition(DataFilterCondition.NotEqual)
+    // .setValue('Rejected')
+    // .setType('DATA_ELEMENT')
+    // .setProgramStage('NtZXBym2KfD'),
   ];
-  
+
   isButtonLoading: any;
 
   actionOptions = [
@@ -89,9 +91,12 @@ export class ComponentsComponent implements OnInit {
   //   );
   // }
 
-  onActionSelected(event: { action: string; row: TableRow }) {
+  onActionSelected(event: {
+    action: string;
+    data: TrackedEntityInstance | DHIS2Event;
+  }) {
     if (event.action === 'View') {
-      this.onView(event.row);
+      this.onView(event.data);
     }
   }
 

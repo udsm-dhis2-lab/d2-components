@@ -46,6 +46,7 @@ export class TrackerFormComponent implements OnInit {
 
   onFormUpdate(values: any) {
     const instance = this.instance as TrackedEntityInstance;
+    console.log(instance);
     instance?.updateDataValues(values);
   }
 
