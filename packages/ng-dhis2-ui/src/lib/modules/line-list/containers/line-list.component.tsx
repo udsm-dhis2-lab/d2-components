@@ -7,10 +7,7 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
-import {
-  CircularLoader,
-  colors,
-} from '@dhis2/ui';
+import { CircularLoader, colors } from '@dhis2/ui';
 import React, { useEffect, useRef, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { take } from 'rxjs';
@@ -36,6 +33,7 @@ import {
   DataFilterCondition,
   DataOrderCriteria,
   DataQueryFilter,
+  DHIS2Event,
   OuMode,
   Pager,
   Program,
@@ -63,19 +61,22 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() endDate?: string;
   @Input() dataQueryFilters?: DataQueryFilter[];
   @Input() ouMode?: string;
-  @Output() actionSelected = new EventEmitter<{
-    action: string;
-    row: TableRow;
-  }>();
-  private reactStateUpdaters: any = null;
-  @Output() approvalSelected = new EventEmitter<
-    { teiId: string; enrollmentId: string }[]
-  >();
   @Input() isButtonLoading = false;
   @Input() buttonFilter!: string;
   @Input() filterRootOrgUnit = false;
   @Input() showFilters = false;
   @Input() isOptionSetNameVisible = false;
+
+  @Output() actionSelected = new EventEmitter<{
+    action: string;
+    data: TrackedEntityInstance | DHIS2Event;
+  }>();
+
+  @Output() approvalSelected = new EventEmitter<
+    { teiId: string; enrollmentId: string }[]
+  >();
+
+  private reactStateUpdaters: any = null;
 
   setReactStateUpdaters = (updaters: any) => {
     this.reactStateUpdaters = updaters;
@@ -278,8 +279,8 @@ export class LineListTableComponent extends ReactWrapperModule {
             });
           });
       } else {
-      //TODO: TO IMPLEMEMNT EVENT QUERY FOR FILTERING EVENTS WHEN PROGRAM STAGE IS PASSED OR DEALING WITH EVENT PROGRAM USING TRACKER SDK QUERY
-      };
+        //TODO: TO IMPLEMEMNT EVENT QUERY FOR FILTERING EVENTS WHEN PROGRAM STAGE IS PASSED OR DEALING WITH EVENT PROGRAM USING TRACKER SDK QUERY
+      }
     }, [
       metaData,
       programIdState,
@@ -313,7 +314,7 @@ export class LineListTableComponent extends ReactWrapperModule {
                 .setCondition(DataFilterCondition.Like)
                 .setValue(value),
             ]
-          : filteredFilters; 
+          : filteredFilters;
 
         return updatedFilters;
       });
@@ -336,7 +337,7 @@ export class LineListTableComponent extends ReactWrapperModule {
               ...filteredFilters,
               new DataQueryFilter()
                 .setAttribute(key)
-                .setCondition(DataFilterCondition.Equal) 
+                .setCondition(DataFilterCondition.Equal)
                 .setValue(value),
             ]
           : filteredFilters;
@@ -346,7 +347,7 @@ export class LineListTableComponent extends ReactWrapperModule {
     };
 
     const handleDateSelect = (key: string, selectedDate: any) => {
-      const selectedDateString = selectedDate?.calendarDateString ?? ''; 
+      const selectedDateString = selectedDate?.calendarDateString ?? '';
 
       // Update dateStates
       setDateStates((prevDateStates) => ({
