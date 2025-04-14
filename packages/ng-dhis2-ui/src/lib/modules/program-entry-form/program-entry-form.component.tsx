@@ -224,7 +224,9 @@ export class ProgramEntryFormModule {
       .setProgram(this.config().program)
       .setOrgUnit(this.orgUnit() as string);
 
-    if (!this.trackedEntity) {
+    console.log(this.trackedEntity(), 'ARE WE HERE');
+
+    if (!this.trackedEntity()) {
       return await this.instanceQuery.create();
     }
 
