@@ -91,6 +91,7 @@ export const TableRow = ({
               {actionOptions && (
                 <DataTableActions
                   actionOptions={actionOptions}
+                  data={row}
                   actionOptionOrientation={actionOptionOrientation}
                   onClick={(option) => {
                     const data = row['responseData']?.['value'];

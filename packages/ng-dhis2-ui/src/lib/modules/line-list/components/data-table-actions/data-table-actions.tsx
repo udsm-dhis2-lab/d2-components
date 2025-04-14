@@ -10,13 +10,15 @@ import {
 import { DropdownMenu } from '../dropdown-menu';
 import React from 'react';
 import { ButtonStrip, Button, colors } from '@dhis2/ui';
+import { TableRow } from '../../models/line-list.models';
 
 export const DataTableActions = (props: {
+  data: TableRow;
   actionOptions: LineListActionOption[];
   actionOptionOrientation: ActionOptionOrientation;
   onClick: (dropdownOption: LineListActionOption) => void;
 }) => {
-  const { actionOptions, actionOptionOrientation, onClick } = props;
+  const { data, actionOptions, actionOptionOrientation, onClick } = props;
 
   switch (actionOptionOrientation) {
     case 'BUTTON':
