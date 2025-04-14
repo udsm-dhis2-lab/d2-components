@@ -82,7 +82,7 @@ export class WebSdkComponent {
       .setOrderCriterias([
         new DataOrderCriteria().setField('createdAt').setOrder('desc'),
       ])
-      .setStatus('ACTIVE')
+      .setStatus('COMPLETED')
       .get();
 
     console.log(trackerQuery);
@@ -100,9 +100,10 @@ export class WebSdkComponent {
         new DataQueryFilter()
           .setAttribute('lj3cQAle9Fo')
           .setCondition(DataFilterCondition.In)
-          .setValue(['Qualifd', 'Reject'])
+          .setValue(['Qualified', 'Rejected'])
           .setType('DATA_ELEMENT'),
       ])
+      .setStatus('COMPLETED')
       .get();
 
     console.log(eventQuery);
