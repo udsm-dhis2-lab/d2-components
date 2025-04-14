@@ -57,10 +57,13 @@ export const FilterToolbar = ({
         locale="en-GB"
         timeZone="Africa/Dar_es_Salaam"
         className="custom-input"
+        clearable={!!startDateState}
         date={startDateState}
         onDateSelect={(selectedDate: any) => {
+          if(!(selectedDate.calendarDateString === null)){
             setStartDateState(selectedDate.calendarDateString);
-          
+          }
+          console.log(selectedDate.calendarDateString)
         }}
       />
       <CalendarInput
@@ -69,9 +72,13 @@ export const FilterToolbar = ({
         locale="en-GB"
         timeZone="Africa/Dar_es_Salaam"
         className="custom-input"
+        clearable={!!endDateState}
         date={endDateState}
         onDateSelect={(selectedDate: any) => {
-          setEndDateState(selectedDate.calendarDateString);
+          if(!(selectedDate.calendarDateString === null)){
+            setEndDateState(selectedDate.calendarDateString);
+          }
+        
         }}
       />
 
@@ -85,10 +92,18 @@ export const FilterToolbar = ({
               locale="en-GB"
               timeZone="Africa/Dar_es_Salaam"
               className="custom-input"
-              date={dateStates[key] || ''}
-              onDateSelect={(selectedDate: any) =>
-                handleDateSelect(key, selectedDate)
-              }
+              clearable={!!dateStates[key]}
+              date={dateStates[key]}
+              onDateSelect={(selectedDate: any) => {
+                if (!(selectedDate.calendarDateString === null)) {
+                  handleDateSelect(key, selectedDate);
+                  console.log('at least here inside')
+                }
+                console.log('at leat here')
+              }}
+              // onDateSelect={(selectedDate: any) =>
+              //   handleDateSelect(key, selectedDate)
+              // }
             />
           );
         }

@@ -250,12 +250,13 @@
   <!-- [teiEnrollmentList]="{onApprovalClick: onApprove}" -->
 <div>
   <ng-dhis2-ui-line-list
-    [programId]="'lw9fZTamYec'"
+    [programId]="'oUiYTdbtOuh'"
     [orgUnit]="'xrku9x3XnV9'"
     [actionOptions]="actionOptions"
     [ouMode]="'DESCENDANTS'"
     [showFilters]="true"
-    [dataQueryFilters]="dynamicFilterInputs"
+    [actionOptionOrientation]="'LINK'"
+   
     (approvalSelected)="onApprovalSelected($event)"
     (actionSelected)="onActionSelected($event)"
   ></ng-dhis2-ui-line-list>

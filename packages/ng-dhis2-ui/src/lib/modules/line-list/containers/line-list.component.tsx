@@ -7,10 +7,7 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
-import {
-  CircularLoader,
-  colors,
-} from '@dhis2/ui';
+import { CircularLoader, colors } from '@dhis2/ui';
 import React, { useEffect, useRef, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { take } from 'rxjs';
@@ -44,6 +41,7 @@ import {
 import { FilterToolbar } from '../components/table/filterToolbar';
 import { LineListTable } from '../components/table/lineListTable';
 import { OrgUnitSelector } from '../components/orgUnitSelector';
+import { CalendarInput } from '@dhis2/ui';
 
 @Component({
   selector: 'ng-dhis2-ui-line-list',
@@ -278,8 +276,8 @@ export class LineListTableComponent extends ReactWrapperModule {
             });
           });
       } else {
-      //TODO: TO IMPLEMEMNT EVENT QUERY FOR FILTERING EVENTS WHEN PROGRAM STAGE IS PASSED OR DEALING WITH EVENT PROGRAM USING TRACKER SDK QUERY
-      };
+        //TODO: TO IMPLEMEMNT EVENT QUERY FOR FILTERING EVENTS WHEN PROGRAM STAGE IS PASSED OR DEALING WITH EVENT PROGRAM USING TRACKER SDK QUERY
+      }
     }, [
       metaData,
       programIdState,
@@ -313,7 +311,7 @@ export class LineListTableComponent extends ReactWrapperModule {
                 .setCondition(DataFilterCondition.Like)
                 .setValue(value),
             ]
-          : filteredFilters; 
+          : filteredFilters;
 
         return updatedFilters;
       });
@@ -336,7 +334,7 @@ export class LineListTableComponent extends ReactWrapperModule {
               ...filteredFilters,
               new DataQueryFilter()
                 .setAttribute(key)
-                .setCondition(DataFilterCondition.Equal) 
+                .setCondition(DataFilterCondition.Equal)
                 .setValue(value),
             ]
           : filteredFilters;
@@ -346,7 +344,7 @@ export class LineListTableComponent extends ReactWrapperModule {
     };
 
     const handleDateSelect = (key: string, selectedDate: any) => {
-      const selectedDateString = selectedDate?.calendarDateString ?? ''; 
+      const selectedDateString = selectedDate?.calendarDateString ?? '';
 
       // Update dateStates
       setDateStates((prevDateStates) => ({
@@ -455,6 +453,16 @@ export class LineListTableComponent extends ReactWrapperModule {
               actionOptions={this.actionOptions}
               actionOptionOrientation={this.actionOptionOrientation}
               actionSelected={this.actionSelected}
+            />
+            <CalendarInput
+              label="Date with clear button"
+              calendar="gregory"
+              locale="en-GB"
+              // date="2023-09-25"
+              clearable={true}
+              onDateSelect={(selectedDate: string) => {
+                console.log(selectedDate);
+              }}
             />
           </div>
         )}
