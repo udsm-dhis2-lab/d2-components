@@ -65,7 +65,10 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() isOptionSetNameVisible = false;
   @Input() allowRowsSelection = false;
   @Input() enrollmentStatus!: EnrollmentStatus;
-  @Input() eventStatus!: EventStatus;
+  @Input() eventStatus!: {
+    programStage: string;
+    status: EventStatus;
+  };
   @Output() actionSelected = new EventEmitter<{
     action: string;
     data: TrackedEntityInstance | DHIS2Event;
@@ -219,9 +222,14 @@ export class LineListTableComponent extends ReactWrapperModule {
           .setEndDate(endDate)
           .setStartDate(startDateState as string)
           .setProgram(this.programId)
+          .setProgramStage(this.programStageId as string)
           .setOrgUnit(orgUnitState)
           .setOuMode(this.ouMode as OuMode)
           .setStatus(this.enrollmentStatus)
+          .setEventStatus(
+            this.eventStatus?.status,
+            this.eventStatus.programStage
+          )
           .setFilters(dataQueryFiltersState)
           .setPagination(
             new Pager({

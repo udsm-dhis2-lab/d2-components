@@ -4,6 +4,7 @@ import {
   D2HttpClient,
   DataOrderCriteria,
   DataQueryFilter,
+  EventStatus,
   OuMode,
   Pager,
 } from '../../../shared';
@@ -40,6 +41,7 @@ export class BaseEventQuery<T extends DHIS2Event> {
   protected enrollmentEnrolledBefore?: string;
   protected enrollmentEnrolledAfter?: string;
   protected orderCriterias?: DataOrderCriteria[];
+  protected eventStatus?: EventStatus;
   pager = new Pager();
   [key: string]: unknown;
   instance!: T;
@@ -61,6 +63,11 @@ export class BaseEventQuery<T extends DHIS2Event> {
 
   setOuMode(ouMode: OuMode): BaseEventQuery<T> {
     this.ouMode = ouMode;
+    return this;
+  }
+
+  setStatus(status: EventStatus): BaseEventQuery<T> {
+    this.eventStatus = status;
     return this;
   }
 
@@ -153,6 +160,7 @@ export class BaseEventQuery<T extends DHIS2Event> {
     this.event = event;
     return this;
   }
+
   setTrackedEntity(trackedEntity: string): BaseEventQuery<T> {
     this.trackedEntity = trackedEntity;
     return this;
@@ -240,6 +248,7 @@ export class BaseEventQuery<T extends DHIS2Event> {
         scheduledAfter: this.scheduledAfter,
         scheduledBefore: this.scheduledBefore,
         orderCriterias: this.orderCriterias,
+        eventStatus: this.eventStatus,
         pager: this.pager,
       }).generate()
     );

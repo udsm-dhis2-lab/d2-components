@@ -142,6 +142,19 @@ export class ComponentsComponent implements OnInit {
     },
   ];
 
+  dataQueryFilters = [
+    new DataQueryFilter()
+      .setAttribute('tgGvHgQgtQ0')
+      .setCondition(DataFilterCondition.Equal)
+      .setValue('ND_BATCH_39073404'),
+    // new DataQueryFilter()
+    //   .setAttribute('lj3cQAle9Fo')
+    //   .setProgramStage('NtZXBym2KfD')
+    //   .setCondition(DataFilterCondition.NotEqual)
+    //   .setValue('null')
+    //   .setType('DATA_ELEMENT'),
+  ];
+
   onApprovalSelected(data: any) {
     console.log('these are all the tei', data);
   }
