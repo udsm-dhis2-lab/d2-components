@@ -256,9 +256,10 @@
     [ouMode]="'DESCENDANTS'"
     [showFilters]="true"
     [actionOptionOrientation]="'LINK'"
-   
     (approvalSelected)="onApprovalSelected($event)"
     (actionSelected)="onActionSelected($event)"
+    [isSelectable]="true"
+    (selectedRowsData)="onRowsSelected($event)"
   ></ng-dhis2-ui-line-list>
 </div>
 

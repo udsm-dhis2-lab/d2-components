@@ -100,6 +100,10 @@ export class ComponentsComponent implements OnInit {
     }
   }
 
+  onRowsSelected(data: TableRow[]) {
+    console.log('this is the data being emitted', data)
+  }
+
   // onActionSelected(event: { action: string; row: TableRow }) {
   //   if (event.action === 'View') {
   //     this.onView(event.row);
