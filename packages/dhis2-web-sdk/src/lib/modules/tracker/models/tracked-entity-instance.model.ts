@@ -246,7 +246,8 @@ export class TrackedEntityInstance
 
       this.latestEnrollment.events = this.latestEnrollment.events.map(
         (event) => {
-          return { ...event, orgUnit };
+          event.orgUnit = orgUnit;
+          return event;
         }
       );
     }
