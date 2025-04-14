@@ -16,21 +16,19 @@ export const getTrackedEntityTableData = (
   response: LineListResponse,
   programId: string,
   pager: any,
-  metaData: Program,
+  metaData: Program
 ): {
   columns: ColumnDefinition[];
   data: TableRow[];
   filteredEntityColumns: ColumnDefinition[];
   orgUnitLabel: string;
 } => {
-  let teisRaw = (response.data as TrackedEntityInstancesResponse)
+  const teisRaw = (response.data as TrackedEntityInstancesResponse)
     .trackedEntityInstances;
   const teis: TrackedEntityInstance[] = Array.isArray(teisRaw)
     ? teisRaw
     : [teisRaw];
 
-  const programTrackedEntityAttributes =
-    metaData.programTrackedEntityAttributes;
   const orgUnitLabel = metaData.orgUnitLabel as string;
   const orgUnitMap = (response.data as TrackedEntityInstancesResponse)
     .orgUnitsMap;
@@ -85,11 +83,9 @@ export const getTrackedEntityTableData = (
 
     const matchingEnrollment = tei.latestEnrollment;
 
-    //let disaplayInListAttributes = metaData.displayInListTrackedEntityAttributes;
-
     let attributesData = matchingEnrollment.attributes;
 
-    let dataElementsData = matchingEnrollment!.events.flatMap(
+    const dataElementsData = matchingEnrollment!.events.flatMap(
       (event) => event.dataValues
     );
 
@@ -100,7 +96,7 @@ export const getTrackedEntityTableData = (
             ...attr,
             value: format(
               parse(attr.value, 'yyyy-MM-dd', new Date()),
-              'dd-MM-yyyy'
+              'dd/MM/yyyy'
             ),
           };
         } catch {
@@ -143,6 +139,7 @@ export const getTrackedEntityTableData = (
     row['orgUnit'] = {
       value: orgUnitMap?.get(matchingEnrollment!.orgUnit) || '-',
     };
+    row['responseData'] = { value: tei.toObject() as TrackedEntityInstance };
     return row;
   });
 

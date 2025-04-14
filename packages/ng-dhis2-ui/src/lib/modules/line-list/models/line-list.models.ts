@@ -1,4 +1,4 @@
-import { Pager, TrackedEntityInstance } from "@iapps/d2-web-sdk";
+import { DHIS2Event, Pager, TrackedEntityInstance } from '@iapps/d2-web-sdk';
 
 export interface PagerObject {
   page: number;
@@ -126,7 +126,7 @@ export interface ProgramOwner {
   program: string;
 }
 export interface TrackedEntityInstancesResponse {
-  trackedEntityInstances: TrackedEntityInstance |TrackedEntityInstance[];
+  trackedEntityInstances: TrackedEntityInstance | TrackedEntityInstance[];
   trackedEntity?: TrackedEntity[];
   pager: Pager;
   orgUnitsMap?: Map<string, string>;
@@ -134,7 +134,7 @@ export interface TrackedEntityInstancesResponse {
 
 export interface TrackedEntityResponse {
   trackedEntities: TrackedEntity[];
-  instances?: TrackedEntity[],
+  instances?: TrackedEntity[];
   pager: Pager;
   orgUnitsMap?: Map<string, string>;
 }
@@ -193,7 +193,13 @@ export interface ProgramMetadata {
 }
 
 export interface LineListResponse {
-  data: EventsResponse | TrackedEntityInstancesResponse | EnrollmentsResponse | TrackedEntityResponse | TrackedEntityInstance | TrackedEntityInstance[];
+  data:
+    | EventsResponse
+    | TrackedEntityInstancesResponse
+    | EnrollmentsResponse
+    | TrackedEntityResponse
+    | TrackedEntityInstance
+    | TrackedEntityInstance[];
 }
 
 // export interface TableRow {
@@ -205,17 +211,18 @@ export interface LineListResponse {
 //   index: number;
 // }
 
-
 // export interface TableRow {
 //   [key: string]: string | number | { value: string | number; style?: string };
 //   index: number;
 // }
 
 export interface TableRow {
-  [key: string]: { value: string | number; style?: string };
+  [key: string]: {
+    value: TrackedEntityInstance | DHIS2Event | string | number;
+    style?: string;
+  };
   index: { value: number; style?: string };
 }
-
 
 export interface ColumnDefinition {
   label: string;
@@ -278,8 +285,8 @@ export interface TrackedEntityAttribute {
   optionSetValue: boolean;
   id: string;
   optionSet?: OptionSet;
-  generated: boolean,
-  unique: boolean
+  generated: boolean;
+  unique: boolean;
 }
 
 export interface OptionSet {
@@ -294,4 +301,3 @@ export interface Option {
   id: string;
   value?: string;
 }
-

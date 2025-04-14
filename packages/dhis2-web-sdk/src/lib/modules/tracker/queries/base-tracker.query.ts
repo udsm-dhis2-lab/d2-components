@@ -208,6 +208,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
               {
                 program: this.program,
                 programStage: programStage.id,
+                orgUnit: this.orgUnit,
               },
               {
                 generateIdIfNotExists: programStage.preGenerateUID,
@@ -286,7 +287,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
         enrollmentEnrolledBefore: this.enrollmentEnrolledBefore,
         trackedEntity: trackedEntities.join(';'),
         pager: this.pager,
-        preferList: true
+        preferList: true,
       }).generate()
     );
   }

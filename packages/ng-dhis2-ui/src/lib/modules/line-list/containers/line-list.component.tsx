@@ -33,6 +33,7 @@ import {
   DataFilterCondition,
   DataOrderCriteria,
   DataQueryFilter,
+  DHIS2Event,
   OuMode,
   Pager,
   Program,
@@ -61,19 +62,22 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() endDate?: string;
   @Input() dataQueryFilters?: DataQueryFilter[];
   @Input() ouMode?: string;
-  @Output() actionSelected = new EventEmitter<{
-    action: string;
-    row: TableRow;
-  }>();
-  private reactStateUpdaters: any = null;
-  @Output() approvalSelected = new EventEmitter<
-    { teiId: string; enrollmentId: string }[]
-  >();
   @Input() isButtonLoading = false;
   @Input() buttonFilter!: string;
   @Input() filterRootOrgUnit = false;
   @Input() showFilters = false;
   @Input() isOptionSetNameVisible = false;
+
+  @Output() actionSelected = new EventEmitter<{
+    action: string;
+    data: TrackedEntityInstance | DHIS2Event;
+  }>();
+
+  @Output() approvalSelected = new EventEmitter<
+    { teiId: string; enrollmentId: string }[]
+  >();
+
+  private reactStateUpdaters: any = null;
 
   setReactStateUpdaters = (updaters: any) => {
     this.reactStateUpdaters = updaters;

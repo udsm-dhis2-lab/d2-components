@@ -144,6 +144,22 @@ export class Enrollment
     }
   }
 
+  setEventOrgUnit(orgUnit: string, eventId: string) {
+    let event = EventUtil.getEventById(this.events as DHIS2Event[], eventId);
+
+    if (event) {
+      event.orgUnit = orgUnit;
+
+      const eventIndex = this.events.indexOf(event);
+
+      this.events = [
+        ...this.events.slice(0, eventIndex),
+        event,
+        ...this.events.slice(eventIndex + 1),
+      ] as DHIS2Event[];
+    }
+  }
+
   setDataValue(
     dataElement: string,
     value: string,
