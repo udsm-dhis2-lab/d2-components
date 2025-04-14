@@ -6,5 +6,6 @@ import { DHIS2Event, TrackedEntityInstance } from '@iapps/d2-web-sdk';
 import { DropdownMenuOption } from './dropdown-menu.model';
 
 export interface LineListActionOption extends DropdownMenuOption {
+  condition?: string;
   onClick?: (tableRow: TrackedEntityInstance | DHIS2Event) => void;
 }
