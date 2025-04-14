@@ -8,26 +8,6 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { CircularLoader, colors } from '@dhis2/ui';
-import React, { useEffect, useRef, useState } from 'react';
-import * as ReactDOM from 'react-dom/client';
-import { take } from 'rxjs';
-import { ReactWrapperModule } from '../../react-wrapper/react-wrapper.component';
-import { AttributeFilter } from '../models/attribute-filter.model';
-import {
-  ColumnDefinition,
-  TableRow,
-  TrackedEntityInstancesResponse,
-} from '../models/line-list.models';
-import { LineListService } from '../services/line-list.service';
-import {
-  addActionsColumn,
-  getTrackedEntityTableData,
-} from '../utils/tei-table-data-utils';
-import {
-  getEventData,
-  getProgramStageData,
-} from '../utils/event-table-table-util';
-import { ActionOptionOrientation, LineListActionOption } from '../models';
 import {
   D2Window,
   DataFilterCondition,
@@ -39,9 +19,24 @@ import {
   Program,
   TrackedEntityInstance,
 } from '@iapps/d2-web-sdk';
+import React, { useEffect, useRef, useState } from 'react';
+import * as ReactDOM from 'react-dom/client';
+import { ReactWrapperModule } from '../../react-wrapper/react-wrapper.component';
+import { OrgUnitSelector } from '../components/orgUnitSelector';
 import { FilterToolbar } from '../components/table/filterToolbar';
 import { LineListTable } from '../components/table/lineListTable';
-import { OrgUnitSelector } from '../components/orgUnitSelector';
+import { ActionOptionOrientation, LineListActionOption } from '../models';
+import { AttributeFilter } from '../models/attribute-filter.model';
+import {
+  ColumnDefinition,
+  TableRow,
+  TrackedEntityInstancesResponse,
+} from '../models/line-list.models';
+import { LineListService } from '../services/line-list.service';
+import {
+  addActionsColumn,
+  getTrackedEntityTableData,
+} from '../utils/tei-table-data-utils';
 
 @Component({
   selector: 'ng-dhis2-ui-line-list',
@@ -66,12 +61,14 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() filterRootOrgUnit = false;
   @Input() showFilters = false;
   @Input() isOptionSetNameVisible = false;
-  @Input() isSelectable = false;
+  @Input() allowRowsSelection = false;
   @Output() actionSelected = new EventEmitter<{
     action: string;
     data: TrackedEntityInstance | DHIS2Event;
   }>();
-  @Output() selectedRowsData = new EventEmitter<TableRow[]>();
+  @Output() rowsSelected = new EventEmitter<
+    TrackedEntityInstance[] | DHIS2Event[]
+  >();
 
   private reactStateUpdaters: any = null;
 
@@ -108,7 +105,7 @@ export class LineListTableComponent extends ReactWrapperModule {
         this.reactStateUpdaters.setIsButtonLoading(this.isButtonLoading);
       }
       if (changes['isSelectable']) {
-        this.reactStateUpdaters.setIsButtonLoading(this.isSelectable);
+        this.reactStateUpdaters.setIsButtonLoading(this.allowRowsSelection);
       }
     }
   }
@@ -163,7 +160,9 @@ export class LineListTableComponent extends ReactWrapperModule {
     const [prevValue, setPrevValue] = useState<string>();
     const [dateStates, setDateStates] = useState<{ [key: string]: string }>({});
     const [metaData, setMetaData] = useState<Program | null>(null);
-    const [selectable, setSelectable] = useState<boolean>(this.isSelectable);
+    const [selectable, setSelectable] = useState<boolean>(
+      this.allowRowsSelection
+    );
 
     const d2 = (window as unknown as D2Window).d2Web;
 
@@ -460,7 +459,7 @@ export class LineListTableComponent extends ReactWrapperModule {
               actionOptionOrientation={this.actionOptionOrientation}
               actionSelected={this.actionSelected}
               selectable={selectable}
-              selectedRowsData={this.selectedRowsData}
+              rowsSelected={this.rowsSelected}
             />
           </div>
         )}

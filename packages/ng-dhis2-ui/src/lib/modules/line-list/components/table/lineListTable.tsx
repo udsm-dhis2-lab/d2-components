@@ -48,7 +48,7 @@ export const LineListTable = ({
   actionOptionOrientation,
   actionSelected,
   selectable,
-  selectedRowsData
+  rowsSelected,
 }: any) => {
   const [selectedRows, setSelectedRows] = useState<TableRow[]>([]);
 
@@ -61,13 +61,15 @@ export const LineListTable = ({
       : [...selectedRows, row];
 
     setSelectedRows(updatedRows);
-    selectedRowsData.emit(updatedRows);
+    rowsSelected.emit(
+      updatedRows.map((row: TableRow) => row['responseData']?.value)
+    );
   };
 
   const handleSelectAll = (checked: boolean) => {
     const updatedRows = checked ? data : [];
     setSelectedRows(updatedRows);
-    selectedRowsData.emit(updatedRows);
+    rowsSelected.emit(updatedRows);
   };
 
   return (

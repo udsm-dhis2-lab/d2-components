@@ -100,8 +100,8 @@ export class ComponentsComponent implements OnInit {
     }
   }
 
-  onRowsSelected(data: TableRow[]) {
-    console.log('this is the data being emitted', data)
+  onRowsSelected(data: TrackedEntityInstance[] | DHIS2Event[]) {
+    console.log('this is the data being emitted', data);
   }
 
   // onActionSelected(event: { action: string; row: TableRow }) {
