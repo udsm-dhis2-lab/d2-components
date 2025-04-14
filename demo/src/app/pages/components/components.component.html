@@ -247,7 +247,7 @@
     (actionSelected)="onActionSelected($event)"
   ></ng-dhis2-ui-line-list>
 </div> -->
-  <!-- [teiEnrollmentList]="{onApprovalClick: onApprove}" -->
+<!-- [teiEnrollmentList]="{onApprovalClick: onApprove}" -->
 <div>
   <ng-dhis2-ui-line-list
     [programId]="'oUiYTdbtOuh'"
@@ -258,8 +258,8 @@
     [actionOptionOrientation]="'LINK'"
     (approvalSelected)="onApprovalSelected($event)"
     (actionSelected)="onActionSelected($event)"
-    [isSelectable]="true"
-    (selectedRowsData)="onRowsSelected($event)"
+    [allowRowsSelection]="true"
+    (rowsSelected)="onRowsSelected($event)"
   ></ng-dhis2-ui-line-list>
 </div>
 
@@ -315,5 +315,3 @@
     />
   </div>
 </div> -->
-
-
