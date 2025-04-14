@@ -128,22 +128,7 @@ export class BaseFormFieldComponent
         }
       }, [this.isValueAssigned()]);
 
-      // TODO: START: Improve the approach of handling observables 
-      // useEffect(() => {
-      //   const fieldErrorSubscription = this.fieldError$
-      //     .pipe(filter((error) => error !== initialError))
-      //     .subscribe({
-      //       next: (error: string | undefined) => {
-      //         setInitialError(error);
-      //       },
-      //     });
-
-      //   return () => {
-      //     fieldErrorSubscription.unsubscribe();
-      //   };
-      // });
-      // TODO: END: Improve the approach of handling observables 
-
+      // TODO: Review error handling as take() has potential to missed any other updated error information
       useEffect(() => {
         const fieldErrorSubscription = this.fieldError$
           .pipe(
@@ -155,12 +140,11 @@ export class BaseFormFieldComponent
               setInitialError(error);
             },
           });
-      
+
         return () => {
           fieldErrorSubscription.unsubscribe();
         };
       }, [initialError]); // Add initialError as a dependency to avoid stale closures
-      
 
       const onChange = (payload: {
         selected: React.SetStateAction<undefined>;
@@ -231,6 +215,7 @@ export class BaseFormFieldComponent
                 inputWidth={this.fieldConfig()?.inputWidth}
                 required={this.field().required}
                 name={this.field().id}
+                disabled={disabled}
                 label={this.label()}
                 rows={5}
                 placeholder={this.placeholder()}
@@ -266,6 +251,7 @@ export class BaseFormFieldComponent
                 label={this.label()}
                 key={this.field().id}
                 required={this.field().required}
+                disabled={disabled}
                 onSelectOrgUnit={(selectedOrgUnit: string) => {
                   this.ngZone.run(() => {
                     (

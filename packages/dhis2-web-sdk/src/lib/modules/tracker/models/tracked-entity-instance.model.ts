@@ -237,7 +237,10 @@ export class TrackedEntityInstance
   }
 
   setOrgUnit(orgUnit: string) {
-    this.orgUnit = orgUnit;
+    if (!this.orgUnit) {
+      this.orgUnit = orgUnit;
+    }
+
     if (this.latestEnrollment) {
       this.latestEnrollment.orgUnit = orgUnit;
 

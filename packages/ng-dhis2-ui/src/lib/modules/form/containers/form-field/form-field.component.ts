@@ -10,15 +10,14 @@ import {
   SimpleChanges,
   effect,
   input,
-  model,
   signal,
 } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { find } from 'lodash';
 import moment from 'moment';
 import { Subject, takeUntil } from 'rxjs';
-import { FieldConfig, FormField, IMetadataRuleAction } from '../../models';
 import { IFormField } from '../../interfaces';
+import { FieldConfig, IMetadataRuleAction } from '../../models';
 
 @Component({
   selector: 'ng-dhis2-ui-form-field',
