@@ -13,6 +13,7 @@ import {
   ProgramDateType,
   OuMode,
   DataOrderCriteria,
+  EnrollmentStatus,
 } from '../../../shared';
 import { Program, ProgramRule } from '../../program';
 import {
@@ -36,6 +37,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
   protected enrollmentEnrolledBefore?: string;
   protected trackedEntity?: string;
   protected orderCriterias?: DataOrderCriteria[];
+  protected enrollmentStatus?: EnrollmentStatus;
   event?: string;
   protected pager = new Pager();
   [key: string]: unknown;
@@ -56,6 +58,11 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
 
   setOuMode(ouMode: OuMode): BaseTrackerQuery<T> {
     this.ouMode = ouMode;
+    return this;
+  }
+
+  setStatus(status: EnrollmentStatus): BaseTrackerQuery<T> {
+    this.enrollmentStatus = status;
     return this;
   }
 
@@ -283,6 +290,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
         filters: [],
         fields: this.fields,
         orderCriterias: this.orderCriterias,
+        enrollmentStatus: this.enrollmentStatus,
         enrollmentEnrolledAfter: this.enrollmentEnrolledAfter,
         enrollmentEnrolledBefore: this.enrollmentEnrolledBefore,
         trackedEntity: trackedEntities.join(';'),
@@ -316,6 +324,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
         filters: this.filters,
         fields: this.fields,
         orderCriterias: this.orderCriterias,
+        enrollmentStatus: this.enrollmentStatus,
         enrollmentEnrolledAfter: this.enrollmentEnrolledAfter,
         enrollmentEnrolledBefore: this.enrollmentEnrolledBefore,
         trackedEntity: this.trackedEntity,

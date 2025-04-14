@@ -72,12 +72,6 @@ export class WebSdkComponent {
           .setAttribute('tgGvHgQgtQ0')
           .setCondition(DataFilterCondition.Equal)
           .setValue('ND_BATCH_32525931'),
-        new DataQueryFilter()
-          .setAttribute('lj3cQAle9Fo')
-          .setCondition(DataFilterCondition.In)
-          .setValue(['Qualied', 'Reject'])
-          .setProgramStage('NtZXBym2KfD')
-          .setType('DATA_ELEMENT'),
       ])
       .setPagination(
         new Pager({
@@ -88,6 +82,7 @@ export class WebSdkComponent {
       .setOrderCriterias([
         new DataOrderCriteria().setField('createdAt').setOrder('desc'),
       ])
+      .setStatus('ACTIVE')
       .get();
 
     console.log(trackerQuery);
