@@ -240,6 +240,12 @@ export class TrackedEntityInstance
     this.orgUnit = orgUnit;
     if (this.latestEnrollment) {
       this.latestEnrollment.orgUnit = orgUnit;
+
+      this.latestEnrollment.events = this.latestEnrollment.events.map(
+        (event) => {
+          return { ...event, orgUnit };
+        }
+      );
     }
   }
 
