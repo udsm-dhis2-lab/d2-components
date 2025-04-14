@@ -14,6 +14,8 @@ import {
   DataOrderCriteria,
   DataQueryFilter,
   DHIS2Event,
+  EnrollmentStatus,
+  EventStatus,
   OuMode,
   Pager,
   Program,
@@ -62,6 +64,8 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() showFilters = false;
   @Input() isOptionSetNameVisible = false;
   @Input() allowRowsSelection = false;
+  @Input() enrollmentStatus!: EnrollmentStatus;
+  @Input() eventStatus!: EventStatus;
   @Output() actionSelected = new EventEmitter<{
     action: string;
     data: TrackedEntityInstance | DHIS2Event;
@@ -104,7 +108,7 @@ export class LineListTableComponent extends ReactWrapperModule {
       if (changes['isButtonLoading']) {
         this.reactStateUpdaters.setIsButtonLoading(this.isButtonLoading);
       }
-      if (changes['isSelectable']) {
+      if (changes['allowRowsSelection']) {
         this.reactStateUpdaters.setIsButtonLoading(this.allowRowsSelection);
       }
     }
@@ -217,6 +221,7 @@ export class LineListTableComponent extends ReactWrapperModule {
           .setProgram(this.programId)
           .setOrgUnit(orgUnitState)
           .setOuMode(this.ouMode as OuMode)
+          .setStatus(this.enrollmentStatus)
           .setFilters(dataQueryFiltersState)
           .setPagination(
             new Pager({
