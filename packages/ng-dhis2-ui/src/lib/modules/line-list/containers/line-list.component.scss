@@ -33,17 +33,89 @@
     box-shadow: none !important;
   }
   [data-test='calendar-clear-button'] {
-    background-color: #f2f2f2 !important;;
+    background-color: #f2f2f2 !important;
     color: #870808 !important;
     border-radius: 6px !important;
     padding: 4px 10px !important;
-    font-size: 14px !important;
+    font-size: 0 !important; // hide the "Clear" text
+
+    &::before {
+      content: '✕';
+      font-size: 14px;
+      color: #870808;
+    }
 
     &:hover {
       background-color: #ddd;
     }
   }
 }
+// ::ng-deep [data-test='calendar-clear-button'] {
+//   background-color: #f2f2f2 !important;
+//   color: #870808 !important;
+//   border-radius: 6px !important;
+//   padding: 4px 10px !important;
+//   font-size: 0 !important; // hides the default text
+
+//   &::before {
+//     content: '✕';
+//     font-size: 14px;
+//     color: #870808;
+//   }
+
+//   &:hover {
+//     background-color: #ddd !important;
+//   }
+// }
+
+::ng-deep .calendar-input-wrapper {
+  position: relative;
+
+  .custom-input {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  [data-test='calendar-clear-button'] {
+    right: 8px;
+    // top: 0;
+    bottom: 14px;
+    margin: auto;
+    //height: 60%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    //width: 130%;
+    font-size: 0 !important;
+    background-color: rgb(160, 173, 186) !important;
+    border-radius: 50%;
+    padding: 2px;
+    cursor: pointer;
+
+    &::before {
+      content: '✕';
+      font-size: 10px;
+      color: #f0f0f0;
+    }
+
+    // &:hover {
+    //   background-color: #eee !important;
+    //   border-radius: 50%;
+    // }
+  }
+
+  input {
+    padding-right: 40px !important; // add spacing for the button
+    height: 40px;
+    line-height: 40px;
+    box-sizing: border-box;
+  }
+}
+
 ::ng-deep .custom-input label {
   color: grey !important;
   opacity: 1;
