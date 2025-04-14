@@ -42,7 +42,6 @@ import {
 import { FilterToolbar } from '../components/table/filterToolbar';
 import { LineListTable } from '../components/table/lineListTable';
 import { OrgUnitSelector } from '../components/orgUnitSelector';
-import { CalendarInput } from '@dhis2/ui';
 
 @Component({
   selector: 'ng-dhis2-ui-line-list',
@@ -67,15 +66,12 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() filterRootOrgUnit = false;
   @Input() showFilters = false;
   @Input() isOptionSetNameVisible = false;
-
+  @Input() isSelectable = false;
   @Output() actionSelected = new EventEmitter<{
     action: string;
     data: TrackedEntityInstance | DHIS2Event;
   }>();
-
-  @Output() approvalSelected = new EventEmitter<
-    { teiId: string; enrollmentId: string }[]
-  >();
+  @Output() selectedRowsData = new EventEmitter<TableRow[]>();
 
   private reactStateUpdaters: any = null;
 
@@ -110,6 +106,9 @@ export class LineListTableComponent extends ReactWrapperModule {
       }
       if (changes['isButtonLoading']) {
         this.reactStateUpdaters.setIsButtonLoading(this.isButtonLoading);
+      }
+      if (changes['isSelectable']) {
+        this.reactStateUpdaters.setIsButtonLoading(this.isSelectable);
       }
     }
   }
@@ -164,6 +163,8 @@ export class LineListTableComponent extends ReactWrapperModule {
     const [prevValue, setPrevValue] = useState<string>();
     const [dateStates, setDateStates] = useState<{ [key: string]: string }>({});
     const [metaData, setMetaData] = useState<Program | null>(null);
+    const [selectable, setSelectable] = useState<boolean>(this.isSelectable);
+
     const d2 = (window as unknown as D2Window).d2Web;
 
     // Store updaters in refs for Angular to access
@@ -175,6 +176,7 @@ export class LineListTableComponent extends ReactWrapperModule {
       setStartDateState,
       setEndDateState,
       setOptionSetNameVisible,
+      setSelectable,
     });
 
     useEffect(() => {
@@ -457,16 +459,8 @@ export class LineListTableComponent extends ReactWrapperModule {
               actionOptions={this.actionOptions}
               actionOptionOrientation={this.actionOptionOrientation}
               actionSelected={this.actionSelected}
-            />
-            <CalendarInput
-              label="Date with clear button"
-              calendar="gregory"
-              locale="en-GB"
-              // date="2023-09-25"
-              clearable={true}
-              onDateSelect={(selectedDate: string) => {
-                console.log(selectedDate);
-              }}
+              selectable={selectable}
+              selectedRowsData={this.selectedRowsData}
             />
           </div>
         )}

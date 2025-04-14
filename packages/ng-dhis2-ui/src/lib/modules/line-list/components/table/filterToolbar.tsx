@@ -60,10 +60,10 @@ export const FilterToolbar = ({
         clearable={!!startDateState}
         date={startDateState}
         onDateSelect={(selectedDate: any) => {
-          if(!(selectedDate.calendarDateString === null)){
+          if (!(selectedDate.calendarDateString === null)) {
             setStartDateState(selectedDate.calendarDateString);
           }
-          console.log(selectedDate.calendarDateString)
+          console.log(selectedDate.calendarDateString);
         }}
       />
       <CalendarInput
@@ -75,10 +75,9 @@ export const FilterToolbar = ({
         clearable={!!endDateState}
         date={endDateState}
         onDateSelect={(selectedDate: any) => {
-          if(!(selectedDate.calendarDateString === null)){
+          if (!(selectedDate.calendarDateString === null)) {
             setEndDateState(selectedDate.calendarDateString);
           }
-        
         }}
       />
 
@@ -95,15 +94,8 @@ export const FilterToolbar = ({
               clearable={!!dateStates[key]}
               date={dateStates[key]}
               onDateSelect={(selectedDate: any) => {
-                if (!(selectedDate.calendarDateString === null)) {
-                  handleDateSelect(key, selectedDate);
-                  console.log('at least here inside')
-                }
-                console.log('at leat here')
+                handleDateSelect(key, selectedDate);
               }}
-              // onDateSelect={(selectedDate: any) =>
-              //   handleDateSelect(key, selectedDate)
-              // }
             />
           );
         }
