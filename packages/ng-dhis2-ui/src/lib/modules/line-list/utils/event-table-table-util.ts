@@ -15,7 +15,6 @@ export const getEventData = (
   response: LineListResponse,
   pager: any,
   metaData: Program,
-  isOptionSetNameVisible: boolean
 ): { columns: ColumnDefinition[]; data: TableRow[] } => {
   const events = (response.data as EventsResponse).events;
   const uniqueDataElements = new Set<string>();
@@ -50,7 +49,7 @@ export const getEventData = (
     });
 
     event.dataValues.forEach((dv: any) => {
-      if (isOptionSetNameVisible && dv.optionSetValue) {
+      if (dv.optionSetValue) {
         const dataElementMetadata = metaData
           .programStages!.flatMap(
             (programStage: any) => programStage.programStageDataElements
@@ -88,19 +87,42 @@ export const getProgramStageData = (
   programStageId: string,
   pager: any,
   metaData: Program,
-  isOptionSetNameVisible: boolean
 ): { columns: ColumnDefinition[]; data: TableRow[] } => {
   const events = (response.data as EventsResponse).events;
+  const eventsiiii = response.data;
+  console.log('data from event program', eventsiiii)
+  console.log('so from events', events)
   const allDataElements = new Set<string>();
+  
+  if(programStageId) {
+    events.forEach((event: any) => {
+      event.dataValues.forEach((dv: any) => allDataElements.add(dv.dataElement));
+    });
+  } else if (metaData.programType === 'WITHOUT_REGISTRATION') {
+    events.forEach((event: any) => {
+      event.dataValues.forEach((dv: any) => allDataElements.add(dv.dataElement));
+    });
+  }
 
-  events.forEach((event: any) => {
-    event.dataValues.forEach((dv: any) => allDataElements.add(dv.dataElement));
-  });
 
-  const stageFromMetaData = metaData.programStages!.find(
-    (stage: any) => stage.id === programStageId
-  );
+  // events.forEach((event: any) => {
+  //   event.dataValues.forEach((dv: any) => allDataElements.add(dv.dataElement));
+  // });
 
+
+
+  console.log('so hapa event data gani', events)
+  let stageFromMetaData;
+  if(programStageId) {
+    stageFromMetaData = metaData.programStages!.find(
+      (stage: any) => stage.id === programStageId
+    );
+  } else if(metaData.programType === 'WITHOUT_REGISTRATION') {
+    stageFromMetaData = metaData.programStages![0]
+  }
+
+  console.log('so stage from metadata', stageFromMetaData)
+  console.log('so from metadata', metaData)
   if (!stageFromMetaData) {
     throw new Error(`Program stage with ID ${programStageId} not found`);
   }
@@ -118,17 +140,18 @@ export const getProgramStageData = (
     }
   );
 
+  console.log('these are the entity columns', entityColumns);
+
   const dataElementsData: TableRow[] = events.map((event: any, idx: number) => {
     const row: TableRow = {
-      event: { value: event.event, style: 'default-style' },
+      event: { value: event.event},
       index: {
         value: (pager.page - 1) * pager.pageSize + idx + 1,
-        style: 'default-style',
       },
     };
 
     allDataElements.forEach((dataElementId: string) => {
-      row[dataElementId] = { value: '', style: 'default-style' };
+      row[dataElementId] = { value: '',};
     });
 
     event.dataValues.forEach((dv: any) => {
@@ -136,21 +159,23 @@ export const getProgramStageData = (
         (psde: any) => psde.dataElement.id === dv.dataElement
       );
 
-      if (isOptionSetNameVisible && dataElementMeta?.dataElement.optionSet) {
+      if (dataElementMeta?.dataElement.optionSet) {
         const optionSet = dataElementMeta.dataElement.optionSet;
 
         const matchingOption = optionSet.options.find(
           (option: any) => option.code === dv.value
         );
 
-        row[dv.dataElement] = matchingOption ? matchingOption.name : dv.value;
+        row[dv.dataElement] = matchingOption ?{ value: matchingOption.name} : {value: dv.value};
       } else {
-        row[dv.dataElement] = dv.value;
+        row[dv.dataElement] = {value: dv.value};
       }
     });
 
     return row;
   });
+
+  console.log('data elements data', dataElementsData);
 
   return { columns: entityColumns, data: dataElementsData };
 };
