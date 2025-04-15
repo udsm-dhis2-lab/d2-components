@@ -15,6 +15,7 @@ import { ReactWrapperModule } from '../../react-wrapper/react-wrapper.component'
 import { AttributeFilter } from '../models/attribute-filter.model';
 import {
   ColumnDefinition,
+  EventsResponse,
   TableRow,
   TrackedEntityInstancesResponse,
 } from '../models/line-list.models';
@@ -42,6 +43,7 @@ import {
 import { FilterToolbar } from '../components/table/filterToolbar';
 import { LineListTable } from '../components/table/lineListTable';
 import { OrgUnitSelector } from '../components/orgUnitSelector';
+import { meta } from '@turf/turf';
 
 @Component({
   selector: 'ng-dhis2-ui-line-list',
@@ -192,6 +194,7 @@ export class LineListTableComponent extends ReactWrapperModule {
             .getMetaData()) as Program;
           const data = trackerResponse;
           setMetaData(data);
+          console.log('this is the metadata ', data);
         } catch (error) {
           console.error('Failed to metadata:', error);
         }
@@ -207,11 +210,76 @@ export class LineListTableComponent extends ReactWrapperModule {
         return undefined;
       }
 
-      setLoading(true);
       const isTracker = metaData.programType === 'WITH_REGISTRATION';
+      const isEvent = metaData.programType === 'WITHOUT_REGISTRATION';
       const endDate = endDateState ?? new Date().toISOString().split('T')[0];
 
-      if (isTracker) {
+      if (this.programStageId || isEvent) {
+        console.log('i am showing the progra stage');
+        d2.eventModule.event
+          .setProgram(this.programId)
+          //  .setProgramStage('NtZXBym2KfD')
+          .setProgramStage(this.programStageId as string)
+          .setPagination(
+            new Pager({
+              pageSize: 10,
+              page: 1,
+            })
+          )
+          // .setFilters([
+          //   new DataQueryFilter()
+          //     .setAttribute('lj3cQAle9Fo')
+          //     .setCondition(DataFilterCondition.In)
+          //     .setValue(['Qualified', 'Rejected'])
+          //     .setType('DATA_ELEMENT'),
+          // ])
+          .get()
+          .then((response) => {
+            console.log('this is the event response', response);
+            const eventsResponse: EventsResponse = {
+              events: response.data!,
+              pager: pager,
+              // orgUnitsMap: fetchedOrgUnits,
+            };
+            // response: LineListResponse,
+            //   programStageId: string,
+            //   pager: any,
+            //   metaData: Program,
+            //   isOptionSetNameVisible: boolean
+            const { columns, data } = getProgramStageData(
+              { data: eventsResponse },
+              this.programStageId as string,
+              pager,
+              metaData
+            );
+            const finalColumns: ColumnDefinition[] = addActionsColumn(
+              [{ label: '#', key: 'index' }, ...columns],
+              this.actionOptions
+            );
+
+            console.log('this is the columns', finalColumns);
+            console.log('this is the columns', data);
+
+            const pagerResponse = response.pagination;
+
+            setLoading(false);
+            setColumns(finalColumns);
+            setData(data);
+            setPager(new Pager(pagerResponse || {}));
+          });
+
+        // if (this.programStageId) {
+        //   responsePager = (response.data as EventsResponse).pager;
+        //   const { columns, data } = getProgramStageData(
+        //     response,
+        //     this.programStageId,
+        //     pager
+        //   );
+        //   entityColumns = columns;
+        //   entityData = data;
+        // }
+      } else if (isTracker) {
+        setLoading(true);
         d2.trackerModule.trackedEntity
           .setEndDate(endDate)
           .setStartDate(startDateState as string)
@@ -269,6 +337,9 @@ export class LineListTableComponent extends ReactWrapperModule {
 
                 const pagerResponse = response.pagination;
 
+                console.log('this is the columns', finalColumns);
+                console.log('this is the data', data);
+
                 setLoading(false);
                 setColumns(finalColumns);
                 setData(data);
@@ -283,6 +354,57 @@ export class LineListTableComponent extends ReactWrapperModule {
           });
       } else {
         //TODO: TO IMPLEMEMNT EVENT QUERY FOR FILTERING EVENTS WHEN PROGRAM STAGE IS PASSED OR DEALING WITH EVENT PROGRAM USING TRACKER SDK QUERY
+        console.log('i am showing the progra stage');
+        d2.eventModule.event
+          .setProgram(this.programId)
+          //  .setProgramStage('NtZXBym2KfD')
+          .setPagination(
+            new Pager({
+              pageSize: 10,
+              page: 1,
+            })
+          )
+          // .setFilters([
+          //   new DataQueryFilter()
+          //     .setAttribute('lj3cQAle9Fo')
+          //     .setCondition(DataFilterCondition.In)
+          //     .setValue(['Qualified', 'Rejected'])
+          //     .setType('DATA_ELEMENT'),
+          // ])
+          .get()
+          .then((response) => {
+            console.log('this is the event response', response);
+            const eventsResponse: EventsResponse = {
+              events: response.data!,
+              pager: pager,
+              // orgUnitsMap: fetchedOrgUnits,
+            };
+            // response: LineListResponse,
+            //   programStageId: string,
+            //   pager: any,
+            //   metaData: Program,
+            //   isOptionSetNameVisible: boolean
+            const { columns, data } = getProgramStageData(
+              { data: eventsResponse },
+              this.programStageId as string,
+              pager,
+              metaData
+            );
+            const finalColumns: ColumnDefinition[] = addActionsColumn(
+              [{ label: '#', key: 'index' }, ...columns],
+              this.actionOptions
+            );
+
+            console.log('this is the columns', finalColumns);
+            console.log('this is the columns', data);
+
+            const pagerResponse = response.pagination;
+
+            setLoading(false);
+            setColumns(finalColumns);
+            setData(data);
+            setPager(new Pager(pagerResponse || {}));
+          });
       }
     }, [
       metaData,
@@ -476,3 +598,27 @@ export class LineListTableComponent extends ReactWrapperModule {
     this.render();
   }
 }
+
+// {
+//   "/api": {
+//     "target": "http://41.59.227.69/tland-upgrade",
+//     "secure": "false",
+//     "auth": "nsajigwa:Hmis@2024",
+//     "changeOrigin": "true"
+//   },
+//   "/": {
+//     "target": "http://41.59.227.69/tland-upgrade",
+//     "secure": "false",
+//     "auth": "nsajigwa:Hmis@2024",
+//     "changeOrigin": "true"
+//   }
+// }
+
+// {
+//   "/api": {
+//     "target": "https://hrhis.moh.go.tz/test-hrhis",
+//     "secure": "false",
+//     "auth": "admin:district",
+//     "changeOrigin": "true"
+//   }
+// }

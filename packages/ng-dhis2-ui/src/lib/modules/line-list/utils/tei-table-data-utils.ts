@@ -105,9 +105,24 @@ export const getTrackedEntityTableData = (
       }
       return attr;
     });
+  
+    attributesData.forEach((attr: any) => {
+      const attributeMeta = metaData.programTrackedEntityAttributes?.find(
+        (metadata) => metadata.trackedEntityAttribute.id === attr.attribute
+      );
 
-    attributesData.forEach((attr: Attribute) => {
-      row[attr.attribute] = { value: attr.value };
+      if (attributeMeta?.trackedEntityAttribute.optionSetValue) {
+        const optionSet = attributeMeta?.trackedEntityAttribute?.optionSet;
+
+        const option = optionSet?.options?.find(
+          (option) => option.code === attr.value
+        );
+
+        row[attr.attribute] =
+          option? {value: option?.name} : { value: attr.value };
+      } else {
+        row[attr.attribute] = { value: attr.value };
+      }
     });
 
     dataElementsData.forEach((element: DataValue) => {
@@ -142,6 +157,7 @@ export const getTrackedEntityTableData = (
     row['responseData'] = { value: tei.toObject() as TrackedEntityInstance };
     return row;
   });
+  console.log('this is the data consoled', tableData);
 
   return {
     columns: tableColumns,

@@ -35,7 +35,7 @@ export class D2EventResponse<T extends DHIS2Event> {
   }
 
   #getData(dataResponse: Record<string, unknown>, model: IDHIS2Event) {
-    const data = dataResponse['events'] || dataResponse;
+    const data = dataResponse['events'] ||  dataResponse['instances'] || dataResponse;
 
     if (isPlainObject(data)) {
       return new (model as any)(data);

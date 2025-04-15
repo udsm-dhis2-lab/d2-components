@@ -1,4 +1,4 @@
-import { DHIS2Event, Pager, TrackedEntityInstance } from '@iapps/d2-web-sdk';
+import { DHIS2Event, Pager, TrackedEntityInstance,  } from '@iapps/d2-web-sdk';
 
 export interface PagerObject {
   page: number;
@@ -17,10 +17,9 @@ export interface Attribute {
 }
 
 export interface EventsResponse {
-  events: Event[];
+  events: DHIS2Event | DHIS2Event[];
   pager: Pager;
 }
-
 export interface Event {
   dueDate: string;
   program: string;
