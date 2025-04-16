@@ -145,7 +145,7 @@ export class Enrollment
   }
 
   setEventOrgUnit(orgUnit: string, eventId: string) {
-    let event = EventUtil.getEventById(this.events as DHIS2Event[], eventId);
+    const event = EventUtil.getEventById(this.events as DHIS2Event[], eventId);
 
     if (event) {
       event.orgUnit = orgUnit;

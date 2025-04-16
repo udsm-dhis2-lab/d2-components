@@ -187,6 +187,7 @@ export class FormMetaData implements IFormMetadata {
                 code: 'orgUnit',
                 required: true,
                 controlType: 'org-unit',
+                isOrgUnit: true,
               }),
             ],
           },

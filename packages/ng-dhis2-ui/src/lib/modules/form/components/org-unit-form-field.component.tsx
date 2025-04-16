@@ -280,13 +280,17 @@ export const OrgUnitFormField = (props: Props) => {
             selectedOrgUnit ? (
               <>
                 <Tooltip content={selectedOrgUnitLabel}>
-                  <Chip
-                    onRemove={() => {
-                      setShowOrgUnitTree(true);
-                    }}
-                  >
-                    {(selectedOrgUnit as any).displayName}
-                  </Chip>
+                  {disabled ? (
+                    <Chip>{(selectedOrgUnit as any).displayName}</Chip>
+                  ) : (
+                    <Chip
+                      onRemove={() => {
+                        setShowOrgUnitTree(true);
+                      }}
+                    >
+                      {(selectedOrgUnit as any).displayName}
+                    </Chip>
+                  )}
                 </Tooltip>
               </>
             ) : (

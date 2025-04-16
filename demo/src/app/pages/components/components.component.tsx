@@ -100,8 +100,8 @@ export class ComponentsComponent implements OnInit {
     }
   }
 
-  onRowsSelected(data: TableRow[]) {
-    console.log('this is the data being emitted', data)
+  onRowsSelected(data: TrackedEntityInstance[] | DHIS2Event[]) {
+    console.log('this is the data being emitted', data);
   }
 
   // onActionSelected(event: { action: string; row: TableRow }) {
@@ -140,6 +140,19 @@ export class ComponentsComponent implements OnInit {
       operator: '',
       value: 'Qualified',
     },
+  ];
+
+  dataQueryFilters = [
+    new DataQueryFilter()
+      .setAttribute('tgGvHgQgtQ0')
+      .setCondition(DataFilterCondition.Equal)
+      .setValue('ND_BATCH_39073404'),
+    // new DataQueryFilter()
+    //   .setAttribute('lj3cQAle9Fo')
+    //   .setProgramStage('NtZXBym2KfD')
+    //   .setCondition(DataFilterCondition.NotEqual)
+    //   .setValue('null')
+    //   .setType('DATA_ELEMENT'),
   ];
 
   onApprovalSelected(data: any) {
