@@ -124,12 +124,13 @@ export class DHIS2Event
         this.event = generateUid();
       }
 
-      this.occurredAt =
+      this.occurredAt = (
         this.eventDate ||
         this.occurredAt ||
-        new Date().toISOString().split('T')[0];
+        new Date().toISOString()
+      )?.split('T')?.[0];
 
-      this.dueDate = this.dueDate || this.scheduledAt;
+      this.dueDate = (this.dueDate || this.scheduledAt)?.split('T')?.[0];
       (this.dataValues || []).forEach((dataValue) => {
         if (dataValue.code && dataValue.code.length > 0) {
           this[camelCase(dataValue.code)] = dataValue.value;
