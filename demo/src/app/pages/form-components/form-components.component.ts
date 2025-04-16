@@ -99,6 +99,7 @@ export class FormComponentsComponent {
     excludeInheritedAttributes: false,
     hideRegistrationUnit: true,
     hideEnrollmentDate: true,
+    autoComplete: true,
   });
 
   onUpdate(event: FormValue) {

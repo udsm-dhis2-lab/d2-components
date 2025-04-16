@@ -204,15 +204,23 @@ export class ProgramEntryFormModule {
     | null
   > {
     switch (this.config().formType) {
-      case 'TRACKER':
+      case 'TRACKER': {
+        if (this.config().autoComplete) {
+          this.instance()!.complete();
+        }
         return (this.instanceQuery as BaseTrackerQuery<TrackedEntityInstance>)
           .setData(this.instance() as TrackedEntityInstance)
           .save();
+      }
 
-      case 'EVENT':
+      case 'EVENT': {
+        if (this.config().autoComplete) {
+          this.instance()!.complete();
+        }
         return (this.instanceQuery as BaseEventQuery<DHIS2Event>)
           .setData(this.instance() as DHIS2Event)
           .save();
+      }
 
       default:
         return firstValueFrom(of(null));
