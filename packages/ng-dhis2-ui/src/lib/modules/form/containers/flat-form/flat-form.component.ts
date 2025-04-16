@@ -15,7 +15,7 @@ export class FlatFormComponent
   formGroup!: FormGroup;
   ngOnInit(): void {
     this.formGroup = FormUtil.getFormGroup(this.fields(), this.dataValues());
-    this.updateFormValidity(this.formGroup.valid);
+    this.onFormUpdate();
   }
 
   onFormUpdate() {
