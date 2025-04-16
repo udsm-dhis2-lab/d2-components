@@ -65,17 +65,7 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
           ),
         'ToOne'
       )
-      .with(
-        this.d2.programModule.programTrackedEntityAttribute.with(
-          this.d2.programModule.trackedEntityAttribute.with(
-            this.d2.optionSetModule.optionSet.with(
-              this.d2.optionSetModule.option
-            ),
-            'ToOne'
-          ),
-          'ToOne'
-        )
-      )
+
       .with(
         this.d2.programModule.programRuleVariable
           .with(
@@ -97,6 +87,20 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
       )
       .byId(program as string);
 
+    if (!this.config.programStage) {
+      programQuery.with(
+        this.d2.programModule.programTrackedEntityAttribute.with(
+          this.d2.programModule.trackedEntityAttribute.with(
+            this.d2.optionSetModule.optionSet.with(
+              this.d2.optionSetModule.option
+            ),
+            'ToOne'
+          ),
+          'ToOne'
+        )
+      );
+    }
+
     if (this.config.displayType === 'FLAT') {
       programQuery.with(
         this.d2.programModule.programSection.with(
@@ -105,22 +109,22 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
       );
     }
 
-    if (!this.config.excludeProgramStages) {
-      programQuery.with(
-        this.d2.programModule.programStage
-          .with(this.d2.programModule.programStageSection)
-          .with(
-            this.d2.programModule.programStageDataElement.with(
-              this.d2.dataElementModule.dataElement.with(
-                this.d2.optionSetModule.optionSet.with(
-                  this.d2.optionSetModule.option
-                ),
-                'ToOne'
+    if (!this.config.excludeProgramStages || this.config.programStage) {
+      const programStageQuery = this.d2.programModule.programStage
+        .with(this.d2.programModule.programStageSection)
+        .with(
+          this.d2.programModule.programStageDataElement.with(
+            this.d2.dataElementModule.dataElement.with(
+              this.d2.optionSetModule.optionSet.with(
+                this.d2.optionSetModule.option
               ),
               'ToOne'
-            )
+            ),
+            'ToOne'
           )
-      );
+        );
+
+      programQuery.with(programStageQuery);
     }
 
     return programQuery.get();
