@@ -253,10 +253,23 @@ export class ProgramEntryFormModule {
       .setTrackedEntity(this.trackedEntity() as string)
       .setOrgUnit(this.orgUnit() as string);
 
-    return this.event()
-      ? ((await this.instanceQuery.setEvent(this.event() as string).get())
-          .data as DHIS2Event) || (await this.instanceQuery.create())
-      : await this.instanceQuery.create();
+    if (!this.event()) {
+      return await this.instanceQuery.create();
+    }
+
+    const instance = (
+      await this.instanceQuery.setEvent(this.event() as string).get()
+    ).data as DHIS2Event;
+
+    if (!instance) {
+      return await this.instanceQuery.create();
+    }
+
+    if (this.metaData()?.program) {
+      instance.setFields(this.metaData()!.program);
+    }
+
+    return instance;
   }
 
   #getInstance(): Promise<TrackedEntityInstance | DHIS2Event | null> {

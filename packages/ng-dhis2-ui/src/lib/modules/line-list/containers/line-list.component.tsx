@@ -228,7 +228,7 @@ export class LineListTableComponent extends ReactWrapperModule {
           .setStatus(this.enrollmentStatus)
           .setEventStatus(
             this.eventStatus?.status,
-            this.eventStatus.programStage
+            this.eventStatus?.programStage
           )
           .setFilters(dataQueryFiltersState)
           .setPagination(

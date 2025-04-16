@@ -8,6 +8,7 @@ import {
   DHIS2EventStatus,
   EventFieldProperty,
 } from '../interfaces';
+import { Program } from '../../program';
 
 const DEFAULT_FIELD_PROPERTIES: Record<string, EventFieldProperty> = {
   occurredAt: {
@@ -124,7 +125,9 @@ export class DHIS2Event
       }
 
       this.occurredAt =
-        this.eventDate || this.occurredAt || new Date().toISOString();
+        this.eventDate ||
+        this.occurredAt ||
+        new Date().toISOString().split('T')[0];
 
       this.dueDate = this.dueDate || this.scheduledAt;
       (this.dataValues || []).forEach((dataValue) => {
@@ -182,6 +185,28 @@ export class DHIS2Event
             ]
           : [...(this.dataValues || []), { dataElement, value, code }];
     }
+  }
+
+  setFields(program: Program) {
+    this.fields = {
+      ...(this.fields || {}),
+      ...(program.dataElements || [])
+        .filter(
+          (dataElement) => dataElement.programStageId === this.programStage
+        )
+        .reduce((fieldObject, dataElement) => {
+          const key = dataElement.code
+            ? camelCase(dataElement.code)
+            : dataElement.id;
+          return {
+            ...fieldObject,
+            [key]: {
+              id: dataElement.id,
+              type: 'DATA_ELEMENT',
+            },
+          };
+        }, {}),
+    };
   }
 
   getDataValue(dataElement: string): DataValue {
