@@ -84,11 +84,12 @@ export class ProgramEntryFormFieldUtil {
     return new FormField<string>({
       id: 'orgUnit',
       key: 'orgUnit',
-      label: this.program.orgUnitLabel || 'Registering unit',
+      label: this.program.orgUnitLabel ?? 'Registering unit',
       code: 'orgUnit',
       required: true,
       controlType: 'org-unit',
       disabled: this.config.disableRegistrationUnit,
+      isOrgUnit: true,
     });
   }
 

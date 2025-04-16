@@ -13,6 +13,8 @@ import {
   ProgramDateType,
   OuMode,
   DataOrderCriteria,
+  EnrollmentStatus,
+  EventStatus,
 } from '../../../shared';
 import { Program, ProgramRule } from '../../program';
 import {
@@ -29,6 +31,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
   protected orgUnit?: string;
   protected ouMode: OuMode = 'ALL';
   protected program?: string;
+  protected programStage?: string;
   protected trackedEntityType?: string;
   protected filters?: DataQueryFilter[];
   protected fields?: string;
@@ -36,6 +39,8 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
   protected enrollmentEnrolledBefore?: string;
   protected trackedEntity?: string;
   protected orderCriterias?: DataOrderCriteria[];
+  protected enrollmentStatus?: EnrollmentStatus;
+  protected eventStatus?: EventStatus;
   event?: string;
   protected pager = new Pager();
   [key: string]: unknown;
@@ -59,6 +64,29 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
     return this;
   }
 
+  setStatus(
+    status: EnrollmentStatus | EventStatus,
+    statusType: 'ENROLLMENT' | 'EVENT' = 'ENROLLMENT'
+  ): BaseTrackerQuery<T> {
+    if (statusType === 'ENROLLMENT') {
+      this.enrollmentStatus = status as EnrollmentStatus;
+    }
+
+    if (statusType === 'EVENT') {
+      this.eventStatus = status as EventStatus;
+    }
+
+    return this;
+  }
+
+  setEventStatus(
+    status: EventStatus,
+    programStage: string
+  ): BaseTrackerQuery<T> {
+    this.programStage = programStage;
+    return this.setStatus(status, 'EVENT');
+  }
+
   setOrderCriterias(orderCriterias: DataOrderCriteria[]): BaseTrackerQuery<T> {
     this.orderCriterias = orderCriterias;
     return this;
@@ -66,6 +94,11 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
 
   setProgram(program: string): BaseTrackerQuery<T> {
     this.program = program;
+    return this;
+  }
+
+  setProgramStage(programStage: string): BaseTrackerQuery<T> {
+    this.programStage = programStage;
     return this;
   }
 
@@ -240,7 +273,8 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
     baseUrl: string
   ) {
     // TODO: This assumes all data element filters will be of the same program stage, there is currently no support to filter from multiple program stages
-    const programStage = dataElementFilters[0].programStage;
+    const programStage =
+      dataElementFilters[0]?.programStage ?? this.programStage;
     const attributeFilters = (this.filters || []).filter(
       (filter) => filter.attributeType === 'TRACKED_ENTITY_ATTRIBUTE'
     );
@@ -256,6 +290,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
       .setProgramStage(programStage)
       .setFilters(dataElementFilters)
       .setAttributeFilters(attributeFilters)
+      .setStatus(this.eventStatus as EventStatus)
       .get();
 
     const trackedEntities = eventQuery?.data?.map(
@@ -283,6 +318,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
         filters: [],
         fields: this.fields,
         orderCriterias: this.orderCriterias,
+        enrollmentStatus: this.enrollmentStatus,
         enrollmentEnrolledAfter: this.enrollmentEnrolledAfter,
         enrollmentEnrolledBefore: this.enrollmentEnrolledBefore,
         trackedEntity: trackedEntities.join(';'),
@@ -302,7 +338,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
       (filter) => filter.attributeType === 'DATA_ELEMENT'
     );
 
-    if (dataElementFilters.length > 0) {
+    if (dataElementFilters.length > 0 || this.eventStatus) {
       return await this.fetchFromEvent(dataElementFilters, baseUrl);
     }
 
@@ -316,6 +352,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
         filters: this.filters,
         fields: this.fields,
         orderCriterias: this.orderCriterias,
+        enrollmentStatus: this.enrollmentStatus,
         enrollmentEnrolledAfter: this.enrollmentEnrolledAfter,
         enrollmentEnrolledBefore: this.enrollmentEnrolledBefore,
         trackedEntity: this.trackedEntity,

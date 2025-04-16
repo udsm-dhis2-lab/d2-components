@@ -93,23 +93,10 @@ export const getProgramStageData = (
   console.log('data from event program', eventsiiii)
   console.log('so from events', events)
   const allDataElements = new Set<string>();
-  
-  if(programStageId) {
-    events.forEach((event: any) => {
-      event.dataValues.forEach((dv: any) => allDataElements.add(dv.dataElement));
-    });
-  } else if (metaData.programType === 'WITHOUT_REGISTRATION') {
-    events.forEach((event: any) => {
-      event.dataValues.forEach((dv: any) => allDataElements.add(dv.dataElement));
-    });
-  }
 
-
-  // events.forEach((event: any) => {
-  //   event.dataValues.forEach((dv: any) => allDataElements.add(dv.dataElement));
-  // });
-
-
+  events.forEach((event: any) => {
+    event.dataValues.forEach((dv: any) => allDataElements.add(dv.dataElement));
+  });
 
   console.log('so hapa event data gani', events)
   let stageFromMetaData;
@@ -161,7 +148,7 @@ export const getProgramStageData = (
 
       if (dataElementMeta?.dataElement.optionSet) {
         const optionSet = dataElementMeta.dataElement.optionSet;
-
+        console.log('option sets', optionSet);
         const matchingOption = optionSet.options.find(
           (option: any) => option.code === dv.value
         );

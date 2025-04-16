@@ -8,10 +8,26 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { CircularLoader, colors } from '@dhis2/ui';
+import {
+  D2Window,
+  DataFilterCondition,
+  DataOrderCriteria,
+  DataQueryFilter,
+  DHIS2Event,
+  EnrollmentStatus,
+  EventStatus,
+  OuMode,
+  Pager,
+  Program,
+  TrackedEntityInstance,
+} from '@iapps/d2-web-sdk';
 import React, { useEffect, useRef, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
-import { take } from 'rxjs';
 import { ReactWrapperModule } from '../../react-wrapper/react-wrapper.component';
+import { OrgUnitSelector } from '../components/orgUnitSelector';
+import { FilterToolbar } from '../components/table/filterToolbar';
+import { LineListTable } from '../components/table/lineListTable';
+import { ActionOptionOrientation, LineListActionOption } from '../models';
 import { AttributeFilter } from '../models/attribute-filter.model';
 import {
   ColumnDefinition,
@@ -24,26 +40,7 @@ import {
   addActionsColumn,
   getTrackedEntityTableData,
 } from '../utils/tei-table-data-utils';
-import {
-  getEventData,
-  getProgramStageData,
-} from '../utils/event-table-table-util';
-import { ActionOptionOrientation, LineListActionOption } from '../models';
-import {
-  D2Window,
-  DataFilterCondition,
-  DataOrderCriteria,
-  DataQueryFilter,
-  DHIS2Event,
-  OuMode,
-  Pager,
-  Program,
-  TrackedEntityInstance,
-} from '@iapps/d2-web-sdk';
-import { FilterToolbar } from '../components/table/filterToolbar';
-import { LineListTable } from '../components/table/lineListTable';
-import { OrgUnitSelector } from '../components/orgUnitSelector';
-import { meta } from '@turf/turf';
+import { getProgramStageData } from '../utils/event-table-table-util';
 
 @Component({
   selector: 'ng-dhis2-ui-line-list',
@@ -68,12 +65,19 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() filterRootOrgUnit = false;
   @Input() showFilters = false;
   @Input() isOptionSetNameVisible = false;
-  @Input() isSelectable = false;
+  @Input() allowRowsSelection = false;
+  @Input() enrollmentStatus!: EnrollmentStatus;
+  @Input() eventStatus!: {
+    programStage: string;
+    status: EventStatus;
+  };
   @Output() actionSelected = new EventEmitter<{
     action: string;
     data: TrackedEntityInstance | DHIS2Event;
   }>();
-  @Output() selectedRowsData = new EventEmitter<TableRow[]>();
+  @Output() rowsSelected = new EventEmitter<
+    TrackedEntityInstance[] | DHIS2Event[]
+  >();
 
   private reactStateUpdaters: any = null;
 
@@ -109,8 +113,8 @@ export class LineListTableComponent extends ReactWrapperModule {
       if (changes['isButtonLoading']) {
         this.reactStateUpdaters.setIsButtonLoading(this.isButtonLoading);
       }
-      if (changes['isSelectable']) {
-        this.reactStateUpdaters.setIsButtonLoading(this.isSelectable);
+      if (changes['allowRowsSelection']) {
+        this.reactStateUpdaters.setIsButtonLoading(this.allowRowsSelection);
       }
     }
   }
@@ -165,7 +169,9 @@ export class LineListTableComponent extends ReactWrapperModule {
     const [prevValue, setPrevValue] = useState<string>();
     const [dateStates, setDateStates] = useState<{ [key: string]: string }>({});
     const [metaData, setMetaData] = useState<Program | null>(null);
-    const [selectable, setSelectable] = useState<boolean>(this.isSelectable);
+    const [selectable, setSelectable] = useState<boolean>(
+      this.allowRowsSelection
+    );
 
     const d2 = (window as unknown as D2Window).d2Web;
 
@@ -284,8 +290,14 @@ export class LineListTableComponent extends ReactWrapperModule {
           .setEndDate(endDate)
           .setStartDate(startDateState as string)
           .setProgram(this.programId)
+          .setProgramStage(this.programStageId as string)
           .setOrgUnit(orgUnitState)
           .setOuMode(this.ouMode as OuMode)
+          .setStatus(this.enrollmentStatus)
+          .setEventStatus(
+            this.eventStatus?.status,
+            this.eventStatus.programStage
+          )
           .setFilters(dataQueryFiltersState)
           .setPagination(
             new Pager({
@@ -582,7 +594,7 @@ export class LineListTableComponent extends ReactWrapperModule {
               actionOptionOrientation={this.actionOptionOrientation}
               actionSelected={this.actionSelected}
               selectable={selectable}
-              selectedRowsData={this.selectedRowsData}
+              rowsSelected={this.rowsSelected}
             />
           </div>
         )}

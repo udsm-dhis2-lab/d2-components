@@ -3,7 +3,11 @@
 // license that can be found in the LICENSE file.
 
 import { AssignedUserMode } from '../interfaces';
-import { DataQueryFilter, DataUrlGenerator } from '../../../shared';
+import {
+  DataQueryFilter,
+  DataUrlGenerator,
+  EventStatus,
+} from '../../../shared';
 
 const DEFAULT_FIELDS = '';
 
@@ -18,6 +22,7 @@ export class EventUrlGenerator extends DataUrlGenerator<EventUrlGenerator> {
   assignedUserMode?: AssignedUserMode;
   assignedUser?: string;
   attributeFilters?: DataQueryFilter[];
+  eventStatus?: EventStatus;
 
   constructor(params: Partial<EventUrlGenerator>) {
     super(params);
@@ -36,6 +41,7 @@ export class EventUrlGenerator extends DataUrlGenerator<EventUrlGenerator> {
     this.scheduledBefore = params.scheduledBefore;
     this.enrollmentEnrolledAfter = params.enrollmentEnrolledAfter;
     this.enrollmentEnrolledBefore = params.enrollmentEnrolledBefore;
+    this.eventStatus = params.eventStatus;
   }
 
   addEvent(url: string): string {
@@ -62,6 +68,16 @@ export class EventUrlGenerator extends DataUrlGenerator<EventUrlGenerator> {
     return (
       url + `${isThereParams ? '&' : '?'}programStage=${this.programStage}`
     );
+  }
+
+  addEventStatus(url: string): string {
+    if (!this.eventStatus) {
+      return url;
+    }
+
+    const isThereParams = this.isThereQueryParams(url);
+
+    return url + `${isThereParams ? '&' : '?'}status=${this.eventStatus}`;
   }
 
   addAssignedUserMode(url: string): string {
@@ -141,18 +157,20 @@ export class EventUrlGenerator extends DataUrlGenerator<EventUrlGenerator> {
   generate(): string {
     return this.addPager(
       this.addOrder(
-        this.addAssignedUser(
-          this.addAssignedUserMode(
-            this.addEnrollmentDates(
-              this.addOccurredDates(
-                this.addScheduledDates(
-                  this.addFields(
-                    this.addOrgUnit(
-                      this.addAttributeFilters(
-                        this.addFilters(
-                          this.addProgramStage(
-                            this.addProgram(
-                              this.addEvent(`${this.baseEndpoint}`)
+        this.addEventStatus(
+          this.addAssignedUser(
+            this.addAssignedUserMode(
+              this.addEnrollmentDates(
+                this.addOccurredDates(
+                  this.addScheduledDates(
+                    this.addFields(
+                      this.addOrgUnit(
+                        this.addAttributeFilters(
+                          this.addFilters(
+                            this.addProgramStage(
+                              this.addProgram(
+                                this.addEvent(`${this.baseEndpoint}`)
+                              )
                             )
                           )
                         )

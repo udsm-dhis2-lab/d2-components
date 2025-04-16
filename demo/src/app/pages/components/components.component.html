@@ -247,20 +247,24 @@
     (actionSelected)="onActionSelected($event)"
   ></ng-dhis2-ui-line-list>
 </div> -->
-  <!-- [teiEnrollmentList]="{onApprovalClick: onApprove}" -->
+<!-- [teiEnrollmentList]="{onApprovalClick: onApprove}" -->
 <div>
   <ng-dhis2-ui-line-list
-    [programId]="'pgH4jPT4RoF'"
-    [orgUnit]="'m0frOspS7JY'"
-  
+    [programId]="'lw9fZTamYec'"
+    [orgUnit]="'xrku9x3XnV9'"
     [actionOptions]="actionOptions"
     [ouMode]="'DESCENDANTS'"
     [showFilters]="true"
     [actionOptionOrientation]="'LINK'"
     (approvalSelected)="onApprovalSelected($event)"
     (actionSelected)="onActionSelected($event)"
-    [isSelectable]="true"
-    (selectedRowsData)="onRowsSelected($event)"
+    [allowRowsSelection]="false"
+    [eventStatus]="{
+      programStage: 'NtZXBym2KfD',
+      status: 'ACTIVE'
+    }"
+    [dataQueryFilters]="dataQueryFilters"
+    (rowsSelected)="onRowsSelected($event)"
   ></ng-dhis2-ui-line-list>
 </div>
 
@@ -316,5 +320,3 @@
     />
   </div>
 </div> -->
-
-
