@@ -157,7 +157,6 @@ export const getTrackedEntityTableData = (
     row['responseData'] = { value: tei.toObject() as TrackedEntityInstance };
     return row;
   });
-  console.log('this is the data consoled', tableData);
 
   return {
     columns: tableColumns,

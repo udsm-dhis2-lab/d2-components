@@ -40,7 +40,7 @@ import {
   addActionsColumn,
   getTrackedEntityTableData,
 } from '../utils/tei-table-data-utils';
-import { getProgramStageData } from '../utils/event-table-table-util';
+import { getEvents } from '../utils/event-table-table-util';
 
 @Component({
   selector: 'ng-dhis2-ui-line-list',
@@ -200,7 +200,6 @@ export class LineListTableComponent extends ReactWrapperModule {
             .getMetaData()) as Program;
           const data = trackerResponse;
           setMetaData(data);
-          console.log('this is the metadata ', data);
         } catch (error) {
           console.error('Failed to metadata:', error);
         }
@@ -221,38 +220,24 @@ export class LineListTableComponent extends ReactWrapperModule {
       const endDate = endDateState ?? new Date().toISOString().split('T')[0];
 
       if (this.programStageId || isEvent) {
-        console.log('i am showing the progra stage');
+        setLoading(true);
         d2.eventModule.event
           .setProgram(this.programId)
-          //  .setProgramStage('NtZXBym2KfD')
           .setProgramStage(this.programStageId as string)
           .setPagination(
             new Pager({
-              pageSize: 10,
-              page: 1,
+              pageSize: pager.pageSize,
+              page: pager.page,
             })
           )
-          // .setFilters([
-          //   new DataQueryFilter()
-          //     .setAttribute('lj3cQAle9Fo')
-          //     .setCondition(DataFilterCondition.In)
-          //     .setValue(['Qualified', 'Rejected'])
-          //     .setType('DATA_ELEMENT'),
-          // ])
           .get()
           .then((response) => {
-            console.log('this is the event response', response);
             const eventsResponse: EventsResponse = {
               events: response.data!,
               pager: pager,
               // orgUnitsMap: fetchedOrgUnits,
             };
-            // response: LineListResponse,
-            //   programStageId: string,
-            //   pager: any,
-            //   metaData: Program,
-            //   isOptionSetNameVisible: boolean
-            const { columns, data } = getProgramStageData(
+            const { columns, data } = getEvents(
               { data: eventsResponse },
               this.programStageId as string,
               pager,
@@ -263,9 +248,6 @@ export class LineListTableComponent extends ReactWrapperModule {
               this.actionOptions
             );
 
-            console.log('this is the columns', finalColumns);
-            console.log('this is the columns', data);
-
             const pagerResponse = response.pagination;
 
             setLoading(false);
@@ -273,17 +255,6 @@ export class LineListTableComponent extends ReactWrapperModule {
             setData(data);
             setPager(new Pager(pagerResponse || {}));
           });
-
-        // if (this.programStageId) {
-        //   responsePager = (response.data as EventsResponse).pager;
-        //   const { columns, data } = getProgramStageData(
-        //     response,
-        //     this.programStageId,
-        //     pager
-        //   );
-        //   entityColumns = columns;
-        //   entityData = data;
-        // }
       } else if (isTracker) {
         setLoading(true);
         d2.trackerModule.trackedEntity
@@ -296,7 +267,7 @@ export class LineListTableComponent extends ReactWrapperModule {
           .setStatus(this.enrollmentStatus)
           .setEventStatus(
             this.eventStatus?.status,
-            this.eventStatus.programStage
+            this.eventStatus?.programStage
           )
           .setFilters(dataQueryFiltersState)
           .setPagination(
@@ -349,9 +320,6 @@ export class LineListTableComponent extends ReactWrapperModule {
 
                 const pagerResponse = response.pagination;
 
-                console.log('this is the columns', finalColumns);
-                console.log('this is the data', data);
-
                 setLoading(false);
                 setColumns(finalColumns);
                 setData(data);
@@ -363,59 +331,6 @@ export class LineListTableComponent extends ReactWrapperModule {
                 setLoading(false);
               },
             });
-          });
-      } else {
-        //TODO: TO IMPLEMEMNT EVENT QUERY FOR FILTERING EVENTS WHEN PROGRAM STAGE IS PASSED OR DEALING WITH EVENT PROGRAM USING TRACKER SDK QUERY
-        console.log('i am showing the progra stage');
-        d2.eventModule.event
-          .setProgram(this.programId)
-          //  .setProgramStage('NtZXBym2KfD')
-          .setPagination(
-            new Pager({
-              pageSize: 10,
-              page: 1,
-            })
-          )
-          // .setFilters([
-          //   new DataQueryFilter()
-          //     .setAttribute('lj3cQAle9Fo')
-          //     .setCondition(DataFilterCondition.In)
-          //     .setValue(['Qualified', 'Rejected'])
-          //     .setType('DATA_ELEMENT'),
-          // ])
-          .get()
-          .then((response) => {
-            console.log('this is the event response', response);
-            const eventsResponse: EventsResponse = {
-              events: response.data!,
-              pager: pager,
-              // orgUnitsMap: fetchedOrgUnits,
-            };
-            // response: LineListResponse,
-            //   programStageId: string,
-            //   pager: any,
-            //   metaData: Program,
-            //   isOptionSetNameVisible: boolean
-            const { columns, data } = getProgramStageData(
-              { data: eventsResponse },
-              this.programStageId as string,
-              pager,
-              metaData
-            );
-            const finalColumns: ColumnDefinition[] = addActionsColumn(
-              [{ label: '#', key: 'index' }, ...columns],
-              this.actionOptions
-            );
-
-            console.log('this is the columns', finalColumns);
-            console.log('this is the columns', data);
-
-            const pagerResponse = response.pagination;
-
-            setLoading(false);
-            setColumns(finalColumns);
-            setData(data);
-            setPager(new Pager(pagerResponse || {}));
           });
       }
     }, [
