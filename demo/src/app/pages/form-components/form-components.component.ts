@@ -92,12 +92,14 @@ export class FormComponentsComponent {
 
   programEntryConfig = new ProgramEntryFormConfig({
     program: 'lw9fZTamYec',
+    programStage: 'NtZXBym2KfD',
     displayType: 'FLAT',
-    formType: 'TRACKER',
+    formType: 'EVENT',
     excludeProgramStages: true,
     excludeInheritedAttributes: false,
-    hideRegistrationUnit: false,
+    hideRegistrationUnit: true,
     hideEnrollmentDate: true,
+    autoComplete: true,
   });
 
   onUpdate(event: FormValue) {

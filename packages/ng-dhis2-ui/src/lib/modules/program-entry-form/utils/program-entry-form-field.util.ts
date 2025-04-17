@@ -5,6 +5,7 @@
 import {
   DataElement,
   Program,
+  ProgramStage,
   TrackedEntityAttribute,
 } from '@iapps/d2-web-sdk';
 import { ProgramEntryFormConfig } from '../models';
@@ -58,9 +59,14 @@ export class ProgramEntryFormFieldUtil {
   }
 
   get dataElements() {
+    const programStages = this.config.programStage
+      ? this.program.programStages?.filter(
+          (programStage) => programStage.id === this.config.programStage
+        )
+      : this.program.programStages;
     return flatten(
-      (this.program.programStages || []).map((programStage) => {
-        return (programStage.programStageDataElements || []).map(
+      (programStages || []).map((programStage) => {
+        const dataElements = (programStage.programStageDataElements || []).map(
           (stageDataElement) => {
             return {
               ...stageDataElement.dataElement,
@@ -72,6 +78,31 @@ export class ProgramEntryFormFieldUtil {
             };
           }
         );
+
+        const eventDateName =
+          programStage.executionDateLabel ||
+          `Reporting date - ${programStage.name}`;
+
+        return [
+          {
+            id: 'occurredAt',
+            code: 'OCCURRED_AT',
+            formName: eventDateName,
+            name: eventDateName,
+            shortName: eventDateName,
+            displayName: eventDateName,
+            sortOrder: 1,
+            mandatory: true,
+            stepId: programStage.id,
+            valueType: 'DATE',
+            metaType: 'EVENT_DATE',
+            domainType: 'TRACKER',
+            aggregationType: 'NONE',
+            lastUpdated: '',
+            created: '',
+          },
+          ...dataElements,
+        ];
       })
     );
   }
@@ -94,7 +125,7 @@ export class ProgramEntryFormFieldUtil {
   }
 
   #getEnrollmentDateField() {
-    if (this.config.hideEnrollmentDate) {
+    if (this.config.hideEnrollmentDate || this.config.programStage) {
       return null;
     }
 
@@ -111,7 +142,7 @@ export class ProgramEntryFormFieldUtil {
   }
 
   #getIncidentDateField() {
-    if (!this.program.displayIncidentDate) {
+    if (!this.program.displayIncidentDate || this.config.programStage) {
       return null;
     }
 
