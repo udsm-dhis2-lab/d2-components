@@ -8,6 +8,7 @@ import {
   DHIS2EventStatus,
   EventFieldProperty,
 } from '../interfaces';
+import { Program } from '../../program';
 
 const DEFAULT_FIELD_PROPERTIES: Record<string, EventFieldProperty> = {
   occurredAt: {
@@ -123,10 +124,13 @@ export class DHIS2Event
         this.event = generateUid();
       }
 
-      this.occurredAt =
-        this.eventDate || this.occurredAt || new Date().toISOString();
+      this.occurredAt = (
+        this.eventDate ||
+        this.occurredAt ||
+        new Date().toISOString()
+      )?.split('T')?.[0];
 
-      this.dueDate = this.dueDate || this.scheduledAt;
+      this.dueDate = (this.dueDate || this.scheduledAt)?.split('T')?.[0];
       (this.dataValues || []).forEach((dataValue) => {
         if (dataValue.code && dataValue.code.length > 0) {
           this[camelCase(dataValue.code)] = dataValue.value;
@@ -182,6 +186,28 @@ export class DHIS2Event
             ]
           : [...(this.dataValues || []), { dataElement, value, code }];
     }
+  }
+
+  setFields(program: Program) {
+    this.fields = {
+      ...(this.fields || {}),
+      ...(program.dataElements || [])
+        .filter(
+          (dataElement) => dataElement.programStageId === this.programStage
+        )
+        .reduce((fieldObject, dataElement) => {
+          const key = dataElement.code
+            ? camelCase(dataElement.code)
+            : dataElement.id;
+          return {
+            ...fieldObject,
+            [key]: {
+              id: dataElement.id,
+              type: 'DATA_ELEMENT',
+            },
+          };
+        }, {}),
+    };
   }
 
   getDataValue(dataElement: string): DataValue {

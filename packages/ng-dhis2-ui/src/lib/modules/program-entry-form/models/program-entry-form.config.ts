@@ -25,6 +25,7 @@ export interface IProgramEntryFormConfig {
   hideCancelButton?: boolean;
   ignoreRepeatability?: boolean;
   autoAssignedValues?: AutoAssignedValues[];
+  autoComplete?: boolean;
 }
 export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   program!: string;
@@ -47,6 +48,7 @@ export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   hideCancelButton?: boolean;
   ignoreRepeatability?: boolean;
   autoAssignedValues?: AutoAssignedValues[];
+  autoComplete?: boolean;
 
   constructor(config: IProgramEntryFormConfig) {
     Object.assign(this, config);
