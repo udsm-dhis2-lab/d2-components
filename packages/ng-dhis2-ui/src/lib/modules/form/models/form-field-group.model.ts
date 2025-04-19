@@ -62,7 +62,9 @@ export class FormFieldGroup implements IFormFieldGroup {
           ...field,
           id: field.id,
           code: fieldMetaData['code'] as string,
-          label: (fieldMetaData['formName'] ?? field['label']) as string,
+          label: (fieldMetaData['formName'] ??
+            fieldMetaData['name'] ??
+            field['label']) as string,
           key: camelCase(fieldMetaData['code'] as string) || field.id,
           required: (fieldMetaData['mandatory'] ??
             fieldMetaData['required']) as boolean,

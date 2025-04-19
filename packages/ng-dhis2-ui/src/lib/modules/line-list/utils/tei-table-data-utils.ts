@@ -35,16 +35,16 @@ export const getTrackedEntityTableData = (
 
   const attributeColumns = metaData.displayInListTrackedEntityAttributes
     .sort((a, b) => a.sortOrder! - b.sortOrder!)
-    .map((attr) => ({
-      label: attr.name,
-      key: attr.id,
+    .map((trackedEntityAttribute) => ({
+      label: trackedEntityAttribute.formName ?? trackedEntityAttribute.name,
+      key: trackedEntityAttribute.id,
     }));
 
   const dataElementColumns = metaData.displayInListDataElements
     .sort((a, b) => a.sortOrder! - b.sortOrder!)
-    .map((element) => ({
-      label: element.name,
-      key: element.id,
+    .map((dataElement) => ({
+      label: dataElement.formName || dataElement.name,
+      key: dataElement.id,
     }));
 
   const dataElementOptions = metaData.displayInListDataElements.map(
@@ -105,7 +105,7 @@ export const getTrackedEntityTableData = (
       }
       return attr;
     });
-  
+
     attributesData.forEach((attr: any) => {
       const attributeMeta = metaData.programTrackedEntityAttributes?.find(
         (metadata) => metadata.trackedEntityAttribute.id === attr.attribute
@@ -118,8 +118,9 @@ export const getTrackedEntityTableData = (
           (option) => option.code === attr.value
         );
 
-        row[attr.attribute] =
-          option? {value: option?.name} : { value: attr.value };
+        row[attr.attribute] = option
+          ? { value: option?.name }
+          : { value: attr.value };
       } else {
         row[attr.attribute] = { value: attr.value };
       }
