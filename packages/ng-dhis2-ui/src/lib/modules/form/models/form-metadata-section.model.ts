@@ -52,9 +52,6 @@ export class FormMetadataSection implements IFormMetadataSection {
             string,
             unknown
           >),
-          formName: ((programTrackedEntityAttribute[
-            'trackedEntityAttribute'
-          ] as Record<string, unknown>) || {})['name'],
           sortOrder: programTrackedEntityAttribute['sortOrder'],
           mandatory: programTrackedEntityAttribute['mandatory'],
           allowFutureDate: programTrackedEntityAttribute['allowFutureDate'],
