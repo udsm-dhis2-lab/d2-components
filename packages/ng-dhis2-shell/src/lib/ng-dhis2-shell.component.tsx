@@ -7,12 +7,11 @@ import {
 } from '@angular/core';
 import AppAdapter from '@dhis2/app-adapter';
 import {
-  CenteredContent,
+  Center,
   CircularLoader,
   CssReset,
   CssVariables,
   Layer,
-  layers,
 } from '@dhis2/ui';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom/client';
@@ -22,6 +21,7 @@ import { AppShellConfig, AppShellConfigService } from './models';
 @Component({
   selector: 'ng-dhis2-shell',
   template: '<ng-content></ng-content>',
+  standalone: false,
 })
 export class NgDhis2ShellComponent {
   @ContentChild('appShellContent', { static: true })
@@ -70,10 +70,10 @@ export class NgDhis2ShellComponent {
       <AppAdapter {...config}>
         <React.Suspense
           fallback={
-            <Layer level={layers.alert}>
-              <CenteredContent>
+            <Layer>
+              <Center>
                 <CircularLoader />
-              </CenteredContent>
+              </Center>
             </Layer>
           }
         >

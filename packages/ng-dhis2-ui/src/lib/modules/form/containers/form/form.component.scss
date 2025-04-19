@@ -1,0 +1,30 @@
+.form-horizontal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  width: 100%;
+}
+
+.hidden-field {
+  display: none;
+}
+
+.units-and-ranges span {
+  margin-left: 1%;
+  font-weight: 600;
+}
+
+.for-warning {
+  margin-left: 8px;
+}
+
+.form-field-vertical {
+  margin-bottom: 8px;
+}
+
+.form-field-horizontal {
+  flex: 1;
+  margin-bottom: 8px;
+  // min-width: 200px;
+  width: 100%;
+}

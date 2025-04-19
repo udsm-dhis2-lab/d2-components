@@ -19,12 +19,22 @@ export class DashboardMenu {
     selectedDashboardMenu: DashboardMenuObject;
     selectedDashboardSubMenu?: DashboardMenuObject;
   } {
+    if (!dashboardMenuIdFromUrl) {
+      const selectedDashboardMenu = (dashboardMenus || [])[0];
+      return {
+        selectedDashboardMenu,
+        selectedDashboardSubMenu: (selectedDashboardMenu?.subMenus || [])[0],
+      };
+    }
+
     const selectedDashboardMenu = dashboardMenus.find(
       (dashboardMenuItem) => dashboardMenuItem.id === dashboardMenuIdFromUrl
     );
 
     if (selectedDashboardMenu) {
-      return { selectedDashboardMenu };
+      return {
+        selectedDashboardMenu,
+      };
     }
 
     const dashboardSubMenus = flatten(
@@ -36,7 +46,12 @@ export class DashboardMenu {
     );
 
     return {
-      selectedDashboardMenu: selectedDashboardMenu || dashboardMenus[0],
+      selectedDashboardMenu: (dashboardMenus || []).filter((dashboardMenu) =>
+        dashboardMenu.subMenus?.find(
+          (dashboardSubMenu) =>
+            dashboardSubMenu?.id === selectedDashboardSubMenu?.id
+        )
+      )[0],
       selectedDashboardSubMenu,
     };
   }

@@ -1,4 +1,17 @@
-<h5>Header Bar component</h5>
+<!-- <ng-dhis2-ui-line-list
+  [programId]="'piWUQa85ell'"
+  [orgUnit]="'m0frOspS7JY'"
+  [actionOptions]="[
+    { label: 'View' },
+    { label: 'Edit' },
+    { label: 'Delete', destructive: true }
+  ]"
+  [ouMode]="'DESCENDANTS'"
+  [startDate]="'2024-03-01'"
+  [endDate]="'2025-02-28'"
+></ng-dhis2-ui-line-list> -->
+
+<!-- <h5>Header Bar component</h5>
 <ng-dhis2-ui-header-bar></ng-dhis2-ui-header-bar>
 
 <h5>Button component</h5>
@@ -17,12 +30,289 @@
 <h5>Organisation unit selector component</h5>
 <ng-dhis2-ui-org-unit-selector
   [selectedOrgUnits]="selectedOrgUnits"
+  [orgUnitSelectionConfig]="orgUnitSelectionConfig"
   (selectOrgUnits)="onSelectOrgUnits($event)"
 ></ng-dhis2-ui-org-unit-selector>
 
-<h5>Dictionary</h5>
-<ngx-dhis2-dictionary-list
+<h5>Dictionary</h5> -->
+<!-- <ngx-dhis2-dictionary-list
   [metadataIdentifiers]="[]"
-></ngx-dhis2-dictionary-list>
+></ngx-dhis2-dictionary-list> -->
+<!-- <div [id]="'dictonary-container'"></div>
 
 <h5>Wrapper implementation</h5>
+
+
+
+ <app-selection-filters-ui
+  [actionOptions]="[{ label: 'Search', onClick: onGenerateReport }]"
+  [programAttributesFilters]="[
+    {
+      attribute: 'nfpxRnc5Rsg',
+      program: '',
+      operator: 'eq',
+      name: 'Batch',
+      shortName: '',
+      formName: '',
+      valueType: 'text',
+      hasOptions: true,
+      code: '',
+      value: '',
+      options: [
+        { id: '1', code: 'one', name: 'One' },
+        { id: '2', code: 'two', name: 'Two' },
+        { id: '3', code: 'three', name: 'Three' }
+      ]
+    },
+    {
+      attribute: 'nfpxRnc5Rsg',
+      operator: 'eq',
+      program: '',
+      name: 'Batch',
+      shortName: '',
+      formName: '',
+      valueType: 'text',
+      hasOptions: false,
+      code: '',
+      value: '',
+      options: [
+        { id: '1', code: 'one', name: 'One' },
+        { id: '2', code: 'two', name: 'Two' },
+        { id: '3', code: 'three', name: 'Three' }
+      ]
+    },
+    {
+      attribute: 'nfpxRnc5Rsg',
+      operator: 'eq',
+      program: '',
+      name: 'Batch',
+      shortName: '',
+      formName: '',
+      valueType: 'DATE',
+      hasOptions: false,
+      code: '',
+      value: '',
+      options: []
+    },
+    {
+      attribute: 'nfpxRnc5Rsg',
+      operator: 'eq',
+      name: 'Batch',
+      shortName: '',
+      formName: '',
+      program: '',
+      valueType: 'DATE',
+      hasOptions: false,
+      code: '',
+      value: '',
+      options: []
+    },
+    {
+      attribute: 'nfpxRnc5Rsg',
+      operator: 'eq',
+      program: '',
+      shortName: '',
+      formName: '',
+      name: 'Batch',
+      valueType: 'text',
+      hasOptions: false,
+      code: '',
+      value: '',
+      options: []
+    }
+  ]"
+  [programStageDataElementFilters]="[
+    {
+      programStage: 'ABC',
+      dataElement: 'ABC',
+      program: '',
+      shortName: '',
+      formName: '',
+      name: 'ABC',
+      valueType: 'DATE',
+      hasOptions: true,
+      operator: '',
+      value: '',
+      options: [
+        { id: '1', code: 'one', name: 'One' },
+        { id: '2', code: 'two', name: 'Two' },
+        { id: '3', code: 'three', name: 'Three' }
+      ]
+    },
+    {
+      programStage: 'ABC',
+      dataElement: 'CDE',
+      name: 'ABC',
+      program: '',
+      shortName: '',
+      formName: '',
+      valueType: 'number',
+      hasOptions: true,
+      operator: '',
+      value: '',
+      options: [
+        { id: '1', code: 'one', name: 'One' },
+        { id: '2', code: 'two', name: 'Two' },
+        { id: '3', code: 'three', name: 'Three' }
+      ]
+    },
+    {
+      programStage: 'ABC',
+      dataElement: 'CDE',
+      name: 'ABC',
+      shortName: '',
+      formName: '',
+      valueType: 'number',
+      program: '',
+      hasOptions: true,
+      operator: '',
+      value: '',
+      options: [
+        { id: '1', code: 'one', name: 'One' },
+        { id: '2', code: 'two', name: 'Two' },
+        { id: '3', code: 'three', name: 'Three' }
+      ]
+    },
+    {
+      programStage: 'ABC',
+      dataElement: 'CDE',
+      name: 'ABC',
+      shortName: '',
+      formName: '',
+      valueType: 'number',
+      program: '',
+      hasOptions: true,
+      operator: '',
+      value: '',
+      options: [
+        { id: '1', code: 'one', name: 'One' },
+        { id: '2', code: 'two', name: 'Two' },
+        { id: '3', code: 'three', name: 'Three' }
+      ]
+    }
+  ]"
+  [startDate]="'2024-03-01'"
+  [endDate]="'2025-02-28'"
+  (actionSelected)="onActionSelected($event)"
+  [program]="'ABC1'"
+  [organisationUnit]="'EFG'"
+></app-selection-filters-ui>
+
+<app-data-table-ui
+  [data]="[
+    {
+      name: 'Item A',
+      description: 'Description of A',
+      shortName: 'A',
+      section: 'Section 1',
+      index: 1,
+      program: ''
+    }
+  ]"
+  [columnDefinitions]="[
+    { column: 'name', display: 'Name', index: '0', visible: true },
+    {
+      column: 'description',
+      display: 'Description',
+      index: '1',
+      visible: true
+    },
+    { column: 'shortName', display: 'Short Name', index: '2', visible: true }
+  ]"
+  (actionSelected)="onActionSelected($event)"
+  [actionOptions]="[{ label: 'View', onClick: onView }]"
+>
+</app-data-table-ui> -->
+
+<!-- <ng-dhis2-ui-line-list
+  [programId]="'piWUQa85ell'"
+  [orgUnit]="'m0frOspS7JY'"
+  [actionOptions]="[
+    { label: 'View', onClick: onView },
+    { label: 'Edit', onClick: onEdit },
+    { label: 'Delete', destructive: true, onClick: onDelete }
+  ]"
+  [showApprovalButton]="true"
+></ng-dhis2-ui-line-list>  -->
+<!-- <div class="p-4">
+  <ng-dhis2-ui-line-list
+    [programId]="'oUiYTdbtOuh'"
+    [orgUnit]="'xrku9x3XnV9'"
+    [useOuModeWithOlderDHIS2Instance]="true"
+    [attributeFilters]="[]"
+    [filters]="[]"
+    [ouMode]="'DESCENDANTS'"
+    [actionOptions]="[]"
+    [showFilters]="true"
+    (actionSelected)="onActionSelected($event)"
+  ></ng-dhis2-ui-line-list>
+</div> -->
+<!-- [teiEnrollmentList]="{onApprovalClick: onApprove}" -->
+<div>
+  <ng-dhis2-ui-line-list
+    [programId]="'oUiYTdbtOuh'"
+    [orgUnit]="'xrku9x3XnV9'"
+    [actionOptions]="actionOptions"
+    [ouMode]="'DESCENDANTS'"
+    [showFilters]="true"
+    [actionOptionOrientation]="'LINK'"
+    (approvalSelected)="onApprovalSelected($event)"
+    (actionSelected)="onActionSelected($event)"
+    [allowRowsSelection]="false"
+    [dataQueryFilters]="dataQueryFilters"
+    (rowsSelected)="onRowsSelected($event)"
+  ></ng-dhis2-ui-line-list>
+</div>
+
+<!-- <ng-dhis2-ui-form
+  [programRuleActions]="[
+    {
+      field: 'OhV3SJdy7HV',
+      actionType: 'HIDEFIELD'
+    },
+    {
+      field: 'p5FAom9pPWw',
+      actionType: 'HIDEFIELD'
+    },
+    {
+      field: 'B4EfUtSyMMP',
+      actionType: 'HIDEFIELD'
+    }
+  ]"
+  [form]="enrollmentFormGroup"
+  [fields]="fields"
+  (formUpdate)="onUpdate($event)"
+  [showSaveButton]="false"
+  class="w-full"
+/> -->
+<!-- <div class="p-4">
+  <ng-dhis2-ui-line-list
+    [programId]="'lw9fZTamYec'"
+    [orgUnit]="'xrku9x3XnV9'"
+    [actionOptions]="[
+    { label: 'View', },
+    ]"
+    (approvalSelected)="onApprovalSelected($event)"
+    [ouMode]="'DESCENDANTS'"
+    [showFilters]="true"
+    [filters]="rasFilters"
+    (actionSelected)="onActionSelected($event)"
+  ></ng-dhis2-ui-line-list>
+
+  <div class="p-3">
+    <ng-dhis2-ui-breadcrumb
+      [breadcrumbs]="[
+        {
+          label: 'Home',
+          url: '/'
+        },
+        {
+          label: 'Enrollment',
+          url: '/enrollment',
+          selected: true
+        }
+      ]"
+      (selectBreadcrumb)="onSelectBreadcrumb($event)"
+    />
+  </div>
+</div> -->

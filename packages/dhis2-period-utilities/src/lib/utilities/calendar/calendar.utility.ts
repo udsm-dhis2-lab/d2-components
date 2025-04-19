@@ -70,7 +70,7 @@ export class Calendar {
     return Math.ceil(this.getCurrentMonth() / 6);
   }
 
-  geCurrentWeek(): number {
+  getCurrentWeek(): number {
     return this._calendar.weekOfYear(
       this.getCurrentYear(),
       this.getCurrentMonth(),

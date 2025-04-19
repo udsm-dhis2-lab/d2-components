@@ -3,6 +3,7 @@ import {
   ElementRef,
   EventEmitter,
   Input,
+  NgZone,
   Output,
 } from '@angular/core';
 import { Provider } from '@dhis2/app-runtime';
@@ -10,7 +11,7 @@ import { NgxDhis2HttpClientService, User } from '@iapps/ngx-dhis2-http-client';
 import React from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { firstValueFrom, map } from 'rxjs';
-import { ReactWrapperComponent } from '../../../react-wrapper';
+import { ReactWrapperModule } from '../../../react-wrapper/react-wrapper.component';
 import OrgUnitDimension from '../../components/OrgUnitDimension';
 import {
   OrganisationUnitSelectionConfig,
@@ -25,8 +26,9 @@ type OrganisationUnitSelectionEvent = {
 @Component({
   selector: 'ng-dhis2-ui-org-unit-selector',
   template: '<ng-container><ng-container>',
+  standalone: false,
 })
-export class OrganisationUnitSelectorComponent extends ReactWrapperComponent {
+export class OrganisationUnitSelectorComponent extends ReactWrapperModule {
   @Input() selectedOrgUnits: any[] = [];
   @Input() orgUnitSelectionConfig: OrganisationUnitSelectionConfig =
     new OrganisationUnitSelectionConfig();
@@ -41,7 +43,8 @@ export class OrganisationUnitSelectorComponent extends ReactWrapperComponent {
 
   constructor(
     elementRef: ElementRef<HTMLElement>,
-    private httpClient: NgxDhis2HttpClientService
+    private httpClient: NgxDhis2HttpClientService,
+    private ngZone: NgZone
   ) {
     super(elementRef);
   }
@@ -54,7 +57,12 @@ export class OrganisationUnitSelectorComponent extends ReactWrapperComponent {
     const config = await this.getAppConfig();
 
     this.component = () => (
-      <Provider config={config}>
+      <Provider
+        config={config}
+        plugin={false}
+        parentAlertsAdd={undefined}
+        showAlertsInPlugin={false}
+      >
         {
           <OrgUnitDimension
             selected={this.selectedOrgUnits}
@@ -62,7 +70,9 @@ export class OrganisationUnitSelectorComponent extends ReactWrapperComponent {
             hideLevelSelect={this.orgUnitSelectionConfig.hideLevelSelect}
             hideUserOrgUnits={this.orgUnitSelectionConfig.hideUserOrgUnits}
             onSelect={(selectionEvent: OrganisationUnitSelectionEvent) =>
-              this.onSelectItems(selectionEvent)
+              this.ngZone.run(() => {
+                this.onSelectItems(selectionEvent);
+              })
             }
             orgUnitGroupPromise={this.getOrgUnitGroups()}
             orgUnitLevelPromise={this.getOrgUnitLevels()}

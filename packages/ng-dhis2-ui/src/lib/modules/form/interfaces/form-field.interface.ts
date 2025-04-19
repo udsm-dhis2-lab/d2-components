@@ -1,0 +1,46 @@
+import { IFieldDropdown } from './field-dropdown.interface';
+import { FieldControlType } from './field-control-type.interface';
+import { FormFieldMetaType } from './form-field-meta-type.interface';
+
+export interface IFormField<T> {
+  value?: T | '';
+  id: string;
+  code?: string;
+  key: string;
+  referenceKey?: string;
+  label: string;
+  required: boolean;
+  order?: number;
+  controlType: FieldControlType;
+  type: string;
+  disabled?: boolean;
+  options?: IFieldDropdown[];
+  placeholder?: string;
+  min?: number | Date | string;
+  max?: number | Date | string;
+  maxLength?: number | string;
+  hidden: boolean;
+  units?: string;
+  generated?: boolean;
+  isDataElement?: boolean;
+  isAttribute?: boolean;
+  isOrgUnit?: boolean;
+  isEnrollmentDate?: boolean;
+  event?: string;
+  programStage?: string;
+  program?: string;
+  trackedEntityInstance?: string;
+  trackedEntityType?: string;
+  hasOptions?: boolean;
+  dependentField?: any;
+  fieldOptionsDependsOn?: string;
+  displayInList?: boolean;
+  displayInReports?: boolean;
+  searchable?: boolean;
+  unique?: boolean;
+  metaType?: FormFieldMetaType;
+  stepId?: string;
+  availableOptionsLabel?: string;
+  selectedOptionsLabel?: string;
+  allowFutureDate?: boolean;
+}

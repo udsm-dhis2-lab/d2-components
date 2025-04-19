@@ -8,6 +8,7 @@ import { Fn } from '@iapps/function-analytics';
   selector: 'ng-dhis2-ui-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
+  standalone: false,
 })
 export class AppComponent {
   constructor(private router: Router) {
@@ -32,7 +33,31 @@ export class AppComponent {
         />
         <MenuItem
           label="Components"
-          value="components"
+          value="components/view"
+          className="menu-background"
+          onClick={(e: any) => {
+            this.onSelectPage(e);
+          }}
+        />
+        <MenuItem
+          label="Forms"
+          value="form-components"
+          className="menu-background"
+          onClick={(e: any) => {
+            this.onSelectPage(e);
+          }}
+        />
+        <MenuItem
+          label="Web SDK"
+          value="web-sdk"
+          className="menu-background"
+          onClick={(e: any) => {
+            this.onSelectPage(e);
+          }}
+        />
+        <MenuItem
+          label="Visualizations"
+          value="visualizations"
           className="menu-background"
           onClick={(e: any) => {
             this.onSelectPage(e);

@@ -18,7 +18,7 @@ import { NgxDhis2HttpClientService, User } from '@iapps/ngx-dhis2-http-client';
 import React, { useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { firstValueFrom, map } from 'rxjs';
-import { ReactWrapperComponent } from '../../../react-wrapper';
+import { ReactWrapperModule } from '../../../react-wrapper/react-wrapper.component';
 import OrgUnitDimension from '../../components/OrgUnitDimension';
 import {
   OrganisationUnitSelectionConfig,
@@ -40,8 +40,9 @@ type OrganisationUnitSelectionEvent = {
       }
     `,
   ],
+  standalone: false,
 })
-export class OrganisationUnitSelectorModalComponent extends ReactWrapperComponent {
+export class OrganisationUnitSelectorModalComponent extends ReactWrapperModule {
   @Input() selectedOrgUnits: any[] = [];
   @Input() orgUnitSelectionConfig: OrganisationUnitSelectionConfig =
     new OrganisationUnitSelectionConfig();
@@ -73,7 +74,12 @@ export class OrganisationUnitSelectorModalComponent extends ReactWrapperComponen
     this.component = () => {
       const [selected, setSelected] = useState(this.selectedOrgUnits);
       return (
-        <Provider config={config}>
+        <Provider
+          config={config}
+          plugin={false}
+          parentAlertsAdd={undefined}
+          showAlertsInPlugin={false}
+        >
           {
             <Modal position="middle" large>
               <ModalTitle>Organisation unit</ModalTitle>

@@ -4,6 +4,7 @@ import {
   ElementRef,
   Output,
   EventEmitter,
+  NgZone,
 } from '@angular/core';
 import { DataProvider } from '@dhis2/app-runtime';
 import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
@@ -22,7 +23,7 @@ import {
   WEEKLYTHU,
   WEEKLYWED,
 } from '../../components/utils';
-import { ReactWrapperComponent } from '../../../react-wrapper/react-wrapper.component';
+import { ReactWrapperModule } from '../../../react-wrapper/react-wrapper.component';
 
 type PeriodSelectionEvent = {
   dimensionId: string;
@@ -39,8 +40,9 @@ type PeriodSelectionEvent = {
       }
     `,
   ],
+  standalone: false,
 })
-export class PeriodSelectorComponent extends ReactWrapperComponent {
+export class PeriodSelectorComponent extends ReactWrapperModule {
   @Input() selectedPeriods: any[] = [];
 
   @Output() selectPeriods = new EventEmitter();
@@ -53,7 +55,8 @@ export class PeriodSelectorComponent extends ReactWrapperComponent {
 
   constructor(
     elementRef: ElementRef<HTMLElement>,
-    private httpClient: NgxDhis2HttpClientService
+    private httpClient: NgxDhis2HttpClientService,
+    private ngZone: NgZone
   ) {
     super(elementRef);
   }
@@ -70,7 +73,9 @@ export class PeriodSelectorComponent extends ReactWrapperComponent {
           <PeriodDimension
             selectedPeriods={this.selectedPeriods}
             onSelect={(selectionEvent: PeriodSelectionEvent) =>
-              this.onSelectItems(selectionEvent)
+              this.ngZone.run(() => {
+                this.onSelectItems(selectionEvent);
+              })
             }
             excludedPeriodTypes={excludedPeriodTypes}
             systemInfo={systemInfo}

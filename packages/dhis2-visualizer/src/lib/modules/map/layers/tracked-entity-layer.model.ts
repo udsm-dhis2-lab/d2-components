@@ -21,7 +21,6 @@ export class TrackedEntityLayer extends BaseVisualizer {
 
   constructor() {
     super();
-    (mapboxgl as any).accessToken = this.accessToken;
   }
 
   buildInitialMap() {
@@ -33,7 +32,8 @@ export class TrackedEntityLayer extends BaseVisualizer {
         style: this.style,
         center: this._config?.mapCenter,
         zoom: this._config?.zoom || 5,
-      } as any);
+        accessToken: this.accessToken,
+      });
 
       this.map.addControl(new mapboxgl.NavigationControl());
       this.map.addControl(new MapboxStyleSwitcherControl());

@@ -8,8 +8,9 @@ import { AppComponent } from './app.component';
 import { NgDhis2ShellWrapper } from '@iapps/ng-dhis2-shell';
 
 @Component({
-  selector: 'app-root',
-  template: '<ng-dhis2-shell (shellHasLoaded)="onReady()"></ng-dhis2-shell>',
+    selector: 'app-root',
+    template: '<ng-dhis2-shell (shellHasLoaded)="onReady()"></ng-dhis2-shell>',
+    standalone: false
 })
 export class AppComponentWrapper extends NgDhis2ShellWrapper {
   override componentPortal: ComponentPortal<any> = new ComponentPortal(

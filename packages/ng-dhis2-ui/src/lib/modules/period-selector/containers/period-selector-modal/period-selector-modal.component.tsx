@@ -30,7 +30,7 @@ import {
   WEEKLYTHU,
   WEEKLYWED,
 } from '../../components/utils';
-import { ReactWrapperComponent } from '../../../react-wrapper/react-wrapper.component';
+import { ReactWrapperModule } from '../../../react-wrapper/react-wrapper.component';
 
 type PeriodSelectionEvent = {
   dimensionId: string;
@@ -47,8 +47,9 @@ type PeriodSelectionEvent = {
       }
     `,
   ],
+  standalone: false,
 })
-export class PeriodSelectorModalComponent extends ReactWrapperComponent {
+export class PeriodSelectorModalComponent extends ReactWrapperModule {
   @Input() selectedPeriods: any[] = [];
 
   @Output() cancel = new EventEmitter();

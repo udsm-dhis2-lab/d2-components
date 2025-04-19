@@ -5,8 +5,13 @@ import { RouterModule } from '@angular/router';
 import {
   ButtonModule,
   HeaderBarModule,
+  LineListModule,
+  DataTableUIModule,
   OrganisationUnitSelectorModule,
   PeriodSelectorModule,
+  SelectionFiltersUiModule,
+  D2FormModule,
+  BreadcrumbModule,
 } from '@iapps/ng-dhis2-ui';
 import { routes } from './components-routes';
 import { ComponentsComponent } from './components.component';
@@ -20,8 +25,13 @@ import { NgxDhis2DictionaryModule } from '@iapps/ngx-dhis2-dictionary';
     HeaderBarModule,
     ButtonModule,
     PeriodSelectorModule,
+    BreadcrumbModule,
     OrganisationUnitSelectorModule,
     NgxDhis2DictionaryModule,
+    LineListModule,
+    DataTableUIModule,
+    SelectionFiltersUiModule,
+    D2FormModule,
   ],
 })
 export class ComponentsModule {}

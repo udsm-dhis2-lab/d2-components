@@ -67,7 +67,7 @@ export class Runner {
 
       throw Error(error);
     }
-    let hashed: any = fetcher.hash();
+    const hashed: any = fetcher.hash();
 
     if (!this.cache[hashed]) {
       this.cache[hashed] = {
@@ -98,7 +98,7 @@ export class Runner {
           });
           this.cache[hashed].finished = true;
         },
-        (err) => {
+        (err: any) => {
           reject(err);
         }
       );

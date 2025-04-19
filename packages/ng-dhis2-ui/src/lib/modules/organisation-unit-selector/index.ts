@@ -4,3 +4,4 @@
 export * from './organisation-unit-selector.module';
 export { OrganisationUnitSelectorComponent } from './containers/organisation-unit-selector/organisation-unit-selector.component';
 export { OrganisationUnitSelectorModalComponent } from './containers/organisation-unit-selector-modal/organisation-unit-selector-modal.component-modal';
+export * from './models';

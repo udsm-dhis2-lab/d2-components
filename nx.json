@@ -95,5 +95,11 @@
         "cacheableOperations": ["build-storybook"]
       }
     }
-  }
+  },
+  "release": {
+    "version": {
+      "preVersionCommand": "yarn nx run-many -t build"
+    }
+  },
+  "useLegacyCache": true
 }

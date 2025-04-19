@@ -1,10 +1,15 @@
+import {
+  endOfISOWeek,
+  format,
+  getISOWeeksInYear,
+  startOfISOWeek,
+} from 'date-fns';
 import { chunk, find, head, last, pick, range, sortBy } from 'lodash';
 import { PeriodTypeEnum } from '../constants/period-types.constant';
 import { getLastNthPeriods } from '../helpers/get-last-nth-periods.helper';
 import { PeriodPreferencesInterface } from '../interfaces/period-preferences.interface';
 import { PeriodInterface } from '../interfaces/period.interface';
 import { Calendar } from './calendar/calendar.utility';
-import { WeeklyPeriodInstance } from './period-instances';
 
 export class PeriodInstance {
   private _type: string;
@@ -12,6 +17,7 @@ export class PeriodInstance {
   private _periods: any[];
   private _calendar!: Calendar;
   private _year: number;
+  private _week: number;
   private _month: number;
   private _quarter: number;
   private _biMonth: number;
@@ -39,6 +45,7 @@ export class PeriodInstance {
 
     this._year = year || this._calendar.getCurrentYear();
     this._month = this._calendar.getCurrentMonth();
+    this._week = this._calendar.getCurrentWeek();
     this._quarter = this._calendar.getCurrentQuarter();
     this._biMonth = this._calendar.getCurrentBiMonth();
     this._sixMonth = this._calendar.getCurrentSixMonth();
@@ -63,14 +70,14 @@ export class PeriodInstance {
     }
 
     //! Omit weekly future period
-    if (this._type === 'Weekly') {
-      const weeklyInstance = new WeeklyPeriodInstance(this._calendar);
+    // if (this._type === 'Weekly') {
+    //   const weeklyInstance = new WeeklyPeriodInstance(this._calendar);
 
-      return weeklyInstance.get(
-        this._preferences?.openFuturePeriods ?? 0,
-        this._year
-      );
-    }
+    //   return weeklyInstance.get(
+    //     this._preferences?.openFuturePeriods ?? 0,
+    //     this._year
+    //   );
+    // }
 
     const previousPeriods = this.omitFuturePeriods(
       this.includeLastPeriods(this._periods, this._type, this._year),
@@ -114,7 +121,8 @@ export class PeriodInstance {
 
     switch (type) {
       case 'Weekly': {
-        periods = this.weeksInYear(year);
+        periods = this.getWeeklyPeriods(year);
+
         break;
       }
       case 'Monthly': {
@@ -679,53 +687,53 @@ export class PeriodInstance {
   getSixMonthlyAprilPeriods(year: number) {
     const months = this.getMonthWithYears(this._monthNames, year + 1, -9);
 
-    return (
-      chunk([...months.slice(3), ...months.slice(0, 3)] || [], 6) || []
-    ).map((sixMonthApril, sixMonthAprilIndex) => {
-      const id = this.getSixMonthlyPeriodId(
-        year,
-        sixMonthAprilIndex + 1,
-        'April'
-      );
+    return (chunk([...months.slice(3), ...months.slice(0, 3)], 6) || []).map(
+      (sixMonthApril, sixMonthAprilIndex) => {
+        const id = this.getSixMonthlyPeriodId(
+          year,
+          sixMonthAprilIndex + 1,
+          'April'
+        );
 
-      const month = (sixMonthAprilIndex + 1) * 6 - 2;
-      const nextEndMonth = month + 5;
-      const endMonth = nextEndMonth > 12 ? nextEndMonth - 12 : nextEndMonth;
+        const month = (sixMonthAprilIndex + 1) * 6 - 2;
+        const nextEndMonth = month + 5;
+        const endMonth = nextEndMonth > 12 ? nextEndMonth - 12 : nextEndMonth;
 
-      return {
-        id,
-        startDate: this.getDate(year, month, 1),
-        endDate: this.getDate(
-          nextEndMonth > 12 ? year + 1 : year,
-          endMonth,
-          this._calendar.getDaysInMonth(year, endMonth) as number
-        ),
-        type: 'SixMonthlyApril',
-        name: this.getPeriodNameByRange(
-          head(sixMonthApril || []),
-          last(sixMonthApril || []),
-          year
-        ),
-        daily: this.getChildrenPeriods(
+        return {
           id,
-          'SixMonthlyApril',
-          'Daily',
-          this._preferences
-        ),
-        weekly: this.getChildrenPeriods(
-          id,
-          'SixMonthlyApril',
-          'Weekly',
-          this._preferences
-        ),
-        monthly: this.getChildrenPeriods(
-          id,
-          'SixMonthlyApril',
-          'Monthly',
-          this._preferences
-        ),
-      };
-    });
+          startDate: this.getDate(year, month, 1),
+          endDate: this.getDate(
+            nextEndMonth > 12 ? year + 1 : year,
+            endMonth,
+            this._calendar.getDaysInMonth(year, endMonth) as number
+          ),
+          type: 'SixMonthlyApril',
+          name: this.getPeriodNameByRange(
+            head(sixMonthApril || []),
+            last(sixMonthApril || []),
+            year
+          ),
+          daily: this.getChildrenPeriods(
+            id,
+            'SixMonthlyApril',
+            'Daily',
+            this._preferences
+          ),
+          weekly: this.getChildrenPeriods(
+            id,
+            'SixMonthlyApril',
+            'Weekly',
+            this._preferences
+          ),
+          monthly: this.getChildrenPeriods(
+            id,
+            'SixMonthlyApril',
+            'Monthly',
+            this._preferences
+          ),
+        };
+      }
+    );
   }
 
   getSixMonthlyNovemberPeriods(year: number) {
@@ -854,9 +862,9 @@ export class PeriodInstance {
         );
       }
       case 'Weekly': {
-        return this.getMonthPeriodId(
+        return this.getWeeklyPeriodId(
           this._calendar.getCurrentYear(),
-          this._month
+          this._week
         );
       }
       case 'Quarterly': {
@@ -939,6 +947,12 @@ export class PeriodInstance {
       default:
         return undefined;
     }
+  }
+
+  getWeeklyPeriodId(year: number, weekNumber: number) {
+    return `${year + (this._month === 12 ? 1 : 0)}W${
+      weekNumber < 10 ? `0${weekNumber}` : weekNumber
+    }`;
   }
 
   getMonthPeriodId(year: number, monthNumber: number) {
@@ -1189,25 +1203,58 @@ export class PeriodInstance {
     return periods.filter((item) => item.week).sort((a, b) => b.week - a.week);
   }
 
+  getWeeklyPeriods(year: number) {
+    const totalWeeks = getISOWeeksInYear(new Date(year, 0, 1));
+    const weeksArray = Array.from({ length: totalWeeks }, (_, i) => i + 1);
+
+    return weeksArray.map((week) => {
+      const startDate = format(
+        startOfISOWeek(new Date(year, 0, (week - 1) * 7 + 4)),
+        'yyyy-MM-dd'
+      );
+      const endDate = format(
+        endOfISOWeek(new Date(year, 0, (week - 1) * 7 + 4)),
+        'yyyy-MM-dd'
+      );
+
+      return {
+        id: `${year}W${String(week).padStart(2, '0')}`,
+        week,
+        name: `Week ${week} (${startDate} - ${endDate})`,
+        startDate,
+        endDate,
+      };
+    });
+  }
+
+  getCurrentISOWeek() {
+    const today = new Date();
+    const startOfYear = startOfISOWeek(new Date(today.getFullYear(), 0, 1));
+    const daysPassed = Math.floor(
+      (today.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000)
+    );
+    return Math.ceil((daysPassed + 1) / 7);
+  }
+
   computePeriods(targetPeriod: any) {
-    const targetPeriodWeeks = this.weeksInYear(targetPeriod);
+    const targetPeriodWeeks = this.getWeeklyPeriods(targetPeriod);
     const firstWeekOfTargetPeriod = targetPeriodWeeks.slice(-1)[0];
-    const lastyearPeriodWeeks = this.weeksInYear(targetPeriod - 1);
+    const lastyearPeriodWeeks = this.getWeeklyPeriods(targetPeriod - 1);
     const lastWeekItemLastYear = lastyearPeriodWeeks[0];
     if (
       firstWeekOfTargetPeriod &&
       lastWeekItemLastYear &&
-      firstWeekOfTargetPeriod.startdate === lastWeekItemLastYear.startdate &&
-      firstWeekOfTargetPeriod.enddate === lastWeekItemLastYear.enddate
+      firstWeekOfTargetPeriod.startDate === lastWeekItemLastYear.startDate &&
+      firstWeekOfTargetPeriod.endDate === lastWeekItemLastYear.endDate
     ) {
       const trimmedCurrentYearWeeks = targetPeriodWeeks.slice(0, -1);
       const updatedWeeks = (trimmedCurrentYearWeeks.reverse() || []).map(
         (weekItem, index) => ({
           id: `${targetPeriod}W${index + 1}`,
           week: index + 1,
-          name: `Week ${index + 1} ${weekItem.startdate} - ${weekItem.enddate}`,
-          startdate: weekItem.startdate,
-          enddate: weekItem.enddate,
+          name: `Week ${index + 1} ${weekItem.startDate} - ${weekItem.endDate}`,
+          startDate: weekItem.startDate,
+          endDate: weekItem.endDate,
         })
       );
 
@@ -1218,24 +1265,24 @@ export class PeriodInstance {
   }
 
   targetFinalPeriod(targetPeriod: any) {
-    const targetPeriodWeeks = this.weeksInYear(targetPeriod);
-    const lastyearPeriodWeeks = this.weeksInYear(targetPeriod - 1);
+    const targetPeriodWeeks = this.getWeeklyPeriods(targetPeriod);
+    const lastyearPeriodWeeks = this.getWeeklyPeriods(targetPeriod - 1);
     const lastWeekItemLastYear = lastyearPeriodWeeks[0];
     const firstWeekOfTargetPeriod = targetPeriodWeeks.slice(-1)[0];
     if (
       firstWeekOfTargetPeriod &&
       lastWeekItemLastYear &&
-      firstWeekOfTargetPeriod.startdate === lastWeekItemLastYear.startdate &&
-      firstWeekOfTargetPeriod.enddate === lastWeekItemLastYear.enddate
+      firstWeekOfTargetPeriod.startDate === lastWeekItemLastYear.startDate &&
+      firstWeekOfTargetPeriod.endDate === lastWeekItemLastYear.endDate
     ) {
       const trimmedCurrentYearWeeks = targetPeriodWeeks.slice(0, -1);
       const updatedWeeks = (trimmedCurrentYearWeeks.reverse() || []).map(
         (weekItem, index) => ({
           id: `${targetPeriod}W${index + 1}`,
           week: index + 1,
-          name: `Week ${index + 1} ${weekItem.startdate} - ${weekItem.enddate}`,
-          startdate: weekItem.startdate,
-          enddate: weekItem.enddate,
+          name: `Week ${index + 1} ${weekItem.startDate} - ${weekItem.endDate}`,
+          startdate: weekItem.startDate,
+          enddate: weekItem.endDate,
         })
       );
 

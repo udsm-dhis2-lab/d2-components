@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
   Component,
@@ -17,9 +18,7 @@ import * as ReactDOM from 'react-dom/client';
 @Directive({
   selector: 'ng-dhis2-ui-wrapper',
 })
-export class ReactWrapperComponent
-  implements OnChanges, OnDestroy, AfterViewInit
-{
+export class ReactWrapperModule implements OnDestroy, AfterViewInit {
   @Input() props?: ComponentProps<any>;
   @Input() component!: any;
 
@@ -32,10 +31,6 @@ export class ReactWrapperComponent
     if (!this.elementRef) throw new Error('No element ref');
     this.reactDomRoot = ReactDOM.createRoot(this.elementRef.nativeElement);
     this.render();
-  }
-
-  ngOnChanges(): void {
-    // if (this.elementRef) this.render();
   }
 
   ngOnDestroy() {

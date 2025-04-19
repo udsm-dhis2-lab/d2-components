@@ -1,0 +1,166 @@
+::ng-deep .custom-input {
+  display: flex !important;
+  gap: 4px !important;
+  align-items: center !important;
+  border: 1px solid #9fadba !important;
+  border-radius: 4px !important;
+  padding: 0;
+  margin: 0;
+  padding-left: 8px;
+  background-color: #fff !important;
+
+  div {
+    margin: 0 !important;
+  }
+
+  label {
+    font-size: 12px;
+    padding-right: 0;
+  }
+
+  input {
+    border: none !important;
+    font-size: 12px !important;
+    display: flex;
+    align-items: center;
+    padding-left: 4px;
+    height: 40px;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  input:focus {
+    border: none !important;
+    box-shadow: none !important;
+  }
+  [data-test='calendar-clear-button'] {
+    background-color: #f2f2f2 !important;
+    color: #870808 !important;
+    border-radius: 6px !important;
+    padding: 4px 10px !important;
+    font-size: 0 !important; // hide the "Clear" text
+
+    &::before {
+      content: '✕';
+      font-size: 14px;
+      color: #870808;
+    }
+
+    &:hover {
+      background-color: #ddd;
+    }
+  }
+}
+// ::ng-deep [data-test='calendar-clear-button'] {
+//   background-color: #f2f2f2 !important;
+//   color: #870808 !important;
+//   border-radius: 6px !important;
+//   padding: 4px 10px !important;
+//   font-size: 0 !important; // hides the default text
+
+//   &::before {
+//     content: '✕';
+//     font-size: 14px;
+//     color: #870808;
+//   }
+
+//   &:hover {
+//     background-color: #ddd !important;
+//   }
+// }
+
+::ng-deep .calendar-input-wrapper {
+  position: relative;
+
+  .custom-input {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  [data-test='calendar-clear-button'] {
+    right: 8px;
+    // top: 0;
+    bottom: 14px;
+    margin: auto;
+    //height: 60%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    //width: 130%;
+    font-size: 0 !important;
+    background-color: rgb(160, 173, 186) !important;
+    border-radius: 50%;
+    padding: 2px;
+    cursor: pointer;
+
+    &::before {
+      content: '✕';
+      font-size: 10px;
+      color: #f0f0f0;
+    }
+
+    // &:hover {
+    //   background-color: #eee !important;
+    //   border-radius: 50%;
+    // }
+  }
+
+  input {
+    padding-right: 40px !important; // add spacing for the button
+    height: 40px;
+    line-height: 40px;
+    box-sizing: border-box;
+  }
+}
+
+::ng-deep .custom-input label {
+  color: grey !important;
+  opacity: 1;
+}
+::ng-deep .table-top-toolbar {
+  background-color: var(--colors-grey100) !important;
+  color: var(--colors-grey900) !important;
+}
+
+::ng-deep .custom-select-input {
+  display: flex !important;
+  gap: 4px !important;
+  align-items: center !important;
+  border: 1px solid #9fadba !important;
+  border-radius: 4px !important;
+  padding: 0;
+  margin: 0;
+  padding-left: 8px;
+  background-color: #fff !important;
+
+  div {
+    margin: 0 !important;
+  }
+
+  [data-test='dhis2-uiwidgets-singleselectfield-label'] {
+    font-size: 12px;
+    color: grey !important;
+  }
+
+  [data-test='dhis2-uicore-select-input'] {
+    border: none !important;
+    font-size: 12px !important;
+    display: flex;
+    align-items: center;
+    padding-left: 4px;
+    height: 40px;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  [data-test='dhis2-uicore-select-input']:focus-within {
+    box-shadow: none !important;
+  }
+  input:focus {
+    border: none !important;
+    box-shadow: none !important;
+  }
+}

@@ -2,8 +2,9 @@ import { Pipe, PipeTransform } from '@angular/core';
 import * as _ from 'lodash';
 
 @Pipe({
-  name: 'filterIndicatorsByGroupId',
-  pure: false,
+    name: 'filterIndicatorsByGroupId',
+    pure: false,
+    standalone: false
 })
 export class FilterIndicatorsByGroupIdPipe implements PipeTransform {
   transform(indicators: any, groups: any): any {

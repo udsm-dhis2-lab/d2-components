@@ -1,6 +1,6 @@
 import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
-import { Injectable } from '@angular/core';
+import { computed, Injectable } from '@angular/core';
 import {
   MatSnackBar,
   MatSnackBarRef,
@@ -9,10 +9,19 @@ import {
 import { Router } from '@angular/router';
 import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
 import { Period } from '@iapps/period-utilities';
-import { BehaviorSubject, firstValueFrom, Observable, of, tap } from 'rxjs';
-import { catchError, distinctUntilChanged, map, take } from 'rxjs/operators';
+import { Store } from '@ngrx/store';
+import {
+  BehaviorSubject,
+  catchError,
+  distinctUntilChanged,
+  firstValueFrom,
+  map,
+  Observable,
+  of,
+  take,
+  tap,
+} from 'rxjs';
 import { DashboardLoaderComponent } from '../components/dashboard-loader/dashboard-loader.component';
-import { DIMENSION_LABELS } from '../constants/selection-dimension-label.constant';
 import {
   Dashboard,
   DashboardConfig,
@@ -21,14 +30,11 @@ import {
   DashboardSelectionConfig,
   VisualizationDataSelection,
 } from '../models';
-import {
-  GlobalSelection,
-  IGlobalSelection,
-} from '../models/global-selection.model';
-import { DashboardConfigService } from './dashboard-config.service';
-import { Store } from '@ngrx/store';
 import { D2DashboardSelectionState } from '../store';
 import { DashboardSelectionActions } from '../store/actions/dashboard-selection.actions';
+import { DashboardConfigService } from './dashboard-config.service';
+import { DashboardMenuService } from './dashboard-menu.service';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 interface DashboardStore {
   currentDashboardMenu?: DashboardMenuObject;
@@ -40,6 +46,8 @@ interface DashboardStore {
   };
   startUpDataSelections: any;
 }
+
+interface DashboardState {}
 
 @Injectable()
 export class DashboardService {
@@ -55,7 +63,8 @@ export class DashboardService {
     private _snackBarRef: MatSnackBarRef<TextOnlySnackBar>,
     private overlay: Overlay,
     private dashboardConfigService: DashboardConfigService,
-    private dashboardSelectionStore: Store<D2DashboardSelectionState>
+    private dashboardSelectionStore: Store<D2DashboardSelectionState>,
+    private dashboardMenuService: DashboardMenuService
   ) {
     const config: DashboardConfig = this.dashboardConfigService.getConfig();
     this._dashboardStore$ = new BehaviorSubject({
@@ -65,6 +74,15 @@ export class DashboardService {
 
     this._dashboardStoreObservable$ = this._dashboardStore$.asObservable();
   }
+
+  currentDashboardId = computed(() => {
+    return (
+      this.dashboardMenuService.currentDashboardSubMenu()?.id ||
+      this.dashboardMenuService.currentDashboardMenu()?.id
+    );
+  });
+
+  currentDashboardId$ = toObservable(this.currentDashboardId);
 
   getCurrentDashboard(id: string): Observable<DashboardObject | undefined> {
     const config: DashboardConfig = this.dashboardConfigService.getConfig();
@@ -157,7 +175,11 @@ export class DashboardService {
       },
     });
 
-    this.router.navigate([config.rootUrl, currentDashboardMenu.id]);
+    this.router.navigate([
+      config.rootUrl,
+      'ng-dashboard-view',
+      currentDashboardMenu.id,
+    ]);
   }
 
   getCurrentDashboardId(): Observable<string | undefined> {
