@@ -28,7 +28,7 @@ export function AttributeFieldDecorator(
 
         return AttributeUtil.getAttributeValue(
           attributeId,
-          instance['attributes']
+          instance.attributes
         ) as string;
       },
     };
