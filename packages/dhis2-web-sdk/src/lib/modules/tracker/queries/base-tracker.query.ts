@@ -2,28 +2,29 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import { camelCase, isArray } from 'lodash';
+import { isArray } from 'lodash';
 import { D2Window } from '../../../d2-web-sdk';
 import {
   D2HttpClient,
   D2HttpResponse,
-  generateUid,
-  Pager,
-  DataQueryFilter,
-  ProgramDateType,
-  OuMode,
   DataOrderCriteria,
+  DataQueryFilter,
   EnrollmentStatus,
   EventStatus,
+  generateUid,
+  OuMode,
+  Pager,
+  ProgramDateType,
 } from '../../../shared';
+import { BaseEventQuery, DHIS2Event } from '../../event';
 import { Program, ProgramRule } from '../../program';
 import {
   D2TrackerResponse,
   ITrackedEntityInstance,
   TrackedEntityInstance,
+  TrackerQueryConfig,
   TrackerUrlGenerator,
 } from '../models';
-import { BaseEventQuery, DHIS2Event } from '../../event';
 
 export type TrackerFetchScope = 'TRACKED_ENTITY' | 'ENROLLMENT';
 
@@ -41,6 +42,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
   protected orderCriterias?: DataOrderCriteria[];
   protected enrollmentStatus?: EnrollmentStatus;
   protected eventStatus?: EventStatus;
+  protected config?: TrackerQueryConfig;
   event?: string;
   protected pager = new Pager();
   [key: string]: unknown;
@@ -99,6 +101,11 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
 
   setProgramStage(programStage: string): BaseTrackerQuery<T> {
     this.programStage = programStage;
+    return this;
+  }
+
+  setConfig(config: TrackerQueryConfig): BaseTrackerQuery<T> {
+    this.config = config;
     return this;
   }
 
