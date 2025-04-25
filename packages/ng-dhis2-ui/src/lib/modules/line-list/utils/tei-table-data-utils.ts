@@ -126,17 +126,17 @@ export const getTrackedEntityTableData = (
     });
 
     dataElementsData.forEach((element: DataValue) => {
-      // Find the matching data element in dataElementOptions by ID
+      // Finds the matching data element in dataElementOptions by ID
       const dataElementOption = dataElementOptions.find(
         (deo) => deo.id === element.dataElement
       );
 
-      // find a matching option within that data element's options
+      // finds a matching option within that data element's options
       const matchingOption = dataElementOption?.options?.find(
         (opt) => opt.name === element.value
       );
 
-      // Build the row entry with value and optionally style
+      // Builds the row entry with value and optional style
       if (matchingOption) {
         row[element.dataElement] = {
           value: element.value,
@@ -149,7 +149,7 @@ export const getTrackedEntityTableData = (
       }
     });
 
-    // Include orgUnit in the row for id access with style
+    // Includes orgUnit in the row for id access with style
     row['orgUnitId'] = { value: matchingEnrollment!.orgUnit };
     row['orgUnit'] = {
       value: orgUnitMap?.get(matchingEnrollment!.orgUnit) || '-',
