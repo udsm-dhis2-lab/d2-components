@@ -114,7 +114,7 @@ export const getTrackedEntityTableData = (
             ),
           };
         } catch {
-          return { ...attr }; // Leave value as is on parse failure
+          return { ...attr }; 
         }
       }
       return attr;
