@@ -40,7 +40,7 @@ import {
   addActionsColumn,
   getTrackedEntityTableData,
 } from '../utils/tei-table-data-utils';
-import { getEvents } from '../utils/event-table-table-util';
+import { getEvents } from '../utils/event-table-data-util';
 
 @Component({
   selector: 'ng-dhis2-ui-line-list',
