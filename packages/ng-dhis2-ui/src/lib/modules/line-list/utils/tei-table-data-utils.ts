@@ -33,6 +33,8 @@ export const getTrackedEntityTableData = (
   const orgUnitMap = (response.data as TrackedEntityInstancesResponse)
     .orgUnitsMap;
 
+  console.log('thhis is the metadata', metaData);
+
   const attributeColumns = metaData.displayInListTrackedEntityAttributes
     .sort((a, b) => a.sortOrder! - b.sortOrder!)
     .map((trackedEntityAttribute) => ({
@@ -40,12 +42,24 @@ export const getTrackedEntityTableData = (
       key: trackedEntityAttribute.id,
     }));
 
-  const dataElementColumns = metaData.displayInListDataElements
-    .sort((a, b) => a.sortOrder! - b.sortOrder!)
-    .map((dataElement) => ({
-      label: dataElement.formName || dataElement.name,
-      key: dataElement.id,
-    }));
+  // const dataElementColumns = metaData.displayInListDataElements
+  //   .sort((a, b) => a.sortOrder! - b.sortOrder!)
+  //   .map((dataElement) => ({
+  //     label: dataElement.formName || dataElement.name,
+  //     key: dataElement.id,
+  //   }));
+
+  const dataElementColumns = metaData
+    .programStages!.sort((a, b) => a.sortOrder - b.sortOrder) // Sorts stages by sortOrder
+    .flatMap((stage) =>
+      stage
+        .programStageDataElements!.filter((psde) => psde.displayInReports)
+        .sort((a, b) => a.sortOrder - b.sortOrder) // Sorts data elements within stage
+        .map((psde) => ({ 
+          label: psde.dataElement.formName || psde.dataElement.name,
+          key: psde.dataElement.id,
+        }))
+    );
 
   const dataElementOptions = metaData.displayInListDataElements.map(
     (element) => ({
