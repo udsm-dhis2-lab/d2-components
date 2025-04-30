@@ -248,6 +248,8 @@
   ></ng-dhis2-ui-line-list>
 </div> -->
 <!-- [teiEnrollmentList]="{onApprovalClick: onApprove}" -->
+<button (click)="setValue()">Set Value</button>
+
 <div>
   <ng-dhis2-ui-line-list
     [programId]="'lw9fZTamYec'"
@@ -261,6 +263,7 @@
     [allowRowsSelection]="false"
     [dataQueryFilters]="dataQueryFilters"
     (rowsSelected)="onRowsSelected($event)"
+    [triggerRefetch]="triggerRefetch"
   ></ng-dhis2-ui-line-list>
 </div>
 
