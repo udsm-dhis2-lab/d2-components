@@ -67,6 +67,7 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() isOptionSetNameVisible = false;
   @Input() allowRowsSelection = false;
   @Input() enrollmentStatus!: EnrollmentStatus;
+  @Input() triggerRefetch = false;
   @Input() eventStatus!: {
     programStage: string;
     status: EventStatus;
@@ -115,6 +116,9 @@ export class LineListTableComponent extends ReactWrapperModule {
       }
       if (changes['allowRowsSelection']) {
         this.reactStateUpdaters.setIsButtonLoading(this.allowRowsSelection);
+      }
+      if (changes['triggerRefetch']) {
+        this.reactStateUpdaters.setTriggerRefetch(this.triggerRefetch);
       }
     }
   }
@@ -172,6 +176,9 @@ export class LineListTableComponent extends ReactWrapperModule {
     const [selectable, setSelectable] = useState<boolean>(
       this.allowRowsSelection
     );
+    const [triggerRefetch, setTriggerRefetch] = useState<boolean>(
+      this.triggerRefetch
+    );
 
     const d2 = (window as unknown as D2Window).d2Web;
 
@@ -185,6 +192,7 @@ export class LineListTableComponent extends ReactWrapperModule {
       setEndDateState,
       setOptionSetNameVisible,
       setSelectable,
+      setTriggerRefetch
     });
 
     useEffect(() => {
@@ -345,6 +353,7 @@ export class LineListTableComponent extends ReactWrapperModule {
       pager.pageSize,
       isOptionSetNameVisibleState,
       dataQueryFiltersState,
+      triggerRefetch
     ]);
 
     const handleInputChange = (key: string, value: string) => {

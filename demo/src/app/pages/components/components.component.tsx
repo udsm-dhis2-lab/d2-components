@@ -14,8 +14,9 @@ import {
 } from '@iapps/ng-dhis2-ui';
 import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
 import { Period } from '@iapps/period-utilities';
-import { IconView16 } from '@dhis2/ui';
+import { Button, IconView16 } from '@dhis2/ui';
 import { TableRow } from 'packages/ng-dhis2-ui/src/lib/modules/line-list/models/line-list.models';
+import React from 'react';
 //import { LineListTableComponent } from '../../../../../packages/ng-dhis2-ui/src/lib/modules/line-list/containers/line-list.component';
 
 @Component({
@@ -30,6 +31,7 @@ export class ComponentsComponent implements OnInit {
     { id: 'LAST_MONTH', name: 'Last month' },
     { id: 'LAST_3_MONTHS', name: 'Last 3 months' },
   ];
+  triggerRefetch = false;
 
   handleApprovalClick() {
     console.log(
@@ -66,6 +68,9 @@ export class ComponentsComponent implements OnInit {
     // .setProgramStage('NtZXBym2KfD'),
   ];
 
+  setValue() {
+    this.triggerRefetch = !this.triggerRefetch;
+  }
   isButtonLoading: any;
 
   actionOptions = [
@@ -77,6 +82,13 @@ export class ComponentsComponent implements OnInit {
     },
     { label: 'Edit', destructive: true },
   ];
+
+  button = () => (
+    <Button onClick={() => {this.triggerRefetch = true}}>
+      trigger here
+    </Button>
+
+  );
 
   constructor() {
     setInterval(() => {
