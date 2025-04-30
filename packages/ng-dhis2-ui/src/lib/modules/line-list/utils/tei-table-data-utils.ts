@@ -33,8 +33,6 @@ export const getTrackedEntityTableData = (
   const orgUnitMap = (response.data as TrackedEntityInstancesResponse)
     .orgUnitsMap;
 
-  console.log('thhis is the metadata', metaData);
-
   const attributeColumns = metaData.displayInListTrackedEntityAttributes
     .sort((a, b) => a.sortOrder! - b.sortOrder!)
     .map((trackedEntityAttribute) => ({
