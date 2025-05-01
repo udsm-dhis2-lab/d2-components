@@ -8,7 +8,6 @@ export const TableCell = ({
   cell: any;
   getTextColorFromBackGround: (color: string) => string;
 }) => {
-  console.log('cel value',cell)
   if (cell?.style && cell?.style !== 'default-value') {
     return (
       <DataTableCell>

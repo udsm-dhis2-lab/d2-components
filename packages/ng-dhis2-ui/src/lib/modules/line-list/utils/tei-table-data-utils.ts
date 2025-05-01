@@ -40,12 +40,24 @@ export const getTrackedEntityTableData = (
       key: trackedEntityAttribute.id,
     }));
 
-  const dataElementColumns = metaData.displayInListDataElements
-    .sort((a, b) => a.sortOrder! - b.sortOrder!)
-    .map((dataElement) => ({
-      label: dataElement.formName || dataElement.name,
-      key: dataElement.id,
-    }));
+  // const dataElementColumns = metaData.displayInListDataElements
+  //   .sort((a, b) => a.sortOrder! - b.sortOrder!)
+  //   .map((dataElement) => ({
+  //     label: dataElement.formName || dataElement.name,
+  //     key: dataElement.id,
+  //   }));
+
+  const dataElementColumns = metaData
+    .programStages!.sort((a, b) => a.sortOrder - b.sortOrder) // Sorts stages by sortOrder
+    .flatMap((stage) =>
+      stage
+        .programStageDataElements!.filter((psde) => psde.displayInReports)
+        .sort((a, b) => a.sortOrder - b.sortOrder) // Sorts data elements within stage
+        .map((psde) => ({ 
+          label: psde.dataElement.formName || psde.dataElement.name,
+          key: psde.dataElement.id,
+        }))
+    );
 
   const dataElementOptions = metaData.displayInListDataElements.map(
     (element) => ({
@@ -100,7 +112,7 @@ export const getTrackedEntityTableData = (
             ),
           };
         } catch {
-          return { ...attr }; // Leave value as is on parse failure
+          return { ...attr }; 
         }
       }
       return attr;
@@ -127,17 +139,17 @@ export const getTrackedEntityTableData = (
     });
 
     dataElementsData.forEach((element: DataValue) => {
-      // Find the matching data element in dataElementOptions by ID
+      // Finds the matching data element in dataElementOptions by ID
       const dataElementOption = dataElementOptions.find(
         (deo) => deo.id === element.dataElement
       );
 
-      // find a matching option within that data element's options
+      // finds a matching option within that data element's options
       const matchingOption = dataElementOption?.options?.find(
         (opt) => opt.name === element.value
       );
 
-      // Build the row entry with value and optionally style
+      // Builds the row entry with value and optional style
       if (matchingOption) {
         row[element.dataElement] = {
           value: element.value,
@@ -150,7 +162,7 @@ export const getTrackedEntityTableData = (
       }
     });
 
-    // Include orgUnit in the row for id access with style
+    // Includes orgUnit in the row for id access with style
     row['orgUnitId'] = { value: matchingEnrollment!.orgUnit };
     row['orgUnit'] = {
       value: orgUnitMap?.get(matchingEnrollment!.orgUnit) || '-',
