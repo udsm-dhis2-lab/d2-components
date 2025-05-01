@@ -248,9 +248,11 @@
   ></ng-dhis2-ui-line-list>
 </div> -->
 <!-- [teiEnrollmentList]="{onApprovalClick: onApprove}" -->
+
+
 <div>
   <ng-dhis2-ui-line-list
-    [programId]="'oUiYTdbtOuh'"
+    [programId]="'lw9fZTamYec'"
     [orgUnit]="'xrku9x3XnV9'"
     [actionOptions]="actionOptions"
     [ouMode]="'DESCENDANTS'"
@@ -261,6 +263,7 @@
     [allowRowsSelection]="false"
     [dataQueryFilters]="dataQueryFilters"
     (rowsSelected)="onRowsSelected($event)"
+    [triggerRefetch]="triggerRefetch"
   ></ng-dhis2-ui-line-list>
 </div>
 
