@@ -44,11 +44,13 @@ export const TableHeader = ({
   allSelected,
   onSelectAll,
   selectable,
+  showActionButtons
 }: {
   columns: any[];
   allSelected: boolean;
   onSelectAll: (checked: boolean) => void;
   selectable: boolean;
+  showActionButtons: boolean;
 }) => {
   const handleCheckboxChange = () => {
     onSelectAll(!allSelected);
@@ -62,11 +64,18 @@ export const TableHeader = ({
             <Checkbox checked={allSelected} onChange={handleCheckboxChange} />
           </DataTableColumnHeader>
         )}
-        {columns.map((col) => (
+        {/* {columns.map((col) => (
           <DataTableColumnHeader key={col.key}>
             {col.label}
           </DataTableColumnHeader>
-        ))}
+        ))} */}
+        {columns
+          .filter((col) => showActionButtons || col.key !== 'actions')
+          .map((col) => (
+            <DataTableColumnHeader key={col.key}>
+              {col.label}
+            </DataTableColumnHeader>
+          ))}
       </DataTableRow>
     </TableHead>
   );

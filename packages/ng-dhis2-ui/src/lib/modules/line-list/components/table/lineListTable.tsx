@@ -49,6 +49,7 @@ export const LineListTable = ({
   actionSelected,
   selectable,
   rowsSelected,
+  showActionButtons
 }: any) => {
   const [selectedRows, setSelectedRows] = useState<TableRow[]>([]);
 
@@ -79,6 +80,7 @@ export const LineListTable = ({
         allSelected={selectedRows.length === data.length && data.length > 0}
         onSelectAll={handleSelectAll}
         selectable={selectable}
+        showActionButtons={showActionButtons}
       />
       <TableBody
         data={data}
@@ -90,6 +92,7 @@ export const LineListTable = ({
         selectedRows={selectedRows}
         onRowToggle={handleRowToggle}
         selectable={selectable}
+        showActionButtons={showActionButtons}
       />
       <TableFooter columns={columns} pager={pager} setPager={setPager} />
     </DataTable>
