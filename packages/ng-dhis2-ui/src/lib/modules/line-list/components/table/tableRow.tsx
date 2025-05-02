@@ -72,6 +72,7 @@ export const TableRow = ({
   isChecked,
   onToggle,
   selectable,
+  showActionButtons
 }: any) => {
   const handleCheckBoxChange = () => {
     onToggle(row);
@@ -88,7 +89,7 @@ export const TableRow = ({
         if (col.key === 'actions') {
           return (
             <DataTableCell key={col.key}>
-              {actionOptions && (
+              {actionOptions && showActionButtons && (
                 <DataTableActions
                   actionOptions={actionOptions}
                   data={row}

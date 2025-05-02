@@ -118,18 +118,42 @@ export const getTrackedEntityTableData = (
       return attr;
     });
 
+    // attributesData.forEach((attr: any) => {
+    //   const attributeMeta = metaData.programTrackedEntityAttributes?.find(
+    //     (metadata) => metadata.trackedEntityAttribute.id === attr.attribute
+    //   );
+
+    //   if (attributeMeta?.trackedEntityAttribute.optionSetValue) {
+    //     const optionSet = attributeMeta?.trackedEntityAttribute?.optionSet;
+
+    //     const option = optionSet?.options?.find(
+    //       (option) => option.code === attr.value
+    //     );
+
+    //     row[attr.attribute] = option
+    //       ? { value: option?.name }
+    //       : { value: attr.value };
+    //   } else {
+    //     row[attr.attribute] = { value: attr.value };
+    //   }
+    // });
     attributesData.forEach((attr: any) => {
       const attributeMeta = metaData.programTrackedEntityAttributes?.find(
         (metadata) => metadata.trackedEntityAttribute.id === attr.attribute
       );
-
-      if (attributeMeta?.trackedEntityAttribute.optionSetValue) {
+    
+      const valueType = attributeMeta?.trackedEntityAttribute?.valueType;
+    
+      if (valueType === 'ORGANISATION_UNIT') {
+        const orgUnitName = orgUnitMap?.get(attr.value);
+        row[attr.attribute] = { value: orgUnitName || attr.value };
+      } else if (attributeMeta?.trackedEntityAttribute.optionSetValue) {
         const optionSet = attributeMeta?.trackedEntityAttribute?.optionSet;
-
+    
         const option = optionSet?.options?.find(
           (option) => option.code === attr.value
         );
-
+    
         row[attr.attribute] = option
           ? { value: option?.name }
           : { value: attr.value };
@@ -137,6 +161,7 @@ export const getTrackedEntityTableData = (
         row[attr.attribute] = { value: attr.value };
       }
     });
+    
 
     dataElementsData.forEach((element: DataValue) => {
       // Finds the matching data element in dataElementOptions by ID

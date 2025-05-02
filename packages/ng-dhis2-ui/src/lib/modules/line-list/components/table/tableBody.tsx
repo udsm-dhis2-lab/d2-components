@@ -53,6 +53,7 @@ export const TableBody = ({
   selectedRows,
   onRowToggle,
   selectable,
+  showActionButtons
 }: any) => (
   <DHISTableBody>
     {data.length > 0 ? (
@@ -68,6 +69,7 @@ export const TableBody = ({
           isChecked={selectedRows.some((r: { index: { value: any; }; }) => r.index?.value === row.index?.value)}
           onToggle={onRowToggle}
           selectable={selectable}
+          showActionButtons={showActionButtons}
         />
       ))
     ) : (

@@ -79,7 +79,7 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Output() rowsSelected = new EventEmitter<
     TrackedEntityInstance[] | DHIS2Event[]
   >();
-
+  @Input() showActionButtons = true;
   private reactStateUpdaters: any = null;
 
   setReactStateUpdaters = (updaters: any) => {
@@ -142,6 +142,9 @@ export class LineListTableComponent extends ReactWrapperModule {
     const [isOptionSetNameVisibleState, setOptionSetNameVisible] =
       useState<boolean>(this.isOptionSetNameVisible);
     const [orgUnitState, setOrgUnitState] = useState<string>(this.orgUnit);
+    const [tempOrgUnitState, setTempOrgUnitState] = useState<string>(
+      this.orgUnit
+    );
     const [programStageIdState, setProgramStageIdState] = useState<
       string | undefined
     >(this.programStageId);
@@ -151,12 +154,21 @@ export class LineListTableComponent extends ReactWrapperModule {
     const [dataQueryFiltersState, setDataQueryFiltersState] = useState<
       DataQueryFilter[]
     >(this.dataQueryFilters as DataQueryFilter[]);
+    const [tempDataQueryFiltersState, setTempDataQueryFiltersState] = useState<
+      DataQueryFilter[]
+    >(this.dataQueryFilters as DataQueryFilter[]);
     const [startDateState, setStartDateState] = useState<string | undefined>(
       this.startDate
     );
+    const [tempStartDateState, setTempStartDateState] = useState<
+      string | undefined
+    >(this.startDate);
     const [endDateState, setEndDateState] = useState<string | undefined>(
       this.endDate
     );
+    const [tempEndDateState, setTempEndDateState] = useState<
+      string | undefined
+    >(this.endDate);
     const [loading, setLoading] = useState<boolean>(false);
     const [metaDataLoadng, setMetaDataLoading] = useState<boolean>(false);
     const [filteredColumns, setFilteredColumns] =
@@ -168,7 +180,10 @@ export class LineListTableComponent extends ReactWrapperModule {
     const [showAllFilters, setShowAllFilters] = useState(false);
     const visibleFilters = showAllFilters
       ? filteredColumns ?? []
-      : (filteredColumns ?? []).slice(0, 2);
+      : (filteredColumns ?? []).slice(0, 0);
+    // const visibleFilters = showAllFilters
+    //   ? filteredColumns ?? []
+    //   : filteredColumns ?? []).slice(0, 2);
     const defaultOrgUnit = this.orgUnit;
     const [prevValue, setPrevValue] = useState<string>();
     const [dateStates, setDateStates] = useState<{ [key: string]: string }>({});
@@ -179,6 +194,7 @@ export class LineListTableComponent extends ReactWrapperModule {
     const [triggerRefetch, setTriggerRefetch] = useState<boolean>(
       this.triggerRefetch
     );
+    const [showActionButtons, setShowActionButtons] = useState<boolean>(this.showActionButtons);
 
     const d2 = (window as unknown as D2Window).d2Web;
 
@@ -192,7 +208,7 @@ export class LineListTableComponent extends ReactWrapperModule {
       setEndDateState,
       setOptionSetNameVisible,
       setSelectable,
-      setTriggerRefetch
+      setTriggerRefetch,
     });
 
     useEffect(() => {
@@ -297,8 +313,18 @@ export class LineListTableComponent extends ReactWrapperModule {
                 (tei: TrackedEntityInstance) => tei.latestEnrollment.orgUnit
               )
             ) as Set<string>;
-            const uniqueOrgUnitIds = [...orgUnitIdsFromEnrollments];
 
+           const orgUnitsFromAttributes = new Set(
+            trackedEntityInstances
+              .flatMap((tei: TrackedEntityInstance) =>
+                tei.attributes
+                  ?.filter((attr: any) => attr.valueType === 'ORGANISATION_UNIT')
+                  .map((attr: any) => attr.value) || []
+              )
+          );
+
+          const uniqueOrgUnitIds = [...orgUnitIdsFromEnrollments, ...orgUnitsFromAttributes];
+     
             this.lineListService.fetchOrgUnits(uniqueOrgUnitIds).subscribe({
               next: (fetchedOrgUnits) => {
                 const trackedEntityResponse: TrackedEntityInstancesResponse = {
@@ -353,7 +379,7 @@ export class LineListTableComponent extends ReactWrapperModule {
       pager.pageSize,
       isOptionSetNameVisibleState,
       dataQueryFiltersState,
-      triggerRefetch
+      triggerRefetch,
     ]);
 
     const handleInputChange = (key: string, value: string) => {
@@ -362,7 +388,7 @@ export class LineListTableComponent extends ReactWrapperModule {
         [key]: value ?? '',
       }));
 
-      setDataQueryFiltersState((prevFilters) => {
+      setTempDataQueryFiltersState((prevFilters) => {
         // Remove old filter for this key
         const filteredFilters = prevFilters.filter((f) => f.attribute !== key);
 
@@ -388,7 +414,7 @@ export class LineListTableComponent extends ReactWrapperModule {
         [key]: value ?? '',
       }));
 
-      setDataQueryFiltersState((prevFilters = []) => {
+      setTempDataQueryFiltersState((prevFilters = []) => {
         // Remove existing filter for the same key (attribute)
         const filteredFilters = prevFilters.filter((f) => f.attribute !== key);
 
@@ -417,7 +443,7 @@ export class LineListTableComponent extends ReactWrapperModule {
       }));
 
       // Update dataQueryFilters
-      setDataQueryFiltersState((prevFilters) => {
+      setTempDataQueryFiltersState((prevFilters) => {
         const filteredFilters = (prevFilters || []).filter(
           (f) => f.attribute !== key
         );
@@ -435,6 +461,15 @@ export class LineListTableComponent extends ReactWrapperModule {
         return updatedFilters;
       });
     };
+
+    const handleSearch = () => (
+      setDataQueryFiltersState(tempDataQueryFiltersState),
+      setStartDateState(tempStartDateState),
+      setEndDateState(tempEndDateState),
+      setOrgUnitState(tempOrgUnitState)
+      // console.log(
+      //   'Search button clicked',)
+    );
 
     function getTextColorFromBackGround(hex: string): string {
       // Remove the hash if present
@@ -480,6 +515,8 @@ export class LineListTableComponent extends ReactWrapperModule {
               selectedOrgUnit={selectedOrgUnit}
               setSelectedOrgUnit={setSelectedOrgUnit}
               setOrgUnitState={setOrgUnitState}
+              setTempOrgUnitState={setTempOrgUnitState}
+              tempOrgUnitState={tempOrgUnitState}
             />
             {this.showFilters && (
               <FilterToolbar
@@ -506,6 +543,16 @@ export class LineListTableComponent extends ReactWrapperModule {
                 setPrevValue={setPrevValue}
                 showAllFilters={showAllFilters}
                 setShowAllFilters={setShowAllFilters}
+                handleSearch={handleSearch}
+                setTempStartDateState={setTempStartDateState}
+                setTempEndDateState={setTempEndDateState}
+                setTempOrgUnitState={setTempOrgUnitState}
+                tempStartDateState={tempStartDateState}
+                tempEndDateState={tempEndDateState}
+                tempOrgUnitState={tempOrgUnitState}
+                dataQueryFiltersState={dataQueryFiltersState}
+                setDataQueryFiltersState={setDataQueryFiltersState}
+                //  filteredFilters={filteredFilters}
               />
             )}
             <LineListTable
@@ -519,6 +566,7 @@ export class LineListTableComponent extends ReactWrapperModule {
               actionSelected={this.actionSelected}
               selectable={selectable}
               rowsSelected={this.rowsSelected}
+              showActionButtons={showActionButtons}
             />
           </div>
         )}
@@ -534,27 +582,3 @@ export class LineListTableComponent extends ReactWrapperModule {
     this.render();
   }
 }
-
-// {
-//   "/api": {
-//     "target": "http://41.59.227.69/tland-upgrade",
-//     "secure": "false",
-//     "auth": "nsajigwa:Hmis@2024",
-//     "changeOrigin": "true"
-//   },
-//   "/": {
-//     "target": "http://41.59.227.69/tland-upgrade",
-//     "secure": "false",
-//     "auth": "nsajigwa:Hmis@2024",
-//     "changeOrigin": "true"
-//   }
-// }
-
-// {
-//   "/api": {
-//     "target": "https://hrhis.moh.go.tz/test-hrhis",
-//     "secure": "false",
-//     "auth": "admin:district",
-//     "changeOrigin": "true"
-//   }
-// }
