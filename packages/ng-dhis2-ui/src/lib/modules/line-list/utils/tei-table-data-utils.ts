@@ -117,7 +117,6 @@ export const getTrackedEntityTableData = (
       }
       return attr;
     });
-
     // attributesData.forEach((attr: any) => {
     //   const attributeMeta = metaData.programTrackedEntityAttributes?.find(
     //     (metadata) => metadata.trackedEntityAttribute.id === attr.attribute
