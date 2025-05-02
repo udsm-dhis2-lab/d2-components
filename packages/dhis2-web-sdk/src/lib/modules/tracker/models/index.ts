@@ -8,3 +8,4 @@ export * from './tracker-import-summary.model';
 export * from './tracker-import-stats.model';
 export * from './tracker-import-validation-report.model';
 export * from './d2-tracker-response.model';
+export * from './tracker-query-config.model';
