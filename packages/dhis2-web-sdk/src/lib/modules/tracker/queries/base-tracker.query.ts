@@ -140,6 +140,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
 
     return this;
   }
+
   setTrackedEntity(trackedEntity: string): BaseTrackerQuery<T> {
     this.trackedEntity = trackedEntity;
     return this;
@@ -331,6 +332,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
         trackedEntity: trackedEntities.join(';'),
         pager: this.pager,
         preferList: true,
+        config: this.config,
       }).generate()
     );
   }
@@ -364,6 +366,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
         enrollmentEnrolledBefore: this.enrollmentEnrolledBefore,
         trackedEntity: this.trackedEntity,
         pager: this.pager,
+        config: this.config,
       }).generate()
     );
   }
