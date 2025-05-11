@@ -13,6 +13,7 @@ import {
   Pager,
   TrackedEntityDecorator,
   TrackedEntityInstance,
+  TrackerQueryConfig,
 } from '@iapps/d2-web-sdk';
 import { d2Web } from '@iapps/ng-dhis2-shell';
 
@@ -63,7 +64,7 @@ export class WebSdkComponent {
 
   async ngOnInit() {
     const trackerQuery = await this.d2.trackerModule.trackedEntity
-      .setEndDate('')
+
       .setProgram('lw9fZTamYec')
       .setOrgUnit('rQS2cX4JH88')
       .setOuMode('DESCENDANTS')
@@ -82,6 +83,11 @@ export class WebSdkComponent {
       .setOrderCriterias([
         new DataOrderCriteria().setField('createdAt').setOrder('desc'),
       ])
+      .setConfig(
+        new TrackerQueryConfig({
+          ignoreProgramForTrackedEntity: true,
+        })
+      )
       .setStatus('COMPLETED')
       .get();
 
@@ -107,5 +113,11 @@ export class WebSdkComponent {
       .get();
 
     console.log(eventQuery);
+
+    const standaloneTrackerQuery = await this.d2.trackerModule.trackedEntity
+      .setTrackedEntity('UNIDoHvJIPV')
+      .get();
+
+    console.log(standaloneTrackerQuery);
   }
 }
