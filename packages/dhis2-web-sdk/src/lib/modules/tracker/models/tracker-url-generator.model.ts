@@ -2,12 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import {
-  DataUrlGenerator,
-  EnrollmentStatus,
-  Pager,
-  ProgramDateType,
-} from '../../../shared';
+import { DataUrlGenerator, EnrollmentStatus } from '../../../shared';
+import { TrackerQueryConfig } from './tracker-query-config.model';
 
 const DEFAULT_FIELDS =
   'createdAt,updatedAt,trackedEntity,trackedEntityType,orgUnit,orgUnitName,enrollments[enrollment,enrolledAt,occurredAt,program,status,orgUnit,storedBy,attributes[attribute,code,createdAt,updatedAt,valueType,value],events[event,occurredAt,dueDate,scheduledAt,status,programStage,program,trackedEntity,enrollment,orgUnit,orgUnitName,assignedUser,storedBy,dataValues]],relationships[relationship,relationshipType,from[trackedEntity[trackedEntity]],to[trackedEntity[trackedEntity]]';
@@ -18,6 +14,7 @@ export class TrackerUrlGenerator extends DataUrlGenerator<TrackerUrlGenerator> {
   trackedEntityType?: string;
   preferList?: boolean;
   enrollmentStatus?: EnrollmentStatus;
+  config?: TrackerQueryConfig;
 
   constructor(params: Partial<TrackerUrlGenerator>) {
     super(params);
@@ -26,6 +23,7 @@ export class TrackerUrlGenerator extends DataUrlGenerator<TrackerUrlGenerator> {
     this.trackedEntity = params.trackedEntity;
     this.preferList = params.preferList;
     this.enrollmentStatus = params.enrollmentStatus;
+    this.config = params.config;
   }
 
   override generate(): string {
@@ -50,6 +48,39 @@ export class TrackerUrlGenerator extends DataUrlGenerator<TrackerUrlGenerator> {
     );
   }
 
+  override addProgram(url: string): string {
+    if (
+      !this.program ||
+      (this.config?.ignoreProgramForTrackedEntity && this.trackedEntity)
+    ) {
+      return url;
+    }
+
+    const isThereParams = this.isThereQueryParams(url);
+
+    return url + `${isThereParams ? '&' : '?'}program=${this.program}`;
+  }
+
+  override addEnrollmentDates(url: string): string {
+    if (
+      !this.enrollmentEnrolledBefore ||
+      (this.config?.ignoreProgramForTrackedEntity && this.trackedEntity)
+    ) {
+      return url;
+    }
+
+    const isThereParams = this.isThereQueryParams(url);
+
+    return (
+      url +
+      `${isThereParams ? '&' : '?'}${
+        this.enrollmentEnrolledAfter
+          ? `enrollmentEnrolledAfter=${this.enrollmentEnrolledAfter}&`
+          : ''
+      }enrollmentEnrolledBefore=${this.enrollmentEnrolledBefore}`
+    );
+  }
+
   addTrackedEntityType(url: string): string {
     if (!this.trackedEntityType || this.program) {
       return url;
@@ -64,7 +95,10 @@ export class TrackerUrlGenerator extends DataUrlGenerator<TrackerUrlGenerator> {
   }
 
   addEnrollmentStatus(url: string): string {
-    if (!this.enrollmentStatus) {
+    if (
+      !this.enrollmentStatus ||
+      (this.config?.ignoreProgramForTrackedEntity && this.trackedEntity)
+    ) {
       return url;
     }
 
