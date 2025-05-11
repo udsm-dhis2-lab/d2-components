@@ -194,11 +194,14 @@ export class LineListTableComponent extends ReactWrapperModule {
     const [triggerRefetch, setTriggerRefetch] = useState<boolean>(
       this.triggerRefetch
     );
-    const [showActionButtons, setShowActionButtons] = useState<boolean>(this.showActionButtons);
+    const [showActionButtons, setShowActionButtons] = useState<boolean>(
+      this.showActionButtons
+    );
+    const [orgUnitModalVisible, setOrgUnitModalVisible] = useState<boolean>(false);
 
     const d2 = (window as unknown as D2Window).d2Web;
 
-    // Store updaters in refs for Angular to access
+    // Stores updaters in refs for Angular to access
     const updateRefs = useRef({
       setProgramIdState,
       setOrgUnitState,
@@ -314,17 +317,22 @@ export class LineListTableComponent extends ReactWrapperModule {
               )
             ) as Set<string>;
 
-           const orgUnitsFromAttributes = new Set(
-            trackedEntityInstances
-              .flatMap((tei: TrackedEntityInstance) =>
-                tei.attributes
-                  ?.filter((attr: any) => attr.valueType === 'ORGANISATION_UNIT')
-                  .map((attr: any) => attr.value) || []
+            const orgUnitsFromAttributes = new Set(
+              trackedEntityInstances.flatMap(
+                (tei: TrackedEntityInstance) =>
+                  tei.attributes
+                    ?.filter(
+                      (attr: any) => attr.valueType === 'ORGANISATION_UNIT'
+                    )
+                    .map((attr: any) => attr.value) || []
               )
-          );
+            );
 
-          const uniqueOrgUnitIds = [...orgUnitIdsFromEnrollments, ...orgUnitsFromAttributes];
-     
+            const uniqueOrgUnitIds = [
+              ...orgUnitIdsFromEnrollments,
+              ...orgUnitsFromAttributes,
+            ];
+
             this.lineListService.fetchOrgUnits(uniqueOrgUnitIds).subscribe({
               next: (fetchedOrgUnits) => {
                 const trackedEntityResponse: TrackedEntityInstancesResponse = {
@@ -389,10 +397,10 @@ export class LineListTableComponent extends ReactWrapperModule {
       }));
 
       setTempDataQueryFiltersState((prevFilters) => {
-        // Remove old filter for this key
+        // Removes old filter for this key
         const filteredFilters = prevFilters.filter((f) => f.attribute !== key);
 
-        // Only add new filter if value is not empty
+        // adds new filter only if value is not empty
         const updatedFilters = value.trim()
           ? [
               ...filteredFilters,
@@ -415,10 +423,10 @@ export class LineListTableComponent extends ReactWrapperModule {
       }));
 
       setTempDataQueryFiltersState((prevFilters = []) => {
-        // Remove existing filter for the same key (attribute)
+        // Removes existing filter for the same key (attribute)
         const filteredFilters = prevFilters.filter((f) => f.attribute !== key);
 
-        // Only add new filter if value is not empty
+        // adds new filter only if value is not empty
         const updatedFilters = value.trim()
           ? [
               ...filteredFilters,
@@ -436,13 +444,13 @@ export class LineListTableComponent extends ReactWrapperModule {
     const handleDateSelect = (key: string, selectedDate: any) => {
       const selectedDateString = selectedDate?.calendarDateString ?? '';
 
-      // Update dateStates
+      // Updates dateStates
       setDateStates((prevDateStates) => ({
         ...prevDateStates,
         [key]: selectedDateString,
       }));
 
-      // Update dataQueryFilters
+      // Updates dataQueryFilters
       setTempDataQueryFiltersState((prevFilters) => {
         const filteredFilters = (prevFilters || []).filter(
           (f) => f.attribute !== key
@@ -467,15 +475,13 @@ export class LineListTableComponent extends ReactWrapperModule {
       setStartDateState(tempStartDateState),
       setEndDateState(tempEndDateState),
       setOrgUnitState(tempOrgUnitState)
-      // console.log(
-      //   'Search button clicked',)
     );
 
     function getTextColorFromBackGround(hex: string): string {
-      // Remove the hash if present
+      // Removes the hash if present
       hex = hex.replace('#', '');
 
-      // Convert to RGB
+      // Converts to RGB
       const r = parseInt(hex.substr(0, 2), 16);
       const g = parseInt(hex.substr(2, 2), 16);
       const b = parseInt(hex.substr(4, 2), 16);
@@ -483,7 +489,7 @@ export class LineListTableComponent extends ReactWrapperModule {
       // YIQ formula to calculate brightness
       const yiq = (r * 299 + g * 587 + b * 114) / 1000;
 
-      // Return black for light backgrounds, white for dark backgrounds
+      // Returns black for light backgrounds, white for dark backgrounds
       return yiq >= 128 ? colors.grey700 : '#FFFFFF';
     }
 
@@ -509,15 +515,18 @@ export class LineListTableComponent extends ReactWrapperModule {
           </div>
         ) : (
           <div>
-            <OrgUnitSelector
-              hide={hide}
-              setHide={setHide}
-              selectedOrgUnit={selectedOrgUnit}
-              setSelectedOrgUnit={setSelectedOrgUnit}
-              setOrgUnitState={setOrgUnitState}
-              setTempOrgUnitState={setTempOrgUnitState}
-              tempOrgUnitState={tempOrgUnitState}
-            />
+            {orgUnitModalVisible && (
+              <OrgUnitSelector
+                hide={hide}
+                setHide={setHide}
+                selectedOrgUnit={selectedOrgUnit}
+                setSelectedOrgUnit={setSelectedOrgUnit}
+                setOrgUnitState={setOrgUnitState}
+                setTempOrgUnitState={setTempOrgUnitState}
+                tempOrgUnitState={tempOrgUnitState}
+              />
+            )}
+
             {this.showFilters && (
               <FilterToolbar
                 orgUnitLabel={orgUnitLabel}
@@ -552,6 +561,7 @@ export class LineListTableComponent extends ReactWrapperModule {
                 tempOrgUnitState={tempOrgUnitState}
                 dataQueryFiltersState={dataQueryFiltersState}
                 setDataQueryFiltersState={setDataQueryFiltersState}
+                SetOrgUnitModalVisible={setOrgUnitModalVisible}
                 //  filteredFilters={filteredFilters}
               />
             )}
