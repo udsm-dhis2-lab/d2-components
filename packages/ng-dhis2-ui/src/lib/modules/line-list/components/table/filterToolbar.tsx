@@ -151,7 +151,6 @@ export const FilterToolbar = ({
                       const filteredFilters = dataQueryFiltersState.filter(
                         (f: { attribute: any }) => f.attribute !== key
                       );
-                      console.log('filteredFilters', selectedDate);
                       if (selectedDate.calendarDateString === null) {
                         console.log('selectedDate', selectedDate);
                         setDataQueryFiltersState(filteredFilters);
