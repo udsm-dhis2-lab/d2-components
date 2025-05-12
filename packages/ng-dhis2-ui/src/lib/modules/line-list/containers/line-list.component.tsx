@@ -80,6 +80,7 @@ export class LineListTableComponent extends ReactWrapperModule {
     TrackedEntityInstance[] | DHIS2Event[]
   >();
   @Input() showActionButtons = true;
+  @Input() showEnrollmentDates: boolean = true;
   private reactStateUpdaters: any = null;
 
   setReactStateUpdaters = (updaters: any) => {
@@ -562,6 +563,7 @@ export class LineListTableComponent extends ReactWrapperModule {
                 dataQueryFiltersState={dataQueryFiltersState}
                 setDataQueryFiltersState={setDataQueryFiltersState}
                 SetOrgUnitModalVisible={setOrgUnitModalVisible}
+                showEnrollmentDates={this.showEnrollmentDates}
                 //  filteredFilters={filteredFilters}
               />
             )}
