@@ -58,7 +58,7 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() useOuModeWithOlderDHIS2Instance?: boolean;
   @Input() startDate?: string;
   @Input() endDate?: string;
-  @Input() dataQueryFilters?: DataQueryFilter[];
+  @Input() dataQueryFilters?: DataQueryFilter[] = [];
   @Input() ouMode?: string;
   @Input() isButtonLoading = false;
   @Input() buttonFilter!: string;
