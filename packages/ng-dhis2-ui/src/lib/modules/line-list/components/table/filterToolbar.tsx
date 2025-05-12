@@ -39,12 +39,13 @@ export const FilterToolbar = ({
   dataQueryFiltersState,
   setDataQueryFiltersState,
   SetOrgUnitModalVisible,
+  showEnrollmentDates,
 }: any) => (
   <DataTableToolbar className="table-top-toolbar">
     <div
       style={{
         display: 'flex',
-        flexDirection: 'column', // Ensures rows
+        flexDirection: 'column',
         gap: '10px',
         flexWrap: 'wrap',
       }}
@@ -73,42 +74,49 @@ export const FilterToolbar = ({
             setOrgUnitState(defaultOrgUnit);
           }}
         />
-        <CalendarInput
-          label="Start date:"
-          calendar="gregory"
-          locale="en-GB"
-          timeZone="Africa/Dar_es_Salaam"
-          className="custom-input"
-          //clearable={!!tempStartDateState}
-          //date={tempStartDateState || undefined}
-          //date={tempStartDateState || "yyyy-mm-dd"}
-          clearable={
-            !!tempStartDateState && tempStartDateState !== 'yyyy-mm-dd'
-          }
-          date={tempStartDateState || 'yyyy-mm-dd'}
-          onDateSelect={(selectedDate: any) => {
-            setTempStartDateState(selectedDate.calendarDateString);
-            console.log('selectedDate', selectedDate);
-            if (selectedDate.calendarDateString === null) {
-              setStartDateState(selectedDate.calendarDateString);
-            }
-          }}
-        />
-        <CalendarInput
-          label="End date:"
-          calendar="gregory"
-          locale="en-GB"
-          timeZone="Africa/Dar_es_Salaam"
-          className="custom-input"
-          clearable={!!tempEndDateState && tempEndDateState !== 'yyyy-mm-dd'}
-          date={tempEndDateState || 'yyyy-mm-dd'}
-          onDateSelect={(selectedDate: any) => {
-            setTempEndDateState(selectedDate.calendarDateString);
-            if (selectedDate.calendarDateString === null) {
-              setEndDateState(selectedDate.calendarDateString);
-            }
-          }}
-        />
+        {showEnrollmentDates && (
+          <>
+            <CalendarInput
+              label="Start date:"
+              calendar="gregory"
+              locale="en-GB"
+              timeZone="Africa/Dar_es_Salaam"
+              className="custom-input"
+              //clearable={!!tempStartDateState}
+              //date={tempStartDateState || undefined}
+              //date={tempStartDateState || "yyyy-mm-dd"}
+              clearable={
+                !!tempStartDateState && tempStartDateState !== 'yyyy-mm-dd'
+              }
+              date={tempStartDateState || 'yyyy-mm-dd'}
+              onDateSelect={(selectedDate: any) => {
+                setTempStartDateState(selectedDate.calendarDateString);
+                console.log('selectedDate', selectedDate);
+                if (selectedDate.calendarDateString === null) {
+                  setStartDateState(selectedDate.calendarDateString);
+                }
+              }}
+            />
+            <CalendarInput
+              label="End date:"
+              calendar="gregory"
+              locale="en-GB"
+              timeZone="Africa/Dar_es_Salaam"
+              className="custom-input"
+              clearable={
+                !!tempEndDateState && tempEndDateState !== 'yyyy-mm-dd'
+              }
+              date={tempEndDateState || 'yyyy-mm-dd'}
+              onDateSelect={(selectedDate: any) => {
+                setTempEndDateState(selectedDate.calendarDateString);
+                if (selectedDate.calendarDateString === null) {
+                  setEndDateState(selectedDate.calendarDateString);
+                }
+              }}
+            />
+          </>
+        )}
+
         <Button onClick={handleSearch}>Search</Button>
         <Button onClick={() => setShowAllFilters(!showAllFilters)}>
           {showAllFilters ? 'Less Filters' : 'More Filters'}
