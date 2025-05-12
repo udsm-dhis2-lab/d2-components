@@ -249,10 +249,14 @@
 </div> -->
 <!-- [teiEnrollmentList]="{onApprovalClick: onApprove}" -->
 
+<!-- [dataQueryFilters]="[new DataQueryFilter()
+.setAttribute('tgGvHgQgtQ0')
+.setCondition(DataFilterCondition.Equal)
+.setValue(this.batchNumber),]" -->
 
 <div>
   <ng-dhis2-ui-line-list
-    [programId]="'zyBObUsin0Q'"
+    [programId]="'oUiYTdbtOuh'"
     [orgUnit]="'xrku9x3XnV9'"
     [actionOptions]="actionOptions"
     [ouMode]="'DESCENDANTS'"
@@ -264,7 +268,7 @@
     [showEnrollmentDates]="false"
     (rowsSelected)="onRowsSelected($event)"
     [triggerRefetch]="triggerRefetch"
-   
+  
   ></ng-dhis2-ui-line-list>
 </div>
 
