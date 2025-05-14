@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+import { FormFieldExtension } from 'packages/ng-dhis2-ui/src/lib/modules/form';
+
 export type AutoAssignedValues = { field: string; value: string };
 
 export interface IProgramEntryFormConfig {
@@ -26,6 +28,7 @@ export interface IProgramEntryFormConfig {
   ignoreRepeatability?: boolean;
   autoAssignedValues?: AutoAssignedValues[];
   autoComplete?: boolean;
+  formFieldExtensions?: FormFieldExtension[];
 }
 export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   program!: string;
@@ -49,6 +52,7 @@ export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   ignoreRepeatability?: boolean;
   autoAssignedValues?: AutoAssignedValues[];
   autoComplete?: boolean;
+  formFieldExtensions?: FormFieldExtension[];
 
   constructor(config: IProgramEntryFormConfig) {
     Object.assign(this, config);
