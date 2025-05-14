@@ -25,6 +25,25 @@ import {
 })
 export class FormComponentsComponent {
   d2 = (window as unknown as D2Window).d2Web;
+formConfig = 
+[
+   {
+     id: 'l2VG173t0Vc',
+     accept: ['.jpg', '.pdf'],
+     sizeLimit: 2 * 1024 * 1024,
+   },
+   {
+     id: 'cPpi2sVGaAe',
+     accept: ['.pdf', '.jpg', '.png'],
+     sizeLimit: 2 * 1024 * 1024, 
+   },
+   {
+     id: 'nVkXRei2umX',
+     accept: ['.pdf', '.docx'],
+     sizeLimit: 2 * 1024 * 1024,
+   },
+ ];
+
   fields = [
     new FormField<string>({
       id: 'orgUnit',
