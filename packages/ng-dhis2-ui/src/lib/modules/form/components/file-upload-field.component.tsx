@@ -79,7 +79,7 @@ export const FileUploadField = (props: {
       label={label}
       name={id}
       required={required}
-      error={validationError}
+      error={!!validationError}
       validationText={validationError || validationText}
       onChange={(event: any) => {
         const fileItem = (event?.files || [])[0];
