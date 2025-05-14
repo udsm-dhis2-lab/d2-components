@@ -6,6 +6,7 @@ import { FormFieldMetaType, IFormField, IFormFieldGroup } from '../interfaces';
 import { FieldUtil, TranslationUtil } from '../utils';
 import { FieldDropdown } from './field-dropdown.model';
 import { FormField } from './form-field.model';
+import { FormFieldExtension } from '../interfaces/form-field-extension.interface';
 
 export class FormFieldGroup implements IFormFieldGroup {
   id!: string;
@@ -24,6 +25,7 @@ export class FormFieldGroup implements IFormFieldGroup {
       formFieldGroup: Partial<FormFieldGroup>;
       fieldMetaData: Record<string, unknown>[];
       locale?: string;
+      formFieldExtensions?: FormFieldExtension[];
     }
   ) {}
 
@@ -57,6 +59,10 @@ export class FormFieldGroup implements IFormFieldGroup {
           dependentField !== undefined ||
           fieldMetaData['hasOptions']) as boolean;
 
+        const extension = this.params.formFieldExtensions?.find(
+          (fieldExtension) => fieldExtension?.id === field.id
+        );
+
         return new FormField({
           ...(fieldMetaData || {}),
           ...field,
@@ -89,6 +95,7 @@ export class FormFieldGroup implements IFormFieldGroup {
           ),
           metaType: fieldMetaData['metaType'] as FormFieldMetaType,
           stepId: fieldMetaData['stepId'] as string,
+          extension,
         });
       })
       .filter((field) => field) as IFormField<string>[];

@@ -1,4 +1,8 @@
-import { IFormMetadataSection, IFormFieldGroup } from '../interfaces';
+import {
+  IFormMetadataSection,
+  IFormFieldGroup,
+  FormFieldExtension,
+} from '../interfaces';
 import { FormFieldGroup } from './form-field-group.model';
 import { flatten } from 'lodash';
 
@@ -17,6 +21,7 @@ export class FormMetadataSection implements IFormMetadataSection {
       program: Record<string, unknown>;
       locale?: string;
       excludeInheritedAttributes?: boolean;
+      formFieldExtensions?: FormFieldExtension[];
     }
   ) {
     this.inheritedAttributes =
@@ -95,6 +100,7 @@ export class FormMetadataSection implements IFormMetadataSection {
         formFieldGroup,
         fieldMetaData: [...this.attributes, ...this.dataElements],
         locale: this.params.locale,
+        formFieldExtensions: this.params.formFieldExtensions,
       }).toJson();
     });
   }

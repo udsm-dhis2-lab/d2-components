@@ -1,6 +1,7 @@
 import { IFieldDropdown } from './field-dropdown.interface';
 import { FieldControlType } from './field-control-type.interface';
 import { FormFieldMetaType } from './form-field-meta-type.interface';
+import { FormFieldExtension } from 'packages/ng-dhis2-ui/src/lib/modules/form/models';
 
 export interface IFormField<T> {
   value?: T | '';
@@ -43,4 +44,5 @@ export interface IFormField<T> {
   availableOptionsLabel?: string;
   selectedOptionsLabel?: string;
   allowFutureDate?: boolean;
+  extension?: FormFieldExtension;
 }

@@ -173,6 +173,10 @@ export class ProgramEntryFormFieldUtil {
 
         const hasOptions = options?.length > 0;
 
+        const extension = this.config.formFieldExtensions?.find(
+          (fieldExtension) => fieldExtension?.id === field.id
+        );
+
         return new FormField<string>({
           ...field,
           id: field.id,
@@ -191,6 +195,7 @@ export class ProgramEntryFormFieldUtil {
           ),
           metaType: field.metaType as FormFieldMetaType,
           stepId: (field as { stepId: string }).stepId,
+          extension,
         });
       })
       .sort((a, b) => a.order ?? 0 - (b.order ?? 0));
