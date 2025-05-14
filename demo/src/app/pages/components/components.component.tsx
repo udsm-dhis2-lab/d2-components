@@ -17,6 +17,7 @@ import { Period } from '@iapps/period-utilities';
 import { Button, IconView16 } from '@dhis2/ui';
 import { TableRow } from 'packages/ng-dhis2-ui/src/lib/modules/line-list/models/line-list.models';
 import React from 'react';
+import { ProgramEntryFormConfig } from '../../../../../packages/ng-dhis2-ui/src/lib/modules/program-entry-form/models/program-entry-form.config';
 //import { LineListTableComponent } from '../../../../../packages/ng-dhis2-ui/src/lib/modules/line-list/containers/line-list.component';
 
 @Component({
@@ -32,6 +33,21 @@ export class ComponentsComponent implements OnInit {
     { id: 'LAST_3_MONTHS', name: 'Last 3 months' },
   ];
   triggerRefetch = false;
+
+  pconfig = new ProgramEntryFormConfig({
+    program: 'A3olldDSHQg',
+    programStage: 'NtZXBym2KfD',
+    hideRegistrationUnit: true,
+    formType: 'EVENT',
+    displayType: 'FLAT',
+    autoComplete: true,
+    autoAssignedValues: [
+      {
+        field: 'orgUnit',
+        value: 'aaaaaaaaaaaaaaaaaa',
+      },
+    ],
+  });
 
   handleApprovalClick() {
     console.log(
@@ -974,4 +990,21 @@ class DateField {
       ? optionSet.options.map((option) => new Option(option))
       : [];
   }
+
+  pconfig = new ProgramEntryFormConfig({
+    program: 'A3olldDSHQg',
+    programStage: 'NtZXBym2KfD',
+    hideRegistrationUnit: true,
+    formType: 'EVENT',
+    displayType: 'FLAT',
+    autoComplete: true,
+    autoAssignedValues: [
+      {
+        field: 'orgUnit',
+        value: 'aaaaaaaaaaaaaaaaaa'
+        // value: this.applicant()?.orgUnit,
+      },
+    ],
+  });
+  
 }
