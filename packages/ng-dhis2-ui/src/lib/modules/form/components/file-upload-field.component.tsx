@@ -7,6 +7,8 @@ import { FileInputField } from '@dhis2/ui';
 import { D2Window } from '@iapps/d2-web-sdk';
 import { isUndefined } from 'lodash';
 import React, { useEffect, useMemo, useState } from 'react';
+import { FormFieldExtension } from '../interfaces';
+import { set } from 'date-fns';
 
 export const FileUploadField = (props: {
   label?: string;
@@ -19,6 +21,7 @@ export const FileUploadField = (props: {
   validationText?: string;
   onChange?: (files: any[]) => void;
   onUploadSuccess?: (fileId: string) => void;
+  extension?: FormFieldExtension;
 }) => {
   const {
     label,
@@ -30,10 +33,12 @@ export const FileUploadField = (props: {
     hasError,
     onChange,
     onUploadSuccess,
+    extension
   } = props;
   const d2 = (window as unknown as D2Window)?.d2Web;
   const [file, setFile] = useState<any>(null);
   const [uploading, setUploading] = useState<boolean>();
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const valid = useMemo(() => {
     if (isUndefined(hasError)) {
@@ -69,14 +74,22 @@ export const FileUploadField = (props: {
 
   return (
     <FileInputField
-      accept="*"
+      accept={extension?.accept?.join(',')}
       buttonLabel="Upload a file"
       label={label}
       name={id}
       required={required}
-      validationText={validationText}
+      error={validationError}
+      validationText={validationError || validationText}
       onChange={(event: any) => {
         const fileItem = (event?.files || [])[0];
+        setValidationError(null);
+    
+        if (extension?.sizeLimit && fileItem.size > extension?.sizeLimit) {
+          setValidationError(`File size must not exceed ${extension.sizeLimit / (1024 * 1024)}MB`);
+          setFile(null);
+          return;
+        }
         setFile(fileItem);
 
         if (performUpload) {

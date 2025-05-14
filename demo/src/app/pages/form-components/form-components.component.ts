@@ -91,8 +91,8 @@ export class FormComponentsComponent {
   });
 
   programEntryConfig = new ProgramEntryFormConfig({
-    program: 'lw9fZTamYec',
-    programStage: 'NtZXBym2KfD',
+    program: 'Gy65kx8gQv6',
+    programStage: 'edx4DaMDAyo',
     displayType: 'FLAT',
     formType: 'EVENT',
     excludeProgramStages: true,
@@ -100,7 +100,29 @@ export class FormComponentsComponent {
     hideRegistrationUnit: true,
     hideEnrollmentDate: true,
     autoComplete: true,
+    formFieldExtensions: [
+      {
+        id: 'seUJl7AEZtS',
+        accept: ['.pdf', '.docx', '.zip'],
+        sizeLimit: 2 * 1024 * 1024,
+      },
+    ],
   });
+
+//   return new ProgramEntryFormConfig({
+//     program: 'Gy65kx8gQv6',
+//     programStage: 'edx4DaMDAyo',
+//     hideRegistrationUnit: true,
+//     formType: 'EVENT',
+//     displayType: 'FLAT',
+//     autoAssignedValues: [
+//       {
+//         field: 'orgUnit',
+//         value: currentApplicant.latestEnrollment?.orgUnit,
+//       },
+//     ],
+//   });
+// });
 
   onUpdate(event: FormValue) {
     console.log('Form updated', event.form);

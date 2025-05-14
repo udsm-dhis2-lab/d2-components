@@ -447,6 +447,7 @@ export class BaseFormFieldComponent
                     setValue(fileId);
                     setTouched(true);
                   }}
+                  extension={this.field()?.extension}
                 />
               </>
             );
