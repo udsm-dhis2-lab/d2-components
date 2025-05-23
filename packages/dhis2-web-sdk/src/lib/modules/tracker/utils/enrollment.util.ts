@@ -25,8 +25,8 @@ export class EnrollmentUtil {
     sortOrder: 'DESC' | 'ASC' = 'DESC'
   ): IEnrollment[] {
     return (enrollments || []).sort((a: any, b: any) => {
-      const dateA: any = new Date(a?.enrollmentDate || a?.enrollmentAt);
-      const dateB: any = new Date(b?.enrollmentDate || b?.enrollmentAt);
+      const dateA: any = new Date(a?.enrolledAt || a?.enrollmentDate || a?.enrollmentAt);
+      const dateB: any = new Date(b?.enrolledAt || b?.enrollmentDate || b?.enrollmentAt);
 
       switch (sortOrder) {
         case 'DESC':
