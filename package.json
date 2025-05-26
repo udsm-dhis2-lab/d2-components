@@ -46,7 +46,7 @@
     "build:dhis2-web-sdk": "nx build d2-web-sdk",
     "pack:dhis2-web-sdk": "nx build d2-web-sdk && cd dist/packages/dhis2-web-sdk && npm pack",
     "link:dhis2-web-sdk": "nx build d2-web-sdk && cd dist/packages/dhis2-web-sdk && npm link",
-    "publish:dhis2-web-sdk": "nx build d2-web-sdk && cd dist/packages/dhis2-web-sdk && npm publish --access public",
+    "publish:dhis2-web-sdk": "§",
     "publish-local:dhis2-web-sdk": "nx build d2-web-sdk && cd dist/packages/dhis2-web-sdk && npm publish --access public --registry http://localhost:4873/"
   },
   "devDependencies": {
@@ -162,6 +162,7 @@
     "storybook": "^8.2.8",
     "styled-jsx": "^5.1.2",
     "tslib": "^2.3.0",
+    "xlsx": "^0.18.5",
     "zone.js": "0.15.0"
   },
   "nx": {

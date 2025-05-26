@@ -7,7 +7,7 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
-import { CircularLoader, colors } from '@dhis2/ui';
+import { CircularLoader, colors, DropdownButton, MenuItem } from '@dhis2/ui';
 import {
   D2Window,
   DataFilterCondition,
@@ -41,6 +41,7 @@ import {
   getTrackedEntityTableData,
 } from '../utils/tei-table-data-utils';
 import { getEvents } from '../utils/event-table-data-util';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'ng-dhis2-ui-line-list',
@@ -81,6 +82,7 @@ export class LineListTableComponent extends ReactWrapperModule {
   >();
   @Input() showActionButtons = true;
   @Input() showEnrollmentDates: boolean = true;
+  @Input() showDownloadButton: boolean = true;
   private reactStateUpdaters: any = null;
 
   setReactStateUpdaters = (updaters: any) => {
@@ -198,7 +200,8 @@ export class LineListTableComponent extends ReactWrapperModule {
     const [showActionButtons, setShowActionButtons] = useState<boolean>(
       this.showActionButtons
     );
-    const [orgUnitModalVisible, setOrgUnitModalVisible] = useState<boolean>(false);
+    const [orgUnitModalVisible, setOrgUnitModalVisible] =
+      useState<boolean>(false);
 
     const d2 = (window as unknown as D2Window).d2Web;
 
@@ -391,6 +394,58 @@ export class LineListTableComponent extends ReactWrapperModule {
       triggerRefetch,
     ]);
 
+    const handleExcelDownload = () => {
+      const filteredColumns = columns.filter((col) => col.label !== 'Actions');
+      const header = filteredColumns.map((col) => col.label);
+      const rows = data.map((row) =>
+        filteredColumns.map((col) => {
+          const cell = row[col.key];
+          if (cell === null || cell === undefined) return '';
+          return typeof cell === 'object' && 'value' in cell
+            ? cell.value
+            : cell;
+        })
+      );
+      const worksheetData = [header, ...rows];
+
+      // Creates worksheet and workbook, then writes to file
+      const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'LineListData');
+      XLSX.writeFile(workbook, 'records.xlsx');
+    };
+
+    const handleCsvDownload = () => {
+      const safeValue = (value: any) => {
+        if (value === null || value === undefined) return '';
+        if (typeof value === 'object') {
+          if ('value' in value) {
+            return value.value; 
+          }
+          return JSON.stringify(value);
+        }
+        return value;
+      };
+
+      const filteredColumns = columns.filter((col) => col.label !== 'Actions');
+      const header = filteredColumns .map((col) => `"${col.label}"`).join(',');
+      const csvData = data.map((row) =>
+        filteredColumns .map((col) => `"${safeValue(row[col.key])}"`).join(',')
+      );
+      const csvContent = [header, ...csvData].join('\n');
+
+      // Creates a Blob and triggers the download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'records.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+
     const handleInputChange = (key: string, value: string) => {
       setInputValues((prevValues) => ({
         ...prevValues,
@@ -516,6 +571,26 @@ export class LineListTableComponent extends ReactWrapperModule {
           </div>
         ) : (
           <div>
+            {this.showDownloadButton && (
+               <div style={{ paddingBottom: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
+               <DropdownButton
+                 name="Download"
+                 component={
+                   <span>
+                     {' '}
+                     <MenuItem label="Download Csv" onClick={handleCsvDownload} />
+                     <MenuItem
+                       label="Download Excel"
+                       onClick={handleExcelDownload}
+                     />
+                   </span>
+                 }
+                 value="Download"
+               >
+                 Download
+               </DropdownButton>
+               </div>
+            )}
             {orgUnitModalVisible && (
               <OrgUnitSelector
                 hide={hide}
