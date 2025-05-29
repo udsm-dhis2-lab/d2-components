@@ -28,6 +28,7 @@ import {
   D2TrackerResponse,
   D2Window,
   DHIS2Event,
+  Program,
   TrackedEntityInstance,
 } from '@iapps/d2-web-sdk';
 
@@ -236,19 +237,25 @@ export class ProgramEntryFormModule {
       return await this.instanceQuery.create();
     }
 
-    const instance = (
+    const instanceResult = (
       await this.instanceQuery
         .setTrackedEntity(this.trackedEntity() as string)
         .get()
     ).data as TrackedEntityInstance;
 
-    if (!instance) {
+    if (!instanceResult) {
       return await this.instanceQuery.create();
     }
 
-    if (this.metaData()?.program) {
-      instance.setFields(this.metaData()!.program);
+    const instance = await this.instanceQuery
+      .setInstanceFields(this.metaData()?.program as Program)
+      .setReservedValues();
+
+    if (this.orgUnit()) {
+      instance.setOrgUnit(this.orgUnit() as string);
     }
+
+    console.log(instance, this.orgUnit());
 
     return instance;
   }
