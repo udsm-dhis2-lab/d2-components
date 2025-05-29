@@ -14,6 +14,7 @@ export type TrackedEntityAttributeField =
   | 'valueType'
   | 'aggregationType'
   | 'generated'
+  | 'pattern'
   | 'unique'
   | 'optionSetValue'
   | 'optionSetValueCount'
@@ -28,6 +29,7 @@ export class TrackedEntityAttribute extends IdentifiableObject<TrackedEntityAttr
     'valueType',
     'aggregationType',
     'generated',
+    'pattern',
     'unique',
     'optionSetValue',
     'optionSetValueCount',
@@ -37,6 +39,7 @@ export class TrackedEntityAttribute extends IdentifiableObject<TrackedEntityAttr
   valueType!: string;
   aggregationType?: string;
   generated?: boolean;
+  pattern?: string;
   unique?: boolean;
   optionSetValue?: boolean;
   optionSetValueCount?: number;

@@ -191,13 +191,33 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
         const field = fieldEntities[key];
         return field?.generated;
       })
-      .map((key: string) => {
+      .map(async (key: string) => {
         const availableValue = this.instance[key];
         if (availableValue && availableValue.length > 0) {
           return null;
         }
 
         const field = fieldEntities[key];
+
+        if (field.pattern?.includes('ORG_UNIT_CODE')) {
+          if (!this.orgUnit) {
+            return null;
+          }
+
+          const orgUnit = (
+            await this.httpClient.get(
+              `organisationUnits/${this.orgUnit}.json?fields=code`
+            )
+          )?.data as { code: string };
+
+          if (!orgUnit?.code) {
+            return null;
+          }
+
+          return this.httpClient.get(
+            `trackedEntityAttributes/${field.id}/generate.json?ORG_UNIT_CODE=${orgUnit.code}`
+          );
+        }
 
         return this.httpClient.get(
           `trackedEntityAttributes/${field.id}/generate.json`
