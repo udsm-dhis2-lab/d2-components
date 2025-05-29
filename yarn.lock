@@ -2404,19 +2404,19 @@
   resolved "https://registry.npmjs.org/@humanwhocodes/object-schema/-/object-schema-2.0.3.tgz"
   integrity sha512-93zYdMES/c1D69yZiKDBj0V24vqNzB/koF26KPaagAfd3P/4gUlh3Dys5ogAK+Exi9QyzlD8x/08Zt7wIKcDcA==
 
-"@iapps/d2-dashboard@file:/Users/rtg/d2/d2-components/packages/ng-dhis2-dashboard":
+"@iapps/d2-dashboard@file:/Users/rajabmkomwa/Office/UDSM DHIS2 Lab/Innovations/DHIS2 Components/03 Software Development/d2-components/packages/ng-dhis2-dashboard":
   version "1.0.15"
   resolved "file:packages/ng-dhis2-dashboard"
   dependencies:
     tslib "^2.3.0"
 
-"@iapps/d2-visualizer@file:/Users/rtg/d2/d2-components/packages/dhis2-visualizer":
+"@iapps/d2-visualizer@file:/Users/rajabmkomwa/Office/UDSM DHIS2 Lab/Innovations/DHIS2 Components/03 Software Development/d2-components/packages/dhis2-visualizer":
   version "1.1.12"
   resolved "file:packages/dhis2-visualizer"
   dependencies:
     tslib "^2.3.0"
 
-"@iapps/d2-web-sdk@file:/Users/rtg/d2/d2-components/packages/dhis2-web-sdk":
+"@iapps/d2-web-sdk@file:/Users/rajabmkomwa/Office/UDSM DHIS2 Lab/Innovations/DHIS2 Components/03 Software Development/d2-components/packages/dhis2-web-sdk":
   version "1.0.24"
   resolved "file:packages/dhis2-web-sdk"
   dependencies:
@@ -2425,31 +2425,31 @@
     lodash "^4.17.21"
     tslib "^2.3.0"
 
-"@iapps/function-analytics@file:/Users/rtg/d2/d2-components/packages/dhis2-analytics":
+"@iapps/function-analytics@file:/Users/rajabmkomwa/Office/UDSM DHIS2 Lab/Innovations/DHIS2 Components/03 Software Development/d2-components/packages/dhis2-analytics":
   version "1.0.0-beta.24"
   resolved "file:packages/dhis2-analytics"
   dependencies:
     tslib "^2.3.0"
 
-"@iapps/ng-dhis2-shell@file:/Users/rtg/d2/d2-components/packages/ng-dhis2-shell":
+"@iapps/ng-dhis2-shell@file:/Users/rajabmkomwa/Office/UDSM DHIS2 Lab/Innovations/DHIS2 Components/03 Software Development/d2-components/packages/ng-dhis2-shell":
   version "1.0.6"
   resolved "file:packages/ng-dhis2-shell"
   dependencies:
     tslib "^2.3.0"
 
-"@iapps/ng-dhis2-ui@file:/Users/rtg/d2/d2-components/packages/ng-dhis2-ui":
-  version "1.2.73"
+"@iapps/ng-dhis2-ui@file:/Users/rajabmkomwa/Office/UDSM DHIS2 Lab/Innovations/DHIS2 Components/03 Software Development/d2-components/packages/ng-dhis2-ui":
+  version "1.2.74"
   resolved "file:packages/ng-dhis2-ui"
   dependencies:
     tslib "^2.3.0"
 
-"@iapps/ngx-dhis2-dictionary@file:/Users/rtg/d2/d2-components/packages/ng-dhis2-dictionary":
+"@iapps/ngx-dhis2-dictionary@file:/Users/rajabmkomwa/Office/UDSM DHIS2 Lab/Innovations/DHIS2 Components/03 Software Development/d2-components/packages/ng-dhis2-dictionary":
   version "1.0.7"
   resolved "file:packages/ng-dhis2-dictionary"
   dependencies:
     tslib "^2.3.0"
 
-"@iapps/ngx-dhis2-http-client@file:/Users/rtg/d2/d2-components/packages/ng-dhis2-http-client":
+"@iapps/ngx-dhis2-http-client@file:/Users/rajabmkomwa/Office/UDSM DHIS2 Lab/Innovations/DHIS2 Components/03 Software Development/d2-components/packages/ng-dhis2-http-client":
   version "3.0.4"
   resolved "file:packages/ng-dhis2-http-client"
   dependencies:
@@ -2469,7 +2469,7 @@
   dependencies:
     tslib "^2.3.0"
 
-"@iapps/period-utilities@file:/Users/rtg/d2/d2-components/packages/dhis2-period-utilities":
+"@iapps/period-utilities@file:/Users/rajabmkomwa/Office/UDSM DHIS2 Lab/Innovations/DHIS2 Components/03 Software Development/d2-components/packages/dhis2-period-utilities":
   version "1.0.4"
   resolved "file:packages/dhis2-period-utilities"
   dependencies:

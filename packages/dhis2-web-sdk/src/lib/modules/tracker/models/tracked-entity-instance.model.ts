@@ -54,6 +54,7 @@ interface TrackerFieldProperty {
     | 'INCIDENT_DATE'
     | 'ORG_UNIT';
   generated?: boolean;
+  pattern?: string;
   stageId?: string;
   repeatable?: boolean;
 }
@@ -347,6 +348,7 @@ export class TrackedEntityInstance
               id: trackedEntityAttribute.id,
               type: 'ATTRIBUTE',
               generated: trackedEntityAttribute.generated,
+              pattern: trackedEntityAttribute.pattern,
             },
           };
         },
