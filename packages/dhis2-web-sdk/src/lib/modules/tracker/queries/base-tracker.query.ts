@@ -181,10 +181,10 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
     return this;
   }
 
-  async generateReservedValues(): Promise<
-    { ownerUid: string; value: string }[]
-  > {
-    const fieldEntities = this.instance.fields || {};
+  async generateReservedValues(
+    instance: T
+  ): Promise<{ ownerUid: string; value: string }[]> {
+    const fieldEntities = instance.fields || {};
 
     const reservedAttributePromises = Object.keys(fieldEntities)
       .filter((key) => {
@@ -192,7 +192,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
         return field?.generated;
       })
       .map(async (key: string) => {
-        const availableValue = this.instance[key];
+        const availableValue = instance[key];
         if (availableValue && availableValue.length > 0) {
           return null;
         }
@@ -244,7 +244,17 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
       config?.fetchScope || 'TRACKED_ENTITY'
     );
 
-    return new D2TrackerResponse<T>(response, this.identifiable, this.program);
+    const trackerResponse = new D2TrackerResponse<T>(
+      response,
+      this.identifiable,
+      this.program
+    );
+
+    if (trackerResponse?.data instanceof TrackedEntityInstance) {
+      this.instance = trackerResponse.data;
+    }
+
+    return trackerResponse;
   }
 
   async create(): Promise<T> {
@@ -281,19 +291,26 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
 
         this.setInstanceFields(program);
 
-        const reservedValues = await this.generateReservedValues();
-
-        (reservedValues || []).forEach((reserved) => {
-          this.instance.setAttributeValue(reserved.ownerUid, reserved.value);
-        });
+        await this.setReservedValues();
       }
     }
 
     return this.instance;
   }
 
-  setInstanceFields(program: Program) {
+  async setReservedValues(): Promise<T> {
+    const reservedValues = await this.generateReservedValues(this.instance);
+
+    (reservedValues || []).forEach((reserved) => {
+      this.instance.setAttributeValue(reserved.ownerUid, reserved.value);
+    });
+
+    return this.instance;
+  }
+
+  setInstanceFields(program: Program): BaseTrackerQuery<T> {
     this.instance.setFields(program);
+    return this;
   }
 
   protected async fetchFromEvent(

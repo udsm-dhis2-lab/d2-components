@@ -178,11 +178,7 @@ export class TrackedEntityInstance
       this.#spreadEvents();
 
       // Spread enrollment data values as standalone attributes of the class
-      Object.keys(this.latestEnrollment || {}).forEach((key) => {
-        if (key !== 'orgUnit') {
-          this[key] = (this.latestEnrollment as any)[key];
-        }
-      });
+      this.#spreadLastestEnrollment();
 
       this.orgUnitName = this.latestEnrollment?.orgUnitName as string;
       this.relatedEntities = TrackerRelationshipUtil.getRelationships(
@@ -192,6 +188,14 @@ export class TrackedEntityInstance
 
       this.spreadAttributes!(this.attributes || []);
     }
+  }
+
+  #spreadLastestEnrollment() {
+    Object.keys(this.latestEnrollment || {}).forEach((key) => {
+      if (key !== 'orgUnit') {
+        this[key] = (this.latestEnrollment as any)[key];
+      }
+    });
   }
 
   #spreadEvents() {
@@ -251,6 +255,20 @@ export class TrackedEntityInstance
           return event;
         }
       );
+    } else {
+      this.latestEnrollment = new Enrollment(
+        EnrollmentUtil.generate({
+          date: new Date().toISOString(),
+          program: this.program,
+          trackedEntity: this.trackedEntity,
+          trackedEntityType: this.trackedEntityType,
+          orgUnit: orgUnit,
+        })
+      );
+
+      this.#spreadLastestEnrollment();
+
+      this.enrollments.unshift(this.latestEnrollment);
     }
   }
 

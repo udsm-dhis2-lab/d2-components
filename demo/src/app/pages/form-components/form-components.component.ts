@@ -117,6 +117,12 @@ export class FormComponentsComponent {
     hideRegistrationUnit: true,
     hideEnrollmentDate: true,
     autoComplete: true,
+    autoAssignedValues: [
+      {
+        field: 'batchNumber',
+        value: 'ND_BATCH_62712406',
+      },
+    ],
     formFieldExtensions: [
       {
         id: 'seUJl7AEZtS',
