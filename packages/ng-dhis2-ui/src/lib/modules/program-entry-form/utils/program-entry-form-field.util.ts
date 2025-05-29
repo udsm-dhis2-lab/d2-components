@@ -177,6 +177,15 @@ export class ProgramEntryFormFieldUtil {
           (fieldExtension) => fieldExtension?.id === field.id
         );
 
+        const autoAssignedValue = this.#getAutoAssignedValue(field);
+
+        if (
+          !isUndefined(autoAssignedValue) &&
+          this.config.hideCustomAssignedFields
+        ) {
+          return null;
+        }
+
         return new FormField<string>({
           ...field,
           id: field.id,
@@ -198,6 +207,7 @@ export class ProgramEntryFormFieldUtil {
           extension,
         });
       })
+      .filter((field) => field != null)
       .sort((a, b) => a.order ?? 0 - (b.order ?? 0));
 
     return [...this.reportFields, ...fields];
@@ -212,15 +222,21 @@ export class ProgramEntryFormFieldUtil {
       this.config.autoAssignedValues &&
       this.config.autoAssignedValues.length > 0
     ) {
-      const key = field.code ? camelCase(field.code) : field.id;
-
-      const assignedValue = (this.config.autoAssignedValues || []).find(
-        (assignedValue) => assignedValue.field === key
-      )?.value;
+      const assignedValue = this.#getAutoAssignedValue(field);
 
       return !isUndefined(assignedValue);
     }
 
     return false;
+  }
+
+  #getAutoAssignedValue(field: TrackedEntityAttribute | DataElement) {
+    const key = field.code ? camelCase(field.code) : field.id;
+
+    const assignedValue = (this.config.autoAssignedValues || []).find(
+      (assignedValue) => assignedValue.field === key
+    )?.value;
+
+    return assignedValue;
   }
 }

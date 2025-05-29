@@ -27,6 +27,7 @@ export interface IProgramEntryFormConfig {
   hideCancelButton?: boolean;
   ignoreRepeatability?: boolean;
   autoAssignedValues?: AutoAssignedValues[];
+  hideCustomAssignedFields?: boolean;
   autoComplete?: boolean;
   formFieldExtensions?: FormFieldExtension[];
 }
@@ -51,6 +52,7 @@ export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   hideCancelButton?: boolean;
   ignoreRepeatability?: boolean;
   autoAssignedValues?: AutoAssignedValues[];
+  hideCustomAssignedFields?: boolean;
   autoComplete?: boolean;
   formFieldExtensions?: FormFieldExtension[];
 
