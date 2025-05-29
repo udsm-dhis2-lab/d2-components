@@ -82,7 +82,7 @@ export class LineListTableComponent extends ReactWrapperModule {
   >();
   @Input() showActionButtons = true;
   @Input() showEnrollmentDates: boolean = true;
-  @Input() showDownloadButton: boolean = true;
+  @Input() showDownloadButton: boolean = false;
   private reactStateUpdaters: any = null;
 
   setReactStateUpdaters = (updaters: any) => {
