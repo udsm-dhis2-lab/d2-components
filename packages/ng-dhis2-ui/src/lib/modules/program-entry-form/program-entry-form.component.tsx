@@ -255,8 +255,6 @@ export class ProgramEntryFormModule {
       instance.setOrgUnit(this.orgUnit() as string);
     }
 
-    console.log(instance.toObject(), this.orgUnit());
-
     return instance;
   }
 

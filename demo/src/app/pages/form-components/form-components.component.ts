@@ -123,6 +123,7 @@ export class FormComponentsComponent {
         value: 'ND_BATCH_62712406',
       },
     ],
+    hideCustomAssignedFields: true,
     formFieldExtensions: [
       {
         id: 'seUJl7AEZtS',
