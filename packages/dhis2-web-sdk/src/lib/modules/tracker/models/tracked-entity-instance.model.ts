@@ -283,8 +283,31 @@ export class TrackedEntityInstance
       this.spreadAttributes([{ attribute, code, value }]);
   }
 
+  getAttributeValue(attribute: string): string | undefined {
+    return this.attributes.find(
+      (attributeItem) => attributeItem.attribute === attribute
+    )?.value;
+  }
+
   setEnrollment(enrollment: IEnrollment) {
-    enrollment.attributes = this.attributes;
+    const attributes = Object.keys(this.fields)
+      .map((key) => {
+        const fieldEntity = this.fields[key];
+
+        if (fieldEntity.type === 'ATTRIBUTE') {
+          const value = this.getAttributeValue(fieldEntity.id);
+
+          return {
+            attribute: fieldEntity.id,
+            value,
+          };
+        }
+
+        return null;
+      })
+      .filter((attribute) => attribute !== null);
+
+    enrollment.attributes = attributes;
     const availableEnrollment = (this.enrollments || []).find(
       (enrollmentItem) => enrollmentItem.enrollment === enrollment.enrollment
     );
