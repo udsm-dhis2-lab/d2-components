@@ -163,7 +163,7 @@ export class BaseFormFieldComponent
           this.field().controlType === 'date' ||
           this.field().controlType === 'date-time'
         ) {
-          return '400px';
+          return '360px';
         }
 
         return this.fieldConfig()?.inputWidth;

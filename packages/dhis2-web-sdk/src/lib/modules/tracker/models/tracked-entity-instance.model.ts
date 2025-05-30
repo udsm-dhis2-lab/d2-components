@@ -289,8 +289,8 @@ export class TrackedEntityInstance
     )?.value;
   }
 
-  setEnrollment(enrollment: IEnrollment) {
-    const attributes = Object.keys(this.fields)
+  #getAttributesFromFields(): Attribute[] {
+    return Object.keys(this.fields)
       .map((key) => {
         const fieldEntity = this.fields[key];
 
@@ -306,8 +306,16 @@ export class TrackedEntityInstance
         return null;
       })
       .filter((attribute) => attribute !== null);
+  }
 
-    enrollment.attributes = attributes;
+  setEnrollment(enrollment: IEnrollment) {
+    if (!enrollment.attributes || enrollment.attributes.length === 0) {
+      const attributes = this.#getAttributesFromFields();
+
+      enrollment.attributes =
+        attributes.length > 0 ? attributes : this.attributes;
+    }
+
     const availableEnrollment = (this.enrollments || []).find(
       (enrollmentItem) => enrollmentItem.enrollment === enrollment.enrollment
     );
