@@ -46,7 +46,7 @@
     "build:dhis2-web-sdk": "nx build d2-web-sdk",
     "pack:dhis2-web-sdk": "nx build d2-web-sdk && cd dist/packages/dhis2-web-sdk && npm pack",
     "link:dhis2-web-sdk": "nx build d2-web-sdk && cd dist/packages/dhis2-web-sdk && npm link",
-    "publish:dhis2-web-sdk": "§",
+    "publish:dhis2-web-sdk": "npm run build:dhis2-web-sdk && cd dist/packages/dhis2-web-sdk && npm publish --access public",
     "publish-local:dhis2-web-sdk": "nx build d2-web-sdk && cd dist/packages/dhis2-web-sdk && npm publish --access public --registry http://localhost:4873/"
   },
   "devDependencies": {
