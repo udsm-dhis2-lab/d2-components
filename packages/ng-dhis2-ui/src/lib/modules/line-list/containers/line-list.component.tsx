@@ -1,4 +1,3 @@
-// src/app/line-list-table.component.ts
 import {
   Component,
   EventEmitter,
@@ -42,6 +41,7 @@ import {
 } from '../utils/tei-table-data-utils';
 import { getEvents } from '../utils/event-table-data-util';
 import * as XLSX from 'xlsx';
+import { addDays, format } from 'date-fns';
 
 @Component({
   selector: 'ng-dhis2-ui-line-list',
@@ -81,8 +81,8 @@ export class LineListTableComponent extends ReactWrapperModule {
     TrackedEntityInstance[] | DHIS2Event[]
   >();
   @Input() showActionButtons = true;
-  @Input() showEnrollmentDates: boolean = true;
-  @Input() showDownloadButton: boolean = false;
+  @Input() showEnrollmentDates = true;
+  @Input() showDownloadButton = false;
   private reactStateUpdaters: any = null;
 
   setReactStateUpdaters = (updaters: any) => {
@@ -248,7 +248,8 @@ export class LineListTableComponent extends ReactWrapperModule {
 
       const isTracker = metaData.programType === 'WITH_REGISTRATION';
       const isEvent = metaData.programType === 'WITHOUT_REGISTRATION';
-      const endDate = endDateState ?? new Date().toISOString().split('T')[0];
+      const endDate =
+        endDateState ?? format(addDays(new Date(), 1), 'yyyy-MM-dd');
 
       if (this.programStageId || isEvent) {
         setLoading(true);
