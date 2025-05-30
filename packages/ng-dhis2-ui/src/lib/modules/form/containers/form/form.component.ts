@@ -5,7 +5,6 @@ import {
   Input,
   OnChanges,
   OnDestroy,
-  OnInit,
   Output,
   SimpleChanges,
   ViewChildren,
@@ -30,7 +29,7 @@ import { IFormField } from '../../interfaces';
   styleUrls: ['./form.component.scss'],
   standalone: false,
 })
-export class FormComponent implements OnChanges, OnDestroy, OnInit {
+export class FormComponent implements OnChanges, OnDestroy {
   formConfig = input<FormConfig>();
   @Input() fields!: IFormField<string>[];
   @Input() form!: FormGroup;
@@ -112,11 +111,6 @@ export class FormComponent implements OnChanges, OnDestroy, OnInit {
     this.ruleProcessor = effect(() => {
       this.#processRules(this.programRuleActions());
     });
-  }
-
-  ngOnInit(): void {
-    this.values = this.form.getRawValue();
-    this.formUpdate.emit(new FormValue(this.form, this.fields));
   }
 
   ngOnChanges(changes: SimpleChanges): void {
