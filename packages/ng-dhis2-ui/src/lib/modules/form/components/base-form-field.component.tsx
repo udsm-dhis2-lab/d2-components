@@ -158,6 +158,17 @@ export class BaseFormFieldComponent
         return [];
       }, [value]);
 
+      const inputWidth = useMemo(() => {
+        if (
+          this.field().controlType === 'date' ||
+          this.field().controlType === 'date-time'
+        ) {
+          return '400px';
+        }
+
+        return this.fieldConfig()?.inputWidth;
+      }, []);
+
       const { validationError, hasError } = useFieldValidation({
         field: this.field(),
         form: this.form(),
@@ -457,7 +468,7 @@ export class BaseFormFieldComponent
                 error={hasError}
                 validationText={validationError}
                 type={this.field().type as any}
-                inputWidth={this.fieldConfig()?.inputWidth}
+                inputWidth={inputWidth}
                 required={this.field().required}
                 name={this.field().id}
                 label={this.label()}
