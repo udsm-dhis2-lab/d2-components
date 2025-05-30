@@ -228,7 +228,7 @@ export class LineListTableComponent extends ReactWrapperModule {
         try {
           const trackerResponse = (await d2.trackerModule.trackedEntity
             .setProgram(this.programId)
-            .getMetaData()) as Program;
+            .getMetaData({ skipProgramRules: true })) as Program;
           const data = trackerResponse;
           setMetaData(data);
         } catch (error) {
@@ -420,7 +420,7 @@ export class LineListTableComponent extends ReactWrapperModule {
         if (value === null || value === undefined) return '';
         if (typeof value === 'object') {
           if ('value' in value) {
-            return value.value; 
+            return value.value;
           }
           return JSON.stringify(value);
         }
@@ -428,9 +428,9 @@ export class LineListTableComponent extends ReactWrapperModule {
       };
 
       const filteredColumns = columns.filter((col) => col.label !== 'Actions');
-      const header = filteredColumns .map((col) => `"${col.label}"`).join(',');
+      const header = filteredColumns.map((col) => `"${col.label}"`).join(',');
       const csvData = data.map((row) =>
-        filteredColumns .map((col) => `"${safeValue(row[col.key])}"`).join(',')
+        filteredColumns.map((col) => `"${safeValue(row[col.key])}"`).join(',')
       );
       const csvContent = [header, ...csvData].join('\n');
 
@@ -572,24 +572,33 @@ export class LineListTableComponent extends ReactWrapperModule {
         ) : (
           <div>
             {this.showDownloadButton && (
-               <div style={{ paddingBottom: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
-               <DropdownButton
-                 name="Download"
-                 component={
-                   <span>
-                     {' '}
-                     <MenuItem label="Download Csv" onClick={handleCsvDownload} />
-                     <MenuItem
-                       label="Download Excel"
-                       onClick={handleExcelDownload}
-                     />
-                   </span>
-                 }
-                 value="Download"
-               >
-                 Download
-               </DropdownButton>
-               </div>
+              <div
+                style={{
+                  paddingBottom: '1rem',
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                }}
+              >
+                <DropdownButton
+                  name="Download"
+                  component={
+                    <span>
+                      {' '}
+                      <MenuItem
+                        label="Download Csv"
+                        onClick={handleCsvDownload}
+                      />
+                      <MenuItem
+                        label="Download Excel"
+                        onClick={handleExcelDownload}
+                      />
+                    </span>
+                  }
+                  value="Download"
+                >
+                  Download
+                </DropdownButton>
+              </div>
             )}
             {orgUnitModalVisible && (
               <OrgUnitSelector
