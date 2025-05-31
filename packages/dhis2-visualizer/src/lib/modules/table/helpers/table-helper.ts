@@ -98,8 +98,6 @@ export function tableCreate(id: string, analytics: any, configs: any) {
 
     configs?.config?.visualization?.periods.forEach(
       (peItem: any, index: number) => {
-        console.log(dataObject, peItem, dx, index);
-
         var dataForTheYear = document.createElement('td');
         dataForTheYear.appendChild(
           document.createTextNode(
@@ -133,11 +131,6 @@ export function tableCreate(id: string, analytics: any, configs: any) {
                   ]['id']
                 ]
               : null;
-
-          // console.log('data diffs');
-          // console.log(previosPeriodData);
-          // console.log(currentData);
-          // console.log(currentData - previosPeriodData);
 
           var difference = document.createElement('td');
           difference.appendChild(
