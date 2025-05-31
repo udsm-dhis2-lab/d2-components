@@ -19,7 +19,6 @@ export class FlatFormComponent
   }
 
   onFormUpdate() {
-    console.log('WE ARE UPDATING HERE');
     this.updateDataValues(this.formGroup.getRawValue());
     this.updateFormValidity(this.formGroup.valid);
   }
