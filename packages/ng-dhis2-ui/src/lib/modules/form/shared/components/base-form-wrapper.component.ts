@@ -25,6 +25,7 @@ export class BaseFormWrapperComponent implements OnDestroy {
   fields = input.required<IFormField<string>[]>();
   rules = input<IMetadataRule[]>([]);
   dataValues = input<Record<string, unknown>>({});
+  dataId = input<string>();
 
   ruleActions = signal<IMetadataRuleAction[]>([]);
   isFormValid = signal<boolean>(true);

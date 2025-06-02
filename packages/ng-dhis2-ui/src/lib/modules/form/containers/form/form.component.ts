@@ -2,7 +2,6 @@ import {
   Component,
   EffectRef,
   EventEmitter,
-  Input,
   OnChanges,
   OnDestroy,
   Output,
@@ -31,20 +30,21 @@ import { IFormField } from '../../interfaces';
 })
 export class FormComponent implements OnChanges, OnDestroy {
   formConfig = input<FormConfig>();
-  @Input() fields!: IFormField<string>[];
-  @Input() form!: FormGroup;
-  @Input() isFormHorizontal!: boolean;
-  @Input() showSaveButton!: boolean;
-  @Input() fieldsData!: FieldsData;
-  @Input() fieldClass!: string;
-  @Input() shouldRenderAsCheckBoxesButton!: boolean;
+  fields = input.required<IFormField<string>[]>();
+  form = input.required<FormGroup>();
+  isFormHorizontal = input<boolean>(false);
+  showSaveButton = input<boolean>(false);
+  fieldsData = input<FieldsData>();
+  fieldClass = input<string>('');
+  shouldRenderAsCheckBoxesButton = input<boolean>(false);
   programRuleActions = input<IMetadataRuleAction[]>([]);
-  @Input() dataEntities: any;
+  dataEntities = input<any>(undefined);
+  dataId = input<string>();
 
   configuration = computed(() => {
     if (!this.formConfig()) {
       return new FormConfig({
-        direction: this.isFormHorizontal ? 'horizontal' : 'vertical',
+        direction: this.isFormHorizontal() ? 'horizontal' : 'vertical',
       });
     }
 
@@ -58,7 +58,7 @@ export class FormComponent implements OnChanges, OnDestroy {
   values: any;
 
   get sanitizedFields(): IFormField<string>[] {
-    return (this.fields || []).filter((field: any) => {
+    return (this.fields() || []).filter((field: any) => {
       if (field.hidden) {
         return false;
       }
@@ -89,7 +89,7 @@ export class FormComponent implements OnChanges, OnDestroy {
   }
 
   get layoutCssClass(): string {
-    if (!this.isFormHorizontal) {
+    if (!this.isFormHorizontal()) {
       return 'col-12';
     }
 
@@ -114,23 +114,24 @@ export class FormComponent implements OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    this.values = this.form.getRawValue();
+    this.values = this.form().getRawValue();
   }
 
   #processRules(ruleActions: IMetadataRuleAction[]) {
     ruleActions.forEach((ruleAction) => {
       switch (ruleAction.actionType) {
         case 'HIDEFIELD': {
-          const fieldToRemove = this.fields.find(
+          const fieldToRemove = this.fields().find(
             (field) => field.id === ruleAction.field
           );
 
           if (fieldToRemove) {
-            const currentValue = this.form.get(fieldToRemove.key)?.value;
+            const form = this.form();
+            const currentValue = form.get(fieldToRemove.key)?.value;
 
             if (currentValue != null) {
-              this.form.get(fieldToRemove.key)?.setValue(null);
-              this.onFieldUpdate(this.form, fieldToRemove);
+              form.get(fieldToRemove.key)?.setValue(null);
+              this.onFieldUpdate(form, fieldToRemove);
             }
           }
           break;
@@ -143,23 +144,23 @@ export class FormComponent implements OnChanges, OnDestroy {
   }
 
   onSubmit(): void {
-    this.formUpdate.emit(this.form.getRawValue());
+    this.formUpdate.emit(this.form().getRawValue());
   }
 
   onFieldUpdate(form: FormGroup, field: IFormField<string>): void {
-    if (!this.showSaveButton && form) {
-      this.formUpdate.emit(new FormValue(this.form, this.fields, field));
+    if (!this.showSaveButton() && form) {
+      this.formUpdate.emit(new FormValue(this.form(), this.fields(), field));
 
       this.values = form.getRawValue();
     }
   }
 
   onClear(): void {
-    this.form.reset();
+    this.form().reset();
   }
 
   isFormInValid() {
-    return this.form.invalid;
+    return this.form().invalid;
   }
 
   onRunTimeOptionUpdate(result: any) {
@@ -171,7 +172,7 @@ export class FormComponent implements OnChanges, OnDestroy {
 
       const parentOption = result?.options.find(
         (option: { code: any }) =>
-          option.code === this.form?.value[result?.field?.id]
+          option.code === this.form()?.value[result?.field?.id]
       );
 
       fieldToUpdate?.onUpdateRuntimeOptions(parentOption?.options || []);
