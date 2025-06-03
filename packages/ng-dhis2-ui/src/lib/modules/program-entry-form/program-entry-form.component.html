@@ -14,6 +14,7 @@
   <ng-dhis2-ui-flat-form
     [name]="metaData()!.name"
     [dataValues]="instance() || {}"
+    [dataId]="dataId()"
     [rules]="metaData()!.rules"
     [fields]="metaData()!.formFields"
     (formUpdate)="onFormUpdate($event)"

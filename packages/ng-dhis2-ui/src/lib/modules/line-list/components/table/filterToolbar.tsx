@@ -91,7 +91,6 @@ export const FilterToolbar = ({
               date={tempStartDateState || 'yyyy-mm-dd'}
               onDateSelect={(selectedDate: any) => {
                 setTempStartDateState(selectedDate.calendarDateString);
-                console.log('selectedDate', selectedDate);
                 if (selectedDate.calendarDateString === null) {
                   setStartDateState(selectedDate.calendarDateString);
                 }
@@ -151,7 +150,6 @@ export const FilterToolbar = ({
                   (f: { attribute: any }) => f.attribute !== key
                 );
                 if (selectedDate.calendarDateString === null) {
-                  console.log('selectedDate', selectedDate);
                   setDataQueryFiltersState(filteredFilters);
                 }
               }}
