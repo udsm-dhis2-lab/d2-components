@@ -6,7 +6,7 @@ import { DataUrlGenerator, EnrollmentStatus } from '../../../shared';
 import { TrackerQueryConfig } from './tracker-query-config.model';
 
 const DEFAULT_FIELDS =
-  'createdAt,updatedAt,trackedEntity,trackedEntityType,orgUnit,orgUnitName,enrollments[enrollment,enrolledAt,occurredAt,program,status,orgUnit,storedBy,attributes[attribute,code,createdAt,updatedAt,valueType,value],events[event,occurredAt,dueDate,scheduledAt,status,programStage,program,trackedEntity,enrollment,orgUnit,orgUnitName,assignedUser,storedBy,dataValues]],relationships[relationship,relationshipType,from[trackedEntity[trackedEntity]],to[trackedEntity[trackedEntity]]';
+  'createdAt,updatedAt,trackedEntity,trackedEntityType,orgUnit,orgUnitName,attributes[attribute,code,value],enrollments[enrollment,enrolledAt,occurredAt,program,status,orgUnit,storedBy,attributes[attribute,code,createdAt,updatedAt,valueType,value],events[event,occurredAt,dueDate,scheduledAt,status,programStage,program,trackedEntity,enrollment,orgUnit,orgUnitName,assignedUser,storedBy,dataValues]],relationships[relationship,relationshipType,from[trackedEntity[trackedEntity]],to[trackedEntity[trackedEntity]]';
 
 export class TrackerUrlGenerator extends DataUrlGenerator<TrackerUrlGenerator> {
   baseEndpoint = 'tracker/trackedEntities';

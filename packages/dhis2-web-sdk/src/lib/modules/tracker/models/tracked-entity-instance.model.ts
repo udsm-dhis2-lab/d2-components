@@ -54,6 +54,7 @@ interface TrackerFieldProperty {
     | 'INCIDENT_DATE'
     | 'ORG_UNIT';
   generated?: boolean;
+  pattern?: string;
   stageId?: string;
   repeatable?: boolean;
 }
@@ -177,11 +178,7 @@ export class TrackedEntityInstance
       this.#spreadEvents();
 
       // Spread enrollment data values as standalone attributes of the class
-      Object.keys(this.latestEnrollment || {}).forEach((key) => {
-        if (key !== 'orgUnit') {
-          this[key] = (this.latestEnrollment as any)[key];
-        }
-      });
+      this.#spreadLastestEnrollment();
 
       this.orgUnitName = this.latestEnrollment?.orgUnitName as string;
       this.relatedEntities = TrackerRelationshipUtil.getRelationships(
@@ -191,6 +188,14 @@ export class TrackedEntityInstance
 
       this.spreadAttributes!(this.attributes || []);
     }
+  }
+
+  #spreadLastestEnrollment() {
+    Object.keys(this.latestEnrollment || {}).forEach((key) => {
+      if (key !== 'orgUnit') {
+        this[key] = (this.latestEnrollment as any)[key];
+      }
+    });
   }
 
   #spreadEvents() {
@@ -250,6 +255,20 @@ export class TrackedEntityInstance
           return event;
         }
       );
+    } else {
+      this.latestEnrollment = new Enrollment(
+        EnrollmentUtil.generate({
+          date: new Date().toISOString(),
+          program: this.program,
+          trackedEntity: this.trackedEntity,
+          trackedEntityType: this.trackedEntityType,
+          orgUnit: orgUnit,
+        })
+      );
+
+      this.#spreadLastestEnrollment();
+
+      this.enrollments.unshift(this.latestEnrollment);
     }
   }
 
@@ -264,8 +283,31 @@ export class TrackedEntityInstance
       this.spreadAttributes([{ attribute, code, value }]);
   }
 
+  getAttributeValue(attribute: string): string | undefined {
+    return this.attributes.find(
+      (attributeItem) => attributeItem.attribute === attribute
+    )?.value;
+  }
+
   setEnrollment(enrollment: IEnrollment) {
-    enrollment.attributes = this.attributes;
+    const attributes = Object.keys(this.fields)
+      .map((key) => {
+        const fieldEntity = this.fields[key];
+
+        if (fieldEntity.type === 'ATTRIBUTE') {
+          const value = this.getAttributeValue(fieldEntity.id);
+
+          return {
+            attribute: fieldEntity.id,
+            value,
+          };
+        }
+
+        return null;
+      })
+      .filter((attribute) => attribute !== null);
+
+    enrollment.attributes = attributes;
     const availableEnrollment = (this.enrollments || []).find(
       (enrollmentItem) => enrollmentItem.enrollment === enrollment.enrollment
     );
@@ -347,6 +389,7 @@ export class TrackedEntityInstance
               id: trackedEntityAttribute.id,
               type: 'ATTRIBUTE',
               generated: trackedEntityAttribute.generated,
+              pattern: trackedEntityAttribute.pattern,
             },
           };
         },

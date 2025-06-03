@@ -25,24 +25,23 @@ import {
 })
 export class FormComponentsComponent {
   d2 = (window as unknown as D2Window).d2Web;
-formConfig = 
-[
-   {
-     id: 'l2VG173t0Vc',
-     accept: ['.jpg', '.pdf'],
-     sizeLimit: 2 * 1024 * 1024,
-   },
-   {
-     id: 'cPpi2sVGaAe',
-     accept: ['.pdf', '.jpg', '.png'],
-     sizeLimit: 2 * 1024 * 1024, 
-   },
-   {
-     id: 'nVkXRei2umX',
-     accept: ['.pdf', '.docx'],
-     sizeLimit: 2 * 1024 * 1024,
-   },
- ];
+  formConfig = [
+    {
+      id: 'l2VG173t0Vc',
+      accept: ['.jpg', '.pdf'],
+      sizeLimit: 2 * 1024 * 1024,
+    },
+    {
+      id: 'cPpi2sVGaAe',
+      accept: ['.pdf', '.jpg', '.png'],
+      sizeLimit: 2 * 1024 * 1024,
+    },
+    {
+      id: 'nVkXRei2umX',
+      accept: ['.pdf', '.docx'],
+      sizeLimit: 2 * 1024 * 1024,
+    },
+  ];
 
   fields = [
     new FormField<string>({
@@ -110,15 +109,21 @@ formConfig =
   });
 
   programEntryConfig = new ProgramEntryFormConfig({
-    program: 'Gy65kx8gQv6',
-    programStage: 'edx4DaMDAyo',
+    program: 'tOhKbXMiJ1J',
     displayType: 'FLAT',
-    formType: 'EVENT',
+    formType: 'TRACKER',
     excludeProgramStages: true,
-    excludeInheritedAttributes: false,
+    excludeInheritedAttributes: true,
     hideRegistrationUnit: true,
     hideEnrollmentDate: true,
     autoComplete: true,
+    autoAssignedValues: [
+      {
+        field: 'batchNumber',
+        value: 'ND_BATCH_62712406',
+      },
+    ],
+    hideCustomAssignedFields: true,
     formFieldExtensions: [
       {
         id: 'seUJl7AEZtS',
@@ -128,20 +133,20 @@ formConfig =
     ],
   });
 
-//   return new ProgramEntryFormConfig({
-//     program: 'Gy65kx8gQv6',
-//     programStage: 'edx4DaMDAyo',
-//     hideRegistrationUnit: true,
-//     formType: 'EVENT',
-//     displayType: 'FLAT',
-//     autoAssignedValues: [
-//       {
-//         field: 'orgUnit',
-//         value: currentApplicant.latestEnrollment?.orgUnit,
-//       },
-//     ],
-//   });
-// });
+  //   return new ProgramEntryFormConfig({
+  //     program: 'Gy65kx8gQv6',
+  //     programStage: 'edx4DaMDAyo',
+  //     hideRegistrationUnit: true,
+  //     formType: 'EVENT',
+  //     displayType: 'FLAT',
+  //     autoAssignedValues: [
+  //       {
+  //         field: 'orgUnit',
+  //         value: currentApplicant.latestEnrollment?.orgUnit,
+  //       },
+  //     ],
+  //   });
+  // });
 
   onUpdate(event: FormValue) {
     console.log('Form updated', event.form);
@@ -163,7 +168,5 @@ formConfig =
     console.log('cancel');
   }
 
-  async onSaveComplete(reponse: any) {
-    
-  }
+  async onSaveComplete(reponse: any) {}
 }

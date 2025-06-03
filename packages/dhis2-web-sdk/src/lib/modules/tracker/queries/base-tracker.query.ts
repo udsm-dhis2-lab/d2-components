@@ -181,23 +181,43 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
     return this;
   }
 
-  async generateReservedValues(): Promise<
-    { ownerUid: string; value: string }[]
-  > {
-    const fieldEntities = this.instance.fields || {};
+  async generateReservedValues(
+    instance: T
+  ): Promise<{ ownerUid: string; value: string }[]> {
+    const fieldEntities = instance.fields || {};
 
     const reservedAttributePromises = Object.keys(fieldEntities)
       .filter((key) => {
         const field = fieldEntities[key];
         return field?.generated;
       })
-      .map((key: string) => {
-        const availableValue = this.instance[key];
+      .map(async (key: string) => {
+        const availableValue = instance[key];
         if (availableValue && availableValue.length > 0) {
           return null;
         }
 
         const field = fieldEntities[key];
+
+        if (field.pattern?.includes('ORG_UNIT_CODE')) {
+          if (!this.orgUnit) {
+            return null;
+          }
+
+          const orgUnit = (
+            await this.httpClient.get(
+              `organisationUnits/${this.orgUnit}.json?fields=code`
+            )
+          )?.data as { code: string };
+
+          if (!orgUnit?.code) {
+            return null;
+          }
+
+          return this.httpClient.get(
+            `trackedEntityAttributes/${field.id}/generate.json?ORG_UNIT_CODE=${orgUnit.code}`
+          );
+        }
 
         return this.httpClient.get(
           `trackedEntityAttributes/${field.id}/generate.json`
@@ -224,7 +244,17 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
       config?.fetchScope || 'TRACKED_ENTITY'
     );
 
-    return new D2TrackerResponse<T>(response, this.identifiable, this.program);
+    const trackerResponse = new D2TrackerResponse<T>(
+      response,
+      this.identifiable,
+      this.program
+    );
+
+    if (trackerResponse?.data instanceof TrackedEntityInstance) {
+      this.instance = trackerResponse.data;
+    }
+
+    return trackerResponse;
   }
 
   async create(): Promise<T> {
@@ -261,19 +291,26 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
 
         this.setInstanceFields(program);
 
-        const reservedValues = await this.generateReservedValues();
-
-        (reservedValues || []).forEach((reserved) => {
-          this.instance.setAttributeValue(reserved.ownerUid, reserved.value);
-        });
+        await this.setReservedValues();
       }
     }
 
     return this.instance;
   }
 
-  setInstanceFields(program: Program) {
+  async setReservedValues(): Promise<T> {
+    const reservedValues = await this.generateReservedValues(this.instance);
+
+    (reservedValues || []).forEach((reserved) => {
+      this.instance.setAttributeValue(reserved.ownerUid, reserved.value);
+    });
+
+    return this.instance;
+  }
+
+  setInstanceFields(program: Program): BaseTrackerQuery<T> {
     this.instance.setFields(program);
+    return this;
   }
 
   protected async fetchFromEvent(
