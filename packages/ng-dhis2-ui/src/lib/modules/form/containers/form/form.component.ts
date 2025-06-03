@@ -4,6 +4,7 @@ import {
   EventEmitter,
   OnChanges,
   OnDestroy,
+  OnInit,
   Output,
   SimpleChanges,
   ViewChildren,
@@ -28,7 +29,7 @@ import { IFormField } from '../../interfaces';
   styleUrls: ['./form.component.scss'],
   standalone: false,
 })
-export class FormComponent implements OnChanges, OnDestroy {
+export class FormComponent implements OnChanges, OnDestroy, OnInit {
   formConfig = input<FormConfig>();
   fields = input.required<IFormField<string>[]>();
   form = input.required<FormGroup>();
@@ -112,6 +113,15 @@ export class FormComponent implements OnChanges, OnDestroy {
       this.#processRules(this.programRuleActions());
     });
   }
+
+  ngOnInit(): void {
+    this.values = this.form().getRawValue();
+    this.formUpdate.emit(new FormValue(this.form(), this.fields()));
+  }
+
+  // ngOnChanges(changes: SimpleChanges): void {
+  //   this.values = this.form.getRawValue();
+  // }
 
   ngOnChanges(changes: SimpleChanges): void {
     this.values = this.form().getRawValue();
