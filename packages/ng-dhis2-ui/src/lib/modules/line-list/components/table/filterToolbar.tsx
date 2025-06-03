@@ -7,6 +7,7 @@ import {
   SingleSelectOption,
 } from '@dhis2/ui';
 import React from 'react';
+import { parseISO, format, isValid } from 'date-fns';
 export const FilterToolbar = ({
   orgUnitLabel,
   selectedOrgUnit,
@@ -86,9 +87,10 @@ export const FilterToolbar = ({
               //date={tempStartDateState || undefined}
               //date={tempStartDateState || "yyyy-mm-dd"}
               clearable={
-                !!tempStartDateState && tempStartDateState !== 'yyyy-mm-dd'
+                !!tempStartDateState && tempStartDateState !== 'dd-mm-yyyy'
               }
-              date={tempStartDateState || 'yyyy-mm-dd'}
+              // date={tempStartDateState || 'dd-mm-yyyy'}
+              date={formatDateForDisplay(tempStartDateState)}
               onDateSelect={(selectedDate: any) => {
                 setTempStartDateState(selectedDate.calendarDateString);
                 if (selectedDate.calendarDateString === null) {
@@ -103,9 +105,10 @@ export const FilterToolbar = ({
               timeZone="Africa/Dar_es_Salaam"
               className="custom-input"
               clearable={
-                !!tempEndDateState && tempEndDateState !== 'yyyy-mm-dd'
+                !!tempEndDateState && tempEndDateState !== 'dd-mm-yyyy'
               }
-              date={tempEndDateState || 'yyyy-mm-dd'}
+              // date={tempEndDateState || 'dd-mm-yyyy'}
+              date={formatDateForDisplay(tempEndDateState)}
               onDateSelect={(selectedDate: any) => {
                 setTempEndDateState(selectedDate.calendarDateString);
                 if (selectedDate.calendarDateString === null) {
@@ -240,3 +243,15 @@ export const FilterToolbar = ({
     </div>
   </DataTableToolbar>
 );
+
+export function formatDateForDisplay(dateString: string | null | undefined): string {
+  if (!dateString || dateString === 'dd-mm-yyyy') return 'dd-mm-yyyy';
+
+  try {
+    const parsedDate = parseISO(dateString);
+    if (!isValid(parsedDate)) return 'dd-mm-yyyy';
+    return format(parsedDate, 'dd-MM-yyyy');
+  } catch {
+    return 'dd-mm-yyyy';
+  }
+}
