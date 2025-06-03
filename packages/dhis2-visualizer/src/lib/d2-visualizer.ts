@@ -456,21 +456,6 @@ export class D2Visualizer {
           (dataSelection) => dataSelection.dimension === 'tea'
         );
 
-        // const mapVisualizer = new MapVisualizer()
-        //   .setId(this.id)
-        //   .setBaseMap(this.config?.config?.basemap);
-
-        // mapVisualizer.addLayer(
-        //   new MapLayer()
-        //     .setId(this.id)
-        //     .setType(this.config as any)
-        //     .setDataSelections(this.config.dataSelections)
-        // );
-
-        // console.log(this.config.dataSelections);
-
-        // mapVisualizer.draw();
-
         new TrackedEntityLayer()
           .setId(this.id)
           .setConfig(this.config)

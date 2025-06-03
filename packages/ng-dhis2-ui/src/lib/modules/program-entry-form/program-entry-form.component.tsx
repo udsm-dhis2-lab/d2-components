@@ -77,6 +77,10 @@ export class ProgramEntryFormModule {
     return <CircularLoader small />;
   };
 
+  dataId = computed(() => {
+    return this.instance()?.trackedEntity || this.instance()?.event;
+  });
+
   FormActionButtons = computed(() => {
     if (this.config().hideActionButtons) {
       return <></>;

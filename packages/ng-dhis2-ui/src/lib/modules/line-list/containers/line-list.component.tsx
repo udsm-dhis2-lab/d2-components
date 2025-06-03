@@ -1,4 +1,3 @@
-// src/app/line-list-table.component.ts
 import {
   Component,
   EventEmitter,
@@ -42,6 +41,7 @@ import {
 } from '../utils/tei-table-data-utils';
 import { getEvents } from '../utils/event-table-data-util';
 import * as XLSX from 'xlsx';
+import { addDays, format } from 'date-fns';
 
 @Component({
   selector: 'ng-dhis2-ui-line-list',
@@ -81,8 +81,8 @@ export class LineListTableComponent extends ReactWrapperModule {
     TrackedEntityInstance[] | DHIS2Event[]
   >();
   @Input() showActionButtons = true;
-  @Input() showEnrollmentDates: boolean = true;
-  @Input() showDownloadButton: boolean = false;
+  @Input() showEnrollmentDates = true;
+  @Input() showDownloadButton = false;
   private reactStateUpdaters: any = null;
 
   setReactStateUpdaters = (updaters: any) => {
@@ -228,7 +228,7 @@ export class LineListTableComponent extends ReactWrapperModule {
         try {
           const trackerResponse = (await d2.trackerModule.trackedEntity
             .setProgram(this.programId)
-            .getMetaData()) as Program;
+            .getMetaData({ skipProgramRules: true })) as Program;
           const data = trackerResponse;
           setMetaData(data);
         } catch (error) {
@@ -248,7 +248,8 @@ export class LineListTableComponent extends ReactWrapperModule {
 
       const isTracker = metaData.programType === 'WITH_REGISTRATION';
       const isEvent = metaData.programType === 'WITHOUT_REGISTRATION';
-      const endDate = endDateState ?? new Date().toISOString().split('T')[0];
+      const endDate =
+        endDateState ?? format(addDays(new Date(), 1), 'yyyy-MM-dd');
 
       if (this.programStageId || isEvent) {
         setLoading(true);
@@ -420,7 +421,7 @@ export class LineListTableComponent extends ReactWrapperModule {
         if (value === null || value === undefined) return '';
         if (typeof value === 'object') {
           if ('value' in value) {
-            return value.value; 
+            return value.value;
           }
           return JSON.stringify(value);
         }
@@ -428,9 +429,9 @@ export class LineListTableComponent extends ReactWrapperModule {
       };
 
       const filteredColumns = columns.filter((col) => col.label !== 'Actions');
-      const header = filteredColumns .map((col) => `"${col.label}"`).join(',');
+      const header = filteredColumns.map((col) => `"${col.label}"`).join(',');
       const csvData = data.map((row) =>
-        filteredColumns .map((col) => `"${safeValue(row[col.key])}"`).join(',')
+        filteredColumns.map((col) => `"${safeValue(row[col.key])}"`).join(',')
       );
       const csvContent = [header, ...csvData].join('\n');
 
@@ -572,24 +573,33 @@ export class LineListTableComponent extends ReactWrapperModule {
         ) : (
           <div>
             {this.showDownloadButton && (
-               <div style={{ paddingBottom: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
-               <DropdownButton
-                 name="Download"
-                 component={
-                   <span>
-                     {' '}
-                     <MenuItem label="Download Csv" onClick={handleCsvDownload} />
-                     <MenuItem
-                       label="Download Excel"
-                       onClick={handleExcelDownload}
-                     />
-                   </span>
-                 }
-                 value="Download"
-               >
-                 Download
-               </DropdownButton>
-               </div>
+              <div
+                style={{
+                  paddingBottom: '1rem',
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                }}
+              >
+                <DropdownButton
+                  name="Download"
+                  component={
+                    <span>
+                      {' '}
+                      <MenuItem
+                        label="Download Csv"
+                        onClick={handleCsvDownload}
+                      />
+                      <MenuItem
+                        label="Download Excel"
+                        onClick={handleExcelDownload}
+                      />
+                    </span>
+                  }
+                  value="Download"
+                >
+                  Download
+                </DropdownButton>
+              </div>
             )}
             {orgUnitModalVisible && (
               <OrgUnitSelector

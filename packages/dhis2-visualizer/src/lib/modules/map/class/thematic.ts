@@ -480,7 +480,7 @@ export class ThematicDrawableMap extends MapDrawable {
         map.getCanvas().style.cursor = '';
       });
     } else {
-      console.log(`Legend Set Not Found for ${mapLayerId}`);
+      console.warn(`Legend Set Not Found for ${mapLayerId}`);
     }
   }
 
@@ -573,7 +573,7 @@ export class ThematicDrawableMap extends MapDrawable {
         },
       });
     } else {
-      console.log(`Legend Set Not Found for ${mapLayerId}`);
+      console.warn(`Legend Set Not Found for ${mapLayerId}`);
     }
   }
 

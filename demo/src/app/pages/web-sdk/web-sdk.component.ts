@@ -95,12 +95,12 @@ export class WebSdkComponent {
 
     const trackerResponse = (
       await this.d2.trackerModule.trackedEntity
-       // .setProgram('lw9fZTamYec')
+        // .setProgram('lw9fZTamYec')
         .setTrackedEntity(`KHCoPswNIqk`)
         .get()
     ).data as TrackedEntityInstance;
 
-console.log('the response', trackerResponse);
+    console.log('the response', trackerResponse);
 
     const eventQuery = await this.d2.eventModule.event
       .setProgram('lw9fZTamYec')
@@ -128,5 +128,13 @@ console.log('the response', trackerResponse);
       .get();
 
     console.log(standaloneTrackerQuery);
+
+    const createTestQuery = this.d2.trackerModule.trackedEntity
+      .setProgram('lw9fZTamYec')
+      .setTrackedEntity('test-entity');
+
+    const testInstance = await createTestQuery.create();
+
+    console.log('CREATE INSTANCE', testInstance);
   }
 }

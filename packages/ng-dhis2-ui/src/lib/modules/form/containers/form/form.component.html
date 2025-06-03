@@ -1,4 +1,4 @@
-<form [formGroup]="form" class="{{ configuration().directionClassName }}">
+<form [formGroup]="form()" class="{{ configuration().directionClassName }}">
   <!-- form name -->
   <div class="form-name">
     <h2>{{ configuration().formName }}</h2>
@@ -10,11 +10,12 @@
     <ng-dhis2-ui-form-field
       [field]="field"
       [fieldConfig]="configuration().fieldConfig"
-      [form]="form"
-      [fieldClass]="fieldClass"
-      [dataEntities]="dataEntities"
+      [form]="form()"
+      [fieldClass]="fieldClass()"
+      [dataEntities]="dataEntities()"
+      [dataId]="dataId()"
       [programRuleActions]="programRuleActions()"
-      [isCheckBoxButton]="shouldRenderAsCheckBoxesButton"
+      [isCheckBoxButton]="shouldRenderAsCheckBoxesButton()"
       (fieldUpdate)="onFieldUpdate($event, field)"
       (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
     />

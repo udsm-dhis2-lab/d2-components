@@ -109,12 +109,12 @@ export class FormComponentsComponent {
   });
 
   programEntryConfig = new ProgramEntryFormConfig({
-    program: 'tOhKbXMiJ1J',
+    program: 'lw9fZTamYec',
     displayType: 'FLAT',
     formType: 'TRACKER',
     excludeProgramStages: true,
-    excludeInheritedAttributes: true,
-    hideRegistrationUnit: true,
+    excludeInheritedAttributes: false,
+    hideRegistrationUnit: false,
     hideEnrollmentDate: true,
     autoComplete: true,
     autoAssignedValues: [
