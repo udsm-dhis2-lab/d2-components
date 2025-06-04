@@ -116,9 +116,9 @@ export class FormComponent implements OnChanges, OnDestroy, OnInit {
 
   ngOnInit(): void {
     this.values = this.form().getRawValue();
+    // TODO: This is uneccesary emit at this stage of execution, since nothing has changes at initiation and potentially break some of implementation that depends formUpdate, which also is triggered when there is actual change in the form apart form initial values that came with it
     this.formUpdate.emit(new FormValue(this.form(), this.fields()));
   }
-
   // ngOnChanges(changes: SimpleChanges): void {
   //   this.values = this.form.getRawValue();
   // }
