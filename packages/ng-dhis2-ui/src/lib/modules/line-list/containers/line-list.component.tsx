@@ -254,8 +254,12 @@ export class LineListTableComponent extends ReactWrapperModule {
       if (this.programStageId || isEvent) {
         setLoading(true);
         d2.eventModule.event
+          .setEndDate(endDate)
+          .setStartDate(startDateState as string)
           .setProgram(this.programId)
           .setProgramStage(this.programStageId as string)
+          .setOrgUnit(orgUnitState)
+          .setOuMode(this.ouMode as OuMode)
           .setPagination(
             new Pager({
               pageSize: pager.pageSize,
