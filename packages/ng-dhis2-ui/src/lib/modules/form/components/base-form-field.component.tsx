@@ -190,6 +190,7 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
       };
 
       const checkValueUniqueness = async () => {
+        console.log('Checking uniqueness for value:', value);
         if (this.field().unique && value && value.length > 0 && touched) {
           setCheckingUniqueness(true);
           setRecordExistError(undefined);
