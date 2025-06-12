@@ -197,7 +197,7 @@ export class ProgramEntryFormModule {
   }
   #updateInstance(dataValues: Record<string, unknown>) {
     this.instance.update((instance) => {
-      instance?.updateDataValues(dataValues);
+      instance?.updateDataValues(dataValues, this.config().updateTeiOrgUnit);
 
       return instance;
     });

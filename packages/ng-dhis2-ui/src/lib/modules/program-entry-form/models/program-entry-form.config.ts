@@ -30,6 +30,7 @@ export interface IProgramEntryFormConfig {
   hideCustomAssignedFields?: boolean;
   autoComplete?: boolean;
   formFieldExtensions?: FormFieldExtension[];
+  updateTeiOrgUnit?: boolean;
 }
 export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   program!: string;
@@ -55,6 +56,7 @@ export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   hideCustomAssignedFields?: boolean;
   autoComplete?: boolean;
   formFieldExtensions?: FormFieldExtension[];
+  updateTeiOrgUnit: boolean = false;
 
   constructor(config: IProgramEntryFormConfig) {
     Object.assign(this, config);
