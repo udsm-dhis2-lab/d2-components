@@ -1,3 +1,8 @@
+/* eslint-disable @nx/enforce-module-boundaries */
+/* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable @angular-eslint/no-empty-lifecycle-method */
+/* eslint-disable @angular-eslint/use-lifecycle-interface */
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { D2Window, OrgUnitField } from '@iapps/d2-web-sdk';
 import {
@@ -11,6 +16,7 @@ import {
   ProgramEntryFormModule,
   ProgramEntryFormConfig,
 } from '@iapps/ng-dhis2-ui';
+import { CustomOrgUnitConfig } from 'packages/ng-dhis2-ui/src/lib/modules/form/components/org-unit-form-field.component';
 
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
@@ -18,6 +24,7 @@ import {
   templateUrl: './form-components.component.html',
   imports: [
     D2FormModule,
+    CommonModule,
     TrackerFormModule,
     EventFormModule,
     ProgramEntryFormModule,
@@ -43,11 +50,18 @@ export class FormComponentsComponent {
     },
   ];
 
+  customOrgUnitRoots: CustomOrgUnitConfig[] = [
+    {
+      field: 'RKOZF4JJNYm',
+      orgUnit: 'VCT80xbdFyD',
+    },
+  ];
+
   fields = [
     new FormField<string>({
-      id: 'orgUnit',
-      code: 'orgUnit',
-      key: 'orgUnit',
+      id: 'RKOZF4JJNYm',
+      code: 'RKOZF4JJNYm',
+      key: 'RKOZF4JJNYm',
       label: 'Organisation Unit',
       controlType: 'org-unit',
     }),
