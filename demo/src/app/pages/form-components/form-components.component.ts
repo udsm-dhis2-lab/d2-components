@@ -127,7 +127,8 @@ export class FormComponentsComponent {
     displayType: 'FLAT',
     formType: 'TRACKER',
     excludeProgramStages: true,
-    excludeInheritedAttributes: false,
+    // excludeInheritedAttributes: true,
+    
     hideRegistrationUnit: false,
     hideEnrollmentDate: true,
     autoComplete: true,
@@ -145,6 +146,7 @@ export class FormComponentsComponent {
         sizeLimit: 2 * 1024 * 1024,
       },
     ],
+    updateTeiOrgUnit: true,
   });
 
   //   return new ProgramEntryFormConfig({
