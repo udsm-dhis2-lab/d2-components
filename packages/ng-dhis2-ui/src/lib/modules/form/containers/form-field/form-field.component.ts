@@ -18,6 +18,7 @@ import moment from 'moment';
 import { Subject, takeUntil } from 'rxjs';
 import { IFormField } from '../../interfaces';
 import { FieldConfig, IMetadataRuleAction } from '../../models';
+import { CustomOrgUnitConfig } from '../../components/org-unit-form-field.component';
 
 @Component({
   selector: 'ng-dhis2-ui-form-field',
@@ -36,6 +37,7 @@ export class FormFieldComponent implements OnInit, OnChanges, OnDestroy {
   minDate = input<any>();
   maxDate = input(new Date());
   dataId = input<string>();
+  customOrgUnitRoots = input<CustomOrgUnitConfig[]>();
   color = 'primary';
   @Output() fieldUpdate: EventEmitter<FormGroup> =
     new EventEmitter<FormGroup>();

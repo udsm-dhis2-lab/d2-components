@@ -31,6 +31,7 @@ import {
   Program,
   TrackedEntityInstance,
 } from '@iapps/d2-web-sdk';
+import { CustomOrgUnitConfig } from '../form/components/org-unit-form-field.component';
 
 @Component({
   selector: 'ng-dhis2-ui-program-entry-form',
@@ -46,6 +47,7 @@ export class ProgramEntryFormModule {
   event = input<string>();
   enrollment = input<string>();
   orgUnit = input<string>();
+  customOrgUnitRoots = input<CustomOrgUnitConfig[]>();
 
   ngZone = inject(NgZone);
   d2 = (window as unknown as D2Window).d2Web;
