@@ -241,8 +241,8 @@ export class TrackedEntityInstance
     });
   }
 
-  setOrgUnit(orgUnit: string) {
-    if (!this.orgUnit) {
+  setOrgUnit(orgUnit: string, updateTeiOrgUnit?: boolean) {
+    if (!this.orgUnit || updateTeiOrgUnit) {
       this.orgUnit = orgUnit;
     }
 
@@ -448,7 +448,7 @@ export class TrackedEntityInstance
       .map((relatedEntity) => relatedEntity.trackedEntityInstance);
   }
 
-  updateDataValues(dataValueEntities: Record<string, unknown>) {
+  updateDataValues(dataValueEntities: Record<string, unknown>, updateTeiOrgUnit?: boolean) {
     const dataValueKeys = Object.keys(dataValueEntities);
 
     dataValueKeys.forEach((key) => {
@@ -471,7 +471,7 @@ export class TrackedEntityInstance
           this.setIncidentDate(dataValue);
           break;
         case 'ORG_UNIT':
-          this.setOrgUnit(dataValue);
+          this.setOrgUnit(dataValue, updateTeiOrgUnit);
           break;
 
         default: {
