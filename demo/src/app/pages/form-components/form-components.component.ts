@@ -109,11 +109,12 @@ export class FormComponentsComponent {
   });
 
   programEntryConfig = new ProgramEntryFormConfig({
-    program: 'tOhKbXMiJ1J',
+    program: 'lw9fZTamYec',
     displayType: 'FLAT',
     formType: 'TRACKER',
     excludeProgramStages: true,
-    excludeInheritedAttributes: true,
+    // excludeInheritedAttributes: true,
+    
     hideRegistrationUnit: false,
     hideEnrollmentDate: true,
     autoComplete: true,
@@ -131,6 +132,7 @@ export class FormComponentsComponent {
         sizeLimit: 2 * 1024 * 1024,
       },
     ],
+    updateTeiOrgUnit: true,
   });
 
   //   return new ProgramEntryFormConfig({
