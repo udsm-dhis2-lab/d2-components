@@ -50,6 +50,7 @@ import { addDays, format } from 'date-fns';
   standalone: false,
 })
 export class LineListTableComponent extends ReactWrapperModule {
+  @Input() triggerToken!: string;
   @Input() programId!: string;
   @Input() orgUnit!: string;
   @Input() programStageId?: string;
@@ -91,6 +92,10 @@ export class LineListTableComponent extends ReactWrapperModule {
 
   ngOnChanges(changes: SimpleChanges) {
     if (this.reactStateUpdaters) {
+      if (changes['triggerToken']) {
+        this.reactStateUpdaters.setTriggerTokenState(this.triggerToken);
+        this.reactStateUpdaters.setTriggerRefetch(this.triggerRefetch);
+      }
       if (changes['programId']) {
         this.reactStateUpdaters.setProgramIdState(this.programId);
       }
@@ -138,6 +143,9 @@ export class LineListTableComponent extends ReactWrapperModule {
         total: 0,
         pageCount: 1,
       })
+    );
+    const [triggerTokenState, setTriggerTokenState] = useState<string | undefined>(
+      this.triggerToken
     );
     const [programIdState, setProgramIdState] = useState<string>(
       this.programId
@@ -216,6 +224,7 @@ export class LineListTableComponent extends ReactWrapperModule {
       setOptionSetNameVisible,
       setSelectable,
       setTriggerRefetch,
+      setTriggerTokenState
     });
 
     useEffect(() => {
@@ -397,6 +406,7 @@ export class LineListTableComponent extends ReactWrapperModule {
       isOptionSetNameVisibleState,
       dataQueryFiltersState,
       triggerRefetch,
+      triggerTokenState
     ]);
 
     const handleExcelDownload = () => {
@@ -464,12 +474,12 @@ export class LineListTableComponent extends ReactWrapperModule {
         // adds new filter only if value is not empty
         const updatedFilters = value.trim()
           ? [
-              ...filteredFilters,
-              new DataQueryFilter()
-                .setAttribute(key)
-                .setCondition(DataFilterCondition.Like)
-                .setValue(value),
-            ]
+            ...filteredFilters,
+            new DataQueryFilter()
+              .setAttribute(key)
+              .setCondition(DataFilterCondition.Like)
+              .setValue(value),
+          ]
           : filteredFilters;
 
         return updatedFilters;
@@ -490,12 +500,12 @@ export class LineListTableComponent extends ReactWrapperModule {
         // adds new filter only if value is not empty
         const updatedFilters = value.trim()
           ? [
-              ...filteredFilters,
-              new DataQueryFilter()
-                .setAttribute(key)
-                .setCondition(DataFilterCondition.Equal)
-                .setValue(value),
-            ]
+            ...filteredFilters,
+            new DataQueryFilter()
+              .setAttribute(key)
+              .setCondition(DataFilterCondition.Equal)
+              .setValue(value),
+          ]
           : filteredFilters;
 
         return updatedFilters;
@@ -519,12 +529,12 @@ export class LineListTableComponent extends ReactWrapperModule {
 
         const updatedFilters = selectedDateString.trim()
           ? [
-              ...filteredFilters,
-              new DataQueryFilter()
-                .setAttribute(key)
-                .setCondition(DataFilterCondition.Equal)
-                .setValue(selectedDateString),
-            ]
+            ...filteredFilters,
+            new DataQueryFilter()
+              .setAttribute(key)
+              .setCondition(DataFilterCondition.Equal)
+              .setValue(selectedDateString),
+          ]
           : filteredFilters;
 
         return updatedFilters;
@@ -653,7 +663,7 @@ export class LineListTableComponent extends ReactWrapperModule {
                 setDataQueryFiltersState={setDataQueryFiltersState}
                 SetOrgUnitModalVisible={setOrgUnitModalVisible}
                 showEnrollmentDates={this.showEnrollmentDates}
-                //  filteredFilters={filteredFilters}
+              //  filteredFilters={filteredFilters}
               />
             )}
             <LineListTable
