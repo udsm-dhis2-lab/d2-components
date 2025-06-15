@@ -67,38 +67,165 @@ const orgUnitFieldStyles = {
   },
 };
 
+// type Props = {
+//   key: string;
+//   label?: string;
+//   required?: boolean;
+//   onSelectOrgUnit: (selectedOrgUnits: any) => void;
+//   onBlur?: (selectedOrgUnit: Record<string, unknown>) => void;
+//   selected?: string;
+//   maxTreeHeight?: number;
+//   disabled?: boolean;
+//   customOrgUnitRoots?: string[];
+//   previousOrgUnitId?: string;
+// };
+
+export type CustomOrgUnitConfig = { field: string; orgUnit: string };
+
+type OrgUnit = {
+  id: string;
+  name?: string;
+  code?: string;
+  path: string;
+  level: number;
+};
+
+type OrgUnitResponse = {
+  id: string;
+  name?: string;
+  displayName?: string;
+  code?: string;
+  path: string;
+  level: number;
+};
+
 type Props = {
   key: string;
   label?: string;
+  field: string;
   required?: boolean;
   onSelectOrgUnit: (selectedOrgUnits: any) => void;
   onBlur?: (selectedOrgUnit: Record<string, unknown>) => void;
   selected?: string;
   maxTreeHeight?: number;
   disabled?: boolean;
+  customOrgUnitRoots?: CustomOrgUnitConfig[];
   previousOrgUnitId?: string;
 };
 
 export const OrgUnitFormField = (props: Props) => {
-  const { onSelectOrgUnit, label, required, selected, disabled, key } = props;
+  // const { onSelectOrgUnit, label, required, selected, disabled, key, customOrgUnitRoots } = props;
+  // const d2 = (window as unknown as D2Window)?.d2Web;
+  // const classes = useDynamicStyles(orgUnitFieldStyles);
+
+  // const config = useMemo(() => {
+  //   return d2.systemInfo?.toInitObject();
+  // }, []);
+
+  // TODO: Improvements
+  const {
+    onSelectOrgUnit,
+    label,
+    required,
+    selected,
+    disabled,
+    key,
+    field,
+    customOrgUnitRoots,
+  } = props;
   const d2 = (window as unknown as D2Window)?.d2Web;
   const classes = useDynamicStyles(orgUnitFieldStyles);
 
-  const config = useMemo(() => {
-    return d2.systemInfo?.toInitObject();
-  }, []);
+  const config = useMemo(() => d2.systemInfo?.toInitObject(), []);
 
+  // TODO: Improvements
+  // New state to hold full orgUnit info from customOrgUnitRoots
+  // const [configuredRootInfo, setConfiguredRootInfo] = useState<
+  //   { id: string; name: string; code?: string; path: string; level: number }[]
+  // >([]);
+
+  const [configuredRootInfo, setConfiguredRootInfo] = useState<OrgUnit[]>([]);
+
+  // Strike-through (fallback) current user roots
+  const [useCustomRoots, setUseCustomRoots] = useState(true);
+
+  // TODO: START | Deprecated Approach that doesn't support passing ID of Organisation Unit as root
+  // const rootOrgUnits = useMemo(() => {
+  //   return d2.currentUser?.organisationUnits || [];
+  // }, []);
+  // TODO: END | Deprecated Approach that doesn't support passing ID of Organisation Unit as root
+
+  // TODO: Improvements
+  // Fetch matching configured roots on mount or when key changes:
+  useEffect(() => {
+    const matchList =
+      customOrgUnitRoots?.filter((entry) => entry.field === (field || key)) ||
+      [];
+
+    if (matchList?.length > 0) {
+      setUseCustomRoots(true);
+
+      Promise.all(
+        (matchList || []).map((entry) =>
+          d2.httpInstance
+            .get(
+              `organisationUnits/${entry.orgUnit}.json?fields=id,displayName,name,code,path,level`
+            )
+            .then((res) => {
+              const u = res.data as OrgUnitResponse;
+              return {
+                id: u.id,
+                name: u.displayName || u.name,
+                code: u.code,
+                path: u.path,
+                level: u.level,
+              };
+            })
+        )
+      )
+        .then(setConfiguredRootInfo)
+        .catch((err) =>
+          console.warn(
+            `[OrgUnitFormField] Failed to fetch customOrgUnitRoots:`,
+            err
+          )
+        );
+    }
+  }, [customOrgUnitRoots, key, field, d2.httpInstance]);
+
+  // const rootOrgUnits = useMemo(() => {
+  //   if (customOrgUnitRoots && customOrgUnitRoots.length > 0) {
+  //     return customOrgUnitRoots.map((id) => ({ id }));
+  //   }
+  //   return d2.currentUser?.organisationUnits || [];
+  // }, [customOrgUnitRoots]);
+
+  // const getExpandedItems = () => {
+  //   if (rootOrgUnits && rootOrgUnits.length === 1) {
+  //     return [`/${rootOrgUnits[0].id}`];
+  //   } else if (rootOrgUnits?.length > 1) {
+  //     return rootOrgUnits.map((root) => root.path);
+  //   }
+
+  //   return undefined;
+  // };
+
+  // TODO: Improvements
+  // Decide which roots to render
   const rootOrgUnits = useMemo(() => {
+    if (useCustomRoots && configuredRootInfo.length > 0) {
+      return configuredRootInfo.map((u) => u);
+    }
     return d2.currentUser?.organisationUnits || [];
-  }, []);
+  }, [useCustomRoots, configuredRootInfo, d2.currentUser]);
 
+  // Decide initial expanded paths
   const getExpandedItems = () => {
     if (rootOrgUnits && rootOrgUnits.length === 1) {
       return [`/${rootOrgUnits[0].id}`];
     } else if (rootOrgUnits?.length > 1) {
-      return rootOrgUnits.map((root) => root.path);
+      return rootOrgUnits.map((root) => root.path || `/${root.id}`);
     }
-
     return undefined;
   };
 
@@ -116,7 +243,6 @@ export const OrgUnitFormField = (props: Props) => {
 
   useEffect(() => {
     setLoading(true);
-
     if (selected) {
       d2.httpInstance
         .get(

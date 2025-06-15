@@ -22,6 +22,7 @@ import {
 } from '../../models';
 import { FormFieldComponent } from '../form-field/form-field.component';
 import { IFormField } from '../../interfaces';
+import { CustomOrgUnitConfig } from '../../components/org-unit-form-field.component';
 
 @Component({
   selector: 'ng-dhis2-ui-form',
@@ -41,6 +42,7 @@ export class FormComponent implements OnChanges, OnDestroy, OnInit {
   programRuleActions = input<IMetadataRuleAction[]>([]);
   dataEntities = input<any>(undefined);
   dataId = input<string>();
+  customOrgUnitRoots = input<CustomOrgUnitConfig[]>();
 
   configuration = computed(() => {
     if (!this.formConfig()) {
