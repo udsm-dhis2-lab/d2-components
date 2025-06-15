@@ -9,14 +9,15 @@
     /> -->
 
     <!-- <ng-dhis2-ui-tracker-form [program]="'lw9fZTamYec'" /> -->
-    <!-- <ng-dhis2-ui-program-entry-form
+    <ng-dhis2-ui-program-entry-form
+      [customOrgUnitRoots]="customOrgUnitRoots"
       [config]="programEntryConfig"
       [trackedEntity]="'Tj1TmxFxHVa'"
       (instanceSaveCompleted)="onSaveComplete($event)"
       (formCanceel)="onCancel()"
-    /> -->
+    />
 
- <ng-dhis2-ui-program-entry-form
+    <ng-dhis2-ui-program-entry-form
       [config]="programEntryConfig"
       (instanceSaveCompleted)="onSaveComplete($event)"
       (formCanceel)="onCancel()"

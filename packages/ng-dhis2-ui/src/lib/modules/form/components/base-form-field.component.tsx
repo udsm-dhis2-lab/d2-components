@@ -43,7 +43,7 @@ import { useFieldValidation } from '../hooks';
 import { IFormField } from '../interfaces';
 import { FieldConfig } from '../models';
 import { FileUploadField } from './file-upload-field.component';
-import { OrgUnitFormField } from './org-unit-form-field.component';
+import { OrgUnitFormField, CustomOrgUnitConfig } from './org-unit-form-field.component';
 
 @Directive()
 export class BaseFormFieldComponent extends ReactWrapperModule {
@@ -57,6 +57,7 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
   isValid = input<boolean>();
   isValueAssigned = input<boolean>();
   dataId = input<string>();
+  customOrgUnitRoots = input<CustomOrgUnitConfig[]>();
 
   value = model<string>();
   protected value$ = toObservable(this.value);
@@ -93,8 +94,9 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
     return (): React.JSX.Element => {
       const [value, setValue] = useState(
         this.form().get(this.field().id)?.value ||
-          this.form().get(this.field().key)?.value
+        this.form().get(this.field().key)?.value
       );
+
 
       const [selected, setSelected] = useState();
       const [touched, setTouched] = useState(false);
@@ -240,19 +242,23 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
               />
             );
 
-          case 'org-unit':
+          case 'org-unit': {
             return (
               <OrgUnitFormField
                 label={this.label()}
                 key={this.field().id}
+                field={this.field().id}
                 required={this.field().required}
                 disabled={disabled}
+                customOrgUnitRoots={this.customOrgUnitRoots()}
                 onSelectOrgUnit={(selectedOrgUnit: string) => {
                   onValueChange(selectedOrgUnit);
                 }}
                 selected={value}
               />
             );
+          }
+
 
           case 'transfer':
             return (
