@@ -411,8 +411,6 @@ export class LineListTableComponent extends ReactWrapperModule {
                   updatedFilterableColumnIds = columns;
                 }
 
-                console.log("THIS IS MORE THAN::: ", JSON.stringify(updatedFilterableColumnIds));
-
                 const finalColumns: ColumnDefinition[] = addActionsColumn(
                   [{ label: '#', key: 'index' }, ...updatedFilterableColumnIds],
                   this.actionOptions
