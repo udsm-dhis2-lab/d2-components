@@ -69,6 +69,7 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() isOptionSetNameVisible = false;
   @Input() allowRowsSelection = false;
   @Input() enrollmentStatus!: EnrollmentStatus;
+  @Input() filterableColumnIds!: string[];
   @Input() triggerRefetch = false;
   @Input() eventStatus!: {
     programStage: string;
@@ -144,9 +145,9 @@ export class LineListTableComponent extends ReactWrapperModule {
         pageCount: 1,
       })
     );
-    const [triggerTokenState, setTriggerTokenState] = useState<string | undefined>(
-      this.triggerToken
-    );
+    const [triggerTokenState, setTriggerTokenState] = useState<
+      string | undefined
+    >(this.triggerToken);
     const [programIdState, setProgramIdState] = useState<string>(
       this.programId
     );
@@ -224,7 +225,7 @@ export class LineListTableComponent extends ReactWrapperModule {
       setOptionSetNameVisible,
       setSelectable,
       setTriggerRefetch,
-      setTriggerTokenState
+      setTriggerTokenState,
     });
 
     useEffect(() => {
@@ -288,8 +289,34 @@ export class LineListTableComponent extends ReactWrapperModule {
               pager,
               metaData
             );
+
+            // const filterableColumnIdsSet = new Set(
+            //   this.filterableColumnIds
+            // );
+
+            // const updatedFilterableColumnIds: ColumnDefinition[] =
+            //   columns.filter((column) =>
+            //     filterableColumnIdsSet.has(column.key)
+            //   );
+
+            // const finalColumns: ColumnDefinition[] = addActionsColumn(
+            //   [{ label: '#', key: 'index' }, ...updatedFilterableColumnIds],
+            //   this.actionOptions
+            // );
+
+            let updatedFilterableColumnIds: ColumnDefinition[];
+
+            if (Array.isArray(this.filterableColumnIds) && this.filterableColumnIds.length > 0) {
+              const filterableColumnIdsSet = new Set(this.filterableColumnIds);
+              updatedFilterableColumnIds = columns.filter(column =>
+                filterableColumnIdsSet.has(column.key)
+              );
+            } else {
+              updatedFilterableColumnIds = columns;
+            }
+
             const finalColumns: ColumnDefinition[] = addActionsColumn(
-              [{ label: '#', key: 'index' }, ...columns],
+              [{ label: '#', key: 'index' }, ...updatedFilterableColumnIds],
               this.actionOptions
             );
 
@@ -373,10 +400,28 @@ export class LineListTableComponent extends ReactWrapperModule {
                     : prev
                 );
 
+                let updatedFilterableColumnIds: ColumnDefinition[];
+
+                if (Array.isArray(this.filterableColumnIds) && this.filterableColumnIds.length > 0) {
+                  const filterableColumnIdsSet = new Set(this.filterableColumnIds);
+                  updatedFilterableColumnIds = columns.filter(column =>
+                    filterableColumnIdsSet.has(column.key)
+                  );
+                } else {
+                  updatedFilterableColumnIds = columns;
+                }
+
+                console.log("THIS IS MORE THAN::: ", JSON.stringify(updatedFilterableColumnIds));
+
                 const finalColumns: ColumnDefinition[] = addActionsColumn(
-                  [{ label: '#', key: 'index' }, ...columns],
+                  [{ label: '#', key: 'index' }, ...updatedFilterableColumnIds],
                   this.actionOptions
                 );
+
+                // const finalColumns: ColumnDefinition[] = addActionsColumn(
+                //   [{ label: '#', key: 'index' }, ...columns],
+                //   this.actionOptions
+                // );
 
                 const pagerResponse = response.pagination;
 
@@ -406,7 +451,7 @@ export class LineListTableComponent extends ReactWrapperModule {
       isOptionSetNameVisibleState,
       dataQueryFiltersState,
       triggerRefetch,
-      triggerTokenState
+      triggerTokenState,
     ]);
 
     const handleExcelDownload = () => {
