@@ -145,9 +145,12 @@ export const OrgUnitFormField = (props: Props) => {
   // >([]);
 
   const [configuredRootInfo, setConfiguredRootInfo] = useState<OrgUnit[]>([]);
+  const [configuredRootsLoading, setConfiguredRootsLoading] = useState(false);
 
   // Strike-through (fallback) current user roots
-  const [useCustomRoots, setUseCustomRoots] = useState(true);
+  const [useCustomRoots, setUseCustomRoots] = useState(
+    customOrgUnitRoots && customOrgUnitRoots.length ? true : false
+  );
 
   // TODO: START | Deprecated Approach that doesn't support passing ID of Organisation Unit as root
   // const rootOrgUnits = useMemo(() => {
@@ -157,39 +160,80 @@ export const OrgUnitFormField = (props: Props) => {
 
   // TODO: Improvements
   // Fetch matching configured roots on mount or when key changes:
+  // useEffect(() => {
+  //   const matchList =
+  //     customOrgUnitRoots?.filter((entry) => entry.field === (field || key)) ||
+  //     [];
+
+  //   if (matchList?.length > 0) {
+  //     setUseCustomRoots(true);
+
+  //     Promise.all(
+  //       (matchList || []).map((entry) =>
+  //         d2.httpInstance
+  //           .get(
+  //             `organisationUnits/${entry.orgUnit}.json?fields=id,displayName,name,code,path,level`
+  //           )
+  //           .then((res) => {
+  //             const u = res.data as OrgUnitResponse;
+  //             return {
+  //               id: u.id,
+  //               name: u.displayName || u.name,
+  //               code: u.code,
+  //               path: u.path,
+  //               level: u.level,
+  //             };
+  //           })
+  //       )
+  //     )
+  //       .then(setConfiguredRootInfo)
+  //       .catch((err) =>
+  //         console.warn(
+  //           `[OrgUnitFormField] Failed to fetch customOrgUnitRoots:`,
+  //           err
+  //         )
+  //       );
+  //   }
+  // }, [customOrgUnitRoots, key, field, d2.httpInstance]);
+
   useEffect(() => {
     const matchList =
       customOrgUnitRoots?.filter((entry) => entry.field === (field || key)) ||
       [];
 
-    if (matchList?.length > 0) {
+    if (matchList.length > 0) {
       setUseCustomRoots(true);
+      setConfiguredRootsLoading(true);
 
       Promise.all(
-        (matchList || []).map((entry) =>
+        matchList.map((entry) =>
           d2.httpInstance
             .get(
               `organisationUnits/${entry.orgUnit}.json?fields=id,displayName,name,code,path,level`
             )
             .then((res) => {
-              const u = res.data as OrgUnitResponse;
+              const orgUnitPayload = res.data as OrgUnitResponse;
               return {
-                id: u.id,
-                name: u.displayName || u.name,
-                code: u.code,
-                path: u.path,
-                level: u.level,
+                id: orgUnitPayload?.id,
+                name: orgUnitPayload?.displayName || orgUnitPayload?.name,
+                code: orgUnitPayload?.code,
+                path: orgUnitPayload?.path,
+                level: orgUnitPayload.level,
               };
             })
         )
       )
-        .then(setConfiguredRootInfo)
-        .catch((err) =>
+        .then((result) => {
+          setConfiguredRootInfo(result);
+          setConfiguredRootsLoading(false);
+        })
+        .catch((err) => {
           console.warn(
             `[OrgUnitFormField] Failed to fetch customOrgUnitRoots:`,
             err
-          )
-        );
+          );
+          setConfiguredRootsLoading(false);
+        });
     }
   }, [customOrgUnitRoots, key, field, d2.httpInstance]);
 
@@ -212,14 +256,28 @@ export const OrgUnitFormField = (props: Props) => {
 
   // TODO: Improvements
   // Decide which roots to render
+  // const rootOrgUnits = useMemo(() => {
+  //   if (useCustomRoots && configuredRootInfo.length > 0) {
+  //     return configuredRootInfo.map((u) => u);
+  //   }
+  //   return d2.currentUser?.organisationUnits || [];
+  // }, [useCustomRoots, configuredRootInfo, d2.currentUser]);
+
   const rootOrgUnits = useMemo(() => {
-    if (useCustomRoots && configuredRootInfo.length > 0) {
-      return configuredRootInfo.map((u) => u);
+    if (useCustomRoots) {
+      if (configuredRootsLoading) {
+        return [];
+      }
+      return configuredRootInfo;
     }
     return d2.currentUser?.organisationUnits || [];
-  }, [useCustomRoots, configuredRootInfo, d2.currentUser]);
+  }, [
+    useCustomRoots,
+    configuredRootsLoading,
+    configuredRootInfo,
+    d2.currentUser,
+  ]);
 
-  // Decide initial expanded paths
   const getExpandedItems = () => {
     if (rootOrgUnits && rootOrgUnits.length === 1) {
       return [`/${rootOrgUnits[0].id}`];
@@ -361,20 +419,22 @@ export const OrgUnitFormField = (props: Props) => {
       );
     }
     return (
-      <OrganisationUnitTree
-        key={key}
-        roots={rootOrgUnits?.map((orgUnit) => orgUnit.id) || []}
-        singleSelection={true}
-        expanded={expanded as any}
-        handleExpand={handleExpand}
-        handleCollapse={handleCollapse}
-        selected={highlighted}
-        onChange={(event: any) => {
-          setSelectedOrgUnit(event);
-          setShowOrgUnitTree(false);
-          onSelectOrgUnit(event.id);
-        }}
-      />
+      rootOrgUnits.length > 0 && (
+        <OrganisationUnitTree
+          key={key}
+          roots={rootOrgUnits?.map((orgUnit) => orgUnit.id) || []}
+          singleSelection={true}
+          expanded={expanded as any}
+          handleExpand={handleExpand}
+          handleCollapse={handleCollapse}
+          selected={highlighted}
+          onChange={(event: any) => {
+            setSelectedOrgUnit(event);
+            setShowOrgUnitTree(false);
+            onSelectOrgUnit(event.id);
+          }}
+        />
+      )
     );
   };
 
