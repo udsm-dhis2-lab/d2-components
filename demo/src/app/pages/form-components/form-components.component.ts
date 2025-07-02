@@ -126,63 +126,63 @@ export class FormComponentsComponent {
   //0152554093524
   //OhV3SJdy7HV == phone number
   //p5FAom9pPWw == acc/number
-  programEntryConfig = new ProgramEntryFormConfig({
-    program: 'Gy65kx8gQv6',
-    programStage: 'fUVVkgQZHN5',
-    displayType: 'FLAT',
-    formType: 'EVENT',
-    excludeProgramStages: true,
-    excludeInheritedAttributes: false,
-    hideRegistrationUnit: true,
-    hideEnrollmentDate: true,
-    autoComplete: true,
-    formFieldExtensions: [
-      // {
-      //   id: 'seUJl7AEZtS',
-      //   accept: ['.pdf', '.docx', '.zip'],
-      //   sizeLimit: 2 * 1024 * 1024,
-      // },
-      {
-        id: 'OhV3SJdy7HV',
-        isDataElementUnique: true,
-        // accept: ['.pdf', '.docx', '.zip'],
-        // sizeLimit: 2 * 1024 * 1024,
-      },
-      {
-        id: 'p5FAom9pPWw',
-        isDataElementUnique: true,
-        // accept: ['.pdf', '.docx', '.zip'],
-        // sizeLimit: 2 * 1024 * 1024,
-      },
-    ],
-  });
-
   // programEntryConfig = new ProgramEntryFormConfig({
-  //   program: 'lw9fZTamYec',
+  //   program: 'Gy65kx8gQv6',
+  //   programStage: 'fUVVkgQZHN5',
   //   displayType: 'FLAT',
-  //   formType: 'TRACKER',
+  //   formType: 'EVENT',
   //   excludeProgramStages: true,
-  //   // excludeInheritedAttributes: true,
-
-  //   hideRegistrationUnit: false,
+  //   excludeInheritedAttributes: false,
+  //   hideRegistrationUnit: true,
   //   hideEnrollmentDate: true,
   //   autoComplete: true,
-  //   autoAssignedValues: [
-  //     {
-  //       field: 'batchNumber',
-  //       value: 'ND_BATCH_62712406',
-  //     },
-  //   ],
-  //   hideCustomAssignedFields: true,
   //   formFieldExtensions: [
+  //     // {
+  //     //   id: 'seUJl7AEZtS',
+  //     //   accept: ['.pdf', '.docx', '.zip'],
+  //     //   sizeLimit: 2 * 1024 * 1024,
+  //     // },
   //     {
-  //       id: 'seUJl7AEZtS',
-  //       accept: ['.pdf', '.docx', '.zip'],
-  //       sizeLimit: 2 * 1024 * 1024,
+  //       id: 'OhV3SJdy7HV',
+  //       isDataElementUnique: true,
+  //       // accept: ['.pdf', '.docx', '.zip'],
+  //       // sizeLimit: 2 * 1024 * 1024,
+  //     },
+  //     {
+  //       id: 'p5FAom9pPWw',
+  //       isDataElementUnique: true,
+  //       // accept: ['.pdf', '.docx', '.zip'],
+  //       // sizeLimit: 2 * 1024 * 1024,
   //     },
   //   ],
-  //   updateTeiOrgUnit: true,
   // });
+
+  programEntryConfig = new ProgramEntryFormConfig({
+    program: 'lw9fZTamYec',
+    displayType: 'FLAT',
+    formType: 'TRACKER',
+    excludeProgramStages: true,
+    // excludeInheritedAttributes: true,
+
+    hideRegistrationUnit: false,
+    hideEnrollmentDate: true,
+    autoComplete: true,
+    autoAssignedValues: [
+      {
+        field: 'batchNumber',
+        value: 'ND_BATCH_62712406',
+      },
+    ],
+    hideCustomAssignedFields: true,
+    formFieldExtensions: [
+      {
+        id: 'seUJl7AEZtS',
+        accept: ['.pdf', '.docx', '.zip'],
+        sizeLimit: 2 * 1024 * 1024,
+      },
+    ],
+    updateTeiOrgUnit: true,
+  });
 
   //   programEntryConfig =  ProgramEntryFormConfig({
   //     program: 'Gy65kx8gQv6',

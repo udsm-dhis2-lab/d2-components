@@ -55,6 +55,7 @@ export class FormComponent implements OnChanges, OnDestroy, OnInit {
   });
 
   @Output() formUpdate: EventEmitter<any> = new EventEmitter<any>();
+  @Output() formValidityUpdate: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   @ViewChildren(FormFieldComponent) fieldComponents!: FormFieldComponent[];
 
@@ -120,6 +121,9 @@ export class FormComponent implements OnChanges, OnDestroy, OnInit {
     this.values = this.form().getRawValue();
     // TODO: This is uneccesary emit at this stage of execution, since nothing has changes at initiation and potentially break some of implementation that depends formUpdate, which also is triggered when there is actual change in the form apart form initial values that came with it
     this.formUpdate.emit(new FormValue(this.form(), this.fields()));
+    this.formValidityUpdate.emit(new FormValue(this.form(), this.fields()).isValid);
+
+    console.log()
   }
   // ngOnChanges(changes: SimpleChanges): void {
   //   this.values = this.form.getRawValue();
@@ -157,11 +161,14 @@ export class FormComponent implements OnChanges, OnDestroy, OnInit {
 
   onSubmit(): void {
     this.formUpdate.emit(this.form().getRawValue());
+    this.formValidityUpdate.emit(this.form().valid);
+    this.formValidityUpdate.emit(new FormValue(this.form(), this.fields()).isValid);
   }
 
   onFieldUpdate(form: FormGroup, field: IFormField<string>): void {
     if (!this.showSaveButton() && form) {
       this.formUpdate.emit(new FormValue(this.form(), this.fields(), field));
+      this.formValidityUpdate.emit(this.form().valid);
 
       this.values = form.getRawValue();
     }

@@ -404,8 +404,6 @@ export class ComponentsComponent implements OnInit {
 
     const periodInstance = new Period().setType('Weekly').get();
 
-    console.log('PERIOD LIST', periodInstance.list());
-
     this.enrollmentFormGroup = this.generatedDataElementGroup(
       this.formBuilder,
       this.dataElements
