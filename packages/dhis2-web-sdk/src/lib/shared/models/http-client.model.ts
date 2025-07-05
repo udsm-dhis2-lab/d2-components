@@ -45,6 +45,53 @@ export class D2HttpClient {
     }
   }
 
+  async put(
+    url: string,
+    data: Record<string, unknown>,
+    config?: D2HttpRequestConfig
+  ): Promise<D2HttpResponse> {
+    try {
+      const response = await this.#axiosInstance.put(
+        `../../../api/${url}`,
+        data
+      );
+
+      return new D2HttpResponse(response as unknown as Record<string, unknown>);
+    } catch (error) {
+      return new D2HttpResponse(error as unknown as Record<string, unknown>);
+    }
+  }
+
+  async patch(
+    url: string,
+    data: Record<string, unknown>,
+    config?: D2HttpRequestConfig
+  ): Promise<D2HttpResponse> {
+    try {
+      const response = await this.#axiosInstance.patch(
+        `../../../api/${url}`,
+        data
+      );
+
+      return new D2HttpResponse(response as unknown as Record<string, unknown>);
+    } catch (error) {
+      return new D2HttpResponse(error as unknown as Record<string, unknown>);
+    }
+  }
+
+  async delete(
+    url: string,
+    config?: D2HttpRequestConfig
+  ): Promise<D2HttpResponse> {
+    try {
+      const response = await this.#axiosInstance.delete(`../../../api/${url}`);
+
+      return new D2HttpResponse(response as unknown as Record<string, unknown>);
+    } catch (error) {
+      return new D2HttpResponse(error as unknown as Record<string, unknown>);
+    }
+  }
+
   #getBaseUrl(config?: D2HttpRequestConfig): string {
     const baseUrl = '../../..';
 
