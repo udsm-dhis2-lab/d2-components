@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import { FormFieldExtension } from 'packages/ng-dhis2-ui/src/lib/modules/form';
+import { FormFieldExtension } from '../../form';
 
 export type AutoAssignedValues = { field: string; value: string };
 
