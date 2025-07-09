@@ -228,11 +228,12 @@ export class LineListTableComponent extends ReactWrapperModule {
       setTriggerTokenState,
     });
 
-    useEffect(() => {
-      this.setReactStateUpdaters?.(updateRefs.current);
-    }, []);
+    // useEffect(() => {
+    //   this.setReactStateUpdaters?.(updateRefs.current);
+    // }, []);
 
     useEffect(() => {
+       this.setReactStateUpdaters?.(updateRefs.current);
       setLoading(true);
       const fetchmetaData = async () => {
         try {
@@ -466,7 +467,6 @@ export class LineListTableComponent extends ReactWrapperModule {
       );
       const worksheetData = [header, ...rows];
 
-      // Creates worksheet and workbook, then writes to file
       const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'LineListData');
@@ -492,7 +492,6 @@ export class LineListTableComponent extends ReactWrapperModule {
       );
       const csvContent = [header, ...csvData].join('\n');
 
-      // Creates a Blob and triggers the download
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
 
