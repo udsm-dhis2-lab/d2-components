@@ -10,7 +10,7 @@ export class Pager {
   constructor(pager?: Partial<Pager>) {
     this.pageSize = pager?.pageSize || 50;
     this.page = pager?.page || 1;
-    this.paging = pager?.paging || true;
+    this.paging = pager?.paging ?? true;
     this.total = pager?.total;
     this.index = this.#getIndex();
     this.pageCount = pager?.pageCount;
@@ -26,8 +26,9 @@ export class Pager {
   }
 
   getPagingQueryParams(): string {
+
     if (!this.paging) {
-      return 'paging=false';
+      return 'skipPaging=true';
     }
 
     return `page=${this.page || 1}&pageSize=${

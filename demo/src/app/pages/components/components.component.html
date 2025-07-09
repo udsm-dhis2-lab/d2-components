@@ -256,8 +256,8 @@
 
 <div>
   <ng-dhis2-ui-line-list
-    [programId]="'oUiYTdbtOuh'"
-    [orgUnit]="'xrku9x3XnV9'"
+    [programId]="'tOhKbXMiJ1J'"
+    [orgUnit]="'gwcDrDXSxS0'"
     [actionOptions]="actionOptions"
     [ouMode]="'DESCENDANTS'"
     [showFilters]="true"
@@ -265,6 +265,7 @@
     (approvalSelected)="onApprovalSelected($event)"
     (actionSelected)="onActionSelected($event)"
     [allowRowsSelection]="false"
+    [dataQueryFilters]="completedTrainingFilter"
     (rowsSelected)="onRowsSelected($event)"
     [triggerRefetch]="triggerRefetch"
   ></ng-dhis2-ui-line-list>
