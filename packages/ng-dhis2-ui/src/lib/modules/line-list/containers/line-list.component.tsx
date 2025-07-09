@@ -42,6 +42,7 @@ import {
 import { getEvents } from '../utils/event-table-data-util';
 import * as XLSX from 'xlsx';
 import { addDays, format } from 'date-fns';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'ng-dhis2-ui-line-list',
@@ -211,6 +212,7 @@ export class LineListTableComponent extends ReactWrapperModule {
     );
     const [orgUnitModalVisible, setOrgUnitModalVisible] =
       useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
 
     const d2 = (window as unknown as D2Window).d2Web;
 
@@ -233,30 +235,38 @@ export class LineListTableComponent extends ReactWrapperModule {
     // }, []);
 
     useEffect(() => {
-       this.setReactStateUpdaters?.(updateRefs.current);
-      setLoading(true);
+      this.setReactStateUpdaters?.(updateRefs.current);
       const fetchmetaData = async () => {
+        setLoading(true);
+        if (!this.programId) {
+          setMetaData(null);
+          setLoading(false);
+          return;
+        }
+
+        setError(null);
         try {
           const trackerResponse = (await d2.trackerModule.trackedEntity
             .setProgram(this.programId)
             .getMetaData({ skipProgramRules: true })) as Program;
+          if (!trackerResponse || !trackerResponse.programType) {
+            throw new Error('failed to load data.');
+          }
           const data = trackerResponse;
           setMetaData(data);
         } catch (error) {
-          console.error('Failed to metadata:', error);
+          setError(error as string);
+          setLoading(false);
         }
       };
 
-      if (this.programId) {
-        fetchmetaData();
-      }
+      fetchmetaData();
     }, []);
 
     useEffect(() => {
       if (!metaData) {
         return undefined;
       }
-
       const isTracker = metaData.programType === 'WITH_REGISTRATION';
       const isEvent = metaData.programType === 'WITHOUT_REGISTRATION';
       const endDate =
@@ -307,9 +317,12 @@ export class LineListTableComponent extends ReactWrapperModule {
 
             let updatedFilterableColumnIds: ColumnDefinition[];
 
-            if (Array.isArray(this.filterableColumnIds) && this.filterableColumnIds.length > 0) {
+            if (
+              Array.isArray(this.filterableColumnIds) &&
+              this.filterableColumnIds.length > 0
+            ) {
               const filterableColumnIdsSet = new Set(this.filterableColumnIds);
-              updatedFilterableColumnIds = columns.filter(column =>
+              updatedFilterableColumnIds = columns.filter((column) =>
                 filterableColumnIdsSet.has(column.key)
               );
             } else {
@@ -329,31 +342,35 @@ export class LineListTableComponent extends ReactWrapperModule {
             setPager(new Pager(pagerResponse || {}));
           });
       } else if (isTracker) {
-        setLoading(true);
-        d2.trackerModule.trackedEntity
-          .setEndDate(endDate)
-          .setStartDate(startDateState as string)
-          .setProgram(this.programId)
-          .setProgramStage(this.programStageId as string)
-          .setOrgUnit(orgUnitState)
-          .setOuMode(this.ouMode as OuMode)
-          .setStatus(this.enrollmentStatus)
-          .setEventStatus(
-            this.eventStatus?.status,
-            this.eventStatus?.programStage
-          )
-          .setFilters(dataQueryFiltersState)
-          .setPagination(
-            new Pager({
-              pageSize: pager.pageSize,
-              page: pager.page,
-            })
-          )
-          .setOrderCriterias([
-            new DataOrderCriteria().setField('createdAt').setOrder('desc'),
-          ])
-          .get()
-          .then((response) => {
+        const fetchTrackerData = async () => {
+          try {
+            setLoading(true);
+            const response = await d2.trackerModule.trackedEntity
+              .setEndDate(endDate)
+              .setStartDate(startDateState as string)
+              .setProgram(this.programId)
+              .setProgramStage(this.programStageId as string)
+              .setOrgUnit(orgUnitState)
+              .setOuMode(this.ouMode as OuMode)
+              .setStatus(this.enrollmentStatus)
+              .setEventStatus(
+                this.eventStatus?.status,
+                this.eventStatus?.programStage
+              )
+              .setFilters(dataQueryFiltersState)
+              .setPagination(
+                new Pager({
+                  pageSize: pager.pageSize,
+                  page: pager.page,
+                })
+              )
+              .setOrderCriterias([
+                new DataOrderCriteria().setField('createdAt').setOrder('desc'),
+              ])
+              .get(
+                
+              );
+
             const trackedEntityInstances = Array.isArray(response.data)
               ? response.data
               : ([response.data] as TrackedEntityInstance[]);
@@ -379,63 +396,67 @@ export class LineListTableComponent extends ReactWrapperModule {
               ...orgUnitsFromAttributes,
             ];
 
-            this.lineListService.fetchOrgUnits(uniqueOrgUnitIds).subscribe({
-              next: (fetchedOrgUnits) => {
-                const trackedEntityResponse: TrackedEntityInstancesResponse = {
-                  trackedEntityInstances: response.data!,
-                  pager: pager,
-                  orgUnitsMap: fetchedOrgUnits,
-                };
+            const fetchedOrgUnits = await firstValueFrom(
+              this.lineListService.fetchOrgUnits(uniqueOrgUnitIds)
+            );
 
-                const { columns, data, filteredEntityColumns, orgUnitLabel } =
-                  getTrackedEntityTableData(
-                    { data: trackedEntityResponse },
-                    this.programId,
-                    pager,
-                    metaData
-                  );
+            const trackedEntityResponse: TrackedEntityInstancesResponse = {
+              trackedEntityInstances: response.data!,
+              pager: pager,
+              orgUnitsMap: fetchedOrgUnits,
+            };
 
-                setFilteredColumns((prev) =>
-                  filteredEntityColumns.length > 0
-                    ? filteredEntityColumns
-                    : prev
-                );
+            const { columns, data, filteredEntityColumns, orgUnitLabel } =
+              getTrackedEntityTableData(
+                { data: trackedEntityResponse },
+                this.programId,
+                pager,
+                metaData
+              );
 
-                let updatedFilterableColumnIds: ColumnDefinition[];
+            setFilteredColumns((prev) =>
+              filteredEntityColumns.length > 0 ? filteredEntityColumns : prev
+            );
 
-                if (Array.isArray(this.filterableColumnIds) && this.filterableColumnIds.length > 0) {
-                  const filterableColumnIdsSet = new Set(this.filterableColumnIds);
-                  updatedFilterableColumnIds = columns.filter(column =>
-                    filterableColumnIdsSet.has(column.key)
-                  );
-                } else {
-                  updatedFilterableColumnIds = columns;
-                }
+            let updatedFilterableColumnIds: ColumnDefinition[];
 
-                const finalColumns: ColumnDefinition[] = addActionsColumn(
-                  [{ label: '#', key: 'index' }, ...updatedFilterableColumnIds],
-                  this.actionOptions
-                );
+            if (
+              Array.isArray(this.filterableColumnIds) &&
+              this.filterableColumnIds.length > 0
+            ) {
+              const filterableColumnIdsSet = new Set(this.filterableColumnIds);
+              updatedFilterableColumnIds = columns.filter((column) =>
+                filterableColumnIdsSet.has(column.key)
+              );
+            } else {
+              updatedFilterableColumnIds = columns;
+            }
 
-                // const finalColumns: ColumnDefinition[] = addActionsColumn(
-                //   [{ label: '#', key: 'index' }, ...columns],
-                //   this.actionOptions
-                // );
+            const finalColumns: ColumnDefinition[] = addActionsColumn(
+              [{ label: '#', key: 'index' }, ...updatedFilterableColumnIds],
+              this.actionOptions
+            );
 
-                const pagerResponse = response.pagination;
+            // const finalColumns: ColumnDefinition[] = addActionsColumn(
+            //   [{ label: '#', key: 'index' }, ...columns],
+            //   this.actionOptions
+            // );
 
-                setLoading(false);
-                setColumns(finalColumns);
-                setData(data);
-                setPager(new Pager(pagerResponse || {}));
-                setOrgUnitLabel(orgUnitLabel);
-              },
-              error: (err) => {
-                console.error('Error fetching org units:', err);
-                setLoading(false);
-              },
-            });
-          });
+            const pagerResponse = response.pagination;
+
+            // setLoading(false);
+            setColumns(finalColumns);
+            setData(data);
+            setPager(new Pager(pagerResponse || {}));
+            setOrgUnitLabel(orgUnitLabel);
+          } catch (error) {
+            console.error('Failed to fetch tracker data:', error);
+            setError('Could not load records. Please reload.');
+          } finally {
+            setLoading(false);
+          }
+        };
+        fetchTrackerData();
       }
     }, [
       metaData,
@@ -467,6 +488,7 @@ export class LineListTableComponent extends ReactWrapperModule {
       );
       const worksheetData = [header, ...rows];
 
+      // Creates worksheet and workbook, then writes to file
       const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'LineListData');
@@ -492,6 +514,7 @@ export class LineListTableComponent extends ReactWrapperModule {
       );
       const csvContent = [header, ...csvData].join('\n');
 
+      // Creates a Blob and triggers the download
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
 
@@ -516,12 +539,12 @@ export class LineListTableComponent extends ReactWrapperModule {
         // adds new filter only if value is not empty
         const updatedFilters = value.trim()
           ? [
-            ...filteredFilters,
-            new DataQueryFilter()
-              .setAttribute(key)
-              .setCondition(DataFilterCondition.Like)
-              .setValue(value),
-          ]
+              ...filteredFilters,
+              new DataQueryFilter()
+                .setAttribute(key)
+                .setCondition(DataFilterCondition.Like)
+                .setValue(value),
+            ]
           : filteredFilters;
 
         return updatedFilters;
@@ -542,12 +565,12 @@ export class LineListTableComponent extends ReactWrapperModule {
         // adds new filter only if value is not empty
         const updatedFilters = value.trim()
           ? [
-            ...filteredFilters,
-            new DataQueryFilter()
-              .setAttribute(key)
-              .setCondition(DataFilterCondition.Equal)
-              .setValue(value),
-          ]
+              ...filteredFilters,
+              new DataQueryFilter()
+                .setAttribute(key)
+                .setCondition(DataFilterCondition.Equal)
+                .setValue(value),
+            ]
           : filteredFilters;
 
         return updatedFilters;
@@ -571,12 +594,12 @@ export class LineListTableComponent extends ReactWrapperModule {
 
         const updatedFilters = selectedDateString.trim()
           ? [
-            ...filteredFilters,
-            new DataQueryFilter()
-              .setAttribute(key)
-              .setCondition(DataFilterCondition.Equal)
-              .setValue(selectedDateString),
-          ]
+              ...filteredFilters,
+              new DataQueryFilter()
+                .setAttribute(key)
+                .setCondition(DataFilterCondition.Equal)
+                .setValue(selectedDateString),
+            ]
           : filteredFilters;
 
         return updatedFilters;
@@ -705,7 +728,7 @@ export class LineListTableComponent extends ReactWrapperModule {
                 setDataQueryFiltersState={setDataQueryFiltersState}
                 SetOrgUnitModalVisible={setOrgUnitModalVisible}
                 showEnrollmentDates={this.showEnrollmentDates}
-              //  filteredFilters={filteredFilters}
+                //  filteredFilters={filteredFilters}
               />
             )}
             <LineListTable

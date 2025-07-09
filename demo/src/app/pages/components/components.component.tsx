@@ -49,6 +49,14 @@ export class ComponentsComponent implements OnInit {
     ],
   });
 
+completedTrainingFilter = [new DataQueryFilter()
+    .setAttribute('pWu4cEoJapG')
+    .setProgramStage('a8N7x23LmXp')
+    .setCondition(DataFilterCondition.Equal)
+    .setType('DATA_ELEMENT')
+    .setValue('Yes')];
+    
+
   handleApprovalClick() {
     console.log(
       'Approval button clicked from child! Performing approval logic...'
@@ -989,6 +997,8 @@ class DateField {
       : [];
   }
 
+  
+
   pconfig = new ProgramEntryFormConfig({
     program: 'A3olldDSHQg',
     programStage: 'NtZXBym2KfD',
@@ -1006,3 +1016,4 @@ class DateField {
   });
   
 }
+
