@@ -309,12 +309,12 @@ export class TrackedEntityInstance
   }
 
   setEnrollment(enrollment: IEnrollment) {
-    if (!enrollment.attributes || enrollment.attributes.length === 0) {
+   // if (!enrollment.attributes || enrollment.attributes.length === 0) {
       const attributes = this.#getAttributesFromFields();
 
       enrollment.attributes =
         attributes.length > 0 ? attributes : this.attributes;
-    }
+  //  }
 
     const availableEnrollment = (this.enrollments || []).find(
       (enrollmentItem) => enrollmentItem.enrollment === enrollment.enrollment
