@@ -6,3 +6,4 @@ export * from './queries';
 export * from './utils';
 export * from './decorators';
 export * from './interfaces';
+export * from './constants';
