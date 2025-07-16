@@ -13,6 +13,7 @@ import {
   Pager,
   TrackedEntityDecorator,
   TrackedEntityInstance,
+  TrackerQueryConfig,
 } from '@iapps/d2-web-sdk';
 import { d2Web } from '@iapps/ng-dhis2-shell';
 
@@ -63,7 +64,7 @@ export class WebSdkComponent {
 
   async ngOnInit() {
     const trackerQuery = await this.d2.trackerModule.trackedEntity
-      .setEndDate('')
+
       .setProgram('lw9fZTamYec')
       .setOrgUnit('rQS2cX4JH88')
       .setOuMode('DESCENDANTS')
@@ -82,10 +83,24 @@ export class WebSdkComponent {
       .setOrderCriterias([
         new DataOrderCriteria().setField('createdAt').setOrder('desc'),
       ])
+      .setConfig(
+        new TrackerQueryConfig({
+          ignoreProgramForTrackedEntity: true,
+        })
+      )
       .setStatus('COMPLETED')
       .get();
 
     console.log(trackerQuery);
+
+    const trackerResponse = (
+      await this.d2.trackerModule.trackedEntity
+        // .setProgram('lw9fZTamYec')
+        .setTrackedEntity(`KHCoPswNIqk`)
+        .get()
+    ).data as TrackedEntityInstance;
+
+    console.log('the response', trackerResponse);
 
     const eventQuery = await this.d2.eventModule.event
       .setProgram('lw9fZTamYec')
@@ -107,5 +122,33 @@ export class WebSdkComponent {
       .get();
 
     console.log(eventQuery);
+
+    const standaloneTrackerQuery = await this.d2.trackerModule.trackedEntity
+      .setTrackedEntity('UNIDoHvJIPV')
+      .get();
+
+    console.log(standaloneTrackerQuery);
+
+    const createTestQuery = this.d2.trackerModule.trackedEntity
+      .setProgram('lw9fZTamYec')
+      .setTrackedEntity('test-entity');
+
+    const testInstance = await createTestQuery.create();
+
+    console.log('CREATE INSTANCE', testInstance);
+
+    const indexDbResponse = await this.d2.httpInstance.get(
+      'organisationUnits.json',
+      { useIndexDb: true }
+    );
+
+    console.log('ORGUNIT FROM INDEX DB', indexDbResponse);
+
+    const indexDbSingleResponse = await this.d2.httpInstance.get(
+      'organisationUnits/AdmHm9e8IwS.json',
+      { useIndexDb: true }
+    );
+
+    console.log('ORGUNIT FROM INDEX DB BY ID', indexDbSingleResponse);
   }
 }

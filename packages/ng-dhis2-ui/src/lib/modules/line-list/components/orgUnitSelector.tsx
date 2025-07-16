@@ -14,6 +14,8 @@ export const OrgUnitSelector = ({
     selectedOrgUnit,
     setSelectedOrgUnit,
     setOrgUnitState,
+    setTempOrgUnitState,
+    tempOrgUnitState
   }: any) => (
     <Modal hide={hide} position="middle">
       <ModalTitle>Select organization unit</ModalTitle>
@@ -22,7 +24,7 @@ export const OrgUnitSelector = ({
           key={selectedOrgUnit}
           onSelectOrgUnit={(selectedOrgUnit: any) => {
             setSelectedOrgUnit(selectedOrgUnit.displayName);
-            setOrgUnitState(selectedOrgUnit.id);
+            setTempOrgUnitState(selectedOrgUnit.id);
             setHide(true);
           }}
         />

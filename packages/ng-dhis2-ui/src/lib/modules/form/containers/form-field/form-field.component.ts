@@ -18,6 +18,7 @@ import moment from 'moment';
 import { Subject, takeUntil } from 'rxjs';
 import { IFormField } from '../../interfaces';
 import { FieldConfig, IMetadataRuleAction } from '../../models';
+import { CustomOrgUnitConfig } from '../../components/org-unit-form-field.component';
 
 @Component({
   selector: 'ng-dhis2-ui-form-field',
@@ -27,15 +28,17 @@ import { FieldConfig, IMetadataRuleAction } from '../../models';
 })
 export class FormFieldComponent implements OnInit, OnChanges, OnDestroy {
   field = input.required<IFormField<string>>();
-  @Input() fieldConfig!: FieldConfig;
+  fieldConfig = input.required<FieldConfig>();
   @Input() form!: FormGroup;
-  @Input() isCheckBoxButton!: boolean;
-  @Input() fieldClass!: string;
+  isCheckBoxButton = input<boolean>();
+  fieldClass = input<string>('');
   programRuleActions = input<IMetadataRuleAction[]>([]);
-  @Input() dataEntities: any;
-  @Input() minDate: any;
-  @Input() maxDate = new Date();
-  public color = 'primary';
+  dataEntities = input<any>({});
+  minDate = input<any>();
+  maxDate = input(new Date());
+  dataId = input<string>();
+  customOrgUnitRoots = input<CustomOrgUnitConfig[]>();
+  color = 'primary';
   @Output() fieldUpdate: EventEmitter<FormGroup> =
     new EventEmitter<FormGroup>();
 

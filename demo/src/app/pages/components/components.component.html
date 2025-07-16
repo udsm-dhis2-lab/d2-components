@@ -248,10 +248,16 @@
   ></ng-dhis2-ui-line-list>
 </div> -->
 <!-- [teiEnrollmentList]="{onApprovalClick: onApprove}" -->
+
+<!-- [dataQueryFilters]="[new DataQueryFilter()
+.setAttribute('tgGvHgQgtQ0')
+.setCondition(DataFilterCondition.Equal)
+.setValue(this.batchNumber),]" -->
+
 <div>
   <ng-dhis2-ui-line-list
-    [programId]="'oUiYTdbtOuh'"
-    [orgUnit]="'xrku9x3XnV9'"
+    [programId]="'tOhKbXMiJ1J'"
+    [orgUnit]="'gwcDrDXSxS0'"
     [actionOptions]="actionOptions"
     [ouMode]="'DESCENDANTS'"
     [showFilters]="true"
@@ -259,9 +265,20 @@
     (approvalSelected)="onApprovalSelected($event)"
     (actionSelected)="onActionSelected($event)"
     [allowRowsSelection]="false"
-    [dataQueryFilters]="dataQueryFilters"
+    [dataQueryFilters]="completedTrainingFilter"
     (rowsSelected)="onRowsSelected($event)"
+    [triggerRefetch]="triggerRefetch"
   ></ng-dhis2-ui-line-list>
+
+  <!-- <ng-dhis2-ui-line-list
+    [programId]="'lw9fZTamYec'"
+    [orgUnit]="'xrku9x3XnV9'"
+    [showFilters]="true"
+    [actionOptions]="actionOptions"
+    [ouMode]="'DESCENDANTS'"
+    [programStageId]="'NtZXBym2KfD'"
+    [actionOptionOrientation]="'LINK'"
+  ></ng-dhis2-ui-line-list> -->
 </div>
 
 <!-- <ng-dhis2-ui-form

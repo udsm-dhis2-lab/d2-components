@@ -7,6 +7,7 @@ import {
   SingleSelectOption,
 } from '@dhis2/ui';
 import React from 'react';
+import { parseISO, format, isValid } from 'date-fns';
 export const FilterToolbar = ({
   orgUnitLabel,
   selectedOrgUnit,
@@ -29,57 +30,111 @@ export const FilterToolbar = ({
   setPrevValue,
   showAllFilters,
   setShowAllFilters,
+  handleSearch,
+  setTempStartDateState,
+  setTempEndDateState,
+  setTempOrgUnitState,
+  tempStartDateState,
+  tempEndDateState,
+  tempOrgUnitState,
+  dataQueryFiltersState,
+  setDataQueryFiltersState,
+  SetOrgUnitModalVisible,
+  showEnrollmentDates,
 }: any) => (
   <DataTableToolbar className="table-top-toolbar">
     <div
       style={{
         display: 'flex',
-        alignItems: 'center',
+        // flexDirection: 'column',
         gap: '10px',
         flexWrap: 'wrap',
       }}
     >
-      <InputField
-        key="location"
-        label={orgUnitLabel ? orgUnitLabel : 'registering unit:'}
-        value={selectedOrgUnit}
-        onFocus={() => setHide(false)}
-        className="custom-input"
-        clearable
-        onChange={(event: { value: string }) => {
-          setSelectedOrgUnit(event.value);
-          setOrgUnitState(defaultOrgUnit);
+      {/* Row 1: default filters */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          flexWrap: 'wrap',
         }}
-      />
-      <CalendarInput
-        label="Start date:"
-        calendar="gregory"
-        locale="en-GB"
-        timeZone="Africa/Dar_es_Salaam"
-        className="custom-input"
-        clearable={!!startDateState}
-        date={startDateState}
-        onDateSelect={(selectedDate: any) => {
-         // if (!(selectedDate.calendarDateString === null)) {
-            setStartDateState(selectedDate.calendarDateString);
-          //}
-        }}
-      />
-      <CalendarInput
-        label="End date:"
-        calendar="gregory"
-        locale="en-GB"
-        timeZone="Africa/Dar_es_Salaam"
-        className="custom-input"
-        clearable={!!endDateState}
-        date={endDateState}
-        onDateSelect={(selectedDate: any) => {
-         // if (!(selectedDate.calendarDateString === null)) {
-            setEndDateState(selectedDate.calendarDateString);
-          //}
-        }}
-      />
+      >
+        <InputField
+          key="location"
+          label={orgUnitLabel ? orgUnitLabel : 'registering unit:'}
+          value={selectedOrgUnit}
+          onFocus={() => {
+            SetOrgUnitModalVisible(true);
+            setHide(false);
+          }}
+          className="custom-input"
+          clearable
+          onChange={(event: { value: string }) => {
+            setSelectedOrgUnit(event.value);
+            setOrgUnitState(defaultOrgUnit);
+          }}
+        />
+        {showEnrollmentDates && (
+          <>
+            <CalendarInput
+              label="Start date:"
+              calendar="gregory"
+              locale="en-GB"
+              timeZone="Africa/Dar_es_Salaam"
+              className="custom-input"
+              //clearable={!!tempStartDateState}
+              //date={tempStartDateState || undefined}
+              //date={tempStartDateState || "yyyy-mm-dd"}
+              clearable={
+                !!tempStartDateState && tempStartDateState !== 'dd-mm-yyyy'
+              }
+              // date={tempStartDateState || 'dd-mm-yyyy'}
+              date={formatDateForDisplay(tempStartDateState)}
+              onDateSelect={(selectedDate: any) => {
+                setTempStartDateState(selectedDate.calendarDateString);
+                if (selectedDate.calendarDateString === null) {
+                  setStartDateState(selectedDate.calendarDateString);
+                }
+              }}
+            />
+            <CalendarInput
+              label="End date:"
+              calendar="gregory"
+              locale="en-GB"
+              timeZone="Africa/Dar_es_Salaam"
+              className="custom-input"
+              clearable={
+                !!tempEndDateState && tempEndDateState !== 'dd-mm-yyyy'
+              }
+              // date={tempEndDateState || 'dd-mm-yyyy'}
+              date={formatDateForDisplay(tempEndDateState)}
+              onDateSelect={(selectedDate: any) => {
+                setTempEndDateState(selectedDate.calendarDateString);
+                if (selectedDate.calendarDateString === null) {
+                  setEndDateState(selectedDate.calendarDateString);
+                }
+              }}
+            />
+          </>
+        )}
 
+        {/* <Button onClick={handleSearch}>Search</Button>
+        <Button onClick={() => setShowAllFilters(!showAllFilters)}>
+          {showAllFilters ? 'Less Filters' : 'More Filters'}
+        </Button> */}
+      </div>
+
+      {/* Row 2: visibleFilters appear in a new row */}
+      {/* {visibleFilters?.length > 0 && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            flexWrap: 'wrap',
+          }}
+        > */}
       {(visibleFilters ?? []).map(({ label, key, valueType, options }: any) => {
         if (valueType === 'DATE') {
           return (
@@ -94,6 +149,12 @@ export const FilterToolbar = ({
               date={dateStates[key]}
               onDateSelect={(selectedDate: any) => {
                 handleDateSelect(key, selectedDate);
+                const filteredFilters = dataQueryFiltersState.filter(
+                  (f: { attribute: any }) => f.attribute !== key
+                );
+                if (selectedDate.calendarDateString === null) {
+                  setDataQueryFiltersState(filteredFilters);
+                }
               }}
             />
           );
@@ -113,6 +174,12 @@ export const FilterToolbar = ({
                   [key]: selected ?? '',
                 }));
                 handleInputChangeForSelectField(key, selected ?? '');
+                const filteredFilters = dataQueryFiltersState.filter(
+                  (f: { attribute: any }) => f.attribute !== key
+                );
+                if (selected === '') {
+                  setDataQueryFiltersState(filteredFilters);
+                }
               }}
             >
               {(options.options ?? []).map((opt: any) => (
@@ -140,8 +207,11 @@ export const FilterToolbar = ({
                 ...prevValues,
                 [key]: currentValue,
               }));
+              const filteredFilters = dataQueryFiltersState.filter(
+                (f: { attribute: any }) => f.attribute !== key
+              );
               if (currentValue === '') {
-                handleInputChange(key, '');
+                setDataQueryFiltersState(filteredFilters);
               }
             }}
             onBlur={(e: any) => {
@@ -155,9 +225,33 @@ export const FilterToolbar = ({
           />
         );
       })}
-      <Button onClick={() => setShowAllFilters(!showAllFilters)}>
-        {showAllFilters ? 'Less Filters' : 'More Filters'}
-      </Button>
+      {/* </div>
+      )} */}
+      <div
+        style={{
+          display: 'flex',
+          // alignItems: 'center',
+          gap: '10px',
+          // flexWrap: 'wrap',
+        }}
+      >
+        <Button onClick={handleSearch}>Search</Button>
+        <Button onClick={() => setShowAllFilters(!showAllFilters)}>
+          {showAllFilters ? 'Less Filters' : 'More Filters'}
+        </Button>
+      </div>
     </div>
   </DataTableToolbar>
 );
+
+export function formatDateForDisplay(dateString: string | null | undefined): string {
+  if (!dateString || dateString === 'dd-mm-yyyy') return 'dd-mm-yyyy';
+
+  try {
+    const parsedDate = parseISO(dateString);
+    if (!isValid(parsedDate)) return 'dd-mm-yyyy';
+    return format(parsedDate, 'dd-MM-yyyy');
+  } catch {
+    return 'dd-mm-yyyy';
+  }
+}

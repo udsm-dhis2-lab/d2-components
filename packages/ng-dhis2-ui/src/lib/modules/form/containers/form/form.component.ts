@@ -2,9 +2,9 @@ import {
   Component,
   EffectRef,
   EventEmitter,
-  Input,
   OnChanges,
   OnDestroy,
+  OnInit,
   Output,
   SimpleChanges,
   ViewChildren,
@@ -17,12 +17,12 @@ import { head } from 'lodash';
 import {
   FieldsData,
   FormConfig,
-  FormField,
   FormValue,
   IMetadataRuleAction,
 } from '../../models';
 import { FormFieldComponent } from '../form-field/form-field.component';
 import { IFormField } from '../../interfaces';
+import { CustomOrgUnitConfig } from '../../components/org-unit-form-field.component';
 
 @Component({
   selector: 'ng-dhis2-ui-form',
@@ -30,22 +30,24 @@ import { IFormField } from '../../interfaces';
   styleUrls: ['./form.component.scss'],
   standalone: false,
 })
-export class FormComponent implements OnChanges, OnDestroy {
+export class FormComponent implements OnChanges, OnDestroy, OnInit {
   formConfig = input<FormConfig>();
-  @Input() fields!: IFormField<string>[];
-  @Input() form!: FormGroup;
-  @Input() isFormHorizontal!: boolean;
-  @Input() showSaveButton!: boolean;
-  @Input() fieldsData!: FieldsData;
-  @Input() fieldClass!: string;
-  @Input() shouldRenderAsCheckBoxesButton!: boolean;
+  fields = input.required<IFormField<string>[]>();
+  form = input.required<FormGroup>();
+  isFormHorizontal = input<boolean>(false);
+  showSaveButton = input<boolean>(false);
+  fieldsData = input<FieldsData>();
+  fieldClass = input<string>('');
+  shouldRenderAsCheckBoxesButton = input<boolean>(false);
   programRuleActions = input<IMetadataRuleAction[]>([]);
-  @Input() dataEntities: any;
+  dataEntities = input<any>(undefined);
+  dataId = input<string>();
+  customOrgUnitRoots = input<CustomOrgUnitConfig[]>();
 
   configuration = computed(() => {
     if (!this.formConfig()) {
       return new FormConfig({
-        direction: this.isFormHorizontal ? 'horizontal' : 'vertical',
+        direction: this.isFormHorizontal() ? 'horizontal' : 'vertical',
       });
     }
 
@@ -53,13 +55,14 @@ export class FormComponent implements OnChanges, OnDestroy {
   });
 
   @Output() formUpdate: EventEmitter<any> = new EventEmitter<any>();
+  @Output() formValidityUpdate: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   @ViewChildren(FormFieldComponent) fieldComponents!: FormFieldComponent[];
 
   values: any;
 
   get sanitizedFields(): IFormField<string>[] {
-    return (this.fields || []).filter((field: any) => {
+    return (this.fields() || []).filter((field: any) => {
       if (field.hidden) {
         return false;
       }
@@ -90,7 +93,7 @@ export class FormComponent implements OnChanges, OnDestroy {
   }
 
   get layoutCssClass(): string {
-    if (!this.isFormHorizontal) {
+    if (!this.isFormHorizontal()) {
       return 'col-12';
     }
 
@@ -114,24 +117,37 @@ export class FormComponent implements OnChanges, OnDestroy {
     });
   }
 
+  ngOnInit(): void {
+    this.values = this.form().getRawValue();
+    // TODO: This is uneccesary emit at this stage of execution, since nothing has changes at initiation and potentially break some of implementation that depends formUpdate, which also is triggered when there is actual change in the form apart form initial values that came with it
+    this.formUpdate.emit(new FormValue(this.form(), this.fields()));
+    this.formValidityUpdate.emit(new FormValue(this.form(), this.fields()).isValid);
+
+    console.log()
+  }
+  // ngOnChanges(changes: SimpleChanges): void {
+  //   this.values = this.form.getRawValue();
+  // }
+
   ngOnChanges(changes: SimpleChanges): void {
-    this.values = this.form.getRawValue();
+    this.values = this.form().getRawValue();
   }
 
   #processRules(ruleActions: IMetadataRuleAction[]) {
     ruleActions.forEach((ruleAction) => {
       switch (ruleAction.actionType) {
         case 'HIDEFIELD': {
-          const fieldToRemove = this.fields.find(
+          const fieldToRemove = this.fields().find(
             (field) => field.id === ruleAction.field
           );
 
           if (fieldToRemove) {
-            const currentValue = this.form.get(fieldToRemove.key)?.value;
+            const form = this.form();
+            const currentValue = form.get(fieldToRemove.key)?.value;
 
             if (currentValue != null) {
-              this.form.get(fieldToRemove.key)?.setValue(null);
-              this.onFieldUpdate(this.form, fieldToRemove);
+              form.get(fieldToRemove.key)?.setValue(null);
+              this.onFieldUpdate(form, fieldToRemove);
             }
           }
           break;
@@ -144,23 +160,26 @@ export class FormComponent implements OnChanges, OnDestroy {
   }
 
   onSubmit(): void {
-    this.formUpdate.emit(this.form.getRawValue());
+    this.formUpdate.emit(this.form().getRawValue());
+    this.formValidityUpdate.emit(this.form().valid);
+    this.formValidityUpdate.emit(new FormValue(this.form(), this.fields()).isValid);
   }
 
   onFieldUpdate(form: FormGroup, field: IFormField<string>): void {
-    if (!this.showSaveButton && form) {
-      this.formUpdate.emit(new FormValue(this.form, this.fields, field));
+    if (!this.showSaveButton() && form) {
+      this.formUpdate.emit(new FormValue(this.form(), this.fields(), field));
+      this.formValidityUpdate.emit(this.form().valid);
 
       this.values = form.getRawValue();
     }
   }
 
   onClear(): void {
-    this.form.reset();
+    this.form().reset();
   }
 
   isFormInValid() {
-    return this.form.invalid;
+    return this.form().invalid;
   }
 
   onRunTimeOptionUpdate(result: any) {
@@ -172,7 +191,7 @@ export class FormComponent implements OnChanges, OnDestroy {
 
       const parentOption = result?.options.find(
         (option: { code: any }) =>
-          option.code === this.form?.value[result?.field?.id]
+          option.code === this.form()?.value[result?.field?.id]
       );
 
       fieldToUpdate?.onUpdateRuntimeOptions(parentOption?.options || []);

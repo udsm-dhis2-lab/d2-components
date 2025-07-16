@@ -4,7 +4,12 @@ import { FormMetadataSection } from './form-metadata-section.model';
 import { IMetadataRule, MetadataRule } from './form-metadata-rule.model';
 import { FormField } from './form-field.model';
 import { Program, ProgramRule, ProgramRuleVariable } from '@iapps/d2-web-sdk';
-import { IFormField, IFormMetadata, IFormMetadataSection } from '../interfaces';
+import {
+  IFormField,
+  IFormMetadata,
+  IFormMetadataSection,
+  FormFieldExtension,
+} from '../interfaces';
 import { DateField } from './date-field.model';
 import { TranslationUtil } from '../utils';
 
@@ -24,6 +29,7 @@ export class FormMetaData implements IFormMetadata {
       excludeInheritedAttributes?: boolean;
       programStage?: string;
       customFormMetaData?: Partial<FormMetaData>;
+      formFieldExtensions?: FormFieldExtension[];
     }
   ) {}
 
@@ -48,6 +54,7 @@ export class FormMetaData implements IFormMetadata {
           section,
           program,
           locale: this.params.locale,
+          formFieldExtensions: this.params.formFieldExtensions,
         }).toJson();
       })
       .filter((section) => section !== null) as IFormMetadataSection[];
@@ -165,6 +172,7 @@ export class FormMetaData implements IFormMetadata {
         program,
         locale: this.params.locale,
         excludeInheritedAttributes: this.params.excludeInheritedAttributes,
+        formFieldExtensions: this.params.formFieldExtensions,
       }).toJson();
     });
   }
@@ -196,6 +204,7 @@ export class FormMetaData implements IFormMetadata {
       program,
       locale: this.params.locale,
       excludeInheritedAttributes: this.params.excludeInheritedAttributes,
+      formFieldExtensions: this.params.formFieldExtensions,
     }).toJson();
   }
 
@@ -234,6 +243,7 @@ export class FormMetaData implements IFormMetadata {
       program,
       locale: this.params.locale,
       excludeInheritedAttributes: this.params.excludeInheritedAttributes,
+      formFieldExtensions: this.params.formFieldExtensions,
     }).toJson();
   }
 
@@ -271,6 +281,7 @@ export class FormMetaData implements IFormMetadata {
       program,
       locale: this.params.locale,
       excludeInheritedAttributes: this.params.excludeInheritedAttributes,
+      formFieldExtensions: this.params.formFieldExtensions,
     }).toJson();
   }
 
@@ -350,6 +361,7 @@ export class FormMetaData implements IFormMetadata {
       program,
       locale: this.params.locale,
       excludeInheritedAttributes: this.params.excludeInheritedAttributes,
+      formFieldExtensions: this.params.formFieldExtensions,
     }).toJson();
   }
 

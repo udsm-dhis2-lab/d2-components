@@ -1,7 +1,7 @@
 import { IFieldDropdown } from './field-dropdown.interface';
 import { FieldControlType } from './field-control-type.interface';
 import { FormFieldMetaType } from './form-field-meta-type.interface';
-
+import { FormFieldExtension } from './form-field-extension.interface';
 export interface IFormField<T> {
   value?: T | '';
   id: string;
@@ -43,4 +43,5 @@ export interface IFormField<T> {
   availableOptionsLabel?: string;
   selectedOptionsLabel?: string;
   allowFutureDate?: boolean;
+  extension?: FormFieldExtension;
 }

@@ -28,8 +28,10 @@ import {
   D2TrackerResponse,
   D2Window,
   DHIS2Event,
+  Program,
   TrackedEntityInstance,
 } from '@iapps/d2-web-sdk';
+import { CustomOrgUnitConfig } from '../form/components/org-unit-form-field.component';
 
 @Component({
   selector: 'ng-dhis2-ui-program-entry-form',
@@ -45,6 +47,7 @@ export class ProgramEntryFormModule {
   event = input<string>();
   enrollment = input<string>();
   orgUnit = input<string>();
+  customOrgUnitRoots = input<CustomOrgUnitConfig[]>();
 
   ngZone = inject(NgZone);
   d2 = (window as unknown as D2Window).d2Web;
@@ -75,6 +78,10 @@ export class ProgramEntryFormModule {
   FormLoader = () => {
     return <CircularLoader small />;
   };
+
+  dataId = computed(() => {
+    return this.instance()?.trackedEntity || this.instance()?.event;
+  });
 
   FormActionButtons = computed(() => {
     if (this.config().hideActionButtons) {
@@ -192,7 +199,7 @@ export class ProgramEntryFormModule {
   }
   #updateInstance(dataValues: Record<string, unknown>) {
     this.instance.update((instance) => {
-      instance?.updateDataValues(dataValues);
+      instance?.updateDataValues(dataValues, this.config().updateTeiOrgUnit);
 
       return instance;
     });
@@ -236,18 +243,22 @@ export class ProgramEntryFormModule {
       return await this.instanceQuery.create();
     }
 
-    const instance = (
+    const instanceResult = (
       await this.instanceQuery
         .setTrackedEntity(this.trackedEntity() as string)
         .get()
     ).data as TrackedEntityInstance;
 
-    if (!instance) {
+    if (!instanceResult) {
       return await this.instanceQuery.create();
     }
 
-    if (this.metaData()?.program) {
-      instance.setFields(this.metaData()!.program);
+    const instance = await this.instanceQuery
+      .setInstanceFields(this.metaData()?.program as Program)
+      .setReservedValues();
+
+    if (this.orgUnit()) {
+      instance.setOrgUnit(this.orgUnit() as string);
     }
 
     return instance;

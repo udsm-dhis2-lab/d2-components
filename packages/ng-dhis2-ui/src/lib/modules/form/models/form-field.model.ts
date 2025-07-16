@@ -4,6 +4,7 @@ import {
   FormFieldMetaType,
   IFormField,
   IFieldDropdown,
+  FormFieldExtension,
 } from '../interfaces';
 
 interface FormFieldFunction<T> {
@@ -51,6 +52,7 @@ export class FormField<T> implements IFormField<T>, FormFieldFunction<T> {
   availableOptionsLabel?: string;
   selectedOptionsLabel?: string;
   allowFutureDate?: boolean;
+  extension?: FormFieldExtension;
 
   constructor(options: Partial<FormField<T>> = {}) {
     this.value = options.value || '';
@@ -94,6 +96,7 @@ export class FormField<T> implements IFormField<T>, FormFieldFunction<T> {
     this.selectedOptionsLabel =
       options.availableOptionsLabel ?? 'Selected options';
     this.allowFutureDate = options.allowFutureDate;
+    this.extension = options.extension;
   }
 
   setMax(field: Partial<FormField<T>>): string | number | Date | undefined {

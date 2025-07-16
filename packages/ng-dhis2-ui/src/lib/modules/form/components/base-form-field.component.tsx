@@ -10,15 +10,15 @@ import {
   input,
   model,
   NgZone,
-  OnChanges,
   Output,
   Signal,
-  SimpleChanges,
 } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { FormGroup } from '@angular/forms';
 import {
   Checkbox,
+  CircularLoader,
+  colors,
   InputField,
   MultiSelectField,
   MultiSelectOption,
@@ -26,30 +26,27 @@ import {
   SingleSelectOption,
   TextAreaField,
   Transfer,
-  CircularLoader,
-  colors,
 } from '@dhis2/ui';
+import {
+  D2Window,
+  DataFilterCondition,
+  DataQueryFilter,
+  DHIS2Event,
+  TrackedEntityInstance,
+} from '@iapps/d2-web-sdk';
 import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
 import React, { useEffect, useMemo, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
+import { filter, take } from 'rxjs';
 import { ReactWrapperModule } from '../../react-wrapper/react-wrapper.component';
 import { useFieldValidation } from '../hooks';
 import { IFormField } from '../interfaces';
 import { FieldConfig } from '../models';
 import { FileUploadField } from './file-upload-field.component';
-import { OrgUnitFormField } from './org-unit-form-field.component';
-import { filter, take } from 'rxjs';
-import {
-  D2Window,
-  DataFilterCondition,
-  DataQueryFilter,
-} from '@iapps/d2-web-sdk';
+import { OrgUnitFormField, CustomOrgUnitConfig } from './org-unit-form-field.component';
 
 @Directive()
-export class BaseFormFieldComponent
-  extends ReactWrapperModule
-  implements OnChanges
-{
+export class BaseFormFieldComponent extends ReactWrapperModule {
   ngZone = inject(NgZone);
   httpClient = inject(NgxDhis2HttpClientService);
   fieldType = 'textbox';
@@ -59,6 +56,8 @@ export class BaseFormFieldComponent
   form = model.required<FormGroup>();
   isValid = input<boolean>();
   isValueAssigned = input<boolean>();
+  dataId = input<string>();
+  customOrgUnitRoots = input<CustomOrgUnitConfig[]>();
 
   value = model<string>();
   protected value$ = toObservable(this.value);
@@ -91,20 +90,13 @@ export class BaseFormFieldComponent
     this.render();
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (!(changes['field'] || {})?.firstChange) {
-      this.InputField = this.#getInputField();
-      this.component = this.#getInputField();
-      this.render();
-    }
-  }
-
   #getInputField() {
     return (): React.JSX.Element => {
       const [value, setValue] = useState(
         this.form().get(this.field().id)?.value ||
-          this.form().get(this.field().key)?.value
+        this.form().get(this.field().key)?.value
       );
+
 
       const [selected, setSelected] = useState();
       const [touched, setTouched] = useState(false);
@@ -118,22 +110,30 @@ export class BaseFormFieldComponent
       const [checkingUniqueness, setCheckingUniqueness] = useState<boolean>();
 
       useEffect(() => {
-        if (this.isValueAssigned()) {
-          const value =
-            this.form().get(this.field().id)?.value ||
-            this.form().get(this.field().key)?.value;
-          setDisabled(true);
-          setValue(value);
-          checkValueUniqueness();
-        }
-      }, [this.isValueAssigned()]);
+        const isAssignedSubscription = this.isValueAssigned$
+          .pipe(filter((isValueAssigned) => isValueAssigned === true))
+          .subscribe({
+            next: () => {
+              const value =
+                this.form().get(this.field().id)?.value ||
+                this.form().get(this.field().key)?.value;
+              setValue(value);
+              setDisabled(true);
+              checkValueUniqueness();
+            },
+          });
+
+        return () => {
+          isAssignedSubscription.unsubscribe();
+        };
+      }, []);
 
       // TODO: Review error handling as take() has potential to missed any other updated error information
       useEffect(() => {
         const fieldErrorSubscription = this.fieldError$
           .pipe(
             filter((error) => error !== initialError),
-            take(1) // Take only the first emitted value, then unsubscribe
+            take(1)
           )
           .subscribe({
             next: (error: string | undefined) => {
@@ -146,10 +146,6 @@ export class BaseFormFieldComponent
         };
       }, [initialError]); // Add initialError as a dependency to avoid stale closures
 
-      const onChange = (payload: {
-        selected: React.SetStateAction<undefined>;
-      }) => setSelected(payload.selected);
-
       const arrayValue = useMemo(() => {
         if (value && value.length > 0) {
           return value.split(',');
@@ -157,6 +153,17 @@ export class BaseFormFieldComponent
 
         return [];
       }, [value]);
+
+      const inputWidth = useMemo(() => {
+        if (
+          this.field().controlType === 'date' ||
+          this.field().controlType === 'date-time'
+        ) {
+          return '360px';
+        }
+
+        return this.fieldConfig()?.inputWidth;
+      }, []);
 
       const { validationError, hasError } = useFieldValidation({
         field: this.field(),
@@ -167,28 +174,34 @@ export class BaseFormFieldComponent
         touched,
       });
 
+      const onValueChange = (value: unknown) => {
+        this.ngZone.run(() => {
+          (
+            this.form().get(this.field().id) ||
+            this.form().get(this.field().key)
+          )?.setValue(value);
+
+          this.update.emit({
+            form: this.form(),
+            value,
+          });
+        });
+
+        setValue(value);
+        setTouched(true);
+      };
+
       const checkValueUniqueness = async () => {
-        if (this.field().unique && this.field().trackedEntityType) {
+        if (this.field().unique || (this.field().extension?.isDataElementUnique ?? false) && value && value.length > 0 && touched) {
+        //  if (this.field().unique && value && value.length > 0 && touched) {
           setCheckingUniqueness(true);
           setRecordExistError(undefined);
-          const d2 = (window as unknown as D2Window).d2Web;
           try {
-            const response = (
-              await d2.trackerModule.trackedEntity
-                .setTrackedEntityType(this.field().trackedEntityType as string)
-                .setOuMode('ACCESSIBLE')
-                .setFilters([
-                  new DataQueryFilter()
-                    .setAttribute(this.field().id)
-                    .setCondition(DataFilterCondition.Equal)
-                    .setValue(value),
-                ])
-                .get()
-            )?.data;
+            const isDuplicate = await this.searchForDuplicates(value);
 
             setCheckingUniqueness(false);
 
-            if (response?.length > 0) {
+            if (isDuplicate) {
               const customError = `Record with this ${this.label()} is already registered`;
               (
                 this.form().controls[this.field().id] ||
@@ -221,55 +234,32 @@ export class BaseFormFieldComponent
                 placeholder={this.placeholder()}
                 value={value}
                 onChange={(event: any) => {
-                  this.ngZone.run(() => {
-                    (
-                      this.form().get(this.field().id) ||
-                      this.form().get(this.field().key)
-                    )?.setValue(event.value);
-
-                    this.immediateUpdate.emit({
-                      form: this.form(),
-                      value: event.value,
-                    });
-                  });
-                  setValue(event.value);
-
-                  setTouched(true);
+                  onValueChange(event.value);
                 }}
                 onBlur={() => {
                   checkValueUniqueness();
-                  this.ngZone.run(() => {
-                    this.update.emit({ form: this.form(), value });
-                  });
                 }}
               />
             );
 
-          case 'org-unit':
+
+          case 'org-unit': {
             return (
               <OrgUnitFormField
                 label={this.label()}
                 key={this.field().id}
+                field={this.field().id}
                 required={this.field().required}
                 disabled={disabled}
+                customOrgUnitRoots={this.customOrgUnitRoots()}
                 onSelectOrgUnit={(selectedOrgUnit: string) => {
-                  this.ngZone.run(() => {
-                    (
-                      this.form().get(this.field().id) ||
-                      this.form().get(this.field().key)
-                    )?.setValue(selectedOrgUnit);
-
-                    this.update.emit({
-                      form: this.form(),
-                      value: selectedOrgUnit,
-                    });
-                  });
-                  setValue(selectedOrgUnit);
-                  setTouched(true);
+                  onValueChange(selectedOrgUnit);
                 }}
                 selected={value}
               />
             );
+          }
+
 
           case 'transfer':
             return (
@@ -299,16 +289,7 @@ export class BaseFormFieldComponent
                 }
                 options={this.field().options}
                 onChange={(event: any) => {
-                  onChange({ selected: event.selected });
-                  this.ngZone.run(() => {
-                    (
-                      this.form().get(this.field().id) ||
-                      this.form().get(this.field().key)
-                    )?.setValue(event.selected);
-                  });
-                  setValue(event.selected);
-                  setTouched(true);
-                  this.update.emit({ form: this.form(), value });
+                  onValueChange(event.selected);
                 }}
               />
             );
@@ -321,21 +302,10 @@ export class BaseFormFieldComponent
                 name={this.field().id}
                 disabled={disabled}
                 onChange={(event: any) => {
-                  this.ngZone.run(() => {
-                    (
-                      this.form().get(this.field().id) ||
-                      this.form().get(this.field().key)
-                    )?.setValue(event.checked);
-                  });
-                  setValue(event.checked);
-
-                  setTouched(true);
+                  onValueChange(event.checked);
                 }}
                 onBlur={() => {
                   checkValueUniqueness();
-                  this.ngZone.run(() => {
-                    this.update.emit({ form: this.form(), value });
-                  });
                 }}
               />
             );
@@ -353,18 +323,7 @@ export class BaseFormFieldComponent
                 label={this.label()}
                 selected={value}
                 onChange={(event: any) => {
-                  this.ngZone.run(() => {
-                    (
-                      this.form().get(this.field().id) ||
-                      this.form().get(this.field().key)
-                    )?.setValue(event.selected);
-                    this.update.emit({
-                      form: this.form(),
-                      value: event.selected,
-                    });
-                  });
-                  setValue(event.selected);
-                  setTouched(true);
+                  onValueChange(event.selected);
                 }}
                 onBlur={() => {
                   checkValueUniqueness();
@@ -397,18 +356,7 @@ export class BaseFormFieldComponent
                 noMatchText="No options found"
                 onChange={(event: { selected: string[] }) => {
                   const selectedValue = (event.selected || []).join(',');
-                  this.ngZone.run(() => {
-                    (
-                      this.form().get(this.field().id) ||
-                      this.form().get(this.field().key)
-                    )?.setValue(selectedValue);
-                    this.update.emit({
-                      form: this.form(),
-                      value: selectedValue,
-                    });
-                  });
-                  setValue(selectedValue);
-                  setTouched(true);
+                  onValueChange(selectedValue);
                 }}
                 onBlur={() => {
                   checkValueUniqueness();
@@ -436,17 +384,9 @@ export class BaseFormFieldComponent
                   performUpload={true}
                   uploadUrl={'fileResources'}
                   onUploadSuccess={(fileId: string) => {
-                    this.ngZone.run(() => {
-                      this.form().get(this.field().id) ||
-                        this.form().get(this.field().key)?.setValue(fileId);
-                      this.update.emit({
-                        form: this.form(),
-                        value: fileId,
-                      });
-                    });
-                    setValue(fileId);
-                    setTouched(true);
+                    onValueChange(fileId);
                   }}
+                  extension={this.field()?.extension}
                 />
               </>
             );
@@ -456,7 +396,7 @@ export class BaseFormFieldComponent
                 error={hasError}
                 validationText={validationError}
                 type={this.field().type as any}
-                inputWidth={this.fieldConfig()?.inputWidth}
+                inputWidth={inputWidth}
                 required={this.field().required}
                 name={this.field().id}
                 label={this.label()}
@@ -466,25 +406,10 @@ export class BaseFormFieldComponent
                 value={value}
                 readOnly={disabled}
                 onChange={(event: any) => {
-                  this.ngZone.run(() => {
-                    (
-                      this.form().get(this.field().id) ||
-                      this.form().get(this.field().key)
-                    )?.setValue(event.value);
-                    this.immediateUpdate.emit({
-                      form: this.form(),
-                      value: event.value,
-                    });
-                  });
-                  setValue(event.value);
-
-                  setTouched(true);
+                  onValueChange(event.value);
                 }}
                 onBlur={() => {
                   checkValueUniqueness();
-                  this.ngZone.run(() => {
-                    this.update.emit({ form: this.form(), value });
-                  });
                 }}
               />
             );
@@ -518,5 +443,58 @@ export class BaseFormFieldComponent
 
   onChange(event: any): void {
     this.value.set(event);
+  }
+
+  async searchForDuplicates(value: string) {
+    const d2 = (window as unknown as D2Window).d2Web;
+
+    if (!value) {
+      return false;
+    }
+
+    switch (this.field().metaType) {
+      case 'ATTRIBUTE': {
+        const data = (
+          await d2.trackerModule.trackedEntity
+            .setTrackedEntityType(this.field().trackedEntityType as string)
+            .setOuMode('ACCESSIBLE')
+            .setFilters([
+              new DataQueryFilter()
+                .setAttribute(this.field().id)
+                .setCondition(DataFilterCondition.Equal)
+                .setValue(value),
+            ])
+            .get()
+        )?.data as TrackedEntityInstance[];
+
+        return (
+          data?.filter(
+            (trackedEntity) => trackedEntity.trackedEntity !== this.dataId()
+          )?.length > 0
+        );
+      }
+
+      case 'DATA_ELEMENT': {
+        const data = (
+          await d2.eventModule.event
+            .setOuMode('ACCESSIBLE')
+            .setFilters([
+              new DataQueryFilter()
+                .setAttribute(this.field().id)
+                .setCondition(DataFilterCondition.Equal)
+                .setValue(value)
+                .setType('DATA_ELEMENT'),
+            ])
+            .get()
+        )?.data as DHIS2Event[];
+
+        return (
+          data?.filter((event) => event.event !== this.dataId())?.length > 0
+        );
+      }
+
+      default:
+        return false;
+    }
   }
 }

@@ -10,3 +10,4 @@ export * from './form-configuration.model';
 export * from './form-field-group.interface';
 export * from './form-metadata-section.interface';
 export * from './form-metadata.interface';
+export * from './form-field-extension.interface';

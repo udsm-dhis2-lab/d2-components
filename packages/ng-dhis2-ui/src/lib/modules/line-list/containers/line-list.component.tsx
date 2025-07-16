@@ -1,4 +1,3 @@
-// src/app/line-list-table.component.ts
 import {
   Component,
   EventEmitter,
@@ -7,7 +6,7 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
-import { CircularLoader, colors } from '@dhis2/ui';
+import { CircularLoader, colors, DropdownButton, MenuItem } from '@dhis2/ui';
 import {
   D2Window,
   DataFilterCondition,
@@ -40,7 +39,10 @@ import {
   addActionsColumn,
   getTrackedEntityTableData,
 } from '../utils/tei-table-data-utils';
-import { getEvents } from '../utils/event-table-table-util';
+import { getEvents } from '../utils/event-table-data-util';
+import * as XLSX from 'xlsx';
+import { addDays, format } from 'date-fns';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'ng-dhis2-ui-line-list',
@@ -49,6 +51,7 @@ import { getEvents } from '../utils/event-table-table-util';
   standalone: false,
 })
 export class LineListTableComponent extends ReactWrapperModule {
+  @Input() triggerToken!: string;
   @Input() programId!: string;
   @Input() orgUnit!: string;
   @Input() programStageId?: string;
@@ -58,7 +61,7 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() useOuModeWithOlderDHIS2Instance?: boolean;
   @Input() startDate?: string;
   @Input() endDate?: string;
-  @Input() dataQueryFilters?: DataQueryFilter[];
+  @Input() dataQueryFilters?: DataQueryFilter[] = [];
   @Input() ouMode?: string;
   @Input() isButtonLoading = false;
   @Input() buttonFilter!: string;
@@ -67,6 +70,8 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() isOptionSetNameVisible = false;
   @Input() allowRowsSelection = false;
   @Input() enrollmentStatus!: EnrollmentStatus;
+  @Input() filterableColumnIds!: string[];
+  @Input() triggerRefetch = false;
   @Input() eventStatus!: {
     programStage: string;
     status: EventStatus;
@@ -78,7 +83,9 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Output() rowsSelected = new EventEmitter<
     TrackedEntityInstance[] | DHIS2Event[]
   >();
-
+  @Input() showActionButtons = true;
+  @Input() showEnrollmentDates = true;
+  @Input() showDownloadButton = false;
   private reactStateUpdaters: any = null;
 
   setReactStateUpdaters = (updaters: any) => {
@@ -87,6 +94,10 @@ export class LineListTableComponent extends ReactWrapperModule {
 
   ngOnChanges(changes: SimpleChanges) {
     if (this.reactStateUpdaters) {
+      if (changes['triggerToken']) {
+        this.reactStateUpdaters.setTriggerTokenState(this.triggerToken);
+        this.reactStateUpdaters.setTriggerRefetch(this.triggerRefetch);
+      }
       if (changes['programId']) {
         this.reactStateUpdaters.setProgramIdState(this.programId);
       }
@@ -116,6 +127,9 @@ export class LineListTableComponent extends ReactWrapperModule {
       if (changes['allowRowsSelection']) {
         this.reactStateUpdaters.setIsButtonLoading(this.allowRowsSelection);
       }
+      if (changes['triggerRefetch']) {
+        this.reactStateUpdaters.setTriggerRefetch(this.triggerRefetch);
+      }
     }
   }
 
@@ -132,12 +146,18 @@ export class LineListTableComponent extends ReactWrapperModule {
         pageCount: 1,
       })
     );
+    const [triggerTokenState, setTriggerTokenState] = useState<
+      string | undefined
+    >(this.triggerToken);
     const [programIdState, setProgramIdState] = useState<string>(
       this.programId
     );
     const [isOptionSetNameVisibleState, setOptionSetNameVisible] =
       useState<boolean>(this.isOptionSetNameVisible);
     const [orgUnitState, setOrgUnitState] = useState<string>(this.orgUnit);
+    const [tempOrgUnitState, setTempOrgUnitState] = useState<string>(
+      this.orgUnit
+    );
     const [programStageIdState, setProgramStageIdState] = useState<
       string | undefined
     >(this.programStageId);
@@ -147,12 +167,21 @@ export class LineListTableComponent extends ReactWrapperModule {
     const [dataQueryFiltersState, setDataQueryFiltersState] = useState<
       DataQueryFilter[]
     >(this.dataQueryFilters as DataQueryFilter[]);
+    const [tempDataQueryFiltersState, setTempDataQueryFiltersState] = useState<
+      DataQueryFilter[]
+    >(this.dataQueryFilters as DataQueryFilter[]);
     const [startDateState, setStartDateState] = useState<string | undefined>(
       this.startDate
     );
+    const [tempStartDateState, setTempStartDateState] = useState<
+      string | undefined
+    >(this.startDate);
     const [endDateState, setEndDateState] = useState<string | undefined>(
       this.endDate
     );
+    const [tempEndDateState, setTempEndDateState] = useState<
+      string | undefined
+    >(this.endDate);
     const [loading, setLoading] = useState<boolean>(false);
     const [metaDataLoadng, setMetaDataLoading] = useState<boolean>(false);
     const [filteredColumns, setFilteredColumns] =
@@ -164,7 +193,10 @@ export class LineListTableComponent extends ReactWrapperModule {
     const [showAllFilters, setShowAllFilters] = useState(false);
     const visibleFilters = showAllFilters
       ? filteredColumns ?? []
-      : (filteredColumns ?? []).slice(0, 2);
+      : (filteredColumns ?? []).slice(0, 0);
+    // const visibleFilters = showAllFilters
+    //   ? filteredColumns ?? []
+    //   : filteredColumns ?? []).slice(0, 2);
     const defaultOrgUnit = this.orgUnit;
     const [prevValue, setPrevValue] = useState<string>();
     const [dateStates, setDateStates] = useState<{ [key: string]: string }>({});
@@ -172,10 +204,19 @@ export class LineListTableComponent extends ReactWrapperModule {
     const [selectable, setSelectable] = useState<boolean>(
       this.allowRowsSelection
     );
+    const [triggerRefetch, setTriggerRefetch] = useState<boolean>(
+      this.triggerRefetch
+    );
+    const [showActionButtons, setShowActionButtons] = useState<boolean>(
+      this.showActionButtons
+    );
+    const [orgUnitModalVisible, setOrgUnitModalVisible] =
+      useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
 
     const d2 = (window as unknown as D2Window).d2Web;
 
-    // Store updaters in refs for Angular to access
+    // Stores updaters in refs for Angular to access
     const updateRefs = useRef({
       setProgramIdState,
       setOrgUnitState,
@@ -185,45 +226,61 @@ export class LineListTableComponent extends ReactWrapperModule {
       setEndDateState,
       setOptionSetNameVisible,
       setSelectable,
+      setTriggerRefetch,
+      setTriggerTokenState,
     });
+
+    // useEffect(() => {
+    //   this.setReactStateUpdaters?.(updateRefs.current);
+    // }, []);
 
     useEffect(() => {
       this.setReactStateUpdaters?.(updateRefs.current);
-    }, []);
-
-    useEffect(() => {
-      setLoading(true);
       const fetchmetaData = async () => {
+        setLoading(true);
+        if (!this.programId) {
+          setMetaData(null);
+          setLoading(false);
+          return;
+        }
+
+        setError(null);
         try {
           const trackerResponse = (await d2.trackerModule.trackedEntity
             .setProgram(this.programId)
-            .getMetaData()) as Program;
+            .getMetaData({ skipProgramRules: true })) as Program;
+          if (!trackerResponse || !trackerResponse.programType) {
+            throw new Error('failed to load data.');
+          }
           const data = trackerResponse;
           setMetaData(data);
         } catch (error) {
-          console.error('Failed to metadata:', error);
+          setError(error as string);
+          setLoading(false);
         }
       };
 
-      if (this.programId) {
-        fetchmetaData();
-      }
+      fetchmetaData();
     }, []);
 
     useEffect(() => {
       if (!metaData) {
         return undefined;
       }
-
       const isTracker = metaData.programType === 'WITH_REGISTRATION';
       const isEvent = metaData.programType === 'WITHOUT_REGISTRATION';
-      const endDate = endDateState ?? new Date().toISOString().split('T')[0];
+      const endDate =
+        endDateState ?? format(addDays(new Date(), 1), 'yyyy-MM-dd');
 
       if (this.programStageId || isEvent) {
         setLoading(true);
         d2.eventModule.event
+          .setEndDate(endDate)
+          .setStartDate(startDateState as string)
           .setProgram(this.programId)
           .setProgramStage(this.programStageId as string)
+          .setOrgUnit(orgUnitState)
+          .setOuMode(this.ouMode as OuMode)
           .setPagination(
             new Pager({
               pageSize: pager.pageSize,
@@ -243,8 +300,37 @@ export class LineListTableComponent extends ReactWrapperModule {
               pager,
               metaData
             );
+
+            // const filterableColumnIdsSet = new Set(
+            //   this.filterableColumnIds
+            // );
+
+            // const updatedFilterableColumnIds: ColumnDefinition[] =
+            //   columns.filter((column) =>
+            //     filterableColumnIdsSet.has(column.key)
+            //   );
+
+            // const finalColumns: ColumnDefinition[] = addActionsColumn(
+            //   [{ label: '#', key: 'index' }, ...updatedFilterableColumnIds],
+            //   this.actionOptions
+            // );
+
+            let updatedFilterableColumnIds: ColumnDefinition[];
+
+            if (
+              Array.isArray(this.filterableColumnIds) &&
+              this.filterableColumnIds.length > 0
+            ) {
+              const filterableColumnIdsSet = new Set(this.filterableColumnIds);
+              updatedFilterableColumnIds = columns.filter((column) =>
+                filterableColumnIdsSet.has(column.key)
+              );
+            } else {
+              updatedFilterableColumnIds = columns;
+            }
+
             const finalColumns: ColumnDefinition[] = addActionsColumn(
-              [{ label: '#', key: 'index' }, ...columns],
+              [{ label: '#', key: 'index' }, ...updatedFilterableColumnIds],
               this.actionOptions
             );
 
@@ -256,31 +342,35 @@ export class LineListTableComponent extends ReactWrapperModule {
             setPager(new Pager(pagerResponse || {}));
           });
       } else if (isTracker) {
-        setLoading(true);
-        d2.trackerModule.trackedEntity
-          .setEndDate(endDate)
-          .setStartDate(startDateState as string)
-          .setProgram(this.programId)
-          .setProgramStage(this.programStageId as string)
-          .setOrgUnit(orgUnitState)
-          .setOuMode(this.ouMode as OuMode)
-          .setStatus(this.enrollmentStatus)
-          .setEventStatus(
-            this.eventStatus?.status,
-            this.eventStatus?.programStage
-          )
-          .setFilters(dataQueryFiltersState)
-          .setPagination(
-            new Pager({
-              pageSize: pager.pageSize,
-              page: pager.page,
-            })
-          )
-          .setOrderCriterias([
-            new DataOrderCriteria().setField('createdAt').setOrder('desc'),
-          ])
-          .get()
-          .then((response) => {
+        const fetchTrackerData = async () => {
+          try {
+            setLoading(true);
+            const response = await d2.trackerModule.trackedEntity
+              .setEndDate(endDate)
+              .setStartDate(startDateState as string)
+              .setProgram(this.programId)
+              .setProgramStage(this.programStageId as string)
+              .setOrgUnit(orgUnitState)
+              .setOuMode(this.ouMode as OuMode)
+              .setStatus(this.enrollmentStatus)
+              .setEventStatus(
+                this.eventStatus?.status,
+                this.eventStatus?.programStage
+              )
+              .setFilters(dataQueryFiltersState)
+              .setPagination(
+                new Pager({
+                  pageSize: pager.pageSize,
+                  page: pager.page,
+                })
+              )
+              .setOrderCriterias([
+                new DataOrderCriteria().setField('createdAt').setOrder('desc'),
+              ])
+              .get(
+                
+              );
+
             const trackedEntityInstances = Array.isArray(response.data)
               ? response.data
               : ([response.data] as TrackedEntityInstance[]);
@@ -289,49 +379,84 @@ export class LineListTableComponent extends ReactWrapperModule {
                 (tei: TrackedEntityInstance) => tei.latestEnrollment.orgUnit
               )
             ) as Set<string>;
-            const uniqueOrgUnitIds = [...orgUnitIdsFromEnrollments];
 
-            this.lineListService.fetchOrgUnits(uniqueOrgUnitIds).subscribe({
-              next: (fetchedOrgUnits) => {
-                const trackedEntityResponse: TrackedEntityInstancesResponse = {
-                  trackedEntityInstances: response.data!,
-                  pager: pager,
-                  orgUnitsMap: fetchedOrgUnits,
-                };
+            const orgUnitsFromAttributes = new Set(
+              trackedEntityInstances.flatMap(
+                (tei: TrackedEntityInstance) =>
+                  tei.attributes
+                    ?.filter(
+                      (attr: any) => attr.valueType === 'ORGANISATION_UNIT'
+                    )
+                    .map((attr: any) => attr.value) || []
+              )
+            );
 
-                const { columns, data, filteredEntityColumns, orgUnitLabel } =
-                  getTrackedEntityTableData(
-                    { data: trackedEntityResponse },
-                    this.programId,
-                    pager,
-                    metaData
-                  );
+            const uniqueOrgUnitIds = [
+              ...orgUnitIdsFromEnrollments,
+              ...orgUnitsFromAttributes,
+            ];
 
-                setFilteredColumns((prev) =>
-                  filteredEntityColumns.length > 0
-                    ? filteredEntityColumns
-                    : prev
-                );
+            const fetchedOrgUnits = await firstValueFrom(
+              this.lineListService.fetchOrgUnits(uniqueOrgUnitIds)
+            );
 
-                const finalColumns: ColumnDefinition[] = addActionsColumn(
-                  [{ label: '#', key: 'index' }, ...columns],
-                  this.actionOptions
-                );
+            const trackedEntityResponse: TrackedEntityInstancesResponse = {
+              trackedEntityInstances: response.data!,
+              pager: pager,
+              orgUnitsMap: fetchedOrgUnits,
+            };
 
-                const pagerResponse = response.pagination;
+            const { columns, data, filteredEntityColumns, orgUnitLabel } =
+              getTrackedEntityTableData(
+                { data: trackedEntityResponse },
+                this.programId,
+                pager,
+                metaData
+              );
 
-                setLoading(false);
-                setColumns(finalColumns);
-                setData(data);
-                setPager(new Pager(pagerResponse || {}));
-                setOrgUnitLabel(orgUnitLabel);
-              },
-              error: (err) => {
-                console.error('Error fetching org units:', err);
-                setLoading(false);
-              },
-            });
-          });
+            setFilteredColumns((prev) =>
+              filteredEntityColumns.length > 0 ? filteredEntityColumns : prev
+            );
+
+            let updatedFilterableColumnIds: ColumnDefinition[];
+
+            if (
+              Array.isArray(this.filterableColumnIds) &&
+              this.filterableColumnIds.length > 0
+            ) {
+              const filterableColumnIdsSet = new Set(this.filterableColumnIds);
+              updatedFilterableColumnIds = columns.filter((column) =>
+                filterableColumnIdsSet.has(column.key)
+              );
+            } else {
+              updatedFilterableColumnIds = columns;
+            }
+
+            const finalColumns: ColumnDefinition[] = addActionsColumn(
+              [{ label: '#', key: 'index' }, ...updatedFilterableColumnIds],
+              this.actionOptions
+            );
+
+            // const finalColumns: ColumnDefinition[] = addActionsColumn(
+            //   [{ label: '#', key: 'index' }, ...columns],
+            //   this.actionOptions
+            // );
+
+            const pagerResponse = response.pagination;
+
+            // setLoading(false);
+            setColumns(finalColumns);
+            setData(data);
+            setPager(new Pager(pagerResponse || {}));
+            setOrgUnitLabel(orgUnitLabel);
+          } catch (error) {
+            console.error('Failed to fetch tracker data:', error);
+            setError('Could not load records. Please reload.');
+          } finally {
+            setLoading(false);
+          }
+        };
+        fetchTrackerData();
       }
     }, [
       metaData,
@@ -345,7 +470,61 @@ export class LineListTableComponent extends ReactWrapperModule {
       pager.pageSize,
       isOptionSetNameVisibleState,
       dataQueryFiltersState,
+      triggerRefetch,
+      triggerTokenState,
     ]);
+
+    const handleExcelDownload = () => {
+      const filteredColumns = columns.filter((col) => col.label !== 'Actions');
+      const header = filteredColumns.map((col) => col.label);
+      const rows = data.map((row) =>
+        filteredColumns.map((col) => {
+          const cell = row[col.key];
+          if (cell === null || cell === undefined) return '';
+          return typeof cell === 'object' && 'value' in cell
+            ? cell.value
+            : cell;
+        })
+      );
+      const worksheetData = [header, ...rows];
+
+      // Creates worksheet and workbook, then writes to file
+      const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'LineListData');
+      XLSX.writeFile(workbook, 'records.xlsx');
+    };
+
+    const handleCsvDownload = () => {
+      const safeValue = (value: any) => {
+        if (value === null || value === undefined) return '';
+        if (typeof value === 'object') {
+          if ('value' in value) {
+            return value.value;
+          }
+          return JSON.stringify(value);
+        }
+        return value;
+      };
+
+      const filteredColumns = columns.filter((col) => col.label !== 'Actions');
+      const header = filteredColumns.map((col) => `"${col.label}"`).join(',');
+      const csvData = data.map((row) =>
+        filteredColumns.map((col) => `"${safeValue(row[col.key])}"`).join(',')
+      );
+      const csvContent = [header, ...csvData].join('\n');
+
+      // Creates a Blob and triggers the download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'records.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
 
     const handleInputChange = (key: string, value: string) => {
       setInputValues((prevValues) => ({
@@ -353,11 +532,11 @@ export class LineListTableComponent extends ReactWrapperModule {
         [key]: value ?? '',
       }));
 
-      setDataQueryFiltersState((prevFilters) => {
-        // Remove old filter for this key
+      setTempDataQueryFiltersState((prevFilters) => {
+        // Removes old filter for this key
         const filteredFilters = prevFilters.filter((f) => f.attribute !== key);
 
-        // Only add new filter if value is not empty
+        // adds new filter only if value is not empty
         const updatedFilters = value.trim()
           ? [
               ...filteredFilters,
@@ -379,11 +558,11 @@ export class LineListTableComponent extends ReactWrapperModule {
         [key]: value ?? '',
       }));
 
-      setDataQueryFiltersState((prevFilters = []) => {
-        // Remove existing filter for the same key (attribute)
+      setTempDataQueryFiltersState((prevFilters = []) => {
+        // Removes existing filter for the same key (attribute)
         const filteredFilters = prevFilters.filter((f) => f.attribute !== key);
 
-        // Only add new filter if value is not empty
+        // adds new filter only if value is not empty
         const updatedFilters = value.trim()
           ? [
               ...filteredFilters,
@@ -401,14 +580,14 @@ export class LineListTableComponent extends ReactWrapperModule {
     const handleDateSelect = (key: string, selectedDate: any) => {
       const selectedDateString = selectedDate?.calendarDateString ?? '';
 
-      // Update dateStates
+      // Updates dateStates
       setDateStates((prevDateStates) => ({
         ...prevDateStates,
         [key]: selectedDateString,
       }));
 
-      // Update dataQueryFilters
-      setDataQueryFiltersState((prevFilters) => {
+      // Updates dataQueryFilters
+      setTempDataQueryFiltersState((prevFilters) => {
         const filteredFilters = (prevFilters || []).filter(
           (f) => f.attribute !== key
         );
@@ -427,11 +606,18 @@ export class LineListTableComponent extends ReactWrapperModule {
       });
     };
 
+    const handleSearch = () => (
+      setDataQueryFiltersState(tempDataQueryFiltersState),
+      setStartDateState(tempStartDateState),
+      setEndDateState(tempEndDateState),
+      setOrgUnitState(tempOrgUnitState)
+    );
+
     function getTextColorFromBackGround(hex: string): string {
-      // Remove the hash if present
+      // Removes the hash if present
       hex = hex.replace('#', '');
 
-      // Convert to RGB
+      // Converts to RGB
       const r = parseInt(hex.substr(0, 2), 16);
       const g = parseInt(hex.substr(2, 2), 16);
       const b = parseInt(hex.substr(4, 2), 16);
@@ -439,7 +625,7 @@ export class LineListTableComponent extends ReactWrapperModule {
       // YIQ formula to calculate brightness
       const yiq = (r * 299 + g * 587 + b * 114) / 1000;
 
-      // Return black for light backgrounds, white for dark backgrounds
+      // Returns black for light backgrounds, white for dark backgrounds
       return yiq >= 128 ? colors.grey700 : '#FFFFFF';
     }
 
@@ -465,13 +651,47 @@ export class LineListTableComponent extends ReactWrapperModule {
           </div>
         ) : (
           <div>
-            <OrgUnitSelector
-              hide={hide}
-              setHide={setHide}
-              selectedOrgUnit={selectedOrgUnit}
-              setSelectedOrgUnit={setSelectedOrgUnit}
-              setOrgUnitState={setOrgUnitState}
-            />
+            {this.showDownloadButton && (
+              <div
+                style={{
+                  paddingBottom: '1rem',
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                }}
+              >
+                <DropdownButton
+                  name="Download"
+                  component={
+                    <span>
+                      {' '}
+                      <MenuItem
+                        label="Download Csv"
+                        onClick={handleCsvDownload}
+                      />
+                      <MenuItem
+                        label="Download Excel"
+                        onClick={handleExcelDownload}
+                      />
+                    </span>
+                  }
+                  value="Download"
+                >
+                  Download
+                </DropdownButton>
+              </div>
+            )}
+            {orgUnitModalVisible && (
+              <OrgUnitSelector
+                hide={hide}
+                setHide={setHide}
+                selectedOrgUnit={selectedOrgUnit}
+                setSelectedOrgUnit={setSelectedOrgUnit}
+                setOrgUnitState={setOrgUnitState}
+                setTempOrgUnitState={setTempOrgUnitState}
+                tempOrgUnitState={tempOrgUnitState}
+              />
+            )}
+
             {this.showFilters && (
               <FilterToolbar
                 orgUnitLabel={orgUnitLabel}
@@ -497,6 +717,18 @@ export class LineListTableComponent extends ReactWrapperModule {
                 setPrevValue={setPrevValue}
                 showAllFilters={showAllFilters}
                 setShowAllFilters={setShowAllFilters}
+                handleSearch={handleSearch}
+                setTempStartDateState={setTempStartDateState}
+                setTempEndDateState={setTempEndDateState}
+                setTempOrgUnitState={setTempOrgUnitState}
+                tempStartDateState={tempStartDateState}
+                tempEndDateState={tempEndDateState}
+                tempOrgUnitState={tempOrgUnitState}
+                dataQueryFiltersState={dataQueryFiltersState}
+                setDataQueryFiltersState={setDataQueryFiltersState}
+                SetOrgUnitModalVisible={setOrgUnitModalVisible}
+                showEnrollmentDates={this.showEnrollmentDates}
+                //  filteredFilters={filteredFilters}
               />
             )}
             <LineListTable
@@ -510,6 +742,7 @@ export class LineListTableComponent extends ReactWrapperModule {
               actionSelected={this.actionSelected}
               selectable={selectable}
               rowsSelected={this.rowsSelected}
+              showActionButtons={showActionButtons}
             />
           </div>
         )}
@@ -525,27 +758,3 @@ export class LineListTableComponent extends ReactWrapperModule {
     this.render();
   }
 }
-
-// {
-//   "/api": {
-//     "target": "http://41.59.227.69/tland-upgrade",
-//     "secure": "false",
-//     "auth": "nsajigwa:Hmis@2024",
-//     "changeOrigin": "true"
-//   },
-//   "/": {
-//     "target": "http://41.59.227.69/tland-upgrade",
-//     "secure": "false",
-//     "auth": "nsajigwa:Hmis@2024",
-//     "changeOrigin": "true"
-//   }
-// }
-
-// {
-//   "/api": {
-//     "target": "https://hrhis.moh.go.tz/test-hrhis",
-//     "secure": "false",
-//     "auth": "admin:district",
-//     "changeOrigin": "true"
-//   }
-// }

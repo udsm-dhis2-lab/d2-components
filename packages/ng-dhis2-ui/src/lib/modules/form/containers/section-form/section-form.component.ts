@@ -1,3 +1,4 @@
+/* eslint-disable @angular-eslint/no-output-native */
 import {
   Component,
   EventEmitter,
@@ -37,6 +38,7 @@ export class SectionFormComponent implements OnInit {
   @Output() save = new EventEmitter<Record<string, unknown>>();
   @Output() formUpdate = new EventEmitter<Record<string, unknown>>();
   @Output() cancel = new EventEmitter();
+  @Output() formValidityUpdate: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   inValid = signal<boolean>(true);
   inValid$: Observable<boolean>;
@@ -91,6 +93,7 @@ export class SectionFormComponent implements OnInit {
       const dataValues = this.#getDataValue();
 
       this.formUpdate.emit(dataValues);
+      this.formValidityUpdate.emit(this.checkIfInValid());
     }
   }
 
@@ -108,6 +111,7 @@ export class SectionFormComponent implements OnInit {
     );
 
     this.formUpdate.emit(dataValues);
+    this.formValidityUpdate.emit(this.checkIfInValid());
   }
 
   onSubmit() {

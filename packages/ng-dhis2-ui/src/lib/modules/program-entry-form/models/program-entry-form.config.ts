@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+import { FormFieldExtension } from '../../form';
+
 export type AutoAssignedValues = { field: string; value: string };
 
 export interface IProgramEntryFormConfig {
@@ -25,7 +27,10 @@ export interface IProgramEntryFormConfig {
   hideCancelButton?: boolean;
   ignoreRepeatability?: boolean;
   autoAssignedValues?: AutoAssignedValues[];
+  hideCustomAssignedFields?: boolean;
   autoComplete?: boolean;
+  formFieldExtensions?: FormFieldExtension[];
+  updateTeiOrgUnit?: boolean;
 }
 export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   program!: string;
@@ -48,7 +53,10 @@ export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   hideCancelButton?: boolean;
   ignoreRepeatability?: boolean;
   autoAssignedValues?: AutoAssignedValues[];
+  hideCustomAssignedFields?: boolean;
   autoComplete?: boolean;
+  formFieldExtensions?: FormFieldExtension[];
+  updateTeiOrgUnit: boolean = false;
 
   constructor(config: IProgramEntryFormConfig) {
     Object.assign(this, config);

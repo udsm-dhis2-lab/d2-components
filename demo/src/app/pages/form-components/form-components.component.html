@@ -1,22 +1,43 @@
 <div>
-  <h3>Form components</h3>
+ <h3>Form components</h3>
 
-  <div>
-    <!-- <ng-dhis2-ui-form
-      [form]="form"
-      [fields]="fields"
-      (formUpdate)="onUpdate($event)"
-    /> -->
 
-    <ng-dhis2-ui-tracker-form [program]="'swKllhfYa1E'" />
-    <!-- <ng-dhis2-ui-program-entry-form
-      [config]="programEntryConfig"
-      [event]="'IWXS2qEwdhb'"
-    /> -->
+ <div>
+   <!-- <ng-dhis2-ui-form
+     [form]="form"
+     [fields]="fields"
+     (formUpdate)="onUpdate($event)"
+   /> -->
+   <!-- Tj1TmxFxHVa -->
+<!-- mmPUQdQhR9G -->
+   <!-- <ng-dhis2-ui-tracker-form [program]="'lw9fZTamYec'" /> -->
+   <ng-dhis2-ui-program-entry-form
+     [customOrgUnitRoots]="customOrgUnitRoots"
+     [config]="programEntryConfig"
+     [trackedEntity]="'mmPUQdQhR9G'"
+     (instanceSaveCompleted)="onSaveComplete($event)"
+     (formCanceel)="onCancel()"
+   />
 
-    <!-- <ng-dhis2-ui-event-form
-      [program]="'lw9fZTamYec'"
-      [programStage]="'k4ZFqYqRNDF'"
-    /> -->
-  </div>
+
+   <ng-dhis2-ui-program-entry-form
+     [config]="programEntryConfig"
+     (instanceSaveCompleted)="onSaveComplete($event)"
+     (formCanceel)="onCancel()"
+   />
+
+
+   <!-- <ng-dhis2-ui-event-form
+     [program]="'lw9fZTamYec'"
+     [programStage]="'k4ZFqYqRNDF'"
+   /> -->
+ </div>
 </div>
+<!-- new FormMetaData({
+ programs: [program],
+ programStage: this.programStage(),
+ includeAllProgramStages: this.config()?.includeAllProgramStages,
+ disableEnrollmentDate: true,
+ splitRegistrationSection: false,
+ formFieldExtensions: this.config()?.formFieldExtensions,
+}).toJson() -->

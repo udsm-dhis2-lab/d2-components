@@ -40,12 +40,24 @@ export const getTrackedEntityTableData = (
       key: trackedEntityAttribute.id,
     }));
 
-  const dataElementColumns = metaData.displayInListDataElements
-    .sort((a, b) => a.sortOrder! - b.sortOrder!)
-    .map((dataElement) => ({
-      label: dataElement.formName || dataElement.name,
-      key: dataElement.id,
-    }));
+  // const dataElementColumns = metaData.displayInListDataElements
+  //   .sort((a, b) => a.sortOrder! - b.sortOrder!)
+  //   .map((dataElement) => ({
+  //     label: dataElement.formName || dataElement.name,
+  //     key: dataElement.id,
+  //   }));
+
+  const dataElementColumns = metaData
+    .programStages!.sort((a, b) => a.sortOrder - b.sortOrder) // Sorts stages by sortOrder
+    .flatMap((stage) =>
+      stage
+        .programStageDataElements!.filter((psde) => psde.displayInReports)
+        .sort((a, b) => a.sortOrder - b.sortOrder) // Sorts data elements within stage
+        .map((psde) => ({ 
+          label: psde.dataElement.formName || psde.dataElement.name,
+          key: psde.dataElement.id,
+        }))
+    );
 
   const dataElementOptions = metaData.displayInListDataElements.map(
     (element) => ({
@@ -100,24 +112,47 @@ export const getTrackedEntityTableData = (
             ),
           };
         } catch {
-          return { ...attr }; // Leave value as is on parse failure
+          return { ...attr }; 
         }
       }
       return attr;
     });
+    // attributesData.forEach((attr: any) => {
+    //   const attributeMeta = metaData.programTrackedEntityAttributes?.find(
+    //     (metadata) => metadata.trackedEntityAttribute.id === attr.attribute
+    //   );
 
+    //   if (attributeMeta?.trackedEntityAttribute.optionSetValue) {
+    //     const optionSet = attributeMeta?.trackedEntityAttribute?.optionSet;
+
+    //     const option = optionSet?.options?.find(
+    //       (option) => option.code === attr.value
+    //     );
+
+    //     row[attr.attribute] = option
+    //       ? { value: option?.name }
+    //       : { value: attr.value };
+    //   } else {
+    //     row[attr.attribute] = { value: attr.value };
+    //   }
+    // });
     attributesData.forEach((attr: any) => {
       const attributeMeta = metaData.programTrackedEntityAttributes?.find(
         (metadata) => metadata.trackedEntityAttribute.id === attr.attribute
       );
-
-      if (attributeMeta?.trackedEntityAttribute.optionSetValue) {
+    
+      const valueType = attributeMeta?.trackedEntityAttribute?.valueType;
+    
+      if (valueType === 'ORGANISATION_UNIT') {
+        const orgUnitName = orgUnitMap?.get(attr.value);
+        row[attr.attribute] = { value: orgUnitName || attr.value };
+      } else if (attributeMeta?.trackedEntityAttribute.optionSetValue) {
         const optionSet = attributeMeta?.trackedEntityAttribute?.optionSet;
-
+    
         const option = optionSet?.options?.find(
           (option) => option.code === attr.value
         );
-
+    
         row[attr.attribute] = option
           ? { value: option?.name }
           : { value: attr.value };
@@ -125,19 +160,20 @@ export const getTrackedEntityTableData = (
         row[attr.attribute] = { value: attr.value };
       }
     });
+    
 
     dataElementsData.forEach((element: DataValue) => {
-      // Find the matching data element in dataElementOptions by ID
+      // Finds the matching data element in dataElementOptions by ID
       const dataElementOption = dataElementOptions.find(
         (deo) => deo.id === element.dataElement
       );
 
-      // find a matching option within that data element's options
+      // finds a matching option within that data element's options
       const matchingOption = dataElementOption?.options?.find(
         (opt) => opt.name === element.value
       );
 
-      // Build the row entry with value and optionally style
+      // Builds the row entry with value and optional style
       if (matchingOption) {
         row[element.dataElement] = {
           value: element.value,
@@ -150,7 +186,7 @@ export const getTrackedEntityTableData = (
       }
     });
 
-    // Include orgUnit in the row for id access with style
+    // Includes orgUnit in the row for id access with style
     row['orgUnitId'] = { value: matchingEnrollment!.orgUnit };
     row['orgUnit'] = {
       value: orgUnitMap?.get(matchingEnrollment!.orgUnit) || '-',
