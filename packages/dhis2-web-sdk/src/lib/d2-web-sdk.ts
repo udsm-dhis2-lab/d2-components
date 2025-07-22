@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import { AxiosDefaults } from 'axios';
+import axios, { AxiosDefaults, AxiosInstance } from 'axios';
 import {
   AppManifestModule,
   CurrentUser,
@@ -17,7 +17,12 @@ import {
   SystemModule,
   EventModule,
 } from './modules';
-import { D2HttpClient, D2WebConfig } from './shared';
+import {
+  D2HttpClient,
+  D2IndexDb,
+  D2WebConfig,
+  ID2IndexDbConfig,
+} from './shared';
 
 export interface D2Window extends Window {
   d2Web: D2Web;
@@ -41,15 +46,14 @@ export class D2Web {
        */
       instance.setConfig(config);
 
-      /**
-       * Initialize http instance to allow http request using axios
-       */
-      instance.setHttpInstance(config.httpClientConfig as AxiosDefaults);
+      let axiosInstance = axios.create(
+        config.httpClientConfig as AxiosDefaults
+      );
 
       /**
        * Fetch and set app manifest
        */
-      await instance.setAppManifest();
+      await instance.setAppManifest(axiosInstance);
 
       /**
        * Update http instance to account for new information from manifest
@@ -57,7 +61,16 @@ export class D2Web {
       const newWebConfig = new D2WebConfig({
         baseUrl: instance.rootUrl,
       });
-      instance.setHttpInstance(newWebConfig.httpClientConfig as AxiosDefaults);
+
+      const indexDb = new D2IndexDb(
+        newWebConfig.indexDBConfig as ID2IndexDbConfig
+      );
+
+      axiosInstance = axios.create(
+        newWebConfig.httpClientConfig as AxiosDefaults
+      );
+
+      instance.setHttpInstance(axiosInstance, indexDb);
 
       /**
        * Fetch and set current user
@@ -88,8 +101,8 @@ export class D2Web {
     this.#config = config;
   }
 
-  async setAppManifest(): Promise<void> {
-    const appManifestModule = new AppManifestModule();
+  async setAppManifest(axiosInstance: AxiosInstance): Promise<void> {
+    const appManifestModule = new AppManifestModule(axiosInstance);
 
     try {
       const manifest = await appManifestModule.get();
@@ -125,8 +138,8 @@ export class D2Web {
     }
   }
 
-  setHttpInstance(httpConfig: AxiosDefaults): void {
-    this.httpInstance = new D2HttpClient(httpConfig);
+  setHttpInstance(axiosInstance: AxiosInstance, indexDb: D2IndexDb): void {
+    this.httpInstance = new D2HttpClient(axiosInstance, indexDb);
   }
 
   get rootUrl() {

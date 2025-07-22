@@ -9,3 +9,5 @@ export * from './data-order-criteria.interface';
 export * from './data-order-field.interface';
 export * from './data-order.interface';
 export * from './tracker-status.interface';
+export * from './index-db-params.interface';
+export * from './index-db-config.interface';
