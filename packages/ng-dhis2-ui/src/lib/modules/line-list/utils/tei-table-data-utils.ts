@@ -16,7 +16,8 @@ export const getTrackedEntityTableData = (
   response: LineListResponse,
   programId: string,
   pager: any,
-  metaData: Program
+  metaData: Program,
+  searcheableDataElements: string[]
 ): {
   columns: ColumnDefinition[];
   data: TableRow[];
@@ -40,12 +41,21 @@ export const getTrackedEntityTableData = (
       key: trackedEntityAttribute.id,
     }));
 
-  // const dataElementColumns = metaData.displayInListDataElements
-  //   .sort((a, b) => a.sortOrder! - b.sortOrder!)
-  //   .map((dataElement) => ({
-  //     label: dataElement.formName || dataElement.name,
-  //     key: dataElement.id,
-  //   }));
+  const tableSearcheableDataElements = metaData
+    .programStages!.sort((a, b) => a.sortOrder - b.sortOrder)
+    .flatMap((stage) =>
+      stage
+        .programStageDataElements!.filter((psde) => psde.displayInReports)
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .map((psde) => ({
+          label: psde.dataElement.formName || psde.dataElement.name,
+          key: psde.dataElement.id,
+          valueType: psde.dataElement.valueType,
+          options: psde.dataElement.optionSet,
+          type: 'dataElement',
+        }))
+        .filter((col) => searcheableDataElements.includes(col.key))
+    );
 
   const dataElementColumns = metaData
     .programStages!.sort((a, b) => a.sortOrder - b.sortOrder) // Sorts stages by sortOrder
@@ -53,7 +63,7 @@ export const getTrackedEntityTableData = (
       stage
         .programStageDataElements!.filter((psde) => psde.displayInReports)
         .sort((a, b) => a.sortOrder - b.sortOrder) // Sorts data elements within stage
-        .map((psde) => ({ 
+        .map((psde) => ({
           label: psde.dataElement.formName || psde.dataElement.name,
           key: psde.dataElement.id,
         }))
@@ -85,6 +95,7 @@ export const getTrackedEntityTableData = (
       key: attr.id,
       valueType: attr.valueType,
       options: attr.optionSet ?? undefined,
+      type: 'attribute',
     }));
 
   const tableData = teis.map((tei: TrackedEntityInstance, idx: number) => {
@@ -112,7 +123,7 @@ export const getTrackedEntityTableData = (
             ),
           };
         } catch {
-          return { ...attr }; 
+          return { ...attr };
         }
       }
       return attr;
@@ -140,19 +151,19 @@ export const getTrackedEntityTableData = (
       const attributeMeta = metaData.programTrackedEntityAttributes?.find(
         (metadata) => metadata.trackedEntityAttribute.id === attr.attribute
       );
-    
+
       const valueType = attributeMeta?.trackedEntityAttribute?.valueType;
-    
+
       if (valueType === 'ORGANISATION_UNIT') {
         const orgUnitName = orgUnitMap?.get(attr.value);
         row[attr.attribute] = { value: orgUnitName || attr.value };
       } else if (attributeMeta?.trackedEntityAttribute.optionSetValue) {
         const optionSet = attributeMeta?.trackedEntityAttribute?.optionSet;
-    
+
         const option = optionSet?.options?.find(
           (option) => option.code === attr.value
         );
-    
+
         row[attr.attribute] = option
           ? { value: option?.name }
           : { value: attr.value };
@@ -160,7 +171,6 @@ export const getTrackedEntityTableData = (
         row[attr.attribute] = { value: attr.value };
       }
     });
-    
 
     dataElementsData.forEach((element: DataValue) => {
       // Finds the matching data element in dataElementOptions by ID
@@ -198,7 +208,7 @@ export const getTrackedEntityTableData = (
   return {
     columns: tableColumns,
     data: tableData,
-    filteredEntityColumns: tableFilters,
+    filteredEntityColumns: [...tableFilters, ...tableSearcheableDataElements],
     orgUnitLabel: orgUnitLabel,
   };
 };
