@@ -136,5 +136,19 @@ export class WebSdkComponent {
     const testInstance = await createTestQuery.create();
 
     console.log('CREATE INSTANCE', testInstance);
+
+    const indexDbResponse = await this.d2.httpInstance.get(
+      'organisationUnits.json',
+      { useIndexDb: true }
+    );
+
+    console.log('ORGUNIT FROM INDEX DB', indexDbResponse);
+
+    const indexDbSingleResponse = await this.d2.httpInstance.get(
+      'organisationUnits/AdmHm9e8IwS.json',
+      { useIndexDb: true }
+    );
+
+    console.log('ORGUNIT FROM INDEX DB BY ID', indexDbSingleResponse);
   }
 }
