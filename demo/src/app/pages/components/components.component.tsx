@@ -12,11 +12,18 @@ import {
   FormValue,
   OrganisationUnitSelectionConfig,
 } from '@iapps/ng-dhis2-ui';
+import {
+  DropdownButton,
+  Menu,
+  InputField,
+  FlyoutMenu,
+  IconDownload16,
+} from '@dhis2/ui';
 import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
 import { Period } from '@iapps/period-utilities';
-import { Button, IconView16 } from '@dhis2/ui';
+import { Button, IconView16, ButtonStrip } from '@dhis2/ui';
 import { TableRow } from 'packages/ng-dhis2-ui/src/lib/modules/line-list/models/line-list.models';
-import React from 'react';
+import React, { useState } from 'react';
 import { ProgramEntryFormConfig } from '../../../../../packages/ng-dhis2-ui/src/lib/modules/program-entry-form/models/program-entry-form.config';
 //import { LineListTableComponent } from '../../../../../packages/ng-dhis2-ui/src/lib/modules/line-list/containers/line-list.component';
 
@@ -49,13 +56,14 @@ export class ComponentsComponent implements OnInit {
     ],
   });
 
-completedTrainingFilter = [new DataQueryFilter()
-    .setAttribute('pWu4cEoJapG')
-    .setProgramStage('a8N7x23LmXp')
-    .setCondition(DataFilterCondition.Equal)
-    .setType('DATA_ELEMENT')
-    .setValue('Yes')];
-    
+  completedTrainingFilter = [
+    new DataQueryFilter()
+      .setAttribute('pWu4cEoJapG')
+      .setProgramStage('a8N7x23LmXp')
+      .setCondition(DataFilterCondition.Equal)
+      .setType('DATA_ELEMENT')
+      .setValue('Yes'),
+  ];
 
   handleApprovalClick() {
     console.log(
@@ -108,10 +116,13 @@ completedTrainingFilter = [new DataQueryFilter()
   ];
 
   button = () => (
-    <Button onClick={() => {this.triggerRefetch = true}}>
+    <Button
+      onClick={() => {
+        this.triggerRefetch = true;
+      }}
+    >
       trigger here
     </Button>
-
   );
 
   constructor() {
@@ -997,8 +1008,6 @@ class DateField {
       : [];
   }
 
-  
-
   pconfig = new ProgramEntryFormConfig({
     program: 'A3olldDSHQg',
     programStage: 'NtZXBym2KfD',
@@ -1009,11 +1018,9 @@ class DateField {
     autoAssignedValues: [
       {
         field: 'orgUnit',
-        value: 'aaaaaaaaaaaaaaaaaa'
+        value: 'aaaaaaaaaaaaaaaaaa',
         // value: this.applicant()?.orgUnit,
       },
     ],
   });
-  
 }
-
