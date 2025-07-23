@@ -2,7 +2,6 @@ import Dexie from 'dexie';
 import { ID2IndexDbConfig, IndexDBParams } from '../interfaces';
 import { IndexDbUtil } from '../utils';
 import { IndexDbQuerySchema } from './index-db-query-schema.model';
-import { entries } from 'lodash';
 
 export class D2IndexDb extends Dexie {
   constructor(config: ID2IndexDbConfig) {

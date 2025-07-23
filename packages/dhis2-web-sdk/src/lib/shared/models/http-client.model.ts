@@ -60,7 +60,11 @@ export class D2HttpClient {
       ? this.#indexDb.findById(dataId, indexDbQuerySchema)
       : this.#indexDb.findAll(indexDbQuerySchema));
 
-    if (!indexDbResponse || indexDbResponse[schema]?.length === 0) {
+    if (
+      !indexDbResponse ||
+      indexDbResponse[schema]?.length === 0 ||
+      indexDbResponse['entries']?.length === 0
+    ) {
       const apiResponse = await this.#fetchFromApi(url, config);
 
       if (!apiResponse?.data) {

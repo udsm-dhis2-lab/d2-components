@@ -13,6 +13,7 @@ import {
   firstValueFrom,
   of,
 } from 'rxjs';
+import { ID2IndexDbConfig } from '@iapps/d2-web-sdk';
 
 export interface AppShellConfig {
   url?: string;
@@ -21,6 +22,7 @@ export interface AppShellConfig {
   apiVersion?: number;
   pwaEnabled?: boolean;
   plugin?: boolean;
+  indexDbConfig?: ID2IndexDbConfig;
   isDevMode: boolean;
 }
 
@@ -31,6 +33,7 @@ export class AppShellConfigClass implements AppShellConfig {
   apiVersion?: number;
   pwaEnabled?: boolean;
   plugin?: boolean;
+  indexDbConfig?: ID2IndexDbConfig;
   isDevMode: boolean;
 
   constructor(config: Partial<AppShellConfig>) {
@@ -41,6 +44,7 @@ export class AppShellConfigClass implements AppShellConfig {
     this.apiVersion = config?.apiVersion;
     this.pwaEnabled = config?.pwaEnabled ?? false;
     this.plugin = config?.plugin ?? false;
+    this.indexDbConfig = config?.indexDbConfig;
   }
 
   #setUrl(isDevMode: boolean, url?: string) {
