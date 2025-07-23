@@ -7,7 +7,7 @@ export class D2IndexDbConfig implements ID2IndexDbConfig {
   models: Record<string, string>;
 
   constructor(config?: Partial<ID2IndexDbConfig>) {
-    this.namespace = config?.namespace || 'db';
+    this.namespace = config?.namespace || 'd2-web-sdk-db';
     this.version = config?.version || 1;
     this.models = this.#setModels(config?.models || {});
   }
