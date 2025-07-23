@@ -9,6 +9,6 @@ export const D2_RESOURCES = {
   },
   dataStore: {
     name: 'dataStore',
-    indexDbIndices: 'key',
+    indexDbIndices: 'referenceKey,key',
   },
 };

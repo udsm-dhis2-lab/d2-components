@@ -145,7 +145,7 @@ export class WebSdkComponent {
     console.log('ORGUNIT FROM INDEX DB', orgUnitIndexDbResponse);
 
     const dataStoreIndexDbResponse = await this.d2.httpInstance.get(
-      'dataStore/modules?fields=id,sort,menuItems,section,mobile&',
+      'dataStore/modules/cacheCleaner?fields=id,sort,menuItems,section,mobile',
       { useIndexDb: true }
     );
 
