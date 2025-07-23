@@ -49,7 +49,7 @@ export class D2HttpClient {
   async #fetchFromIndexDb(url: string, config: D2HttpRequestConfig) {
     const indexDbQuerySchema = IndexDbQuerySchema.fromUrl(url);
 
-    const { schema, dataId, params } = indexDbQuerySchema;
+    const { schema, dataId } = indexDbQuerySchema;
 
     if (!schema) {
       console.warn('index db operations failed, Error: Schema is not supplied');
@@ -57,8 +57,8 @@ export class D2HttpClient {
     }
 
     const indexDbResponse = await (dataId
-      ? this.#indexDb.findById(schema, dataId)
-      : this.#indexDb.findAll(schema, params));
+      ? this.#indexDb.findById(dataId, indexDbQuerySchema)
+      : this.#indexDb.findAll(indexDbQuerySchema));
 
     if (!indexDbResponse || indexDbResponse[schema]?.length === 0) {
       const apiResponse = await this.#fetchFromApi(url, config);
@@ -83,7 +83,7 @@ export class D2HttpClient {
       IndexDbQuerySchema;
 
     const responseData = isDataStoreResource
-      ? this.#handleDataStoreResponse(apiResponse, namespace as string)
+      ? this.#handleDataStoreResponse(apiResponse, namespace as string, dataId)
       : apiResponse?.data?.[schema] ?? apiResponse?.data;
 
     (await dataId)
@@ -91,28 +91,31 @@ export class D2HttpClient {
       : this.#indexDb.saveBulk(schema, responseData as any);
   }
 
-  #handleDataStoreResponse(apiResponse: D2HttpResponse, namespace: string) {
+  #handleDataStoreResponse(
+    apiResponse: D2HttpResponse,
+    namespace: string,
+    key?: string
+  ) {
     if (isArray(apiResponse?.data) || apiResponse?.data?.['entries']) {
       return (
         (apiResponse?.data?.['entries'] ?? apiResponse?.data) as
           | Record<string, unknown>[]
           | string[]
       ).map((entry) => {
-        const key = isPlainObject(entry)
+        const referenceKey = isPlainObject(entry)
           ? `${namespace}-${(entry as Record<string, string>)['key']}`
           : undefined;
 
         return {
-          key,
+          referenceKey,
           entry,
         };
       });
     }
 
-    const entry = apiResponse.data;
     return {
-      entry,
-      key: `${namespace}-${(entry as Record<string, string>)['key']}`,
+      entry: apiResponse.data,
+      referenceKey: `${namespace}-${key}`,
     };
   }
 
