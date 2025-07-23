@@ -5,9 +5,13 @@ import {
   InputField,
   SingleSelectField,
   SingleSelectOption,
+  DropdownButton,
+  ButtonStrip,
+  FlyoutMenu,
 } from '@dhis2/ui';
-import React from 'react';
+import React, { useState } from 'react';
 import { parseISO, format, isValid } from 'date-fns';
+
 export const FilterToolbar = ({
   orgUnitLabel,
   selectedOrgUnit,
@@ -26,11 +30,8 @@ export const FilterToolbar = ({
   handleInputChange,
   handleInputChangeForSelectField,
   handleDateSelect,
-  prevValue,
-  setPrevValue,
   showAllFilters,
   setShowAllFilters,
-  handleSearch,
   setTempStartDateState,
   setTempEndDateState,
   setTempOrgUnitState,
@@ -41,92 +42,50 @@ export const FilterToolbar = ({
   setDataQueryFiltersState,
   SetOrgUnitModalVisible,
   showEnrollmentDates,
-}: any) => (
-  <DataTableToolbar className="table-top-toolbar">
-    <div
-      style={{
-        display: 'flex',
-        // flexDirection: 'column',
-        gap: '10px',
-        flexWrap: 'wrap',
-      }}
+  handleAdditionalFilters,
+  handleStartDateFilter,
+  handleEndDateFilter,
+  handleOrgUnitFilter,
+  setDateStates,
+  prevInputValues,
+  setPrevInputValues,
+  setTempDataQueryFiltersState,
+  prevDateStates,
+  setPrevDateStates,
+  prevSelectedOrgUnit,
+  setPrevSelectedOrgUnit,
+}: any) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isOpenOrgUnitDropdown, setIsOpenOrgUnitDropdown] = useState(false);
+  const [openDropdownKey, setOpenDropdownKey] = useState<string | null>(null);
+  type ClearIconProps = {
+    className?: string;
+    [key: string]: any;
+  };
+
+  //TODO: I HAVE DUPLICATED DROPDOWN AND CLEAR ICON IN MULTIPLE PLACES REQUIRED TO CREATE A REUSABLE DROPDOWN COMPONENT WITH THE CLEAR ICON TO AVOID DUPLICATION
+  const ClearIcon = ({ className, ...props }: ClearIconProps) => (
+    <svg
+      className={className}
+      {...props}
+      viewBox="0 0 24 24"
+      width={16}
+      height={16}
     >
-      {/* Row 1: default filters */}
+      <path d="M12,2C17.53,2 22,6.47 22,12C22,17.53 17.53,22 12,22C6.47,22 2,17.53 2,12C2,6.47 6.47,2 12,2M15.59,7L12,10.59L8.41,7L7,8.41L10.59,12L7,15.59L8.41,17L12,13.41L15.59,17L17,15.59L13.41,12L17,8.41L15.59,7Z" />
+    </svg>
+  );
+  return (
+    <DataTableToolbar className="table-top-toolbar">
       <div
         style={{
           display: 'flex',
-          alignItems: 'center',
           gap: '10px',
           flexWrap: 'wrap',
         }}
       >
-        <InputField
-          key="location"
-          label={orgUnitLabel ? orgUnitLabel : 'registering unit:'}
-          value={selectedOrgUnit}
-          onFocus={() => {
-            SetOrgUnitModalVisible(true);
-            setHide(false);
-          }}
-          className="custom-input"
-          clearable
-          onChange={(event: { value: string }) => {
-            setSelectedOrgUnit(event.value);
-            setOrgUnitState(defaultOrgUnit);
-          }}
-        />
-        {showEnrollmentDates && (
-          <>
-            <CalendarInput
-              label="Start date:"
-              calendar="gregory"
-              locale="en-GB"
-              timeZone="Africa/Dar_es_Salaam"
-              className="custom-input"
-              //clearable={!!tempStartDateState}
-              //date={tempStartDateState || undefined}
-              //date={tempStartDateState || "yyyy-mm-dd"}
-              clearable={
-                !!tempStartDateState && tempStartDateState !== 'dd-mm-yyyy'
-              }
-              // date={tempStartDateState || 'dd-mm-yyyy'}
-              date={formatDateForDisplay(tempStartDateState)}
-              onDateSelect={(selectedDate: any) => {
-                setTempStartDateState(selectedDate.calendarDateString);
-                if (selectedDate.calendarDateString === null) {
-                  setStartDateState(selectedDate.calendarDateString);
-                }
-              }}
-            />
-            <CalendarInput
-              label="End date:"
-              calendar="gregory"
-              locale="en-GB"
-              timeZone="Africa/Dar_es_Salaam"
-              className="custom-input"
-              clearable={
-                !!tempEndDateState && tempEndDateState !== 'dd-mm-yyyy'
-              }
-              // date={tempEndDateState || 'dd-mm-yyyy'}
-              date={formatDateForDisplay(tempEndDateState)}
-              onDateSelect={(selectedDate: any) => {
-                setTempEndDateState(selectedDate.calendarDateString);
-                if (selectedDate.calendarDateString === null) {
-                  setEndDateState(selectedDate.calendarDateString);
-                }
-              }}
-            />
-          </>
-        )}
-
-        {/* <Button onClick={handleSearch}>Search</Button>
-        <Button onClick={() => setShowAllFilters(!showAllFilters)}>
-          {showAllFilters ? 'Less Filters' : 'More Filters'}
-        </Button> */}
-      </div>
-
-      {/* Row 2: visibleFilters appear in a new row */}
-      {/* {visibleFilters?.length > 0 && (
+        {/* default filters */}
+        {/* TODO: I HAVE DUPLICATED DROPDOWN AND CLEAR ICON IN MULTIPLE PLACES REQUIRED TO CREATE A REUSABLE DROPDOWN COMPONENT WITH THE CLEAR ICON TO AVOID DUPLICATION */}
         <div
           style={{
             display: 'flex',
@@ -134,117 +93,531 @@ export const FilterToolbar = ({
             gap: '10px',
             flexWrap: 'wrap',
           }}
-        > */}
-      {(visibleFilters ?? []).map(({ label, key, valueType, options }: any) => {
-        if (valueType === 'DATE') {
-          return (
-            <CalendarInput
-              key={key}
-              label={`${label}:`}
-              calendar="gregory"
-              locale="en-GB"
-              timeZone="Africa/Dar_es_Salaam"
-              className="custom-input"
-              clearable={!!dateStates[key]}
-              date={dateStates[key]}
-              onDateSelect={(selectedDate: any) => {
-                handleDateSelect(key, selectedDate);
-                const filteredFilters = dataQueryFiltersState.filter(
-                  (f: { attribute: any }) => f.attribute !== key
-                );
-                if (selectedDate.calendarDateString === null) {
-                  setDataQueryFiltersState(filteredFilters);
+        >
+          <DropdownButton
+            name="customDropdown"
+            open={isOpenOrgUnitDropdown}
+            onClick={() => setIsOpenOrgUnitDropdown(!isOpenOrgUnitDropdown)}
+            component={
+              <div>
+                <FlyoutMenu>
+                  <div style={{ padding: '16px' }}>
+                    <InputField
+                      key="location"
+                      placeholder={
+                        orgUnitLabel ? orgUnitLabel : 'registering unit'
+                      }
+                      value={selectedOrgUnit}
+                      onFocus={() => {
+                        SetOrgUnitModalVisible(true);
+                        setHide(false);
+                      }}
+                    />
+                    <div
+                      style={{
+                        paddingTop: '8px',
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      <ButtonStrip>
+                        <Button
+                          primary
+                          disabled={!selectedOrgUnit}
+                          onClick={() => {
+                            setPrevSelectedOrgUnit(selectedOrgUnit);
+                            handleOrgUnitFilter();
+                            setIsOpenOrgUnitDropdown(false);
+                          }}
+                        >
+                          update
+                        </Button>
+                        <Button
+                          disabled={!selectedOrgUnit}
+                          onClick={() => {
+                            setSelectedOrgUnit('');
+                            setPrevSelectedOrgUnit('');
+                            setOrgUnitState(defaultOrgUnit);
+                            setTempOrgUnitState(defaultOrgUnit);
+                            setIsOpenOrgUnitDropdown(false);
+                          }}
+                        >
+                          reset filter
+                        </Button>
+                      </ButtonStrip>
+                    </div>
+                  </div>
+                </FlyoutMenu>
+              </div>
+            }
+          >
+            {orgUnitLabel ? orgUnitLabel : 'registering unit'}{' '}
+            {prevSelectedOrgUnit && ':'} {prevSelectedOrgUnit}
+            {prevSelectedOrgUnit && (
+              <span
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setSelectedOrgUnit('');
+                  setPrevSelectedOrgUnit('');
+                  setOrgUnitState(defaultOrgUnit);
+                  setTempOrgUnitState(defaultOrgUnit);
+                  setIsOpenOrgUnitDropdown(false);
+                }}
+                style={{ display: 'inline-flex', alignItems: 'center' }}
+              >
+                <ClearIcon className="my-icon-class" />
+              </span>
+            )}
+          </DropdownButton>
+          {showEnrollmentDates && (
+            <>
+              <DropdownButton
+                name="customDropdown"
+                open={isOpen}
+                onClick={() => setIsOpen(!isOpen)}
+                component={
+                  <div>
+                    <FlyoutMenu>
+                      <div style={{ padding: '16px' }}>
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'flex-end',
+                            gap: '16px',
+                          }}
+                        >
+                          <CalendarInput
+                            calendar="gregory"
+                            locale="en-GB"
+                            timeZone="Africa/Dar_es_Salaam"
+                            date={formatDateForDisplay(tempStartDateState)}
+                            onDateSelect={(selectedDate: any) => {
+                              setTempStartDateState(
+                                selectedDate.calendarDateString
+                              );
+                            }}
+                          />
+                          <span style={{ paddingBottom: '8px' }}>to</span>
+                          <CalendarInput
+                            calendar="gregory"
+                            locale="en-GB"
+                            timeZone="Africa/Dar_es_Salaam"
+                            date={formatDateForDisplay(tempEndDateState)}
+                            onDateSelect={(selectedDate: any) => {
+                              setTempEndDateState(
+                                selectedDate.calendarDateString
+                              );
+                            }}
+                          />
+                        </div>
+                        <div
+                          style={{
+                            paddingTop: '8px',
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                          }}
+                        >
+                          <ButtonStrip>
+                            <Button
+                              primary
+                              onClick={() => {
+                                handleStartDateFilter();
+                                handleEndDateFilter();
+                                setIsOpen(false);
+                              }}
+                            >
+                              update
+                            </Button>
+                            <Button
+                              onClick={() => {
+                                setStartDateState(null);
+                                setTempEndDateState(null);
+                                setTempStartDateState(null);
+                                setEndDateState(null);
+                                setIsOpen(false);
+                              }}
+                            >
+                              reset
+                            </Button>
+                          </ButtonStrip>
+                        </div>
+                      </div>
+                    </FlyoutMenu>
+                  </div>
                 }
-              }}
-            />
-          );
-        }
-
-        if (options && options.options.length > 0) {
-          return (
-            <SingleSelectField
-              key={key}
-              label={`${label}:`}
-              selected={inputValues[key] || ''}
-              className="custom-select-input"
-              clearable
-              onChange={({ selected }: { selected: string }) => {
-                setInputValues((prevValues: any) => ({
-                  ...prevValues,
-                  [key]: selected ?? '',
-                }));
-                handleInputChangeForSelectField(key, selected ?? '');
-                const filteredFilters = dataQueryFiltersState.filter(
-                  (f: { attribute: any }) => f.attribute !== key
-                );
-                if (selected === '') {
-                  setDataQueryFiltersState(filteredFilters);
-                }
-              }}
-            >
-              {(options.options ?? []).map((opt: any) => (
-                <SingleSelectOption
-                  key={opt.id}
-                  label={opt.name}
-                  value={opt.code}
-                />
-              ))}
-            </SingleSelectField>
-          );
-        }
-
-        return (
-          <InputField
-            key={key}
-            label={`${label}:`}
-            className="custom-input"
-            value={inputValues[key] || ''}
-            clearable
-            onChange={(e: any) => {
-              const currentValue =
-                'target' in e ? e.target.value : e.value ?? '';
-              setInputValues((prevValues: any) => ({
-                ...prevValues,
-                [key]: currentValue,
-              }));
-              const filteredFilters = dataQueryFiltersState.filter(
-                (f: { attribute: any }) => f.attribute !== key
+              >
+                registration dates {(startDateState || endDateState) && ':'}{' '}
+                {startDateState}
+                {endDateState && ` - ${endDateState}`}
+                {(startDateState || endDateState) && (
+                  <span
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setStartDateState(null);
+                      setTempEndDateState(null);
+                      setTempStartDateState(null);
+                      setEndDateState(null);
+                      setIsOpen(false);
+                    }}
+                    style={{ display: 'inline-flex', alignItems: 'center' }}
+                  >
+                    <ClearIcon className="my-icon-class" />
+                  </span>
+                )}
+              </DropdownButton>
+            </>
+          )}
+        </div>
+        {/* TODO: I HAVE DUPLICATED DROPDOWN AND CLEAR ICON IN MULTIPLE PLACES REQUIRED TO CREATE A REUSABLE DROPDOWN COMPONENT WITH THE CLEAR ICON TO AVOID DUPLICATION */}
+        {/*  visibleFilters */}
+        {(visibleFilters ?? []).map(
+          ({ label, key, valueType, options, type }: any) => {
+            if (valueType === 'DATE') {
+              return (
+                <DropdownButton
+                  name="customDropdown"
+                  open={openDropdownKey === key}
+                  onClick={() => {
+                    setOpenDropdownKey(openDropdownKey === key ? null : key);
+                  }}
+                  component={
+                    <div>
+                      <FlyoutMenu>
+                        <div style={{ padding: '16px' }}>
+                          <CalendarInput
+                            key={key}
+                            calendar="gregory"
+                            locale="en-GB"
+                            timeZone="Africa/Dar_es_Salaam"
+                            date={dateStates[key]}
+                            onDateSelect={(selectedDate: any) => {
+                              handleDateSelect(key, selectedDate, type);
+                            }}
+                          />
+                          <div
+                            style={{
+                              paddingTop: '8px',
+                              display: 'flex',
+                              justifyContent: 'flex-end',
+                            }}
+                          >
+                            <ButtonStrip>
+                              <Button
+                                primary
+                                onClick={() => {
+                                  setPrevDateStates((prev: any) => ({
+                                    ...prev,
+                                    [key]: dateStates[key],
+                                  }));
+                                  handleAdditionalFilters();
+                                  setOpenDropdownKey(null);
+                                }}
+                              >
+                                update
+                              </Button>
+                              <Button
+                                onClick={() => {
+                                  setIsOpen(false);
+                                }}
+                              >
+                                reset
+                              </Button>
+                            </ButtonStrip>
+                          </div>
+                        </div>
+                      </FlyoutMenu>
+                    </div>
+                  }
+                >
+                  {label} {prevDateStates[key] && ':'} {prevDateStates[key]}
+                  {prevDateStates[key] && (
+                    <span
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setDateStates((prev: any) => ({
+                          ...prev,
+                          [key]: '',
+                        }));
+                        setPrevDateStates((prev: any) => ({
+                          ...prev,
+                          [key]: '',
+                        }));
+                        const filteredFilters = dataQueryFiltersState.filter(
+                          (f: { attribute: any }) => f.attribute !== key
+                        );
+                        setDataQueryFiltersState(filteredFilters);
+                        setTempDataQueryFiltersState(filteredFilters);
+                        setOpenDropdownKey(null);
+                      }}
+                      style={{ display: 'inline-flex', alignItems: 'center' }}
+                    >
+                      <ClearIcon className="my-icon-class" />
+                    </span>
+                  )}
+                </DropdownButton>
               );
-              if (currentValue === '') {
-                setDataQueryFiltersState(filteredFilters);
-              }
-            }}
-            onBlur={(e: any) => {
-              const currentValue =
-                'target' in e ? e.target.value : e.value ?? '';
-              if (currentValue !== '' && currentValue !== prevValue) {
-                handleInputChange(key, currentValue);
-                setPrevValue(currentValue);
-              }
-            }}
-          />
-        );
-      })}
-      {/* </div>
-      )} */}
-      <div
-        style={{
-          display: 'flex',
-          // alignItems: 'center',
-          gap: '10px',
-          // flexWrap: 'wrap',
-        }}
-      >
-        <Button onClick={handleSearch}>Search</Button>
-        <Button onClick={() => setShowAllFilters(!showAllFilters)}>
-          {showAllFilters ? 'Less Filters' : 'More Filters'}
-        </Button>
-      </div>
-    </div>
-  </DataTableToolbar>
-);
+            }
 
-export function formatDateForDisplay(dateString: string | null | undefined): string {
+            if (options && options.options.length > 0) {
+              return (
+                <DropdownButton
+                  name="customDropdown"
+                  open={openDropdownKey === key}
+                  onClick={() => {
+                    setOpenDropdownKey(openDropdownKey === key ? null : key);
+                  }}
+                  component={
+                    <div>
+                      <FlyoutMenu>
+                        <div style={{ padding: '16px' }}>
+                          <SingleSelectField
+                            key={key}
+                            placeholder={`${label}`}
+                            selected={inputValues[key] || ''}
+                            onChange={({ selected }: { selected: string }) => {
+                              setInputValues((prevValues: any) => ({
+                                ...prevValues,
+                                [key]: selected ?? '',
+                              }));
+                              handleInputChangeForSelectField(
+                                key,
+                                selected ?? '',
+                                type
+                              );
+                            }}
+                          >
+                            {(options.options ?? []).map((opt: any) => (
+                              <SingleSelectOption
+                                key={opt.id}
+                                label={opt.name}
+                                value={opt.code}
+                              />
+                            ))}
+                          </SingleSelectField>
+                          <div
+                            style={{
+                              paddingTop: '8px',
+                              display: 'flex',
+                              justifyContent: 'flex-end',
+                            }}
+                          >
+                            <ButtonStrip>
+                              <Button
+                                primary
+                                disabled={
+                                  !inputValues[key] ||
+                                  inputValues[key] === prevInputValues[key]
+                                }
+                                onClick={() => {
+                                  setPrevInputValues((prev: any) => ({
+                                    ...prev,
+                                    [key]: inputValues[key],
+                                  }));
+                                  handleAdditionalFilters();
+                                  setOpenDropdownKey(null);
+                                }}
+                              >
+                                update
+                              </Button>
+                              <Button
+                                disabled={!inputValues[key]}
+                                onClick={() => {
+                                  setInputValues((prevValues: any) => ({
+                                    ...prevValues,
+                                    [key]: '',
+                                  }));
+                                  setPrevInputValues((prevValues: any) => ({
+                                    ...prevValues,
+                                    [key]: '',
+                                  }));
+
+                                  handleInputChangeForSelectField(
+                                    key,
+                                    '',
+                                    type
+                                  );
+                                  const filteredFilters =
+                                    dataQueryFiltersState.filter(
+                                      (f: { attribute: any }) =>
+                                        f.attribute !== key
+                                    );
+
+                                  setDataQueryFiltersState(filteredFilters);
+                                  setTempDataQueryFiltersState(filteredFilters);
+                                  setOpenDropdownKey(null);
+                                }}
+                              >
+                                reset
+                              </Button>
+                            </ButtonStrip>
+                          </div>
+                        </div>
+                      </FlyoutMenu>
+                    </div>
+                  }
+                >
+                  {label} {prevInputValues[key] && ':'} {prevInputValues[key]}
+                  {prevInputValues[key] && (
+                    <span
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setInputValues((prevValues: any) => ({
+                          ...prevValues,
+                          [key]: '',
+                        }));
+                        setPrevInputValues((prevValues: any) => ({
+                          ...prevValues,
+                          [key]: '',
+                        }));
+
+                        handleInputChangeForSelectField(key, '', type);
+                        const filteredFilters = dataQueryFiltersState.filter(
+                          (f: { attribute: any }) => f.attribute !== key
+                        );
+
+                        setDataQueryFiltersState(filteredFilters);
+                        setTempDataQueryFiltersState(filteredFilters);
+                        setOpenDropdownKey(null);
+                      }}
+                      style={{ display: 'inline-flex', alignItems: 'center' }}
+                    >
+                      <ClearIcon className="my-icon-class" />
+                    </span>
+                  )}
+                </DropdownButton>
+              );
+            }
+            return (
+              <DropdownButton
+                name="customDropdown"
+                open={openDropdownKey === key}
+                onClick={() => {
+                  setOpenDropdownKey(openDropdownKey === key ? null : key);
+                }}
+                component={
+                  <div>
+                    <FlyoutMenu>
+                      <div style={{ padding: '16px' }}>
+                        <InputField
+                          key={key}
+                          placeholder={`${label}`}
+                          value={inputValues[key] || ''}
+                          onChange={(e: any) => {
+                            const currentValue =
+                              'target' in e ? e.target.value : e.value ?? '';
+                            setInputValues((prevValues: any) => ({
+                              ...prevValues,
+                              [key]: currentValue,
+                            }));
+                            handleInputChange(key, currentValue, type);
+                          }}
+                        />
+                        <div
+                          style={{
+                            paddingTop: '8px',
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                          }}
+                        >
+                          <ButtonStrip>
+                            <Button
+                              primary
+                              disabled={
+                                !inputValues[key] ||
+                                inputValues[key] === prevInputValues[key]
+                              }
+                              onClick={() => {
+                                setPrevInputValues((prev: any) => ({
+                                  ...prev,
+                                  [key]: inputValues[key],
+                                }));
+                                handleAdditionalFilters();
+                                setOpenDropdownKey(null);
+                              }}
+                            >
+                              update
+                            </Button>
+                            <Button
+                              disabled={!inputValues[key]}
+                              onClick={() => {
+                                setInputValues((prevValues: any) => ({
+                                  ...prevValues,
+                                  [key]: '',
+                                }));
+                                setPrevInputValues((prevValues: any) => ({
+                                  ...prevValues,
+                                  [key]: '',
+                                }));
+                                // Remove the filter for this key
+                                const filteredFilters =
+                                  dataQueryFiltersState.filter(
+                                    (f: { attribute: any }) =>
+                                      f.attribute !== key
+                                  );
+                                setDataQueryFiltersState(filteredFilters);
+                                setTempDataQueryFiltersState(filteredFilters);
+                                setOpenDropdownKey(null);
+                              }}
+                            >
+                              reset
+                            </Button>
+                          </ButtonStrip>
+                        </div>
+                      </div>
+                    </FlyoutMenu>
+                  </div>
+                }
+              >
+                {label} {prevInputValues[key] && ':'} {prevInputValues[key]}
+                {prevInputValues[key] && (
+                  <span
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      // Clear the input value for this key
+                      setInputValues((prevValues: any) => ({
+                        ...prevValues,
+                        [key]: '',
+                      }));
+                      setPrevInputValues((prevValues: any) => ({
+                        ...prevValues,
+                        [key]: '',
+                      }));
+                      // Remove the filter for this key
+                      const filteredFilters = dataQueryFiltersState.filter(
+                        (f: { attribute: any }) => f.attribute !== key
+                      );
+                      setDataQueryFiltersState(filteredFilters);
+                      setTempDataQueryFiltersState(filteredFilters);
+                    }}
+                    style={{ display: 'inline-flex', alignItems: 'center' }}
+                  >
+                    <ClearIcon className="my-icon-class" />
+                  </span>
+                )}
+              </DropdownButton>
+            );
+          }
+        )}
+        {/* </div>
+      )} */}
+        <div
+          style={{
+            display: 'flex',
+            gap: '10px',
+          }}
+        >
+          <Button onClick={() => setShowAllFilters(!showAllFilters)}>
+            {showAllFilters ? 'Less Filters' : 'More Filters'}
+          </Button>
+        </div>
+      </div>
+    </DataTableToolbar>
+  );
+};
+
+export function formatDateForDisplay(
+  dateString: string | null | undefined
+): string {
   if (!dateString || dateString === 'dd-mm-yyyy') return 'dd-mm-yyyy';
 
   try {
