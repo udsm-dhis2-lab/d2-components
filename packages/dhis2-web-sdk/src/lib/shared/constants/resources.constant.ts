@@ -1,10 +1,14 @@
 export const D2_RESOURCES = {
   organisationUnit: {
     name: 'organisationUnits',
-    indices: 'id,code,name',
+    indexDbIndices: 'id,code,name,parent.id',
   },
   dataElement: {
     name: 'dataElements',
-    indices: 'id,code,name',
+    indexDbIndices: 'id,code,name',
+  },
+  dataStore: {
+    name: 'dataStore',
+    indexDbIndices: 'key',
   },
 };

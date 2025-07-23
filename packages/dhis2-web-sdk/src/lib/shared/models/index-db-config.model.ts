@@ -22,14 +22,14 @@ export class D2IndexDbConfig implements ID2IndexDbConfig {
   #getDefaultModels() {
     const resources = D2_RESOURCES as Record<
       string,
-      { name: string; indices: string }
+      { name: string; indexDbIndices: string }
     >;
     return Object.keys(resources).reduce((models, resourceKey) => {
       const resource = resources[resourceKey];
 
       return {
         ...models,
-        [resource.name]: resource.indices,
+        [resource.name]: resource.indexDbIndices,
       };
     }, {});
   }

@@ -3,12 +3,13 @@
 // license that can be found in the LICENSE file.
 
 import { AxiosInstance } from 'axios';
-import { isArray } from 'lodash';
+import { isArray, isPlainObject } from 'lodash';
 import { IndexDBParams } from '../interfaces';
 import { IndexDbUtil } from '../utils';
 import { D2HttpRequestConfig } from './d2-http-request-config.model';
 import { D2HttpResponse } from './http-response.model';
 import { D2IndexDb } from './index-db.model';
+import { IndexDbQuerySchema } from './index-db-query-schema.model';
 
 export class D2HttpClient {
   #axiosInstance!: AxiosInstance;
@@ -46,49 +47,73 @@ export class D2HttpClient {
   }
 
   async #fetchFromIndexDb(url: string, config: D2HttpRequestConfig) {
-    const urlContent = IndexDbUtil.deduceUrlContent(url);
+    const indexDbQuerySchema = IndexDbQuerySchema.fromUrl(url);
 
-    console.log('URL CONTENT', urlContent);
-    const schemaName =
-      urlContent && urlContent.schema ? urlContent.schema.name : undefined;
+    const { schema, dataId, params } = indexDbQuerySchema;
 
-    const id =
-      urlContent && urlContent.schema ? urlContent.schema.id : undefined;
-
-    const params: IndexDBParams = urlContent ? urlContent.params || {} : {};
-
-    if (!schemaName) {
+    if (!schema) {
       console.warn('index db operations failed, Error: Schema is not supplied');
       return this.#fetchFromApi(url, config);
     }
 
-    const indexDbResponse = await (id
-      ? this.#indexDb.findById(schemaName, id)
-      : this.#indexDb.findAll(schemaName, params));
+    const indexDbResponse = await (dataId
+      ? this.#indexDb.findById(schema, dataId)
+      : this.#indexDb.findAll(schema, params));
 
-    if (!indexDbResponse || indexDbResponse[schemaName]?.length === 0) {
+    if (!indexDbResponse || indexDbResponse[schema]?.length === 0) {
       const apiResponse = await this.#fetchFromApi(url, config);
 
       if (!apiResponse?.data) {
         return apiResponse;
       }
 
-      const isDataStoreResource = url.includes('dataStore');
-
-      const responseData = isDataStoreResource
-        ? isArray(apiResponse.data)
-          ? apiResponse.data
-          : apiResponse.data['entries']
-        : apiResponse.data[schemaName];
-
-      (await id)
-        ? this.#indexDb.saveOne(schemaName, responseData)
-        : this.#indexDb.saveBulk(schemaName, responseData as any);
+      await this.#saveToIndexDb(apiResponse, indexDbQuerySchema);
 
       return apiResponse;
     }
 
     return new D2HttpResponse({ data: indexDbResponse, status: 200 });
+  }
+
+  async #saveToIndexDb(
+    apiResponse: D2HttpResponse,
+    IndexDbQuerySchema: IndexDbQuerySchema
+  ) {
+    const { schema, dataId, isDataStoreResource, namespace } =
+      IndexDbQuerySchema;
+
+    const responseData = isDataStoreResource
+      ? this.#handleDataStoreResponse(apiResponse, namespace as string)
+      : apiResponse?.data?.[schema] ?? apiResponse?.data;
+
+    (await dataId)
+      ? this.#indexDb.saveOne(schema, responseData)
+      : this.#indexDb.saveBulk(schema, responseData as any);
+  }
+
+  #handleDataStoreResponse(apiResponse: D2HttpResponse, namespace: string) {
+    if (isArray(apiResponse?.data) || apiResponse?.data?.['entries']) {
+      return (
+        (apiResponse?.data?.['entries'] ?? apiResponse?.data) as
+          | Record<string, unknown>[]
+          | string[]
+      ).map((entry) => {
+        const key = isPlainObject(entry)
+          ? `${namespace}-${(entry as Record<string, string>)['key']}`
+          : undefined;
+
+        return {
+          key,
+          entry,
+        };
+      });
+    }
+
+    const entry = apiResponse.data;
+    return {
+      entry,
+      key: `${namespace}-${(entry as Record<string, string>)['key']}`,
+    };
   }
 
   async post(
