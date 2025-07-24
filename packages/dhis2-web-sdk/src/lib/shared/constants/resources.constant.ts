@@ -19,6 +19,18 @@ export const D2_RESOURCES = {
     name: 'dataElements',
     indexDbIndices: 'id,code,name',
   },
+  dataElementGroup: {
+    name: 'dataElementGroups',
+    indexDbIndices: 'id,code,name',
+  },
+  indicator: {
+    name: 'indicators',
+    indexDbIndices: 'id,code,name',
+  },
+  indicatorGroup: {
+    name: 'indicatorGroups',
+    indexDbIndices: 'id,code,name',
+  },
   trackedEntityAttribute: {
     name: 'trackedEntityAttributes',
     indexDbIndices: 'id,code,name',
@@ -43,6 +55,7 @@ export const D2_RESOURCES = {
     name: 'visualizations',
     indexDbIndices: 'id,code,name',
   },
+  map: { name: 'maps', indexDbIndices: 'id,code,name' },
   optionSet: {
     name: 'optionSets',
     indexDbIndices: 'id,code,name',
