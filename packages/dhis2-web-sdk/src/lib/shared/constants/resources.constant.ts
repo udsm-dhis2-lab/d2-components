@@ -56,6 +56,14 @@ export const D2_RESOURCES = {
     indexDbIndices: 'id,code,name',
   },
   map: { name: 'maps', indexDbIndices: 'id,code,name' },
+  geoFeatures: {
+    name: 'geoFeatures',
+    indexDbIndices: 'id,code',
+  },
+  legendSets: {
+    name: 'legendSets',
+    indexDbIndices: 'id,code,name',
+  },
   optionSet: {
     name: 'optionSets',
     indexDbIndices: 'id,code,name',

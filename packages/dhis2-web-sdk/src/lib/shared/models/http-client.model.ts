@@ -106,19 +106,24 @@ export class D2HttpClient {
           | Record<string, unknown>[]
           | string[]
       ).map((entry) => {
+        const dataStoreKey = (entry as Record<string, string>)['key'] ?? key;
         const referenceKey = isPlainObject(entry)
-          ? `${namespace}-${(entry as Record<string, string>)['key']}`
+          ? `${namespace}-${dataStoreKey}`
           : undefined;
 
         return {
           referenceKey,
-          entry,
+          entry: isPlainObject(entry)
+            ? { ...(entry as Record<string, string>), key }
+            : entry,
         };
       });
     }
 
     return {
-      entry: apiResponse.data,
+      entry: isPlainObject(apiResponse.data)
+        ? { ...apiResponse.data, key }
+        : apiResponse.data,
       referenceKey: `${namespace}-${key}`,
     };
   }
