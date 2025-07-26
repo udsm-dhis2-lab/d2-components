@@ -34,7 +34,6 @@ import {
   DHIS2Event,
   TrackedEntityInstance,
 } from '@iapps/d2-web-sdk';
-import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
 import React, { useEffect, useMemo, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { filter, take } from 'rxjs';
@@ -44,15 +43,13 @@ import { IFormField } from '../interfaces';
 import { FieldConfig } from '../models';
 import { FileUploadField } from './file-upload-field.component';
 import {
-  OrgUnitFormField,
   CustomOrgUnitConfig,
+  OrgUnitFormField,
 } from './org-unit-form-field.component';
-import { CalendarInput } from '@dhis2/ui';
 
 @Directive()
 export class BaseFormFieldComponent extends ReactWrapperModule {
   ngZone = inject(NgZone);
-  httpClient = inject(NgxDhis2HttpClientService);
   fieldType = 'textbox';
   field = input.required<IFormField<string>>();
   fieldError = input<string | undefined>();
