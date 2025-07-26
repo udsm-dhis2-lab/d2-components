@@ -8,7 +8,7 @@ import {
   Output,
   signal,
 } from '@angular/core';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { ReactWrapperModule } from '../../../react-wrapper/react-wrapper.component';
 
@@ -19,22 +19,22 @@ import {
   TableRow,
 } from '../../models/selection-filters-ui.model';
 
+import { toObservable } from '@angular/core/rxjs-interop';
+import { Provider } from '@dhis2/app-runtime';
 import {
-  InputField,
-  SingleSelectField,
-  SingleSelectOption,
   Button,
   ButtonStrip,
+  CircularLoader,
+  InputField,
   Modal,
   ModalActions,
   ModalContent,
   ModalTitle,
-  CircularLoader,
+  SingleSelectField,
+  SingleSelectOption,
 } from '@dhis2/ui';
-import { Provider } from '@dhis2/app-runtime';
-import { firstValueFrom, map, Observable, take, zip } from 'rxjs';
-import { NgxDhis2HttpClientService, User } from '@iapps/ngx-dhis2-http-client';
-import { toObservable } from '@angular/core/rxjs-interop';
+import { D2Window } from '@iapps/d2-web-sdk';
+import { take, zip } from 'rxjs';
 import { OrganisationUnitSelectionConfig } from '../../../organisation-unit-selector';
 import OrgUnitDimension from '../../../organisation-unit-selector/components/OrgUnitDimension';
 
@@ -48,6 +48,7 @@ export class SelectionFiltersComponent
   extends ReactWrapperModule
   implements AfterViewInit
 {
+  d2 = (window as unknown as D2Window).d2Web;
   @Input() actionOptions: {
     label: string;
     onClick: (row: TableRow) => void;
@@ -60,48 +61,55 @@ export class SelectionFiltersComponent
   @Input() organisationUnit?: string;
   @Output() actionSelected = new EventEmitter<SelectionFiltersProps>();
 
-  httpClient = inject(NgxDhis2HttpClientService);
   ngZone = inject(NgZone);
 
-  private getAppConfig(): Observable<any> {
-    return this.httpClient.systemInfo().pipe(
-      map((response) => {
-        const systemInfo = response as unknown as Record<string, unknown>;
-        return {
-          baseUrl: (document?.location?.host?.includes('localhost')
-            ? `${document.location.protocol}//${document.location.host}`
-            : systemInfo['contextPath']) as string,
-          apiVersion: Number(
-            (((systemInfo['version'] as string) || '')?.split('.') || [])[1]
-          ),
-        };
-      })
-    );
+  private async getAppConfig() {
+    const systemInfo = this.d2.systemInfo;
+
+    if (!systemInfo) {
+      return systemInfo;
+    }
+
+    return {
+      baseUrl: document?.location?.host?.includes('localhost')
+        ? `${document.location.protocol}//${document.location.host}`
+        : systemInfo.contextPath,
+      apiVersion: systemInfo.apiVersion,
+    };
   }
 
-  getRootOrgUnits(): Observable<string[]> {
+  async getRootOrgUnits(): Promise<string[]> {
     const orgUnitAttribute = this.getOrgUnitAttributeByUsage(
       this.orgUnitSelectionConfig.usageType
     );
-    return this.httpClient
-      .me()
-      .pipe(
-        map((user: User) =>
-          (user ? user[orgUnitAttribute] : []).map((orgUnit) => orgUnit.id)
-        )
-      );
+
+    const currentUser = this.d2?.currentUser;
+
+    return (currentUser ? currentUser[orgUnitAttribute] : []).map(
+      (orgUnit) => orgUnit.id
+    );
   }
 
-  getOrgUnitLevels(): Promise<any> {
-    return firstValueFrom(
-      this.httpClient
-        .get(
-          'organisationUnitLevels.json?fields=id,level,displayName,name&paging=false'
-        )
-        .pipe(
-          map((res: Record<string, unknown>) => res?.['organisationUnitLevels'])
-        )
+  async getOrgUnitGroups(): Promise<any> {
+    const orgUnitGroupResponse = await this.d2?.httpInstance?.get(
+      'organisationUnitGroups.json?fields=id,displayName,name&paging=false',
+      {
+        useIndexDb: this.orgUnitSelectionConfig?.allowCaching,
+      }
     );
+
+    return orgUnitGroupResponse?.data?.['organisationUnitGroups'] ?? [];
+  }
+
+  async getOrgUnitLevels(): Promise<any> {
+    const orgUnitLevelResponse = await this.d2?.httpInstance?.get(
+      'organisationUnitLevels.json?fields=id,level,displayName,name&paging=false',
+      {
+        useIndexDb: this.orgUnitSelectionConfig?.allowCaching,
+      }
+    );
+
+    return orgUnitLevelResponse?.data?.['organisationUnitLevels'] ?? [];
   }
 
   onSelectOrgUnit(selectedOrgUnits: Record<string, string>[]) {
@@ -110,18 +118,6 @@ export class SelectionFiltersComponent
     if ((selectedOrgUnits || [])[0]) {
       this.selectedOrgUnit.set(selectedOrgUnits[0]);
     }
-  }
-
-  getOrgUnitGroups(): Promise<any> {
-    return firstValueFrom(
-      this.httpClient
-        .get(
-          'organisationUnitGroups.json?fields=id,displayName,name&paging=false'
-        )
-        .pipe(
-          map((res: Record<string, unknown>) => res?.['organisationUnitGroups'])
-        )
-    );
   }
 
   getOrgUnitAttributeByUsage(usageType: string) {
@@ -146,7 +142,7 @@ export class SelectionFiltersComponent
     const [rootOrgUnits, setRootOrgUnits] = useState<string[]>();
     const [config, setConfig] = useState<any>();
 
-    // TODO: START::: Improve approach on handling observables 
+    // TODO: START::: Improve approach on handling observables
     // useEffect(() => {
     //   zip(this.getAppConfig(), this.getRootOrgUnits()).subscribe({
     //     next: ([appConfig, rootOrgUnits]) => {
@@ -156,7 +152,7 @@ export class SelectionFiltersComponent
     //     error: (error) => console.error(error),
     //   });
     // }, []);
-    // TODO: END::: Improve approach on handling observables 
+    // TODO: END::: Improve approach on handling observables
 
     useEffect(() => {
       const subscription = zip(this.getAppConfig(), this.getRootOrgUnits())
@@ -168,12 +164,12 @@ export class SelectionFiltersComponent
           },
           error: (error) => console.error(error),
         });
-    
+
       return () => {
         subscription.unsubscribe(); // Cleanup to avoid memory leaks
       };
     }, []);
-    
+
     return config ? (
       <Provider
         config={config}

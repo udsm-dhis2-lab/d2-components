@@ -1,16 +1,16 @@
 import {
   Component,
-  Input,
   ElementRef,
-  Output,
   EventEmitter,
+  Input,
   NgZone,
+  Output,
 } from '@angular/core';
 import { DataProvider } from '@dhis2/app-runtime';
-import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
+import { D2Window } from '@iapps/d2-web-sdk';
 import React from 'react';
 import * as ReactDOM from 'react-dom/client';
-import { firstValueFrom } from 'rxjs';
+import { ReactWrapperModule } from '../../../react-wrapper/react-wrapper.component';
 import { PeriodDimension } from '../../components/PeriodDimension';
 import {
   BIMONTHLY,
@@ -23,7 +23,6 @@ import {
   WEEKLYTHU,
   WEEKLYWED,
 } from '../../components/utils';
-import { ReactWrapperModule } from '../../../react-wrapper/react-wrapper.component';
 
 type PeriodSelectionEvent = {
   dimensionId: string;
@@ -43,6 +42,7 @@ type PeriodSelectionEvent = {
   standalone: false,
 })
 export class PeriodSelectorComponent extends ReactWrapperModule {
+  d2 = (window as unknown as D2Window).d2Web;
   @Input() selectedPeriods: any[] = [];
 
   @Output() selectPeriods = new EventEmitter();
@@ -53,18 +53,14 @@ export class PeriodSelectorComponent extends ReactWrapperModule {
     },
   };
 
-  constructor(
-    elementRef: ElementRef<HTMLElement>,
-    private httpClient: NgxDhis2HttpClientService,
-    private ngZone: NgZone
-  ) {
+  constructor(elementRef: ElementRef<HTMLElement>, private ngZone: NgZone) {
     super(elementRef);
   }
 
   override async ngAfterViewInit() {
     if (!this.elementRef) throw new Error('No element ref');
     this.reactDomRoot = ReactDOM.createRoot(this.elementRef.nativeElement);
-    const systemInfo = await firstValueFrom(this.httpClient.systemInfo());
+    const systemInfo = this.d2.systemInfo;
     const excludedPeriodTypes = this.getExcludedPeriodTypes(systemInfo);
 
     this.component = () => (
