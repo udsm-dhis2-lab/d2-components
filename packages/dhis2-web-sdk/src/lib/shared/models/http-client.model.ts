@@ -113,17 +113,15 @@ export class D2HttpClient {
 
         return {
           referenceKey,
-          entry: isPlainObject(entry)
-            ? { ...(entry as Record<string, string>), key }
-            : entry,
+          key,
+          entry,
         };
       });
     }
 
     return {
-      entry: isPlainObject(apiResponse.data)
-        ? { ...apiResponse.data, key }
-        : apiResponse.data,
+      entry: apiResponse.data,
+      key,
       referenceKey: `${namespace}-${key}`,
     };
   }

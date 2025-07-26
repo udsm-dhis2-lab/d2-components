@@ -12,6 +12,7 @@ export class OrganisationUnitSelectionConfig {
   allowSingleSelection?: boolean;
   batchSize?: number;
   additionalQueryFields?: string[];
+  allowCaching?: boolean;
 
   constructor(params?: Partial<OrganisationUnitSelectionConfig>) {
     this.hideGroupSelect = params?.hideGroupSelect || false;
@@ -22,5 +23,6 @@ export class OrganisationUnitSelectionConfig {
     this.allowSingleSelection = params?.allowSingleSelection || false;
     this.batchSize = params?.batchSize;
     this.additionalQueryFields = params?.additionalQueryFields;
+    this.allowCaching = params?.allowCaching;
   }
 }
