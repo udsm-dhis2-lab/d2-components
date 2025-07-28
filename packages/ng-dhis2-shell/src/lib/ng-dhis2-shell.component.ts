@@ -4,6 +4,8 @@ import {
   ElementRef,
   EventEmitter,
   Output,
+  AfterViewInit,
+  OnDestroy,
 } from '@angular/core';
 import AppAdapter from '@dhis2/app-adapter';
 import {
@@ -19,11 +21,12 @@ import { firstValueFrom } from 'rxjs';
 import { AppShellConfig, AppShellConfigService } from './models';
 
 @Component({
+  // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'ng-dhis2-shell',
   template: '<ng-content></ng-content>',
   standalone: false,
 })
-export class NgDhis2ShellComponent {
+export class NgDhis2ShellComponent implements AfterViewInit, OnDestroy {
   @ContentChild('appShellContent', { static: true })
   content!: ElementRef<HTMLElement>;
 
@@ -66,26 +69,42 @@ export class NgDhis2ShellComponent {
 
     this.setConfig.emit(config);
 
-    const App = (
-      <AppAdapter {...config}>
-        <React.Suspense
-          fallback={
-            <Layer>
-              <Center>
-                <CircularLoader />
-              </Center>
-            </Layer>
-          }
-        >
-          <>
-            <CssReset />
-            <CssVariables colors spacers theme />
-            <div id="app_shell_content"></div>
-          </>
-        </React.Suspense>
-      </AppAdapter>
+    // Create the React element tree using createElement instead of JSX
+    const fallbackContent = React.createElement(
+      Layer,
+      null,
+      React.createElement(
+        Center,
+        null,
+        React.createElement(CircularLoader, null)
+      )
     );
 
-    this.reactDomRoot.render(App);
+    // Main application content
+    const appContent = React.createElement(
+      React.Fragment,
+      null,
+      React.createElement(CssReset, null),
+      React.createElement(CssVariables, {
+        colors: true,
+        spacers: true,
+        theme: true,
+      }),
+      React.createElement('div', { id: 'app_shell_content' })
+    );
+
+    const suspenseElement = React.createElement(
+      React.Suspense,
+      { fallback: fallbackContent },
+      appContent
+    );
+
+    const appElement = React.createElement(
+      AppAdapter,
+      { ...config },
+      suspenseElement
+    );
+
+    this.reactDomRoot.render(appElement);
   }
 }
