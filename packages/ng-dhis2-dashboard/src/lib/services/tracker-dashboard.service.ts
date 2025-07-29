@@ -1,16 +1,13 @@
 import { Injectable } from '@angular/core';
-import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
-import { Period, PeriodType } from '@iapps/period-utilities';
-import { catchError, map, Observable, of, switchMap, zip } from 'rxjs';
+import { D2Window } from '@iapps/d2-web-sdk';
+import { Period } from '@iapps/period-utilities';
+import { catchError, from, map, Observable, of, switchMap, zip } from 'rxjs';
 import { VisualizationDataSelection } from '../models';
 import { DashboardConfigService } from './dashboard-config.service';
 
 @Injectable()
 export class TrackerDashboardService {
-  constructor(
-    private httpClient: NgxDhis2HttpClientService,
-    private dashboardConfigService: DashboardConfigService
-  ) {}
+  constructor(private dashboardConfigService: DashboardConfigService) {}
 
   getTrackedEntityInstances(
     program: string,
@@ -18,22 +15,25 @@ export class TrackerDashboardService {
     dataSelections?: VisualizationDataSelection[]
   ): Observable<any> {
     const period = this._getPeriod(periodType as string, dataSelections);
+    const d2 = (window as unknown as D2Window).d2Web;
 
     return this._getOrgUnit(dataSelections).pipe(
       switchMap((orgUnit) =>
         zip(
-          this.httpClient
-            .get(
+          from(
+            d2.httpInstance.get(
               `trackedEntityInstances.json?fields=attributes[attribute,code,value],enrollments[enrollment,enrollmentDate,incidentDate,orgUnit,orgUnitName,geometry,events[event,programStage,dataValues[dataElement,value]]]&ou=${
                 orgUnit.id
               }&ouMode=DESCENDANTS&&order=created:desc&program=${program}&skipPaging=true&programStartDate=${
                 period.startDate || period.startdate
               }&programEndDate=${period.endDate || period.enddate}`
             )
-            .pipe(map((res) => res?.trackedEntityInstances || [])),
-          this.httpClient.get(
-            `programs/${program}.json?fields=id,name,enrollmentDateLabel,incidentDateLabel,programTrackedEntityAttributes[displayInList,sortOrder,trackedEntityAttribute[id,name,formName,optionSet[id,name,options[id,code,name,style]]]]`
-          )
+          ).pipe(map((res) => res?.data?.['trackedEntityInstances'] || [])),
+          from(
+            d2.httpInstance.get(
+              `programs/${program}.json?fields=id,name,enrollmentDateLabel,incidentDateLabel,programTrackedEntityAttributes[displayInList,sortOrder,trackedEntityAttribute[id,name,formName,optionSet[id,name,options[id,code,name,style]]]]`
+            )
+          ).pipe(map((res) => res.data))
         )
       ),
       map((results: any[]) => {
@@ -116,12 +116,13 @@ export class TrackerDashboardService {
   private _getOrgUnit(
     dataSelections?: VisualizationDataSelection[]
   ): Observable<any> {
+    const d2 = (window as unknown as D2Window).d2Web;
     const orgUnitSelection: any = (dataSelections?.find(
       ({ dimension }) => dimension === 'ou'
     )?.items || [])[0];
 
     return orgUnitSelection
       ? of(orgUnitSelection)
-      : this.httpClient.me().pipe(map((me) => me.organisationUnits[0]));
+      : of(d2.currentUser).pipe(map((me) => me?.organisationUnits[0]));
   }
 }

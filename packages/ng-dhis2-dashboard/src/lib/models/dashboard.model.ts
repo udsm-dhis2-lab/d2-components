@@ -1,4 +1,3 @@
-import { PeriodType } from '@iapps/period-utilities';
 import { KtdGridLayout } from '@katoid/angular-grid-layout';
 import { DashboardAccess } from './dashboard-access.model';
 import { DashboardAdditionalFilter } from './dashboard-additional-filter.model';
@@ -41,9 +40,7 @@ export interface DashboardObject {
 }
 
 export class Dashboard {
-  constructor(
-    public dashboardResponse: { [key: string]: string | number | object }
-  ) {}
+  constructor(public dashboardResponse: Record<string, unknown>) {}
 
   get dashboardItems(): DashboardItemObject[] {
     return ((this.dashboardResponse['dashboardItems'] as any) || []).map(

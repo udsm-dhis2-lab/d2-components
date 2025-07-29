@@ -1,4 +1,4 @@
-import { User } from '@iapps/ngx-dhis2-http-client';
+import { CurrentUser } from '@iapps/d2-web-sdk';
 import { DashboardMenuObject } from '../models';
 
 export function translateAccess(access = '') {
@@ -17,7 +17,7 @@ export function translateAccess(access = '') {
 
 export function authorizedToViewItem(
   dashboardItem: DashboardMenuObject,
-  currentUser: User
+  currentUser: CurrentUser
 ) {
   if (dashboardItem?.sharing) {
     if (dashboardItem?.sharing?.owner === currentUser?.id) {
@@ -46,7 +46,7 @@ export function authorizedToViewItem(
 
 export function userAuthorizedDashboards(
   customDashboards: DashboardMenuObject[],
-  currentUser: User
+  currentUser: CurrentUser
 ) {
   const authorizedDashboards = customDashboards
     .map((dashboardObject) => {
