@@ -145,7 +145,7 @@ export class WebSdkComponent {
     console.log('ORGUNIT FROM INDEX DB', orgUnitIndexDbResponse);
 
     const dataStoreIndexDbResponse = await this.d2.httpInstance.get(
-      'dataStore/dashboard-preferences/nmcp-malaria',
+      'dataStore/modules/cacheCleaner?fields=id,section,menuItems,authorities,icon,sort&paging=false',
       { useIndexDb: true }
     );
 

@@ -71,7 +71,8 @@ export class D2HttpClient {
         return apiResponse;
       }
 
-      await this.#saveToIndexDb(apiResponse, indexDbQuerySchema);
+      const data = await this.#saveToIndexDb(apiResponse, indexDbQuerySchema);
+      apiResponse.data = data as Record<string, unknown>;
 
       return apiResponse;
     }
@@ -93,6 +94,10 @@ export class D2HttpClient {
     (await dataId)
       ? this.#indexDb.saveOne(schema, responseData)
       : this.#indexDb.saveBulk(schema, responseData as any);
+
+    return isArray(apiResponse.data)
+      ? { entries: apiResponse.data }
+      : apiResponse.data;
   }
 
   #handleDataStoreResponse(
@@ -100,23 +105,36 @@ export class D2HttpClient {
     namespace: string,
     key?: string
   ) {
-    if (isArray(apiResponse?.data) || apiResponse?.data?.['entries']) {
-      return (
-        (apiResponse?.data?.['entries'] ?? apiResponse?.data) as
-          | Record<string, unknown>[]
-          | string[]
-      ).map((entry) => {
-        const dataStoreKey = (entry as Record<string, string>)['key'] ?? key;
+    if (isArray(apiResponse.data)) {
+      return apiResponse.data.map((entry) => {
+        const dataStoreKey = entry['key'] ?? key;
         const referenceKey = isPlainObject(entry)
           ? `${namespace}-${dataStoreKey}`
           : undefined;
 
         return {
           referenceKey,
-          key,
+          key: dataStoreKey,
           entry,
         };
       });
+    }
+
+    if (apiResponse?.data?.['entries']) {
+      return (apiResponse?.data?.['entries'] as Record<string, unknown>[]).map(
+        (entry) => {
+          const dataStoreKey = (entry as Record<string, string>)['key'] ?? key;
+          const referenceKey = isPlainObject(entry)
+            ? `${namespace}-${dataStoreKey}`
+            : undefined;
+
+          return {
+            referenceKey,
+            key,
+            entry,
+          };
+        }
+      );
     }
 
     return {
