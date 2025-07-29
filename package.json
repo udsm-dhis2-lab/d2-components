@@ -137,7 +137,7 @@
     "@ngrx/entity": "19.0.0",
     "@ngrx/operators": "19.0.0",
     "@ngrx/store": "19.0.0",
-    "@storybook/angular": "9.0.9",
+    "@storybook/angular": "9.0.18",
     "@turf/turf": "^6.5.0",
     "@types/lodash": "^4.14.202",
     "@types/styled-jsx": "^3.4.4",
