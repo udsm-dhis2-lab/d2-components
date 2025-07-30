@@ -7,7 +7,7 @@ export class D2IndexDbConfig implements ID2IndexDbConfig {
   models: Record<string, string>;
 
   constructor(config?: Partial<ID2IndexDbConfig>) {
-    this.namespace = config?.namespace || 'db';
+    this.namespace = config?.namespace || 'd2-web-sdk-db';
     this.version = config?.version || 1;
     this.models = this.#setModels(config?.models || {});
   }
@@ -22,14 +22,14 @@ export class D2IndexDbConfig implements ID2IndexDbConfig {
   #getDefaultModels() {
     const resources = D2_RESOURCES as Record<
       string,
-      { name: string; indices: string }
+      { name: string; indexDbIndices: string }
     >;
     return Object.keys(resources).reduce((models, resourceKey) => {
       const resource = resources[resourceKey];
 
       return {
         ...models,
-        [resource.name]: resource.indices,
+        [resource.name]: resource.indexDbIndices,
       };
     }, {});
   }

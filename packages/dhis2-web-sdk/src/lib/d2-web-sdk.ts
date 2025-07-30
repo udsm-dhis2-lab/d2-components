@@ -60,6 +60,7 @@ export class D2Web {
        */
       const newWebConfig = new D2WebConfig({
         baseUrl: instance.rootUrl,
+        indexDBConfig: config.indexDBConfig,
       });
 
       const indexDb = new D2IndexDb(

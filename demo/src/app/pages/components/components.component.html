@@ -12,7 +12,7 @@
 ></ng-dhis2-ui-line-list> -->
 
 <!-- <h5>Header Bar component</h5>
-<ng-dhis2-ui-header-bar></ng-dhis2-ui-header-bar>
+<ng-dhis2-ui-header-bar></ng-dhis2-ui-header-bar> -->
 
 <h5>Button component</h5>
 <ng-dhis2-ui-button [label]="'Button'" [primary]="true" [small]="true">
@@ -27,14 +27,24 @@
   (selectPeriods)="onSelectPeriods($event)"
 ></ng-dhis2-ui-period-selector>
 
+<ng-dhis2-ui-period-selector-modal
+  [selectedPeriods]="selectedPeriods"
+  (confirm)="onSelectPeriods($event)"
+></ng-dhis2-ui-period-selector-modal>
+
 <h5>Organisation unit selector component</h5>
 <ng-dhis2-ui-org-unit-selector
   [selectedOrgUnits]="selectedOrgUnits"
   [orgUnitSelectionConfig]="orgUnitSelectionConfig"
   (selectOrgUnits)="onSelectOrgUnits($event)"
 ></ng-dhis2-ui-org-unit-selector>
+<!-- 
+<ng-dhis2-ui-org-unit-selector-modal
+  [selectedOrgUnits]="selectedOrgUnits"
+  (confirm)="onSelectOrgUnits($event)"
+></ng-dhis2-ui-org-unit-selector-modal> -->
 
-<h5>Dictionary</h5> -->
+<!--<h5>Dictionary</h5> -->
 <!-- <ngx-dhis2-dictionary-list
   [metadataIdentifiers]="[]"
 ></ngx-dhis2-dictionary-list> -->
@@ -255,7 +265,7 @@
 .setValue(this.batchNumber),]" -->
 
 <div>
-  <ng-dhis2-ui-line-list
+  <!-- <ng-dhis2-ui-line-list
     [programId]="'tOhKbXMiJ1J'"
     [orgUnit]="'gwcDrDXSxS0'"
     [actionOptions]="actionOptions"
@@ -277,7 +287,7 @@
     [actionOptions]="actionOptions"
     [ouMode]="'DESCENDANTS'"
     [actionOptionOrientation]="'LINK'"
-  ></ng-dhis2-ui-line-list>
+  ></ng-dhis2-ui-line-list> -->
 </div>
 
 <!-- <ng-dhis2-ui-form

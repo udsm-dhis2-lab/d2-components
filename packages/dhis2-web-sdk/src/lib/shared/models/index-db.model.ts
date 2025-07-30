@@ -1,6 +1,7 @@
 import Dexie from 'dexie';
 import { ID2IndexDbConfig, IndexDBParams } from '../interfaces';
 import { IndexDbUtil } from '../utils';
+import { IndexDbQuerySchema } from './index-db-query-schema.model';
 
 export class D2IndexDb extends Dexie {
   constructor(config: ID2IndexDbConfig) {
@@ -8,18 +9,36 @@ export class D2IndexDb extends Dexie {
     this.version(config.version).stores(config.models);
   }
 
-  findById(schemaName: string, id: string) {
-    return this.table(schemaName).where({ id }).first();
+  async findById(id: string, indexDbQuerySchema: IndexDbQuerySchema) {
+    const { schema, isDataStoreResource } = indexDbQuerySchema;
+
+    if (isDataStoreResource) {
+      const data = await this.table(schema).where({ key: id }).first();
+      return data?.['entry'];
+    }
+
+    return this.table(schema).where({ id }).first();
   }
 
-  async findAll(schemaName: string, params: IndexDBParams): Promise<any> {
-    const dataArray = await this.#getTableSchema(schemaName, params).toArray();
+  async findAll(indexDbQuerySchema: IndexDbQuerySchema): Promise<any> {
+    const { schema, isDataStoreResource, params } = indexDbQuerySchema;
+    const dataArray = await this.#getTableSchema(schema, params).toArray();
+
+    const filteredData = IndexDbUtil.filterIndexDBData(
+      dataArray,
+      params.filter as string[]
+    );
+
+    if (isDataStoreResource) {
+      return {
+        entries: filteredData.map((dataItem) => {
+          return dataItem['entry'];
+        }),
+      };
+    }
 
     return {
-      [schemaName]: IndexDbUtil.filterIndexDBData(
-        dataArray,
-        params.filter as string[]
-      ),
+      [schema]: filteredData,
     };
   }
 

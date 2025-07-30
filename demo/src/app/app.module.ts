@@ -21,6 +21,11 @@ import { appRoutes } from './app.routes';
     AppShellModule.forRoot({
       pwaEnabled: false,
       isDevMode: true,
+      indexDbConfig: {
+        namespace: 'd2-sdk-demo-db',
+        version: 1,
+        models: {},
+      },
     }),
     RouterModule.forRoot(appRoutes, {
       useHash: true,

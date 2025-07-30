@@ -35,10 +35,8 @@ export class IndexDbUtil {
     const schemaName = ((schemaPart[0] || '').split('.') || [])[0];
 
     const schema = {
-      name:
-        schemaName === 'dataStore'
-          ? `dataStore_${((schemaPart[1] || '').split('.') || [])[0]}`
-          : schemaName,
+      name: schemaName,
+      namespace: ((schemaPart[1] || '').split('.') || [])[0],
       id:
         schemaName === 'dataStore'
           ? (schemaPart[2] || '').replace('.json', '')
