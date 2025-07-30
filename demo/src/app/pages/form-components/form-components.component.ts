@@ -16,6 +16,7 @@ import {
   ProgramEntryFormModule,
   ProgramEntryFormConfig,
 } from '@iapps/ng-dhis2-ui';
+import { format } from 'date-fns';
 import { CustomOrgUnitConfig } from 'packages/ng-dhis2-ui/src/lib/modules/form/components/org-unit-form-field.component';
 
 @Component({
@@ -220,4 +221,32 @@ export class FormComponentsComponent {
   }
 
   async onSaveComplete(reponse: any) {}
+  paymentInformationFormConfig = new ProgramEntryFormConfig({
+    program: 'Gy65kx8gQv6',
+    programStage: 'fUVVkgQZHN5',
+    hideRegistrationUnit: true,
+    formType: 'EVENT',
+    displayType: 'FLAT',
+    autoComplete: true,
+    autoAssignedValues: [
+      {
+        field: 'orgUnit',
+        value: 'F1NIWhnD69w',
+      },
+      {
+        field: 'occurredAt',
+        value: format(new Date(), 'yyyy-MM-dd'),
+      },
+    ],
+    formFieldExtensions: [
+      {
+        id: 'OhV3SJdy7HV',
+        isDataElementUnique: true,
+      },
+      {
+        id: 'p5FAom9pPWw',
+        isDataElementUnique: true,
+      },
+    ],
+  });
 }
