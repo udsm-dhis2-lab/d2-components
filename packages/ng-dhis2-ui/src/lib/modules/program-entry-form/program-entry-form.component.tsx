@@ -79,9 +79,18 @@ export class ProgramEntryFormModule {
     return <CircularLoader small />;
   };
 
+  // dataId = computed(() => {
+  //   return this.instance()?.trackedEntity || this.instance()?.event;
+  // });
   dataId = computed(() => {
-    return this.instance()?.trackedEntity || this.instance()?.event;
-  });
+  if (this.config().formType === 'EVENT') {
+    return this.instance()?.event;
+  }
+  if (this.config().formType === 'TRACKER') {
+    return this.instance()?.trackedEntity;
+  }
+  return undefined;
+});
 
   FormActionButtons = computed(() => {
     if (this.config().hideActionButtons) {

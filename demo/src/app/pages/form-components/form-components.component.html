@@ -22,11 +22,23 @@
       (instanceSaveCompleted)="onSaveComplete($event)"
       (formCanceel)="onCancel()"
     />
+    <!-- 
+    <ng-dhis2-ui-program-entry-form
+        [event]="paymentInformationId()!"
+        [enrollment]="applicant()!.latestEnrollment!.enrollment!"
+        [config]="formConfig"
+      /> -->
 
-    <!-- <ng-dhis2-ui-event-form
+    <ng-dhis2-ui-program-entry-form
+      [event]="'Lv8KziKr1I8'"
+      [enrollment]="'trT6QMNQgxx'"
+      [config]="paymentInformationFormConfig"
+    />
+
+    <ng-dhis2-ui-event-form
       [program]="'lw9fZTamYec'"
       [programStage]="'k4ZFqYqRNDF'"
-    /> -->
+    />
   </div>
 </div>
 <!-- new FormMetaData({
