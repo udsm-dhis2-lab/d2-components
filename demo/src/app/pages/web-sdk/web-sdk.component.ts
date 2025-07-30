@@ -137,18 +137,18 @@ export class WebSdkComponent {
 
     console.log('CREATE INSTANCE', testInstance);
 
-    const indexDbResponse = await this.d2.httpInstance.get(
-      'organisationUnits.json',
+    const orgUnitIndexDbResponse = await this.d2.httpInstance.get(
+      'organisationUnits.json?fields=id,code,name,parent',
       { useIndexDb: true }
     );
 
-    console.log('ORGUNIT FROM INDEX DB', indexDbResponse);
+    console.log('ORGUNIT FROM INDEX DB', orgUnitIndexDbResponse);
 
-    const indexDbSingleResponse = await this.d2.httpInstance.get(
-      'organisationUnits/AdmHm9e8IwS.json',
+    const dataStoreIndexDbResponse = await this.d2.httpInstance.get(
+      'dataStore/modules/cacheCleaner?fields=id,section,menuItems,authorities,icon,sort&paging=false',
       { useIndexDb: true }
     );
 
-    console.log('ORGUNIT FROM INDEX DB BY ID', indexDbSingleResponse);
+    console.log('DATA STORE', dataStoreIndexDbResponse);
   }
 }

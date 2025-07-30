@@ -220,6 +220,7 @@ export class ComponentsComponent implements OnInit {
     hideUserOrgUnits: false,
     allowSingleSelection: true,
     usageType: 'DATA_ENTRY',
+    allowCaching: true,
   };
   onSelectOrgUnits(orgUnits: any) {
     this.selectedOrgUnits = orgUnits;

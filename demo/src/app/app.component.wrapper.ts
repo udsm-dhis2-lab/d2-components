@@ -8,10 +8,11 @@ import { AppComponent } from './app.component';
 import { NgDhis2ShellWrapper } from '@iapps/ng-dhis2-shell';
 
 @Component({
-    selector: 'app-root',
-    template: '<ng-dhis2-shell (shellHasLoaded)="onReady()"></ng-dhis2-shell>',
-    standalone: false
+  selector: 'app-root',
+  template: '<ng-dhis2-shell (shellHasLoaded)="onReady()"></ng-dhis2-shell>',
+  standalone: false,
 })
+// eslint-disable-next-line @angular-eslint/component-class-suffix
 export class AppComponentWrapper extends NgDhis2ShellWrapper {
   override componentPortal: ComponentPortal<any> = new ComponentPortal(
     AppComponent

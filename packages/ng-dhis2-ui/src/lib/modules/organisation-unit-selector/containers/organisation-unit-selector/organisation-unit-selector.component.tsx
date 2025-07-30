@@ -7,10 +7,9 @@ import {
   Output,
 } from '@angular/core';
 import { Provider } from '@dhis2/app-runtime';
-import { NgxDhis2HttpClientService, User } from '@iapps/ngx-dhis2-http-client';
+import { D2Window } from '@iapps/d2-web-sdk';
 import React from 'react';
 import * as ReactDOM from 'react-dom/client';
-import { firstValueFrom, map } from 'rxjs';
 import { ReactWrapperModule } from '../../../react-wrapper/react-wrapper.component';
 import OrgUnitDimension from '../../components/OrgUnitDimension';
 import {
@@ -29,6 +28,7 @@ type OrganisationUnitSelectionEvent = {
   standalone: false,
 })
 export class OrganisationUnitSelectorComponent extends ReactWrapperModule {
+  d2 = (window as unknown as D2Window).d2Web;
   @Input() selectedOrgUnits: any[] = [];
   @Input() orgUnitSelectionConfig: OrganisationUnitSelectionConfig =
     new OrganisationUnitSelectionConfig();
@@ -41,11 +41,7 @@ export class OrganisationUnitSelectorComponent extends ReactWrapperModule {
     },
   };
 
-  constructor(
-    elementRef: ElementRef<HTMLElement>,
-    private httpClient: NgxDhis2HttpClientService,
-    private ngZone: NgZone
-  ) {
+  constructor(elementRef: ElementRef<HTMLElement>, private ngZone: NgZone) {
     super(elementRef);
   }
 
@@ -56,47 +52,49 @@ export class OrganisationUnitSelectorComponent extends ReactWrapperModule {
 
     const config = await this.getAppConfig();
 
-    this.component = () => (
-      <Provider
-        config={config}
-        plugin={false}
-        parentAlertsAdd={undefined}
-        showAlertsInPlugin={false}
-      >
-        {
-          <OrgUnitDimension
-            selected={this.selectedOrgUnits}
-            hideGroupSelect={this.orgUnitSelectionConfig.hideGroupSelect}
-            hideLevelSelect={this.orgUnitSelectionConfig.hideLevelSelect}
-            hideUserOrgUnits={this.orgUnitSelectionConfig.hideUserOrgUnits}
-            onSelect={(selectionEvent: OrganisationUnitSelectionEvent) =>
-              this.ngZone.run(() => {
-                this.onSelectItems(selectionEvent);
-              })
-            }
-            orgUnitGroupPromise={this.getOrgUnitGroups()}
-            orgUnitLevelPromise={this.getOrgUnitLevels()}
-            roots={rootOrgUnits}
-          />
-        }
-      </Provider>
-    );
+    if (config) {
+      this.component = () => (
+        <Provider
+          config={config}
+          plugin={false}
+          parentAlertsAdd={undefined}
+          showAlertsInPlugin={false}
+        >
+          {
+            <OrgUnitDimension
+              selected={this.selectedOrgUnits}
+              hideGroupSelect={this.orgUnitSelectionConfig.hideGroupSelect}
+              hideLevelSelect={this.orgUnitSelectionConfig.hideLevelSelect}
+              hideUserOrgUnits={this.orgUnitSelectionConfig.hideUserOrgUnits}
+              onSelect={(selectionEvent: OrganisationUnitSelectionEvent) =>
+                this.ngZone.run(() => {
+                  this.onSelectItems(selectionEvent);
+                })
+              }
+              orgUnitGroupPromise={this.getOrgUnitGroups()}
+              orgUnitLevelPromise={this.getOrgUnitLevels()}
+              roots={rootOrgUnits}
+            />
+          }
+        </Provider>
+      );
 
-    this.render();
+      this.render();
+    }
   }
 
   private async getAppConfig() {
-    const systemInfo = (await firstValueFrom(
-      this.httpClient.systemInfo()
-    )) as unknown as Record<string, unknown>;
+    const systemInfo = this.d2.systemInfo;
+
+    if (!systemInfo) {
+      return systemInfo;
+    }
 
     return {
-      baseUrl: (document?.location?.host?.includes('localhost')
+      baseUrl: document?.location?.host?.includes('localhost')
         ? `${document.location.protocol}//${document.location.host}`
-        : systemInfo['contextPath']) as string,
-      apiVersion: Number(
-        (((systemInfo['version'] as string) || '')?.split('.') || [])[1]
-      ),
+        : systemInfo.contextPath,
+      apiVersion: systemInfo.apiVersion,
     };
   }
 
@@ -113,43 +111,38 @@ export class OrganisationUnitSelectorComponent extends ReactWrapperModule {
     }
   }
 
-  getRootOrgUnits(): Promise<string[]> {
+  async getRootOrgUnits(): Promise<string[]> {
     const orgUnitAttribute = this.getOrgUnitAttributeByUsage(
       this.orgUnitSelectionConfig.usageType
     );
-    return firstValueFrom(
-      this.httpClient
-        .me()
-        .pipe(
-          map((user: User) =>
-            (user ? user[orgUnitAttribute] : []).map((orgUnit) => orgUnit.id)
-          )
-        )
+
+    const currentUser = this.d2?.currentUser;
+
+    return (currentUser ? currentUser[orgUnitAttribute] : []).map(
+      (orgUnit) => orgUnit.id
     );
   }
 
-  getOrgUnitGroups(): Promise<any> {
-    return firstValueFrom(
-      this.httpClient
-        .get(
-          'organisationUnitGroups.json?fields=id,displayName,name&paging=false'
-        )
-        .pipe(
-          map((res: Record<string, unknown>) => res?.['organisationUnitGroups'])
-        )
+  async getOrgUnitGroups(): Promise<any> {
+    const orgUnitGroupResponse = await this.d2?.httpInstance?.get(
+      'organisationUnitGroups.json?fields=id,displayName,name&paging=false',
+      {
+        useIndexDb: this.orgUnitSelectionConfig?.allowCaching,
+      }
     );
+
+    return orgUnitGroupResponse?.data?.['organisationUnitGroups'] ?? [];
   }
 
-  getOrgUnitLevels(): Promise<any> {
-    return firstValueFrom(
-      this.httpClient
-        .get(
-          'organisationUnitLevels.json?fields=id,level,displayName,name&paging=false'
-        )
-        .pipe(
-          map((res: Record<string, unknown>) => res?.['organisationUnitLevels'])
-        )
+  async getOrgUnitLevels(): Promise<any> {
+    const orgUnitLevelResponse = await this.d2?.httpInstance?.get(
+      'organisationUnitLevels.json?fields=id,level,displayName,name&paging=false',
+      {
+        useIndexDb: this.orgUnitSelectionConfig?.allowCaching,
+      }
     );
+
+    return orgUnitLevelResponse?.data?.['organisationUnitLevels'] ?? [];
   }
 
   onSelectItems(selectionEvent: OrganisationUnitSelectionEvent) {

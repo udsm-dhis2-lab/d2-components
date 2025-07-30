@@ -14,10 +14,9 @@ import {
   ModalContent,
   ModalTitle,
 } from '@dhis2/ui';
-import { NgxDhis2HttpClientService, User } from '@iapps/ngx-dhis2-http-client';
+import { D2Window } from '@iapps/d2-web-sdk';
 import React, { useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
-import { firstValueFrom, map } from 'rxjs';
 import { ReactWrapperModule } from '../../../react-wrapper/react-wrapper.component';
 import OrgUnitDimension from '../../components/OrgUnitDimension';
 import {
@@ -43,6 +42,7 @@ type OrganisationUnitSelectionEvent = {
   standalone: false,
 })
 export class OrganisationUnitSelectorModalComponent extends ReactWrapperModule {
+  d2 = (window as unknown as D2Window).d2Web;
   @Input() selectedOrgUnits: any[] = [];
   @Input() orgUnitSelectionConfig: OrganisationUnitSelectionConfig =
     new OrganisationUnitSelectionConfig();
@@ -57,10 +57,7 @@ export class OrganisationUnitSelectorModalComponent extends ReactWrapperModule {
     },
   };
 
-  constructor(
-    elementRef: ElementRef<HTMLElement>,
-    private httpClient: NgxDhis2HttpClientService
-  ) {
+  constructor(elementRef: ElementRef<HTMLElement>) {
     super(elementRef);
   }
 
@@ -71,63 +68,69 @@ export class OrganisationUnitSelectorModalComponent extends ReactWrapperModule {
 
     const config = await this.getAppConfig();
 
-    this.component = () => {
-      const [selected, setSelected] = useState(this.selectedOrgUnits);
-      return (
-        <Provider
-          config={config}
-          plugin={false}
-          parentAlertsAdd={undefined}
-          showAlertsInPlugin={false}
-        >
-          {
-            <Modal position="middle" large>
-              <ModalTitle>Organisation unit</ModalTitle>
-              <ModalContent>
-                <OrgUnitDimension
-                  selected={selected}
-                  hideGroupSelect={this.orgUnitSelectionConfig.hideGroupSelect}
-                  hideLevelSelect={this.orgUnitSelectionConfig.hideLevelSelect}
-                  hideUserOrgUnits={
-                    this.orgUnitSelectionConfig.hideUserOrgUnits
-                  }
-                  onSelect={(
-                    selectionEvent: OrganisationUnitSelectionEvent
-                  ) => {
-                    setSelected(selectionEvent.items);
-                  }}
-                  orgUnitGroupPromise={this.getOrgUnitGroups()}
-                  orgUnitLevelPromise={this.getOrgUnitLevels()}
-                  roots={rootOrgUnits}
-                />
-              </ModalContent>
-              <ModalActions>
-                <ButtonStrip end>
-                  <Button
-                    onClick={() => {
-                      this.onCancel();
+    if (config) {
+      this.component = () => {
+        const [selected, setSelected] = useState(this.selectedOrgUnits);
+        return (
+          <Provider
+            config={config}
+            plugin={false}
+            parentAlertsAdd={undefined}
+            showAlertsInPlugin={false}
+          >
+            {
+              <Modal position="middle" large>
+                <ModalTitle>Organisation unit</ModalTitle>
+                <ModalContent>
+                  <OrgUnitDimension
+                    selected={selected}
+                    hideGroupSelect={
+                      this.orgUnitSelectionConfig.hideGroupSelect
+                    }
+                    hideLevelSelect={
+                      this.orgUnitSelectionConfig.hideLevelSelect
+                    }
+                    hideUserOrgUnits={
+                      this.orgUnitSelectionConfig.hideUserOrgUnits
+                    }
+                    onSelect={(
+                      selectionEvent: OrganisationUnitSelectionEvent
+                    ) => {
+                      setSelected(selectionEvent.items);
                     }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    primary
-                    disabled={selected.length === 0}
-                    onClick={() => {
-                      this.onConfirm(selected);
-                    }}
-                  >
-                    Confirm
-                  </Button>
-                </ButtonStrip>
-              </ModalActions>
-            </Modal>
-          }
-        </Provider>
-      );
-    };
+                    orgUnitGroupPromise={this.getOrgUnitGroups()}
+                    orgUnitLevelPromise={this.getOrgUnitLevels()}
+                    roots={rootOrgUnits}
+                  />
+                </ModalContent>
+                <ModalActions>
+                  <ButtonStrip end>
+                    <Button
+                      onClick={() => {
+                        this.onCancel();
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      primary
+                      disabled={selected.length === 0}
+                      onClick={() => {
+                        this.onConfirm(selected);
+                      }}
+                    >
+                      Confirm
+                    </Button>
+                  </ButtonStrip>
+                </ModalActions>
+              </Modal>
+            }
+          </Provider>
+        );
+      };
 
-    this.render();
+      this.render();
+    }
   }
 
   onCancel() {
@@ -139,17 +142,17 @@ export class OrganisationUnitSelectorModalComponent extends ReactWrapperModule {
   }
 
   private async getAppConfig() {
-    const systemInfo = (await firstValueFrom(
-      this.httpClient.systemInfo()
-    )) as unknown as Record<string, unknown>;
+    const systemInfo = this.d2.systemInfo;
+
+    if (!systemInfo) {
+      return systemInfo;
+    }
 
     return {
-      baseUrl: (document?.location?.host?.includes('localhost')
+      baseUrl: document?.location?.host?.includes('localhost')
         ? `${document.location.protocol}//${document.location.host}`
-        : systemInfo['contextPath']) as string,
-      apiVersion: Number(
-        (((systemInfo['version'] as string) || '')?.split('.') || [])[1]
-      ),
+        : systemInfo.contextPath,
+      apiVersion: systemInfo.apiVersion,
     };
   }
 
@@ -166,43 +169,38 @@ export class OrganisationUnitSelectorModalComponent extends ReactWrapperModule {
     }
   }
 
-  getRootOrgUnits(): Promise<string[]> {
+  async getRootOrgUnits(): Promise<string[]> {
     const orgUnitAttribute = this.getOrgUnitAttributeByUsage(
       this.orgUnitSelectionConfig.usageType
     );
-    return firstValueFrom(
-      this.httpClient
-        .me()
-        .pipe(
-          map((user: User) =>
-            (user ? user[orgUnitAttribute] : []).map((orgUnit) => orgUnit.id)
-          )
-        )
+
+    const currentUser = this.d2?.currentUser;
+
+    return (currentUser ? currentUser[orgUnitAttribute] : []).map(
+      (orgUnit) => orgUnit.id
     );
   }
 
-  getOrgUnitGroups(): Promise<any> {
-    return firstValueFrom(
-      this.httpClient
-        .get(
-          'organisationUnitGroups.json?fields=id,displayName,name&paging=false'
-        )
-        .pipe(
-          map((res: Record<string, unknown>) => res?.['organisationUnitGroups'])
-        )
+  async getOrgUnitGroups(): Promise<any> {
+    const orgUnitGroupResponse = await this.d2?.httpInstance?.get(
+      'organisationUnitGroups.json?fields=id,displayName,name&paging=false',
+      {
+        useIndexDb: this.orgUnitSelectionConfig?.allowCaching,
+      }
     );
+
+    return orgUnitGroupResponse?.data?.['organisationUnitGroups'] ?? [];
   }
 
-  getOrgUnitLevels(): Promise<any> {
-    return firstValueFrom(
-      this.httpClient
-        .get(
-          'organisationUnitLevels.json?fields=id,level,displayName,name&paging=false'
-        )
-        .pipe(
-          map((res: Record<string, unknown>) => res?.['organisationUnitLevels'])
-        )
+  async getOrgUnitLevels(): Promise<any> {
+    const orgUnitLevelResponse = await this.d2?.httpInstance?.get(
+      'organisationUnitLevels.json?fields=id,level,displayName,name&paging=false',
+      {
+        useIndexDb: this.orgUnitSelectionConfig?.allowCaching,
+      }
     );
+
+    return orgUnitLevelResponse?.data?.['organisationUnitLevels'] ?? [];
   }
 
   onSelectItems(selectionEvent: OrganisationUnitSelectionEvent) {

@@ -1,28 +1,15 @@
 import { ComponentPortal, DomPortalOutlet } from '@angular/cdk/portal';
-import {
-  AfterViewInit,
-  ApplicationRef,
-  ComponentFactoryResolver,
-  Directive,
-  Injector,
-} from '@angular/core';
-import { of, mergeMap, throwError, retry, Observable, delay } from 'rxjs';
+import { ApplicationRef, Directive, Injector } from '@angular/core';
 
 @Directive({
-    selector: 'ng-dhis2-shell-wrapper',
-    standalone: false
+  standalone: false,
 })
-export abstract class NgDhis2ShellWrapper implements AfterViewInit {
+// eslint-disable-next-line @angular-eslint/directive-class-suffix
+export abstract class NgDhis2ShellWrapper {
   private host!: DomPortalOutlet;
   abstract componentPortal: ComponentPortal<any>;
 
-  constructor(
-    private cfr: ComponentFactoryResolver,
-    private appRef: ApplicationRef,
-    private injector: Injector
-  ) {}
-
-  ngAfterViewInit() {}
+  constructor(private appRef: ApplicationRef, private injector: Injector) {}
 
   onReady() {
     try {
@@ -35,7 +22,6 @@ export abstract class NgDhis2ShellWrapper implements AfterViewInit {
   private attachPortalOutlet() {
     this.host = new DomPortalOutlet(
       document.querySelector('#app_shell_content') as any,
-      this.cfr,
       this.appRef,
       this.injector
     );
