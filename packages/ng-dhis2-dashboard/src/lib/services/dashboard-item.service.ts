@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { D2Window } from '@iapps/d2-web-sdk';
-import { ErrorMessage } from '@iapps/ngx-dhis2-http-client';
 import { catchError, from, map, of, zip } from 'rxjs';
 import { DashboardConfig } from '../models';
 import { DashboardConfigService } from './dashboard-config.service';
@@ -60,7 +59,7 @@ export class DashboardItemService {
       )
     ).pipe(
       map((res) => res.data),
-      catchError((error: ErrorMessage) => {
+      catchError((error: any) => {
         console.warn(error.message);
         return of(null);
       })
