@@ -357,6 +357,9 @@ export const FilterToolbar = ({
                 </DropdownButton>
               );
             }
+            {
+              /* TODO: I HAVE DUPLICATED DROPDOWN AND CLEAR ICON IN MULTIPLE PLACES REQUIRED TO CREATE A REUSABLE DROPDOWN COMPONENT WITH THE CLEAR ICON TO AVOID DUPLICATION */
+            }
 
             if (options && options.options.length > 0) {
               return (
@@ -628,3 +631,47 @@ export function formatDateForDisplay(
     return 'dd-mm-yyyy';
   }
 }
+
+// case 'date':
+//           case 'date-time':
+//             return (
+//               // <InputField
+//               //   error={hasError}
+//               //   validationText={validationError}
+//               //   type={this.field().type as any}
+//               //   inputWidth={inputWidth}
+//               //   required={this.field().required}
+//               //   name={this.field().id}
+//               //   label={this.label()}
+//               //   min={this.field().min?.toString()}
+//               //   max={this.field().max?.toString()}
+//               //   placeholder={this.placeholder()}
+//               //   value={value}
+//               //   readOnly={disabled}
+//               //   onChange={(event: any) => {
+//               //     onValueChange(event.value);
+//               //   }}
+//               //   onBlur={() => {
+//               //     checkValueUniqueness();
+//               //   }}
+//               // />
+//               <CalendarInput
+//                 label={this.label()}
+//                 error={hasError}
+//                 validationText={validationError}
+//                 date={value}
+//                 readOnly={disabled}
+//                 min={this.field().min?.toString()}
+//                 max={this.field().max?.toString()}
+//                 placeholder={this.placeholder()}
+//                 onDateSelect={(selectedDate: any) => {
+//                   onValueChange(selectedDate.calendarDateString);
+//                 }}
+//                 disabled={disabled}
+//                 inputWidth={inputWidth}
+//                 required={this.field().required}
+//                 calendar="gregory"
+//                 locale="en-GB"
+//                 timeZone="Africa/Dar_es_Salaam"
+//               />
+//             );
