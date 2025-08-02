@@ -48,7 +48,8 @@ export const getTrackedEntityTableData = (
         .programStageDataElements!.filter((psde) => psde.displayInReports)
         .sort((a, b) => a.sortOrder - b.sortOrder)
         .map((psde) => ({
-          label: psde.dataElement.name || psde.dataElement.formName || 'default',
+          label:
+            psde.dataElement.name || psde.dataElement.formName || 'default',
           key: psde.dataElement.id,
           valueType: psde.dataElement.valueType,
           options: psde.dataElement.optionSet,
@@ -64,7 +65,8 @@ export const getTrackedEntityTableData = (
         .programStageDataElements!.filter((psde) => psde.displayInReports)
         .sort((a, b) => a.sortOrder - b.sortOrder) // Sorts data elements within stage
         .map((psde) => ({
-          label: psde.dataElement.name || psde.dataElement.formName || 'default',
+          label:
+            psde.dataElement.name || psde.dataElement.formName || 'default',
           key: psde.dataElement.id,
         }))
     );
@@ -81,7 +83,7 @@ export const getTrackedEntityTableData = (
 
   const tableColumns = [
     {
-      label: orgUnitLabel || 'registering unit',
+      label: orgUnitLabel || 'Registering unit',
       key: 'orgUnit',
     },
     ...attributeColumns,

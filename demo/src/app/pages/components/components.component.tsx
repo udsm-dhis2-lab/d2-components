@@ -138,6 +138,10 @@ export class ComponentsComponent implements OnInit {
   //   );
   // }
 
+  onButtonClick() {
+    console.log('BUTTON IS CLICKED HERE');
+  }
+
   onActionSelected(event: {
     action: string;
     data: TrackedEntityInstance | DHIS2Event;

@@ -85,69 +85,91 @@ export class DataTableUIComponent
       }));
     };
 
-    return (
-      <div>
-        {loading ? (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: 8,
-            }}
-          >
-            <CircularLoader small />
-            <div
-              style={{
-                fontSize: 14,
-              }}
-            >
-              Loading
-            </div>
-          </div>
-        ) : (
-          <DataTable>
-            <TableHead>
-              <DataTableRow>
-                {columns.map((col) => (
-                  <DataTableColumnHeader key={col.column}>
-                    {col.display}
-                  </DataTableColumnHeader>
-                ))}
-                {this.actionOptions && this.actionOptions.length > 0 && (
-                  <DataTableColumnHeader>Actions</DataTableColumnHeader>
-                )}
-              </DataTableRow>
-            </TableHead>
-            <TableBody>
-              {tableData.map((row, rowIndex) => (
-                <DataTableRow key={rowIndex}>
-                  {columns.map((col) => (
-                    <DataTableCell key={col.column}>
-                      {row[col.column] || '-'}
-                    </DataTableCell>
-                  ))}
-                  {this.actionOptions && this.actionOptions.length > 0 && (
-                    <DataTableCell>
-                      <DropdownMenu
-                        dropdownOptions={getDropdownOptions(row)}
-                        onClick={(option) => option.onClick?.(row)}
-                      />
-                    </DataTableCell>
-                  )}
-                </DataTableRow>
-              ))}
-            </TableBody>
-            <TableFoot>
-              <DataTableRow>
-                <DataTableCell
-                  colSpan={(columns.length || 0 + 1).toString()}
-                ></DataTableCell>
-              </DataTableRow>
-            </TableFoot>
-          </DataTable>
-        )}
-      </div>
+    return React.createElement(
+      'div',
+      null,
+      loading
+        ? React.createElement(
+            'div',
+            {
+              style: {
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: 8,
+              },
+            },
+            React.createElement(CircularLoader, { small: true }),
+            React.createElement(
+              'div',
+              {
+                style: {
+                  fontSize: 14,
+                },
+              },
+              'Loading'
+            )
+          )
+        : React.createElement(
+            DataTable,
+            null,
+            React.createElement(
+              TableHead,
+              null,
+              React.createElement(
+                DataTableRow,
+                null,
+                ...columns.map((col) =>
+                  React.createElement(
+                    DataTableColumnHeader,
+                    { key: col.column },
+                    col.display
+                  )
+                ),
+                this.actionOptions && this.actionOptions.length > 0
+                  ? React.createElement(DataTableColumnHeader, null, 'Actions')
+                  : null
+              )
+            ),
+            React.createElement(
+              TableBody,
+              null,
+              ...tableData.map((row, rowIndex) =>
+                React.createElement(
+                  DataTableRow,
+                  { key: rowIndex },
+                  ...columns.map((col) =>
+                    React.createElement(
+                      DataTableCell,
+                      { key: col.column },
+                      row[col.column] || '-'
+                    )
+                  ),
+                  this.actionOptions && this.actionOptions.length > 0
+                    ? React.createElement(
+                        DataTableCell,
+                        null,
+                        React.createElement(DropdownMenu, {
+                          dropdownOptions: getDropdownOptions(row),
+                          onClick: (option) => option.onClick?.(row),
+                        })
+                      )
+                    : null
+                )
+              )
+            ),
+            React.createElement(
+              TableFoot,
+              null,
+              React.createElement(
+                DataTableRow,
+                null,
+                React.createElement(DataTableCell, {
+                  colSpan: (columns.length + 1).toString(),
+                })
+              )
+            )
+          )
     );
   };
 

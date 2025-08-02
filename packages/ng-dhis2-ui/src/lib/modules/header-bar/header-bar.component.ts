@@ -28,12 +28,17 @@ export class HeaderBarComponent extends ReactWrapperModule {
     const data = await firstValueFrom(new HeaderBarData(this.httpClient).get());
 
     this.component = data
-      ? () => (
-          <DataProvider>
-            {<HeaderBar appName={manifest?.name} data={data} />}
-          </DataProvider>
-        )
-      : () => <div>Something went wrong</div>;
+      ? () => {
+          const headerBarElement = React.createElement(
+            HeaderBar as unknown as React.ComponentType<any>,
+            {
+              appName: manifest?.name,
+              data: data,
+            }
+          );
+          return React.createElement(DataProvider, null, headerBarElement);
+        }
+      : () => React.createElement('div', null, 'Something went wrong');
     this.render();
   }
 }

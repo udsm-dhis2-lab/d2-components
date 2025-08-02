@@ -85,67 +85,74 @@ export class DashboardSelectionFiltersComponent {
 
   FilterButton = () => {
     const [showMenu, setShowMenu] = useState(false);
-    return (
-      <div
-        style={{
+
+    return React.createElement(
+      'div',
+      {
+        style: {
           position: 'relative',
-        }}
-      >
-        <Button
-          icon={<IconFilter16 />}
-          onClick={() => {
+        },
+      },
+      React.createElement(
+        Button,
+        {
+          icon: React.createElement(IconFilter16, null),
+          onClick: () => {
             setShowMenu(!showMenu);
-          }}
-        >
-          <div
-            style={{
+          },
+        },
+        React.createElement(
+          'div',
+          {
+            style: {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               gap: spacers.dp8,
-            }}
-          >
-            <span>Add filter</span>
-
-            {showMenu ? (
-              <IconChevronUp16 style={{ height: 4 }} />
-            ) : (
-              <IconChevronDown16 />
-            )}
-          </div>
-        </Button>
-        {showMenu && (
-          <div
-            style={{
+            },
+          },
+          React.createElement('span', null, 'Add filter'),
+          showMenu
+            ? React.createElement(IconChevronUp16, {
+                style: { height: 4 },
+              } as any)
+            : React.createElement(IconChevronDown16, null)
+        )
+      ),
+      showMenu &&
+        React.createElement(
+          'div',
+          {
+            style: {
               position: 'absolute',
               top: 40,
               left: 0,
               width: 180,
               right: 0,
               zIndex: 1,
-            }}
-          >
-            <FlyoutMenu dense>
-              <MenuItem
-                icon={<IconClock16 />}
-                label="Period"
-                onClick={() => {
-                  setShowMenu(false);
-                  this.showPeriodSelector.set(true);
-                }}
-              />
-              <MenuItem
-                icon={<IconDimensionOrgUnit16 />}
-                label="Organisation unit"
-                onClick={() => {
-                  setShowMenu(false);
-                  this.showOrgUnitSelector.set(true);
-                }}
-              />
-            </FlyoutMenu>
-          </div>
-        )}
-      </div>
+            },
+          },
+          React.createElement(
+            FlyoutMenu,
+            { dense: true },
+            React.createElement(MenuItem, {
+              icon: React.createElement(IconClock16, null),
+              label: 'Period',
+              onClick: () => {
+                setShowMenu(false);
+                this.showPeriodSelector.set(true);
+              },
+            }),
+            React.createElement(MenuItem, {
+              icon: React.createElement(IconDimensionOrgUnit16, null),
+              label: 'Organisation unit',
+              onClick: () => {
+                setShowMenu(false);
+                this.showOrgUnitSelector.set(true);
+              },
+            })
+          )
+        )
     );
   };
 

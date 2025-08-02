@@ -2,14 +2,14 @@
   "name": "@iapps/d2-dashboard",
   "version": "1.0.16",
   "peerDependencies": {
-    "@angular/common": "^18.0.0",
-    "@angular/core": "^18.0.0",
+    "@angular/common": "^20.0.0",
+    "@angular/core": "^20.0.0",
     "@iapps/d2-visualizer": "^1.1.6",
     "@dhis2/ui": "~8.14.9",
-    "react": "^16.8.6",
-    "react-dom": "^16.8.6",
-    "styled-jsx": "^4.0.1",
-    "html-react-parser": "^5.0.11",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "styled-jsx": "^5.1.2",
+    "html-react-parser": "^5.2.2",
     "prop-types": "^15.8.1"
   },
   "dependencies": {

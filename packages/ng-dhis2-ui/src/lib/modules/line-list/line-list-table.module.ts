@@ -5,8 +5,8 @@ import { LineListTableComponent } from './containers/line-list.component';
 import { ReactWrapperModule } from '../react-wrapper/react-wrapper.component';
 import { LineListService } from './services/line-list.service';
 @NgModule({
-  declarations: [LineListTableComponent],
-  exports: [LineListTableComponent],
+  declarations: [],
+  exports: [],
   imports: [CommonModule, SharedDhis2UiModule, ReactWrapperModule],
   providers: [LineListService],
 })

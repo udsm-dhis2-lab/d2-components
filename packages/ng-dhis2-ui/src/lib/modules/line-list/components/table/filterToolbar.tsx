@@ -105,7 +105,7 @@ export const FilterToolbar = ({
                     <InputField
                       key="location"
                       placeholder={
-                        orgUnitLabel ? orgUnitLabel : 'registering unit'
+                        orgUnitLabel ? orgUnitLabel : 'Registering unit'
                       }
                       value={selectedOrgUnit}
                       onFocus={() => {
@@ -130,7 +130,7 @@ export const FilterToolbar = ({
                             setIsOpenOrgUnitDropdown(false);
                           }}
                         >
-                          update
+                          Update
                         </Button>
                         <Button
                           disabled={!selectedOrgUnit}
@@ -142,7 +142,7 @@ export const FilterToolbar = ({
                             setIsOpenOrgUnitDropdown(false);
                           }}
                         >
-                          reset filter
+                          Reset
                         </Button>
                       </ButtonStrip>
                     </div>
@@ -151,7 +151,7 @@ export const FilterToolbar = ({
               </div>
             }
           >
-            {orgUnitLabel ? orgUnitLabel : 'registering unit'}{' '}
+            {orgUnitLabel ? orgUnitLabel : 'Registering unit'}{' '}
             {prevSelectedOrgUnit && ':'} {prevSelectedOrgUnit}
             {prevSelectedOrgUnit && (
               <span
@@ -226,7 +226,7 @@ export const FilterToolbar = ({
                                 setIsOpen(false);
                               }}
                             >
-                              update
+                              Update
                             </Button>
                             <Button
                               onClick={() => {
@@ -237,7 +237,7 @@ export const FilterToolbar = ({
                                 setIsOpen(false);
                               }}
                             >
-                              reset
+                              Reset
                             </Button>
                           </ButtonStrip>
                         </div>
@@ -246,7 +246,7 @@ export const FilterToolbar = ({
                   </div>
                 }
               >
-                registration dates {(startDateState || endDateState) && ':'}{' '}
+                Enrollment dates {(startDateState || endDateState) && ':'}{' '}
                 {startDateState}
                 {endDateState && ` - ${endDateState}`}
                 {(startDateState || endDateState) && (
@@ -276,6 +276,7 @@ export const FilterToolbar = ({
               return (
                 <DropdownButton
                   name="customDropdown"
+                  key={key}
                   open={openDropdownKey === key}
                   onClick={() => {
                     setOpenDropdownKey(openDropdownKey === key ? null : key);
@@ -313,14 +314,14 @@ export const FilterToolbar = ({
                                   setOpenDropdownKey(null);
                                 }}
                               >
-                                update
+                                Update
                               </Button>
                               <Button
                                 onClick={() => {
                                   setIsOpen(false);
                                 }}
                               >
-                                reset
+                                Reset
                               </Button>
                             </ButtonStrip>
                           </div>
@@ -365,6 +366,7 @@ export const FilterToolbar = ({
               return (
                 <DropdownButton
                   name="customDropdown"
+                  key={key}
                   open={openDropdownKey === key}
                   onClick={() => {
                     setOpenDropdownKey(openDropdownKey === key ? null : key);
@@ -420,7 +422,7 @@ export const FilterToolbar = ({
                                   setOpenDropdownKey(null);
                                 }}
                               >
-                                update
+                                Update
                               </Button>
                               <Button
                                 disabled={!inputValues[key]}
@@ -450,7 +452,7 @@ export const FilterToolbar = ({
                                   setOpenDropdownKey(null);
                                 }}
                               >
-                                reset
+                                Reset
                               </Button>
                             </ButtonStrip>
                           </div>
@@ -538,7 +540,7 @@ export const FilterToolbar = ({
                                 setOpenDropdownKey(null);
                               }}
                             >
-                              update
+                              Update
                             </Button>
                             <Button
                               disabled={!inputValues[key]}
@@ -562,7 +564,7 @@ export const FilterToolbar = ({
                                 setOpenDropdownKey(null);
                               }}
                             >
-                              reset
+                              Reset
                             </Button>
                           </ButtonStrip>
                         </div>
