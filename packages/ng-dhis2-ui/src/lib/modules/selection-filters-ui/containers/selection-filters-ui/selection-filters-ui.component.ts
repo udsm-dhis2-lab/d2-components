@@ -170,56 +170,63 @@ export class SelectionFiltersComponent
       };
     }, []);
 
-    return config ? (
-      <Provider
-        config={config}
-        plugin={false}
-        parentAlertsAdd={undefined}
-        showAlertsInPlugin={false}
-      >
-        {
-          <Modal position="middle" large>
-            <ModalTitle>Organisation unit</ModalTitle>
-            <ModalContent>
-              <OrgUnitDimension
-                selected={selected}
-                hideGroupSelect={this.orgUnitSelectionConfig.hideGroupSelect}
-                hideLevelSelect={this.orgUnitSelectionConfig.hideLevelSelect}
-                hideUserOrgUnits={this.orgUnitSelectionConfig.hideUserOrgUnits}
-                onSelect={(selectionEvent: any) => {
+    return config
+      ? React.createElement(Provider, {
+          config: config,
+          plugin: false,
+          parentAlertsAdd: undefined,
+          showAlertsInPlugin: false,
+          children: React.createElement(
+            Modal,
+            { position: 'middle', large: true },
+            React.createElement(ModalTitle, null, 'Organisation unit'),
+            React.createElement(
+              ModalContent,
+              null,
+              React.createElement(OrgUnitDimension, {
+                selected: selected,
+                hideGroupSelect: this.orgUnitSelectionConfig.hideGroupSelect,
+                hideLevelSelect: this.orgUnitSelectionConfig.hideLevelSelect,
+                hideUserOrgUnits: this.orgUnitSelectionConfig.hideUserOrgUnits,
+                onSelect: (selectionEvent: any) => {
                   setSelected(selectionEvent.items);
-                }}
-                orgUnitGroupPromise={this.getOrgUnitGroups()}
-                orgUnitLevelPromise={this.getOrgUnitLevels()}
-                roots={rootOrgUnits}
-              />
-            </ModalContent>
-            <ModalActions>
-              <ButtonStrip end>
-                <Button
-                  onClick={() => {
-                    onCancelOrgUnit();
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  primary
-                  disabled={selected.length === 0}
-                  onClick={() => {
-                    onSelectOrgUnit(selected);
-                  }}
-                >
-                  Confirm
-                </Button>
-              </ButtonStrip>
-            </ModalActions>
-          </Modal>
-        }
-      </Provider>
-    ) : (
-      <CircularLoader small />
-    );
+                },
+                orgUnitGroupPromise: this.getOrgUnitGroups(),
+                orgUnitLevelPromise: this.getOrgUnitLevels(),
+                roots: rootOrgUnits,
+              })
+            ),
+            React.createElement(
+              ModalActions,
+              null,
+              React.createElement(
+                ButtonStrip,
+                { end: true },
+                React.createElement(
+                  Button,
+                  {
+                    onClick: () => {
+                      onCancelOrgUnit();
+                    },
+                  },
+                  'Cancel'
+                ),
+                React.createElement(
+                  Button,
+                  {
+                    primary: true,
+                    disabled: selected.length === 0,
+                    onClick: () => {
+                      onSelectOrgUnit(selected);
+                    },
+                  },
+                  'Confirm'
+                )
+              )
+            )
+          ),
+        })
+      : React.createElement(CircularLoader, { small: true });
   };
   showOrgUnitTree = signal<boolean>(false);
   orgUnitSelectionConfig: OrganisationUnitSelectionConfig = {
@@ -374,278 +381,220 @@ export class SelectionFiltersComponent
       return 'span 1';
     };
 
-    return (
-      <div
-        style={{
+    return React.createElement(
+      'div',
+      {
+        style: {
           fontFamily: 'Arial, sans-serif',
           padding: '20px',
           backgroundColor: '#f9f9f9',
           borderRadius: '8px',
           boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-        }}
-      >
-        {/* Organization Unit, Start Date, End Date Row */}
-        {/* <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '16px',
-            marginBottom: '16px',
-          }}
-        >
-          <>
-            <InputField
-              value={displayValue}
-              label="Organization Unit"
-              readOnly={false}
-              onFocus={() => {
-                setShowOrgUnit(true);
-              }}
-              onBlur={() => {
-                setTouched(true);
-              }}
-            />
-            {showOrgUnit && (
-              <this.FieldOrgUnitSelector
-                onCancelOrgUnit={() => {
-                  setShowOrgUnit(false);
-                  setTouched(true);
-                }}
-                onSelectOrgUnit={(selectedOrgUnits) => {
-                  if ((selectedOrgUnits || [])[0]) {
-                    const selectedOrgUnit = selectedOrgUnits[0];
-                    setDisplayValue(selectedOrgUnit.name);
-                    setSelected(selectedOrgUnit.id);
-                    setSelectedOrganisationUnit(selectedOrgUnit.id);
-                    setValue(selectedOrgUnit.id);
-                    setShowOrgUnit(false);
-                    setTouched(true);
-
-                    // this.ngZone.run(() => {
-                    //   setDisplayValue(selectedOrgUnit.name);
-                    //   setSelected(selectedOrgUnit.id)
-                    //   setSelectedOrganisationUnit(selectedOrgUnit.id)
-                    //   setValue(selectedOrgUnit.id);
-                    //   setShowOrgUnit(false);
-                    // setTouched(true);
-                    // });
-                  }
-                }}
-              />
-            )}
-          </>
-
-          <InputField
-            className="input-field"
-            label="Start Date"
-            type="DATE"
-            value={filters.startDate}
-            onChange={(event: { value: string }) =>
-              setFilters({ ...filters, startDate: event.value })
-            }
-          />
-
-          <InputField
-            className="input-field"
-            label="End Date"
-            type="DATE"
-            value={filters.endDate}
-            onChange={(event: { value: string }) =>
-              setFilters({ ...filters, endDate: event.value })
-            }
-          />
-        </div> */}
-
-        <div
-          style={{
+        },
+      },
+      React.createElement(
+        'div',
+        {
+          style: {
             display: 'grid',
             gridTemplateColumns: '1fr 1fr 1fr auto', // Ensure proper button sizing
             gap: '16px',
             alignItems: 'center', // Align inputs and button on the same row
             marginBottom: '16px',
-          }}
-        >
-          {/* Organization Unit Selector */}
-          <div style={{ width: '100%' }}>
-            <InputField
-              value={displayValue}
-              label="Organization Unit"
-              readOnly={false}
-              onFocus={() => setShowOrgUnit(true)}
-              onBlur={() => {
+          },
+        },
+        /* Organization Unit Selector */
+        React.createElement(
+          'div',
+          { style: { width: '100%' } },
+          React.createElement(InputField, {
+            value: displayValue,
+            label: 'Organization Unit',
+            readOnly: false,
+            onFocus: () => setShowOrgUnit(true),
+            onBlur: () => {
+              setTouched(true);
+            },
+          }),
+          showOrgUnit &&
+            React.createElement(this.FieldOrgUnitSelector, {
+              onCancelOrgUnit: () => {
+                setShowOrgUnit(false);
                 setTouched(true);
-              }}
-            />
-            {showOrgUnit && (
-              <this.FieldOrgUnitSelector
-                onCancelOrgUnit={() => {
+              },
+              onSelectOrgUnit: (selectedOrgUnits) => {
+                if ((selectedOrgUnits || [])[0]) {
+                  const selectedOrgUnit = selectedOrgUnits[0];
+                  setDisplayValue(selectedOrgUnit.name);
+                  setSelected(selectedOrgUnit.id);
+                  setSelectedOrganisationUnit(selectedOrgUnit.id);
+                  setValue(selectedOrgUnit.id);
                   setShowOrgUnit(false);
                   setTouched(true);
-                }}
-                onSelectOrgUnit={(selectedOrgUnits) => {
-                  if ((selectedOrgUnits || [])[0]) {
-                    const selectedOrgUnit = selectedOrgUnits[0];
-                    setDisplayValue(selectedOrgUnit.name);
-                    setSelected(selectedOrgUnit.id);
-                    setSelectedOrganisationUnit(selectedOrgUnit.id);
-                    setValue(selectedOrgUnit.id);
-                    setShowOrgUnit(false);
-                    setTouched(true);
-                  }
-                }}
-              />
-            )}
-          </div>
+                }
+              },
+            })
+        ),
 
-          {/* Start Date */}
-          <InputField
-            className="input-field"
-            label="Start Date"
-            type="date"
-            value={filters.startDate}
-            onChange={(event: { value: string }) =>
-              setFilters({ ...filters, startDate: event.value })
-            }
-          />
+        /* Start Date */
+        React.createElement(InputField, {
+          className: 'input-field',
+          label: 'Start Date',
+          type: 'date',
+          value: filters.startDate,
+          onChange: (event: { value: string }) =>
+            setFilters({ ...filters, startDate: event.value }),
+        }),
 
-          {/* End Date */}
-          <InputField
-            className="input-field"
-            label="End Date"
-            type="date"
-            value={filters.endDate}
-            onChange={(event: { value: string }) =>
-              setFilters({ ...filters, endDate: event.value })
-            }
-          />
+        /* End Date */
+        React.createElement(InputField, {
+          className: 'input-field',
+          label: 'End Date',
+          type: 'date',
+          value: filters.endDate,
+          onChange: (event: { value: string }) =>
+            setFilters({ ...filters, endDate: event.value }),
+        }),
 
-          {/* Toggle Button with Hidden Label */}
-          <div
-            style={{
+        /* Toggle Button with Hidden Label */
+        React.createElement(
+          'div',
+          {
+            style: {
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
               height: '100%',
-            }}
-          >
-            <label
-              style={{
+            },
+          },
+          React.createElement(
+            'label',
+            {
+              style: {
                 color: 'transparent', // Hides label text but keeps spacing
                 fontSize: '14px',
                 marginBottom: '4px',
-              }}
-            >
-              Toggle
-            </label>
-            <Button
-              style={{ height: '40px' }} // Match input field height
-              onClick={() => setShowMoreFilters(!showMoreFilters)}
-            >
-              {showMoreFilters ? 'Hide Filters' : 'More Filters'}
-            </Button>
-          </div>
-        </div>
+              },
+            },
+            'Toggle'
+          ),
+          React.createElement(
+            Button,
+            {
+              style: { height: '40px' }, // Match input field height
+              onClick: () => setShowMoreFilters(!showMoreFilters),
+            },
+            showMoreFilters ? 'Hide Filters' : 'More Filters'
+          )
+        ),
 
-        {showMoreFilters && (
-          <>
-            {/* Attribute Filters Grid */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
-                gap: '16px',
-              }}
-            >
-              {filters.programAttributesFilters.map((filter, index) => (
-                <div
-                  key={index}
-                  style={{ gridColumn: getAttributeColumnSpan(index) }}
-                >
-                  {filter.hasOptions && filter.options.length > 0 ? (
-                    <SingleSelectField
-                      className="single-select"
-                      label={filter.name || 'Select Option'}
-                      selected={filter.value}
-                      onChange={(event: { selected: string }) =>
-                        handleAttributeChange(index, event.selected)
-                      }
-                    >
-                      {filter.options.map((option, i) => (
-                        <SingleSelectOption
-                          key={crypto.randomUUID() || i}
-                          label={option.name}
-                          value={option.code}
-                        />
-                      ))}
-                    </SingleSelectField>
-                  ) : (
-                    <InputField
-                      className="input-field"
-                      label={filter.name || 'Program name'}
-                      type={filter.valueType as any}
-                      value={filter.value}
-                      onChange={(event: { value: string }) =>
-                        handleAttributeChange(index, event.value)
-                      }
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
+        showMoreFilters &&
+          React.createElement(
+            React.Fragment,
+            null,
+            /* Attribute Filters Grid */
+            React.createElement(
+              'div',
+              {
+                style: {
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(4, 1fr)',
+                  gap: '16px',
+                },
+              },
+              filters.programAttributesFilters.map((filter, index) =>
+                React.createElement(
+                  'div',
+                  {
+                    key: index,
+                    style: { gridColumn: getAttributeColumnSpan(index) },
+                  },
+                  filter.hasOptions && filter.options.length > 0
+                    ? React.createElement(
+                        SingleSelectField,
+                        {
+                          className: 'single-select',
+                          label: filter.name || 'Select Option',
+                          selected: filter.value,
+                          onChange: (event: { selected: string }) =>
+                            handleAttributeChange(index, event.selected),
+                        },
+                        filter.options.map((option, i) =>
+                          React.createElement(SingleSelectOption, {
+                            key: crypto.randomUUID() || i,
+                            label: option.name,
+                            value: option.code,
+                          })
+                        )
+                      )
+                    : React.createElement(InputField, {
+                        className: 'input-field',
+                        label: filter.name || 'Program name',
+                        type: filter.valueType as any,
+                        value: filter.value,
+                        onChange: (event: { value: string }) =>
+                          handleAttributeChange(index, event.value),
+                      })
+                )
+              )
+            ),
 
-            {/* Data Element Filters Grid */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
-                gap: '16px',
-              }}
-            >
-              {filters.programStageDataElementFilters.map((filter, index) => (
-                <div
-                  key={index}
-                  style={{ gridColumn: getDataElementColumnSpan(index) }}
-                >
-                  {filter.hasOptions && filter.options.length > 0 ? (
-                    <SingleSelectField
-                      className="single-select"
-                      label={filter.name || 'Aggregation type'}
-                      selected={filter.value}
-                      onChange={(event: { selected: string }) =>
-                        handleDataElementChange(index, event.selected)
-                      }
-                    >
-                      {filter.options.map((option, i) => (
-                        <SingleSelectOption
-                          key={crypto.randomUUID() || i}
-                          label={option.name}
-                          value={option.code}
-                        />
-                      ))}
-                    </SingleSelectField>
-                  ) : (
-                    <InputField
-                      className="input-field"
-                      type={filter.valueType as any}
-                      label={filter.name || 'Program name'}
-                      value={filter.value}
-                      onChange={(event: { value: string }) =>
-                        handleDataElementChange(index, event.value)
-                      }
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
+            /* Data Element Filters Grid */
+            React.createElement(
+              'div',
+              {
+                style: {
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(4, 1fr)',
+                  gap: '16px',
+                },
+              },
+              filters.programStageDataElementFilters.map((filter, index) =>
+                React.createElement(
+                  'div',
+                  {
+                    key: index,
+                    style: { gridColumn: getDataElementColumnSpan(index) },
+                  },
+                  filter.hasOptions && filter.options.length > 0
+                    ? React.createElement(
+                        SingleSelectField,
+                        {
+                          className: 'single-select',
+                          label: filter.name || 'Aggregation type',
+                          selected: filter.value,
+                          onChange: (event: { selected: string }) =>
+                            handleDataElementChange(index, event.selected),
+                        },
+                        filter.options.map((option, i) =>
+                          React.createElement(SingleSelectOption, {
+                            key: crypto.randomUUID() || i,
+                            label: option.name,
+                            value: option.code,
+                          })
+                        )
+                      )
+                    : React.createElement(InputField, {
+                        className: 'input-field',
+                        type: filter.valueType as any,
+                        label: filter.name || 'Program name',
+                        value: filter.value,
+                        onChange: (event: { value: string }) =>
+                          handleDataElementChange(index, event.value),
+                      })
+                )
+              )
+            ),
 
-            {/* Search Button */}
-            <div style={{ textAlign: 'right', marginTop: '16px' }}>
-              <Button onClick={handleSearch}>Search</Button>
-            </div>
-          </>
-        )}
-      </div>
+            /* Search Button */
+            React.createElement(
+              'div',
+              { style: { textAlign: 'right', marginTop: '16px' } },
+              React.createElement(Button, { onClick: handleSearch }, 'Search')
+            )
+          )
+      )
     );
   };
 

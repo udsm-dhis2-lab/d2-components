@@ -236,7 +236,6 @@ export class LineListTableComponent extends ReactWrapperModule {
       setTriggerTokenState,
     });
 
-
     useEffect(() => {
       this.setReactStateUpdaters?.(updateRefs.current);
       const fetchmetaData = async () => {
@@ -696,134 +695,137 @@ export class LineListTableComponent extends ReactWrapperModule {
       return yiq >= 128 ? colors.grey700 : '#FFFFFF';
     }
 
-    return (
-      <div>
-        {loading ? (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: 8,
-            }}
-          >
-            <CircularLoader small />
-            <div
-              style={{
-                fontSize: 14,
-              }}
-            >
-              Loading
-            </div>
-          </div>
-        ) : (
-          <div>
-            {this.showDownloadButton && (
-              <div
-                style={{
-                  paddingBottom: '1rem',
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                }}
-              >
-                <DropdownButton
-                  name="Download"
-                  component={
-                    <span>
-                      {' '}
-                      <MenuItem
-                        label="Download Csv"
-                        onClick={handleCsvDownload}
-                      />
-                      <MenuItem
-                        label="Download Excel"
-                        onClick={handleExcelDownload}
-                      />
-                    </span>
-                  }
-                  value="Download"
-                >
-                  Download
-                </DropdownButton>
-              </div>
-            )}
-            {orgUnitModalVisible && (
-              <OrgUnitSelector
-                hide={hide}
-                setHide={setHide}
-                selectedOrgUnit={selectedOrgUnit}
-                setSelectedOrgUnit={setSelectedOrgUnit}
-                setOrgUnitState={setOrgUnitState}
-                setTempOrgUnitState={setTempOrgUnitState}
-                tempOrgUnitState={tempOrgUnitState}
-              />
-            )}
-
-            {this.showFilters && (
-              <FilterToolbar
-                orgUnitLabel={orgUnitLabel}
-                selectedOrgUnit={selectedOrgUnit}
-                setSelectedOrgUnit={setSelectedOrgUnit}
-                setOrgUnitState={setOrgUnitState}
-                defaultOrgUnit={defaultOrgUnit}
-                setHide={setHide}
-                startDateState={startDateState}
-                setStartDateState={setStartDateState}
-                endDateState={endDateState}
-                setEndDateState={setEndDateState}
-                visibleFilters={visibleFilters}
-                dateStates={dateStates}
-                inputValues={inputValues}
-                setInputValues={setInputValues}
-                handleInputChange={handleInputChange}
-                handleInputChangeForSelectField={
-                  handleInputChangeForSelectField
-                }
-                handleDateSelect={handleDateSelect}
-                showAllFilters={showAllFilters}
-                setShowAllFilters={setShowAllFilters}
-                setTempStartDateState={setTempStartDateState}
-                setTempEndDateState={setTempEndDateState}
-                setTempOrgUnitState={setTempOrgUnitState}
-                tempStartDateState={tempStartDateState}
-                tempEndDateState={tempEndDateState}
-                tempOrgUnitState={tempOrgUnitState}
-                dataQueryFiltersState={dataQueryFiltersState}
-                setDataQueryFiltersState={setDataQueryFiltersState}
-                SetOrgUnitModalVisible={setOrgUnitModalVisible}
-                showEnrollmentDates={this.showEnrollmentDates}
-                handleAdditionalFilters={handleAdditionalFilters}
-                handleStartDateFilter={handleStartDateFilter}
-                handleEndDateFilter={handleEndDateFilter}
-                handleOrgUnitFilter={handleOrgUnitFilter}
-                setDateStates={setDateStates}
-                prevInputValues={prevInputValues}
-                setPrevInputValues={setPrevInputValues}
-                setTempDataQueryFiltersState={setTempDataQueryFiltersState}
-                prevDateStates={prevDateStates}
-                setPrevDateStates={setPrevDateStates}
-                prevSelectedOrgUnit={prevSelectedOrgUnit}
-                setPrevSelectedOrgUnit={setPrevSelectedOrgUnit}
-                //  filteredFilters={filteredFilters}
-              />
-            )}
-            <LineListTable
-              columns={columns}
-              data={data}
-              pager={pager}
-              setPager={setPager}
-              getTextColorFromBackGround={getTextColorFromBackGround}
-              actionOptions={this.actionOptions}
-              actionOptionOrientation={this.actionOptionOrientation}
-              actionSelected={this.actionSelected}
-              selectable={selectable}
-              rowsSelected={this.rowsSelected}
-              showActionButtons={showActionButtons}
-              error={error}
-            />
-          </div>
-        )}
-      </div>
+    return React.createElement(
+      'div',
+      null,
+      loading
+        ? React.createElement(
+            'div',
+            {
+              style: {
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: 8,
+              },
+            },
+            React.createElement(CircularLoader, { small: true }),
+            React.createElement(
+              'div',
+              {
+                style: {
+                  fontSize: 14,
+                },
+              },
+              'Loading'
+            )
+          )
+        : React.createElement(
+            'div',
+            null,
+            this.showDownloadButton &&
+              React.createElement(
+                'div',
+                {
+                  style: {
+                    paddingBottom: '1rem',
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                  },
+                },
+                React.createElement(
+                  DropdownButton,
+                  {
+                    name: 'Download',
+                    component: React.createElement(
+                      'span',
+                      null,
+                      ' ',
+                      React.createElement(MenuItem, {
+                        label: 'Download Csv',
+                        onClick: handleCsvDownload,
+                      }),
+                      React.createElement(MenuItem, {
+                        label: 'Download Excel',
+                        onClick: handleExcelDownload,
+                      })
+                    ),
+                    value: 'Download',
+                  },
+                  'Download'
+                )
+              ),
+            orgUnitModalVisible &&
+              React.createElement(OrgUnitSelector, {
+                hide: hide,
+                setHide: setHide,
+                selectedOrgUnit: selectedOrgUnit,
+                setSelectedOrgUnit: setSelectedOrgUnit,
+                setOrgUnitState: setOrgUnitState,
+                setTempOrgUnitState: setTempOrgUnitState,
+                tempOrgUnitState: tempOrgUnitState,
+              }),
+            this.showFilters &&
+              React.createElement(FilterToolbar, {
+                orgUnitLabel: orgUnitLabel,
+                selectedOrgUnit: selectedOrgUnit,
+                setSelectedOrgUnit: setSelectedOrgUnit,
+                setOrgUnitState: setOrgUnitState,
+                defaultOrgUnit: defaultOrgUnit,
+                setHide: setHide,
+                startDateState: startDateState,
+                setStartDateState: setStartDateState,
+                endDateState: endDateState,
+                setEndDateState: setEndDateState,
+                visibleFilters: visibleFilters,
+                dateStates: dateStates,
+                inputValues: inputValues,
+                setInputValues: setInputValues,
+                handleInputChange: handleInputChange,
+                handleInputChangeForSelectField:
+                  handleInputChangeForSelectField,
+                handleDateSelect: handleDateSelect,
+                showAllFilters: showAllFilters,
+                setShowAllFilters: setShowAllFilters,
+                setTempStartDateState: setTempStartDateState,
+                setTempEndDateState: setTempEndDateState,
+                setTempOrgUnitState: setTempOrgUnitState,
+                tempStartDateState: tempStartDateState,
+                tempEndDateState: tempEndDateState,
+                tempOrgUnitState: tempOrgUnitState,
+                dataQueryFiltersState: dataQueryFiltersState,
+                setDataQueryFiltersState: setDataQueryFiltersState,
+                SetOrgUnitModalVisible: setOrgUnitModalVisible,
+                showEnrollmentDates: this.showEnrollmentDates,
+                handleAdditionalFilters: handleAdditionalFilters,
+                handleStartDateFilter: handleStartDateFilter,
+                handleEndDateFilter: handleEndDateFilter,
+                handleOrgUnitFilter: handleOrgUnitFilter,
+                setDateStates: setDateStates,
+                prevInputValues: prevInputValues,
+                setPrevInputValues: setPrevInputValues,
+                setTempDataQueryFiltersState: setTempDataQueryFiltersState,
+                prevDateStates: prevDateStates,
+                setPrevDateStates: setPrevDateStates,
+                prevSelectedOrgUnit: prevSelectedOrgUnit,
+                setPrevSelectedOrgUnit: setPrevSelectedOrgUnit,
+                //  filteredFilters: filteredFilters
+              }),
+            React.createElement(LineListTable, {
+              columns: columns,
+              data: data,
+              pager: pager,
+              setPager: setPager,
+              getTextColorFromBackGround: getTextColorFromBackGround,
+              actionOptions: this.actionOptions,
+              actionOptionOrientation: this.actionOptionOrientation,
+              actionSelected: this.actionSelected,
+              selectable: selectable,
+              rowsSelected: this.rowsSelected,
+              showActionButtons: showActionButtons,
+              error: error,
+            })
+          )
     );
   };
 

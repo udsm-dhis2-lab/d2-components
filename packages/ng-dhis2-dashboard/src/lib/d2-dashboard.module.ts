@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { ModuleWithProviders, NgModule } from '@angular/core';
 import { MatSnackBarRef } from '@angular/material/snack-bar';
 import { ReactWrapperModule } from '@iapps/ng-dhis2-ui';
-import { NgxDhis2HttpClientModule } from '@iapps/ngx-dhis2-http-client';
 import { KtdGridModule } from '@katoid/angular-grid-layout';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
@@ -28,7 +27,6 @@ import {
   imports: [
     CommonModule,
     D2DashboardRoutingModule,
-    NgxDhis2HttpClientModule,
     KtdGridModule,
     NgxPrintModule,
     ReactWrapperModule,

@@ -67,44 +67,53 @@ export class PeriodSelectorModalComponent extends ReactWrapperModule {
 
     this.component = () => {
       const [selected, setSelected] = useState(this.selectedPeriods);
-      return (
-        <DataProvider>
-          {
-            <Modal position="middle" large>
-              <ModalTitle>Period</ModalTitle>
-              <ModalContent>
-                <PeriodDimension
-                  selectedPeriods={selected}
-                  onSelect={(selectionEvent: PeriodSelectionEvent) =>
-                    setSelected(selectionEvent.items)
-                  }
-                  excludedPeriodTypes={excludedPeriodTypes}
-                  systemInfo={systemInfo}
-                />
-              </ModalContent>
-              <ModalActions>
-                <ButtonStrip end>
-                  <Button
-                    onClick={() => {
-                      this.onCancel();
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    primary
-                    disabled={selected.length === 0}
-                    onClick={() => {
-                      this.onConfirm(selected);
-                    }}
-                  >
-                    Confirm
-                  </Button>
-                </ButtonStrip>
-              </ModalActions>
-            </Modal>
-          }
-        </DataProvider>
+      return React.createElement(
+        DataProvider,
+        null,
+        React.createElement(
+          Modal,
+          { position: 'middle', large: true },
+          React.createElement(ModalTitle, null, 'Period'),
+          React.createElement(
+            ModalContent,
+            null,
+            React.createElement(PeriodDimension, {
+              selectedPeriods: selected,
+              onSelect: (selectionEvent: PeriodSelectionEvent) =>
+                setSelected(selectionEvent.items),
+              excludedPeriodTypes: excludedPeriodTypes,
+              systemInfo: systemInfo,
+            })
+          ),
+          React.createElement(
+            ModalActions,
+            null,
+            React.createElement(
+              ButtonStrip,
+              { end: true },
+              React.createElement(
+                Button,
+                {
+                  onClick: () => {
+                    this.onCancel();
+                  },
+                },
+                'Cancel'
+              ),
+              React.createElement(
+                Button,
+                {
+                  primary: true,
+                  disabled: selected.length === 0,
+                  onClick: () => {
+                    this.onConfirm(selected);
+                  },
+                },
+                'Confirm'
+              )
+            )
+          )
+        )
       );
     };
     this.render();

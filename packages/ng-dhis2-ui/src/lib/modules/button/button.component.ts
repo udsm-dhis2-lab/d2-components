@@ -25,22 +25,23 @@ export class ButtonComponent extends ReactWrapperModule {
     if (!this.elementRef) throw new Error('No element ref');
     this.reactDomRoot = ReactDOM.createRoot(this.elementRef.nativeElement);
 
-    this.component = () => (
-      <Button
-        onClick={(e: any) => {
+    this.component = () => {
+      const buttonProps = {
+        onClick: (e: any) => {
           this.onButtonClick(e);
-        }}
-        primary={this.primary}
-        secondary={this.secondary}
-        destructive={this.destructive}
-        disabled={this.disabled}
-        small={this.small}
-        large={this.large}
-        {...this.props}
-      >
-        {this.label}
-      </Button>
-    );
+        },
+        primary: this.primary,
+        secondary: this.secondary,
+        destructive: this.destructive,
+        disabled: this.disabled,
+        small: this.small,
+        large: this.large,
+        ...this.props,
+      };
+
+      return React.createElement(Button, buttonProps, this.label);
+    };
+
     this.render();
   }
 

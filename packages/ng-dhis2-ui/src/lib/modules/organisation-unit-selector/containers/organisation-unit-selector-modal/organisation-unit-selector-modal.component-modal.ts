@@ -3,12 +3,19 @@ import {
   ElementRef,
   EventEmitter,
   Input,
-  NgZone,
   Output,
 } from '@angular/core';
 import { Provider } from '@dhis2/app-runtime';
+import {
+  Button,
+  ButtonStrip,
+  Modal,
+  ModalActions,
+  ModalContent,
+  ModalTitle,
+} from '@dhis2/ui';
 import { D2Window } from '@iapps/d2-web-sdk';
-import React from 'react';
+import React, { useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { ReactWrapperModule } from '../../../react-wrapper/react-wrapper.component';
 import OrgUnitDimension from '../../components/OrgUnitDimension';
@@ -23,17 +30,26 @@ type OrganisationUnitSelectionEvent = {
 };
 
 @Component({
-  selector: 'ng-dhis2-ui-org-unit-selector',
+  selector: 'ng-dhis2-ui-org-unit-selector-modal',
   template: '<ng-container><ng-container>',
+  styles: [
+    `
+      ::ng-deep .layer {
+        z-index: 2 !important;
+      }
+    `,
+  ],
   standalone: false,
 })
-export class OrganisationUnitSelectorComponent extends ReactWrapperModule {
+export class OrganisationUnitSelectorModalComponent extends ReactWrapperModule {
   d2 = (window as unknown as D2Window).d2Web;
   @Input() selectedOrgUnits: any[] = [];
   @Input() orgUnitSelectionConfig: OrganisationUnitSelectionConfig =
     new OrganisationUnitSelectionConfig();
 
   @Output() selectOrgUnits = new EventEmitter();
+  @Output() cancel = new EventEmitter();
+  @Output() confirm = new EventEmitter();
 
   override props: Record<string, unknown> = {
     onSelect: (e: any) => {
@@ -41,7 +57,7 @@ export class OrganisationUnitSelectorComponent extends ReactWrapperModule {
     },
   };
 
-  constructor(elementRef: ElementRef<HTMLElement>, private ngZone: NgZone) {
+  constructor(elementRef: ElementRef<HTMLElement>) {
     super(elementRef);
   }
 
@@ -53,34 +69,75 @@ export class OrganisationUnitSelectorComponent extends ReactWrapperModule {
     const config = await this.getAppConfig();
 
     if (config) {
-      this.component = () => (
-        <Provider
-          config={config}
-          plugin={false}
-          parentAlertsAdd={undefined}
-          showAlertsInPlugin={false}
-        >
-          {
-            <OrgUnitDimension
-              selected={this.selectedOrgUnits}
-              hideGroupSelect={this.orgUnitSelectionConfig.hideGroupSelect}
-              hideLevelSelect={this.orgUnitSelectionConfig.hideLevelSelect}
-              hideUserOrgUnits={this.orgUnitSelectionConfig.hideUserOrgUnits}
-              onSelect={(selectionEvent: OrganisationUnitSelectionEvent) =>
-                this.ngZone.run(() => {
-                  this.onSelectItems(selectionEvent);
-                })
-              }
-              orgUnitGroupPromise={this.getOrgUnitGroups()}
-              orgUnitLevelPromise={this.getOrgUnitLevels()}
-              roots={rootOrgUnits}
-            />
-          }
-        </Provider>
-      );
+      this.component = () => {
+        const [selected, setSelected] = useState(this.selectedOrgUnits);
+        return React.createElement(Provider, {
+          config: config,
+          plugin: false,
+          parentAlertsAdd: undefined,
+          showAlertsInPlugin: false,
+          children: React.createElement(
+            Modal,
+            { position: 'middle', large: true },
+            React.createElement(ModalTitle, null, 'Organisation unit'),
+            React.createElement(
+              ModalContent,
+              null,
+              React.createElement(OrgUnitDimension, {
+                selected: selected,
+                hideGroupSelect: this.orgUnitSelectionConfig.hideGroupSelect,
+                hideLevelSelect: this.orgUnitSelectionConfig.hideLevelSelect,
+                hideUserOrgUnits: this.orgUnitSelectionConfig.hideUserOrgUnits,
+                onSelect: (selectionEvent: OrganisationUnitSelectionEvent) => {
+                  setSelected(selectionEvent.items);
+                },
+                orgUnitGroupPromise: this.getOrgUnitGroups(),
+                orgUnitLevelPromise: this.getOrgUnitLevels(),
+                roots: rootOrgUnits,
+              })
+            ),
+            React.createElement(
+              ModalActions,
+              null,
+              React.createElement(
+                ButtonStrip,
+                { end: true },
+                React.createElement(
+                  Button,
+                  {
+                    onClick: () => {
+                      this.onCancel();
+                    },
+                  },
+                  'Cancel'
+                ),
+                React.createElement(
+                  Button,
+                  {
+                    primary: true,
+                    disabled: selected.length === 0,
+                    onClick: () => {
+                      this.onConfirm(selected);
+                    },
+                  },
+                  'Confirm'
+                )
+              )
+            )
+          ),
+        });
+      };
 
       this.render();
     }
+  }
+
+  onCancel() {
+    this.cancel.emit();
+  }
+
+  onConfirm(selectedItems: any[]) {
+    this.confirm.emit(selectedItems);
   }
 
   private async getAppConfig() {

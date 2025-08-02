@@ -64,20 +64,22 @@ export class PeriodSelectorComponent extends ReactWrapperModule {
     const excludedPeriodTypes = this.getExcludedPeriodTypes(systemInfo);
 
     this.component = () => (
-      <DataProvider>
-        {
-          <PeriodDimension
-            selectedPeriods={this.selectedPeriods}
-            onSelect={(selectionEvent: PeriodSelectionEvent) =>
+      React.createElement(
+        DataProvider,
+        null,
+        React.createElement(
+          PeriodDimension,
+          {
+            selectedPeriods: this.selectedPeriods,
+            onSelect: (selectionEvent: PeriodSelectionEvent) =>
               this.ngZone.run(() => {
                 this.onSelectItems(selectionEvent);
-              })
-            }
-            excludedPeriodTypes={excludedPeriodTypes}
-            systemInfo={systemInfo}
-          />
-        }
-      </DataProvider>
+              }),
+            excludedPeriodTypes: excludedPeriodTypes,
+            systemInfo: systemInfo
+          }
+        )
+      )
     );
     this.render();
   }

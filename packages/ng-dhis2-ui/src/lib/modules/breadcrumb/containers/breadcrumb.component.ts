@@ -38,25 +38,26 @@ export class BreadcrumbComponent extends ReactWrapperModule {
 
     this.component = () => {
       const classes = useDynamicStyles(breadcrumbStyles);
-      return (
-        <div className={classes.container}>
-          {this.breadcrumbs().map((breadcrumb, index) => (
-            <React.Fragment key={index}>
-              <BreadcrumbItemComponent
-                key={index}
-                breadcrumb={breadcrumb}
-                onClick={() => {
-                  this.#ngZone.run(() => {
-                    this.selectBreadcrumb.emit(breadcrumb);
-                  });
-                }}
-              />
-              {index < this.breadcrumbs().length - 1 && (
-                <IconChevronRight16 color={colors.grey800} />
-              )}
-            </React.Fragment>
-          ))}
-        </div>
+      return React.createElement(
+        'div',
+        { className: classes.container },
+        this.breadcrumbs().map((breadcrumb, index) =>
+          React.createElement(
+            React.Fragment,
+            { key: index },
+            React.createElement(BreadcrumbItemComponent, {
+              key: index,
+              breadcrumb: breadcrumb,
+              onClick: () => {
+                this.#ngZone.run(() => {
+                  this.selectBreadcrumb.emit(breadcrumb);
+                });
+              },
+            }),
+            index < this.breadcrumbs().length - 1 &&
+              React.createElement(IconChevronRight16, { color: colors.grey800 })
+          )
+        )
       );
     };
     this.render();
