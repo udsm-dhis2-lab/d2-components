@@ -1,29 +1,29 @@
 import { Injectable } from '@angular/core';
-import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
-import { Observable, of } from 'rxjs';
+import { D2Window } from '@iapps/d2-web-sdk';
+import { from, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 @Injectable()
 export class LineListService {
-  constructor(private httpClient: NgxDhis2HttpClientService) {}
-
-
- /**
-   * Fetch orgUnit names for given orgUnit IDs
-   */
- fetchOrgUnits(orgUnitIds: string[]): Observable<Map<string, string>> {
-  const idsQuery = `filter=id:in:[${orgUnitIds}]`;
-  return this.httpClient
-    .get(`organisationUnits.json?fields=id,name&paging=false&${idsQuery}`)
-    .pipe(
+  fetchOrgUnits(orgUnitIds: string[]): Observable<Map<string, string>> {
+    const d2 = (window as unknown as D2Window).d2Web;
+    const idsQuery = `filter=id:in:[${orgUnitIds}]`;
+    return from(
+      d2.httpInstance.get(
+        `organisationUnits.json?fields=id,name&paging=false&${idsQuery}`
+      )
+    ).pipe(
       map((response) => {
         const orgUnitsMap = new Map<string, string>();
-        response.organisationUnits.forEach(
-          (orgUnit: { id: string; name: string }) => {
-            orgUnitsMap.set(orgUnit.id, orgUnit.name);
-          }
-        );
+        (
+          (response?.data?.['organisationUnits'] as {
+            id: string;
+            name: string;
+          }[]) || []
+        ).forEach((orgUnit: { id: string; name: string }) => {
+          orgUnitsMap.set(orgUnit.id, orgUnit.name);
+        });
         return orgUnitsMap;
       })
     );
-}
+  }
 }
