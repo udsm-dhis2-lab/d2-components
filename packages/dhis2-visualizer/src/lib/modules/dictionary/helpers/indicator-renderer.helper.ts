@@ -1,11 +1,7 @@
 import { MetadataRenderer } from '../models/metadata-renderer.model';
 import moment from 'moment';
-
-type TableColumn = {
-  header: string;
-  field: string;
-  render?: (row: any, col: string, rowIndex: number) => HTMLElement | string;
-};
+import { TableColumn } from '../models/table.model';
+import { renderIntroductionDetails, renderIntroductionTitle, renderSectionTitle, renderTable, renderTitle } from './helpers';
 
 export class IndicatorRenderer implements MetadataRenderer {
   draw(details: any, container: HTMLElement): void {
@@ -16,47 +12,46 @@ export class IndicatorRenderer implements MetadataRenderer {
     wrapper.style.fontFamily = 'Segoe UI, Arial, sans-serif';
 
     // Title
-    const title = document.createElement('h2');
-    title.textContent = details.name;
-    title.style.color = '#1976d2';
-    title.style.marginBottom = '8px';
-    wrapper.appendChild(title);
+    wrapper.appendChild(renderTitle(details.name));
 
     // Introduction
-    const introSection = document.createElement('section');
-    introSection.style.marginBottom = '20px';
+    const introductionSection = document.createElement('section');
+    introductionSection.style.marginBottom = '20px';
 
-    const introductionTitle = document.createElement('h3');
-    introductionTitle.textContent = 'Introduction';
-    introductionTitle.style.fontSize = '1.1em';
-    introductionTitle.style.marginBottom = '4px';
-    introSection.appendChild(introductionTitle);
+    introductionSection.appendChild(
+      renderIntroductionTitle('Introduction')
+    );
 
-    const intro = document.createElement('p');
-    intro.textContent = `${details.name} is a ${details.indicatorType.name} indicator measured by ${details.numeratorDescription} to ${details.denominatorDescription}.`;
-    intro.style.margin = '0 0 8px 0';
-    introSection.appendChild(intro);
+    const introDetails = renderIntroductionDetails(
+      `${details.name} is a ${details.indicatorType.name} indicator measured by ${details.numeratorDescription} to ${details.denominatorDescription}.`
+    );
+    introductionSection.appendChild(introDetails);
 
     // ID with tooltip
     const idRow = document.createElement('div');
     idRow.style.marginBottom = '8px';
     idRow.innerHTML = `<span>Identified by: </span>
       <a href="#${details.id}" title="Copy ID" style="color:#1976d2;text-decoration:underline;cursor:pointer;" aria-label="Indicator ID">${details.id}</a>`;
-    introSection.appendChild(idRow);
+    introductionSection.appendChild(idRow);
 
     // Description
     if (details.description) {
       const description = document.createElement('p');
       description.textContent = `Description: ${details.description}`;
       description.style.margin = '0 0 8px 0';
-      introSection.appendChild(description);
+      introductionSection.appendChild(description);
     }
-    wrapper.appendChild(introSection);
+    wrapper.appendChild(introductionSection);
 
     // Indicator Facts
-    wrapper.appendChild(this.renderSectionTitle('Indicator Facts'));
+    wrapper.appendChild(renderSectionTitle('Indicator Facts'));
+    const indicatorFactsDescription = document.createElement('p');
+    indicatorFactsDescription.textContent =
+      'Belongs to the following groups of indicators';
+    indicatorFactsDescription.style.margin = '0 0 8px 0';
+    wrapper.appendChild(indicatorFactsDescription);
     wrapper.appendChild(
-      this.renderTable(
+      renderTable(
         [
           {
             header: '#',
@@ -100,7 +95,7 @@ export class IndicatorRenderer implements MetadataRenderer {
     wrapper.appendChild(this.renderExpressionsTable(details));
 
     // Data Elements Table
-    wrapper.appendChild(this.renderSectionTitle('Data elements in indicator'));
+    wrapper.appendChild(renderSectionTitle('Data elements in indicator'));
     const dataElementsSubtitle = document.createElement('p');
     dataElementsSubtitle.textContent =
       'The following is the summary of the data elements used in the calculations';
@@ -110,7 +105,7 @@ export class IndicatorRenderer implements MetadataRenderer {
 
     // Program Indicators Table
     wrapper.appendChild(
-      this.renderSectionTitle('Program Indicators in indicator')
+      renderSectionTitle('Program Indicators in indicator')
     );
     const programIndicatorsSubtitle = document.createElement('p');
     programIndicatorsSubtitle.textContent =
@@ -121,7 +116,7 @@ export class IndicatorRenderer implements MetadataRenderer {
 
     // Datasets Table
     wrapper.appendChild(
-      this.renderSectionTitle('Datasets (Reporting rates) in indicator')
+      renderSectionTitle('Datasets (Reporting rates) in indicator')
     );
     const dataSetsSubTitle = document.createElement('p');
     dataSetsSubTitle.textContent =
@@ -132,7 +127,7 @@ export class IndicatorRenderer implements MetadataRenderer {
 
     // Accessibility & Sharing
     wrapper.appendChild(
-      this.renderSectionTitle('Accessibility & Sharing settings')
+      renderSectionTitle('Accessibility & Sharing settings')
     );
     const createdformattedDate = moment(details.created).format(
       'MMMM DD, YYYY'
@@ -149,84 +144,7 @@ export class IndicatorRenderer implements MetadataRenderer {
     container.appendChild(wrapper);
   }
 
-  private renderSectionTitle(title: string): HTMLElement {
-    const h3 = document.createElement('h3');
-    h3.textContent = title;
-    h3.style.margin = '24px 0 8px 0';
-    h3.style.fontSize = '1.1em';
-    h3.style.color = '#1976d2';
-    return h3;
-  }
-
-  private renderTable(columns: TableColumn[], data: any[]): HTMLTableElement {
-    const table = document.createElement('table');
-    table.style.borderCollapse = 'collapse';
-    table.style.width = '100%';
-    table.style.margin = '10px 0';
-    table.style.fontSize = '0.98em';
-    table.style.background = '#fafbfc';
-    table.style.boxShadow = '0 1px 2px rgba(0,0,0,0.02)';
-    table.style.borderRadius = '4px';
-    table.style.overflow = 'hidden';
-
-    // Header
-    const headerRow = document.createElement('tr');
-    columns.forEach((col) => {
-      const th = document.createElement('th');
-      th.textContent = col.header;
-      th.style.border = '1px solid #e0e0e0';
-      th.style.padding = '8px';
-      th.style.backgroundColor = '#f4f4f4';
-      th.style.textAlign = 'left';
-      th.style.fontWeight = 'bold';
-      headerRow.appendChild(th);
-    });
-    table.appendChild(headerRow);
-
-    // Rows
-    if (!data || data.length === 0) {
-      const tr = document.createElement('tr');
-      const td = document.createElement('td');
-      td.textContent = 'No data available';
-      td.colSpan = columns.length;
-      td.style.textAlign = 'center';
-      td.style.color = 'grey';
-      td.style.border = '1px solid #e0e0e0';
-      td.style.padding = '8px';
-      tr.appendChild(td);
-      table.appendChild(tr);
-      return table;
-    }
-
-    data.forEach((row, rowIndex) => {
-      const tr = document.createElement('tr');
-      columns.forEach((col, colIndex) => {
-        const td = document.createElement('td');
-        td.style.border = '1px solid #e0e0e0';
-        td.style.padding = '8px';
-        let value: any;
-        if (col.render) {
-          const rendered = col.render(row, col.field, rowIndex);
-          if (typeof rendered === 'string') {
-            td.textContent = rendered;
-          } else if (rendered instanceof HTMLElement) {
-            td.appendChild(rendered);
-          }
-        } else if (col.field === '#') {
-          td.textContent = (rowIndex + 1).toString();
-        } else {
-          value = row[col.field];
-          td.textContent = value !== undefined && value !== null ? value : '';
-        }
-        tr.appendChild(td);
-      });
-      table.appendChild(tr);
-    });
-
-    return table;
-  }
-
-  private renderExpressionsTable(details: any): HTMLElement {
+  renderExpressionsTable(details: any): HTMLElement {
     // Custom rendering for toggle button
     const columns: TableColumn[] = [
       { header: 'Expression', field: 'label' },
@@ -286,10 +204,10 @@ export class IndicatorRenderer implements MetadataRenderer {
         sources: '',
       },
     ];
-    return this.renderTable(columns, rows);
+    return renderTable(columns, rows);
   }
 
-  private renderDataElementsTable(details: any): HTMLElement {
+  renderDataElementsTable(details: any): HTMLElement {
     const columns: TableColumn[] = [
       {
         header: '#',
@@ -358,10 +276,10 @@ export class IndicatorRenderer implements MetadataRenderer {
         },
       },
     ];
-    return this.renderTable(columns, details.dataElementsList || []);
+    return renderTable(columns, details.dataElementsList || []);
   }
 
-  private renderProgramIndicatorsTable(details: any): HTMLElement {
+  renderProgramIndicatorsTable(details: any): HTMLElement {
     const columns: TableColumn[] = [
       {
         header: '#',
@@ -406,13 +324,13 @@ export class IndicatorRenderer implements MetadataRenderer {
         },
       },
     ];
-    return this.renderTable(
+    return renderTable(
       columns,
       details.programIndicatorsInIndicator || []
     );
   }
 
-  private renderDataSetsTable(details: any): HTMLElement {
+  renderDataSetsTable(details: any): HTMLElement {
     const columns: TableColumn[] = [
       {
         header: '#',
@@ -454,6 +372,6 @@ export class IndicatorRenderer implements MetadataRenderer {
       },
       { header: 'Legends', field: 'legends', render: () => 'none' },
     ];
-    return this.renderTable(columns, details.dataSetsInIndicator || []);
+    return renderTable(columns, details.dataSetsInIndicator || []);
   }
 }
