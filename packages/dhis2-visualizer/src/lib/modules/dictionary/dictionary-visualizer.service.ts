@@ -12,7 +12,6 @@ export class MetadataService {
 
     try {
       const identifiableResponse = await this.fetchIdentifiableObject(
-        apiUrl,
         id
       );
 
@@ -32,8 +31,8 @@ export class MetadataService {
     }
   }
 
-  private async fetchIdentifiableObject(apiUrl: string, id: string) {
-    return axios.get(`${apiUrl}identifiableObjects/${id}`);
+  async fetchIdentifiableObject(id: string) {
+    return axios.get(`../../../api/identifiableObjects/${id}`);
   }
 
   private async fetchIndicatorMetadata(
