@@ -56,12 +56,28 @@ export class DictionaryVisualizer extends BaseVisualizer implements Visualizer {
 
     const metaDataArray = [...this._identifiers];
 
+    // Fetch names for all IDs in parallel
+    const namesMap: Record<string, string> = {};
+    await Promise.all(
+      metaDataArray.map(async (id: string) => {
+        try {
+          const details = await this.metadataService.fetchMetadataById(id);
+          namesMap[id] = details.displayName || details.name || id;
+        } catch {
+          namesMap[id] = id;
+        }
+      })
+    );
+    console.log('names map', namesMap)
+
     let selectedTab: string | null = null;
 
     metaDataArray.forEach((id: string) => {
+      console.log('names map', namesMap[id])
       const tabText = document.createElement('span');
+      tabText.textContent = namesMap[id] || id;
       // tabText.textContent = namesMap[id] || id;
-      tabText.textContent = id;
+      // tabText.textContent = id;
       tabText.style.padding = '5px 10px';
       tabText.style.fontSize = '16px';
       tabText.style.transition = 'border-bottom 0.3s';

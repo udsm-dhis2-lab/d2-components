@@ -69,7 +69,7 @@ export class VisualizationsComponent {
     await dictVisualizer
       .setType('DICTIONARY')
       .setId('dictionary')
-      .setIdentifiers(['uxfowWJCfKW'])
+      .setIdentifiers(['uxfowWJCfKW', 'n1XXiCvUN1s'])
       .draw();
 
     // const visualizer = new D2Visualizer();
