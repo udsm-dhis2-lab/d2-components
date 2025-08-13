@@ -4,9 +4,9 @@ import moment from 'moment';
 export class ProgramIndicatorRenderer implements MetadataRenderer {
   formatString(str: string) {
     return str
-      .replace(/_/g, ' ') // Replace underscores with spaces
-      .toLowerCase() // Convert the entire string to lowercase first
-      .replace(/\b\w/, (char) => char.toUpperCase()); // Capitalize only the first letter
+      .replace(/_/g, ' ') 
+      .toLowerCase() 
+      .replace(/\b\w/, (char) => char.toUpperCase()); 
   }
 
   draw(details: any, container: HTMLElement): void {
@@ -139,13 +139,13 @@ export class ProgramIndicatorRenderer implements MetadataRenderer {
             Array.isArray(row.programIndicators) &&
             row.programIndicators.length > 0
           ) {
-            const ul = document.createElement('ul'); // Create a <ul> element
+            const ul = document.createElement('ul'); 
             row.programIndicators.forEach((indicator) => {
-              const li = document.createElement('li'); // Create a <li> for each indicator
-              li.textContent = indicator.name; // Set the name as the content of the <li>
-              ul.appendChild(li); // Append the <li> to the <ul>
+              const li = document.createElement('li'); 
+              li.textContent = indicator.name; 
+              ul.appendChild(li); 
             });
-            tdIndicators.appendChild(ul); // Append the <ul> to the td
+            tdIndicators.appendChild(ul);
           } else {
             tdIndicators.textContent = 'None';
           }
