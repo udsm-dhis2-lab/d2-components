@@ -12,6 +12,7 @@ import {
   IconVisualizationPivotTable16,
   IconWorld16,
   IconLocation16,
+  IconDataString24,
 } from '@dhis2/ui';
 export const VISUALIZATION_TYPES = [
   {
@@ -79,6 +80,12 @@ export const VISUALIZATION_TYPES = [
     description: 'Pivot Table',
     label: 'Pivot Table',
     icon: IconVisualizationPivotTable16,
+  },
+  {
+    type: 'DICTIONARY',
+    description: 'Dictionary',
+    label: 'Dictionary',
+    icon: IconDataString24,
   },
   {
     type: 'MAP',

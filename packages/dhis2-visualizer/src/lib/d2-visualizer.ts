@@ -21,6 +21,7 @@ import {
   VisualizationType,
 } from './shared/models/visualization-type.model';
 import { MapLayerConfiguration } from './modules/map/models';
+import { DictionaryVisualizer } from './modules/dictionary/dictionary-visualizer';
 
 export class D2Visualizer {
   dataSelections!: any[];
@@ -39,6 +40,7 @@ export class D2Visualizer {
   trackedEntityInstances?: any[];
   program: any;
   data!: any;
+  identifiers: any;
   visualizer!: Visualizer;
   plotOptions!: VisualizerPlotOptions;
   baseUrl = '../../..';
@@ -179,6 +181,16 @@ export class D2Visualizer {
 
   /**
    *
+   * @param identifiers
+   * @returns
+   */
+  setIdentifiers(identifiers: any) {
+    this.identifiers = identifiers;
+    return this;
+  }
+
+  /**
+   *
    * @param tracked entity instances
    * @returns
    */
@@ -312,8 +324,8 @@ export class D2Visualizer {
   private _getData(): Promise<any> {
     const analyticPromise = new Fn.Analytics();
 
-    this.config.mergeDataSelections(this.dataSelections);
-    const dataSelections: any[] = this.config.dataSelections.filter(
+    this.config?.mergeDataSelections(this.dataSelections);
+    const dataSelections: any[] = this.config?.dataSelections.filter(
       (dataSelection) => dataSelection.dimension !== 'tea'
     );
 
@@ -434,6 +446,12 @@ export class D2Visualizer {
         return this;
       case 'SINGLE_VALUE':
         new SingleValueVisualizer().setId(this.id).setData(data).draw();
+        return this;
+      case 'DICTIONARY':
+        new DictionaryVisualizer()
+          .setId(this.id)
+          .setIdentifiers(this.identifiers)
+          .draw();
         return this;
       case 'CUSTOM': {
         this.config.mergeDataSelections(this.dataSelections);

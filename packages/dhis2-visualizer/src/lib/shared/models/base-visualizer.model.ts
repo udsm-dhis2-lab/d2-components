@@ -9,6 +9,7 @@ export interface Visualizer {
 export class BaseVisualizer {
   protected _id!: string;
   protected _data: any;
+  protected _identifiers: any;
   protected _config?: VisualizationConfiguration;
   protected _dataSelections: any;
   protected _trackedEntityInstances?: any[];
@@ -31,6 +32,16 @@ export class BaseVisualizer {
    */
   setData(data: any) {
     this._data = data;
+    return this;
+  }
+
+    /**
+   *
+   * @param identifiers
+   * @returns
+   */
+  setIdentifiers(identifiers: any) {
+    this._identifiers = identifiers;
     return this;
   }
 
