@@ -9,12 +9,9 @@ export class MetadataService {
   async fetchMetadataById(id: string): Promise<any> {
     const apiUrl = '../../../api/';
     const headers = { headers: { 'Content-Type': 'text/plain' } };
-
     try {
       const identifiableResponse = await this.fetchIdentifiableObject(id);
-
       const href: string = identifiableResponse.data?.href || '';
-
       if (href.includes('indicators')) {
         return await this.fetchIndicatorMetadata(apiUrl, id, headers);
       } else if (href.includes('programIndicators')) {
@@ -29,8 +26,53 @@ export class MetadataService {
     }
   }
 
-  async fetchIdentifiableObject(id: string) {
-    return axios.get(`../../../api/identifiableObjects/${id}`);
+  async fetchFunctionWithRule(functionId: string, ruleId: string) {
+    const apiUrl = '../../../api/';
+    const functionResponse = await this.fetchFunction(functionId);
+    const functionData = functionResponse.data;
+    const rule = Array.isArray(functionData.rules)
+      ? functionData.rules.find((r: any) => r.id === ruleId)
+      : null;
+    let referencedIds: string[] = [];
+    if (rule.json.generator) {
+      const expr = rule.json.generator.expression || '';
+      console.log('exp', expr);
+      referencedIds = Array.from(new Set(this.extractIdentifiers(expr)));
+    }
+
+    const referencedDetails = await Promise.all(
+      referencedIds.map(async (refId) => {
+        try {
+          const identifiableResponse = await this.fetchIdentifiableObject(
+            refId
+          );
+          const href: string = identifiableResponse.data?.href || '';
+
+          if (href.includes('dataElements')) {
+            const de = await this.fetchDataElement(apiUrl, refId);
+            console.log('referencedDetails', de);
+            return { ...de.data };
+          } else if (href.includes('indicators')) {
+            const ind = await this.fetchIndicator(apiUrl, refId);
+            return { ...ind.data };
+          } else if (href.includes('programIndicators')) {
+            const pi = await this.fetchProgramIndicator(apiUrl, refId);
+            return { ...pi.data };
+          } else {
+            return { type: 'Unknown', id: refId };
+          }
+        } catch {
+          return { type: 'Unknown', id: refId };
+        }
+      })
+    );
+    console.log('referencedDetails', referencedDetails);
+
+    return {
+      ...functionData,
+      ruleID: ruleId,
+      referencedDetails: referencedDetails,
+    };
   }
 
   private async fetchIndicatorMetadata(
@@ -105,6 +147,108 @@ export class MetadataService {
     };
   }
 
+  private async fetchProgramIndicatorMetadata(
+    apiUrl: string,
+    id: string,
+    headers: any
+  ) {
+    const programIndicatorsResponse = await this.fetchProgramIndicator(
+      apiUrl,
+      id
+    );
+    const programIndicatorData = programIndicatorsResponse.data;
+
+    const [
+      expressionDescription,
+      filterDescription,
+      programIndicatorInNumerator,
+      programIndicatorInDenominator,
+    ] = await Promise.all([
+      this.fetchProgramIndicatorExpressionDescription(
+        apiUrl,
+        programIndicatorData.expression,
+        headers
+      ),
+      programIndicatorData.filter
+        ? this.fetchProgramIndicatorFilterDescription(
+            apiUrl,
+            programIndicatorData.filter,
+            headers
+          )
+        : Promise.resolve({ data: { description: '' } }),
+      this.fetchProgramIndicatorInNumerator(apiUrl, programIndicatorData.id),
+      this.fetchProgramIndicatorInDenominator(apiUrl, programIndicatorData.id),
+    ]);
+
+    const programIndicatorFilter =
+      programIndicatorData.filter !== undefined
+        ? programIndicatorData.filter
+        : '';
+    const dataElementsFromFilter = this.extractDataElements(
+      programIndicatorFilter
+    );
+    const dataElementsFromExpression = this.extractDataElements(
+      programIndicatorData.expression
+    );
+    const dataElementsIds = [
+      ...dataElementsFromExpression,
+      ...dataElementsFromFilter,
+    ];
+
+    const dataElementsInPogramIndicator =
+      await this.fetchDataElementsInProgramIndicator(apiUrl, dataElementsIds);
+
+    return {
+      ...programIndicatorData,
+      programIndicatorExpression: expressionDescription.data.description,
+      filterDescription: programIndicatorData.filter
+        ? filterDescription.data.description
+        : '',
+      dataElementsInPogramIndicator:
+        dataElementsInPogramIndicator.data.dataElements,
+      indicatorsWithProgramIndicators: [
+        ...programIndicatorInNumerator.data.indicators,
+        ...programIndicatorInDenominator.data.indicators,
+      ],
+    };
+  }
+
+  private async fetchDataElementMetadata(apiUrl: string, id: string) {
+    const [
+      dataElementResponse,
+      dataElementInNumerator,
+      dataElementInDenominator,
+      dataElementInValidationRule,
+    ] = await Promise.all([
+      this.fetchDataElement(apiUrl, id),
+      this.fetchDataElementInNumerator(apiUrl, id),
+      this.fetchDataElementInDenominator(apiUrl, id),
+      this.fetchDataElementInValidationRule(apiUrl, id),
+    ]);
+
+    return {
+      ...dataElementResponse.data,
+      indicators: [
+        ...dataElementInNumerator.data.indicators,
+        ...dataElementInDenominator.data.indicators,
+      ],
+      dataElementInNumeratorLength:
+        dataElementInNumerator.data.indicators.length,
+      dataElementInDenominatorLength:
+        dataElementInDenominator.data.indicators.length,
+      dataElementInValidationRuleLength:
+        dataElementInValidationRule.data.validationRules.length,
+    };
+  }
+
+  async fetchIdentifiableObject(id: string) {
+    return axios.get(`../../../api/identifiableObjects/${id}`);
+  }
+
+  async fetchFunction(id: string) {
+    return axios.get(`../../../api/dataStore/functions/${id}`);
+  }
+
   private async fetchIndicator(apiUrl: string, id: string) {
     return axios.get(
       `${apiUrl}indicators/${id}.json?fields=:all,user[name,email,phoneNumber],displayName,lastUpdatedBy[id,name,phoneNumber,email],id,name,numeratorDescription,denominatorDescription,denominator,numerator,annualized,decimals,indicatorType[name],user[name],userGroupAccesses[*],userAccesses[*],attributeValues[value,attribute[name]],indicatorGroups[id,name,code,indicators[id,name]]`
@@ -165,74 +309,6 @@ export class MetadataService {
     );
   }
 
-  private async fetchProgramIndicatorMetadata(
-    apiUrl: string,
-    id: string,
-    headers: any
-  ) {
-    // Fetch program indicator first (needed for all other calls)
-    const programIndicatorsResponse = await this.fetchProgramIndicator(
-      apiUrl,
-      id
-    );
-    const programIndicatorData = programIndicatorsResponse.data;
-
-    // Parallelize calls that don't depend on each other
-    const [
-      expressionDescription,
-      programIndicatorInNumerator,
-      programIndicatorInDenominator,
-      filterDescriptionResult,
-    ] = await Promise.all([
-      this.fetchProgramIndicatorExpressionDescription(
-        apiUrl,
-        programIndicatorData.expression,
-        headers
-      ),
-      this.fetchProgramIndicatorInNumerator(apiUrl, programIndicatorData.id),
-      this.fetchProgramIndicatorInDenominator(apiUrl, programIndicatorData.id),
-      programIndicatorData.filter
-        ? this.fetchProgramIndicatorFilterDescription(
-            apiUrl,
-            programIndicatorData.filter,
-            headers
-          )
-        : Promise.resolve(null),
-    ]);
-
-    const programIndicatorFilter =
-      programIndicatorData.filter !== undefined
-        ? programIndicatorData.filter
-        : '';
-    const dataElementsFromFilter = this.extractDataElements(
-      programIndicatorFilter
-    );
-    const dataElementsFromExpression = this.extractDataElements(
-      programIndicatorData.expression
-    );
-    const dataElementsIds = [
-      ...dataElementsFromExpression,
-      ...dataElementsFromFilter,
-    ];
-
-    const dataElementsInPogramIndicator =
-      await this.fetchDataElementsInProgramIndicator(apiUrl, dataElementsIds);
-
-    return {
-      ...programIndicatorData,
-      programIndicatorExpression: expressionDescription.data.description,
-      filterDescription: programIndicatorData.filter
-        ? filterDescriptionResult.data.description
-        : '',
-      dataElementsInPogramIndicator:
-        dataElementsInPogramIndicator.data.dataElements,
-      indicatorsWithProgramIndicators: [
-        ...programIndicatorInNumerator.data.indicators,
-        ...programIndicatorInDenominator.data.indicators,
-      ],
-    };
-  }
-
   private async fetchProgramIndicator(apiUrl: string, id: string) {
     return axios.get(
       `${apiUrl}programIndicators/${id}.json?fields=:all,id,name,shortName,lastUpdated,analyticsPeriodBoundaries,created,userGroupAccesses[*],userAccesses[*],aggregationType,expression,filter,expiryDays,user[id,name,phoneNumber],lastUpdatedBy[id,name,phoneNumber],createdBy[id,name],programIndicatorGroups[id,name,code,programIndicators[id,name]]`
@@ -284,33 +360,9 @@ export class MetadataService {
     );
   }
 
-  private async fetchDataElementMetadata(apiUrl: string, id: string) {
-    const [
-      dataElementResponse,
-      dataElementInNumerator,
-      dataElementInDenominator,
-    ] = await Promise.all([
-      this.fetchDataElement(apiUrl, id),
-      this.fetchDataElementInNumerator(apiUrl, id),
-      this.fetchDataElementInDenominator(apiUrl, id),
-    ]);
-
-    return {
-      ...dataElementResponse.data,
-      indicators: [
-        ...dataElementInNumerator.data.indicators,
-        ...dataElementInDenominator.data.indicators,
-      ],
-      dataElementInNumeratorLength:
-        dataElementInNumerator.data.indicators.length,
-      dataElementInDenominatorLength:
-        dataElementInDenominator.data.indicators.length,
-    };
-  }
-
   private async fetchDataElement(apiUrl: string, id: string) {
     return axios.get(
-      `${apiUrl}dataElements/${id}.json?fields=:all,id,name,shortName,code,formName,description,created,lastUpdated,createdBy[id,name],lastUpdatedBy[id,name],valueType,aggregationType,domainType,zeroIsSignificant,categoryCombo[id,name,categoryOptionCombos[id,name,categoryOptions[id,name,categories[id,name]]]],dataSetElements[dataSet[id,name,periodType,timelyDays]],programs[id,name],validationRulesMatchCount,indicatorNumeratorExpressionMatchCount,indicatorDenominatorExpressionMatchCount`
+      `${apiUrl}dataElements/${id}.json?fields=:all,id,name,shortName,code,formName,description,created,lastUpdated,createdBy[id,name],lastUpdatedBy[id,name],valueType,aggregationType,domainType,zeroIsSignificant,categoryCombo[id,name,categoryOptionCombos[id,name,categoryOptions[id,name,categories[id,name]]]],dataSetElements[dataSet[id,name,periodType,timelyDays]],programs[id,name]`
     );
   }
 
@@ -323,6 +375,12 @@ export class MetadataService {
   private async fetchDataElementInDenominator(apiUrl: string, id: string) {
     return axios.get(
       `${apiUrl}indicators.json?filter=denominator:like:${id}&fields=name,numerator,denominator,description,indicatorType[name]`
+    );
+  }
+
+  private async fetchDataElementInValidationRule(apiUrl: string, id: string) {
+    return axios.get(
+      `${apiUrl}validationRules?fields=id&filter=leftSide.expression:like:${id}&filter=rightSide.expression:like:${id}&rootJunction=OR&paging=false`
     );
   }
 
@@ -345,78 +403,28 @@ export class MetadataService {
     const matches = [...input.matchAll(this.regexProgram)];
     return matches.map((match) => match[1]);
   }
+
+  regexIndicator = /N\{([A-Za-z0-9]{11})\}/g;
+  extractIndicators(input: string): string[] {
+    const matches = [...input.matchAll(this.regexIndicator)];
+    return matches.map((match) => match[1]);
+  }
+
+  extractIdentifiers(input: string): string[] {
+    // Match any alphanumeric string of length 11
+    const regex = /[A-Za-z0-9]{11}/g;
+    const matches = [...(input || '').matchAll(regex)];
+    return matches.map((match) => match[0]);
+  }
+
+  extractFunctionAndRule(
+    ref: string
+  ): { function: string; rule: string } | null {
+    const match = ref.match(/^([A-Za-z0-9]{11})\.([A-Za-z0-9]{11})$/);
+    if (!match) return null;
+    return {
+      function: match[1],
+      rule: match[2],
+    };
+  }
 }
-
-
-
-
-
-  // private async fetchProgramIndicatorMetadata(
-  //   apiUrl: string,
-  //   id: string,
-  //   headers: any
-  // ) {
-  //   const programIndicatorsResponse = await this.fetchProgramIndicator(
-  //     apiUrl,
-  //     id
-  //   );
-  //   const programIndicatorData = programIndicatorsResponse.data;
-
-  //   const expressionDescription =
-  //     await this.fetchProgramIndicatorExpressionDescription(
-  //       apiUrl,
-  //       programIndicatorData.expression,
-  //       headers
-  //     );
-  //   let filterDescription: any;
-  //   if (programIndicatorData.filter) {
-  //     filterDescription = await this.fetchProgramIndicatorFilterDescription(
-  //       apiUrl,
-  //       programIndicatorData.filter,
-  //       headers
-  //     );
-  //   }
-
-  //   const programIndicatorInNumerator =
-  //     await this.fetchProgramIndicatorInNumerator(
-  //       apiUrl,
-  //       programIndicatorData.id
-  //     );
-  //   const programIndicatorInDenominator =
-  //     await this.fetchProgramIndicatorInDenominator(
-  //       apiUrl,
-  //       programIndicatorData.id
-  //     );
-
-  //   const programIndicatorFilter =
-  //     programIndicatorData.filter !== undefined
-  //       ? programIndicatorData.filter
-  //       : '';
-  //   const dataElementsFromFilter = this.extractDataElements(
-  //     programIndicatorFilter
-  //   );
-  //   const dataElementsFromExpression = this.extractDataElements(
-  //     programIndicatorData.expression
-  //   );
-  //   const dataElementsIds = [
-  //     ...dataElementsFromExpression,
-  //     ...dataElementsFromFilter,
-  //   ];
-
-  //   const dataElementsInPogramIndicator =
-  //     await this.fetchDataElementsInProgramIndicator(apiUrl, dataElementsIds);
-
-  //   return {
-  //     ...programIndicatorData,
-  //     programIndicatorExpression: expressionDescription.data.description,
-  //     filterDescription: programIndicatorData.filter
-  //       ? filterDescription.data.description
-  //       : '',
-  //     dataElementsInPogramIndicator:
-  //       dataElementsInPogramIndicator.data.dataElements,
-  //     indicatorsWithProgramIndicators: [
-  //       ...programIndicatorInNumerator.data.indicators,
-  //       ...programIndicatorInDenominator.data.indicators,
-  //     ],
-  //   };
-  // }

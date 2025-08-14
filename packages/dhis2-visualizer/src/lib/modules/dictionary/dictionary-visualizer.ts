@@ -1,8 +1,6 @@
 // Copyright 2024 UDSM DHIS2 Lab. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-
-import { meta } from '@turf/turf';
 import {
   BaseVisualizer,
   Visualizer,
@@ -12,9 +10,10 @@ import { DataElementRenderer } from './helpers/dataelement-renderer.helper';
 import { IndicatorRenderer } from './helpers/indicator-renderer.helper';
 import { ProgramIndicatorRenderer } from './helpers/program-indicator-renderer.helper';
 import { MetadataRenderer } from './models/metadata-renderer.model';
-
+import { FunctionRenderer } from './helpers/function-renderer.helper';
 export class DictionaryVisualizer extends BaseVisualizer implements Visualizer {
   private metadataService: MetadataService;
+  private isFunction: boolean | null = null;
 
   constructor() {
     super();
@@ -29,6 +28,8 @@ export class DictionaryVisualizer extends BaseVisualizer implements Visualizer {
         return new ProgramIndicatorRenderer();
       case 'DataElement':
         return new DataElementRenderer();
+      case 'Function':
+        return new FunctionRenderer();
       default:
         throw new Error(`Unsupported metadata type: ${metadataType}`);
     }
@@ -63,18 +64,32 @@ export class DictionaryVisualizer extends BaseVisualizer implements Visualizer {
     const namesMap: Record<string, string> = {};
     await Promise.all(
       metaDataArray.map(async (id: string) => {
-        try {
-          const details = await this.metadataService.fetchIdentifiableObject(
-            id
-          );
-          namesMap[id] = details.data.name || id;
-        } catch {
-          namesMap[id] = id;
+        const functionRule = this.metadataService.extractFunctionAndRule(id);
+        this.isFunction = !!functionRule;
+        if (functionRule) {
+          try {
+            const functionDetails = await this.metadataService.fetchFunction(
+              functionRule.function
+            );
+
+            namesMap[id] = functionDetails.data?.name || id;
+          } catch {
+            namesMap[id] = id;
+          }
+        } else {
+          try {
+            const details = await this.metadataService.fetchIdentifiableObject(
+              id
+            );
+            namesMap[id] = details.data.name || id;
+          } catch {
+            namesMap[id] = id;
+          }
         }
       })
     );
 
-    // Remove loader after fetching
+    // Removes loader after fetching
     contentContainer.innerHTML = '';
 
     let selectedTab: string | null = null;
@@ -82,8 +97,6 @@ export class DictionaryVisualizer extends BaseVisualizer implements Visualizer {
     metaDataArray.forEach((id: string) => {
       const tabText = document.createElement('span');
       tabText.textContent = namesMap[id] || id;
-      // tabText.textContent = namesMap[id] || id;
-      // tabText.textContent = id;
       tabText.style.padding = '5px 10px';
       tabText.style.fontSize = '16px';
       tabText.style.transition = 'border-bottom 0.3s';
@@ -94,9 +107,7 @@ export class DictionaryVisualizer extends BaseVisualizer implements Visualizer {
       tabText.onmouseenter = () => (tabText.style.color = '#007bff');
       tabText.onmouseleave = () => (tabText.style.color = '');
 
-      // Click behavior
       tabText.onclick = async () => {
-        // Update selected tab styling
         if (selectedTab !== id) {
           selectedTab = id;
           Array.from(tabsContainer.children).forEach((child: Element) => {
@@ -105,49 +116,51 @@ export class DictionaryVisualizer extends BaseVisualizer implements Visualizer {
           tabText.style.borderBottom = '2px solid #007bff';
         }
 
-        // Show loading indicator
         contentContainer.innerHTML = `<p style="font-size: 14px; color: #555;">Loading...</p>`;
-
-        try {
-          const details = await this.metadataService.fetchMetadataById(id);
-          // const details = await this.metadataService.fetchMetadataById(
-          //   'NZnUq1SbLVO'
-          // );
-          // Clear loading message and display fetched data
-          contentContainer.replaceChildren();
-          let metadataType: string;
-          switch (details.dimensionItemType) {
-            case 'INDICATOR':
-              metadataType = 'Indicator';
-              break;
-            case 'PROGRAM_INDICATOR':
-              metadataType = 'ProgramIndicator';
-              break;
-            case 'DATA_ELEMENT':
-              metadataType = 'DataElement';
-              break;
-            default:
-              // Fallback: if valueType exists, it's likely a DataElement
-              if (details.valueType) {
-                metadataType = 'DataElement';
-              } else {
-                throw new Error('Unsupported metadata type');
-              }
-          }
-          const renderer = this.getRenderer(metadataType);
-
+        if (this.isFunction) {
+          const functionID = await this.metadataService.extractFunctionAndRule(
+            id
+          )?.function;
+          const ruleID = await this.metadataService.extractFunctionAndRule(id)
+            ?.rule;
+          const details = await this.metadataService.fetchFunctionWithRule(
+            functionID as string,
+            ruleID as string
+          );
+          const renderer = this.getRenderer('Function');
           renderer.draw(details, contentContainer);
-        } catch (error) {
-          // Handle errors gracefully
-          contentContainer.innerHTML = `<p style="color: red;">Error fetching data. Please try again.</p>`;
-          console.error('Error fetching metadata:', error);
+        } else {
+          try {
+            const details = await this.metadataService.fetchMetadataById(id);
+            // Clear loading message and display fetched data
+            contentContainer.replaceChildren();
+            let metadataType: string;
+            switch (details.dimensionItemType) {
+              case 'INDICATOR':
+                metadataType = 'Indicator';
+                break;
+              case 'PROGRAM_INDICATOR':
+                metadataType = 'ProgramIndicator';
+                break;
+              case 'DATA_ELEMENT':
+                metadataType = 'DataElement';
+                break;
+              default:
+                throw new Error('Unsupported metadata type');
+            }
+            const renderer = this.getRenderer(metadataType);
+
+            renderer.draw(details, contentContainer);
+          } catch (error) {
+            contentContainer.innerHTML = `<p style="color: red;">Error fetching data. Please try again.</p>`;
+            console.error('Error fetching metadata:', error);
+          }
         }
       };
 
       tabsContainer.appendChild(tabText);
     });
 
-    // Optionally pre-select the first tab
     if (metaDataArray.length > 0) {
       tabsContainer.firstChild?.dispatchEvent(new Event('click'));
     }

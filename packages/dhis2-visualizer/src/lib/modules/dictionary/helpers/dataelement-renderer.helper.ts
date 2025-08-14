@@ -75,28 +75,28 @@ export class DataElementRenderer implements MetadataRenderer {
       });
     }
 
-    // Other Details
-    container.appendChild(renderSectionTitle('Other Details'));
-    const otherDetailsRows = [
-      { label: 'Color', value: details.style?.color || '-' },
-      { label: 'Icon', value: details.style?.icon || '-' },
-      { label: 'Optionset', value: details.optionSet?.name || '-' },
-      {
-        label: 'Optionset for Comments',
-        value: details.commentOptionSet?.name || '-',
-      },
-      { label: 'Legends', value: details.legendSet?.name || '-' },
-      {
-        label: 'Aggregation Levels',
-        value: (details.aggregationLevels || []).join(', ') || '-',
-      },
-      { label: 'Details', value: details.details || '-' },
-    ];
-    const otherDetailsColumns: TableColumn[] = [
-      { header: 'Property', field: 'label' },
-      { header: 'Value', field: 'value' },
-    ];
-    container.appendChild(renderTable(otherDetailsColumns, otherDetailsRows));
+    // // Other Details
+    // container.appendChild(renderSectionTitle('Other Details'));
+    // const otherDetailsRows = [
+    //   { label: 'Color', value: details.style?.color || '-' },
+    //   { label: 'Icon', value: details.style?.icon || '-' },
+    //   { label: 'Optionset', value: details.optionSet?.name || '-' },
+    //   {
+    //     label: 'Optionset for Comments',
+    //     value: details.commentOptionSet?.name || '-',
+    //   },
+    //   { label: 'Legends', value: details.legendSet?.name || '-' },
+    //   {
+    //     label: 'Aggregation Levels',
+    //     value: (details.aggregationLevels || []).join(', ') || '-',
+    //   },
+    //   { label: 'Details', value: details.details || '-' },
+    // ];
+    // const otherDetailsColumns: TableColumn[] = [
+    //   { header: 'Property', field: 'label' },
+    //   { header: 'Value', field: 'value' },
+    // ];
+    // container.appendChild(renderTable(otherDetailsColumns, otherDetailsRows));
 
     // Data element Facts
     container.appendChild(renderSectionTitle('Data element Facts'));
@@ -106,17 +106,17 @@ export class DataElementRenderer implements MetadataRenderer {
       },
       {
         fact: `Has ${
-          details.validationRulesMatchCount || 0
+          details.dataElementInValidationRuleLength || '-'
         } related validation rules`,
       },
       {
         fact: `Part of numerators of ${
-          details.indicatorNumeratorExpressionMatchCount || '-'
+          details.dataElementInNumeratorLength || '-'
         } indicators`,
       },
       {
         fact: `Part of denominators of ${
-          details.indicatorDenominatorExpressionMatchCount || '-'
+          details.dataElementInDenominatorLength || '-'
         } indicators`,
       },
     ];
@@ -124,44 +124,130 @@ export class DataElementRenderer implements MetadataRenderer {
     container.appendChild(renderTable(factsColumns, factsRows));
 
     // Analytics Details
-    container.appendChild(renderSectionTitle('Analytics Details'));
-    const analyticsRows = [
-      {
-        detail: `${details.aggregationType} through period and hierarchy`,
-      },
-      {
-        detail: `${details.domainType} data sources`,
-      },
-      {
-        detail: details.zeroIsSignificant
-          ? 'Stores zero data values'
-          : 'Does not store zero data values',
-      },
-      {
-        detail: `${
-          details.categoryCombo?.name || '-'
-        } cross-tabulation between categories`,
-      },
-    ];
-    const analyticsColumns: TableColumn[] = [
-      { header: 'Detail', field: 'detail' },
-    ];
-    container.appendChild(renderTable(analyticsColumns, analyticsRows));
+    // container.appendChild(renderSectionTitle('Analytics Details'));
+    // const analyticsRows = [
+    //   {
+    //     detail: `${details.aggregationType} through period and hierarchy`,
+    //   },
+    //   {
+    //     detail: `${details.domainType} data sources`,
+    //   },
+    //   {
+    //     detail: details.zeroIsSignificant
+    //       ? 'Stores zero data values'
+    //       : 'Does not store zero data values',
+    //   },
+    //   {
+    //     detail: `${
+    //       details.categoryCombo?.name || '-'
+    //     } cross-tabulation between categories`,
+    //   },
+    // ];
+    // const analyticsColumns: TableColumn[] = [
+    //   { header: 'Detail', field: 'detail' },
+    // ];
+    // container.appendChild(renderTable(analyticsColumns, analyticsRows));
 
-    // Categories and options
+    // // Categories and options
+    // if (details.categoryCombo?.categories?.length) {
+    //   container.appendChild(renderSectionTitle('Categories & Options'));
+    //   const catRows = details.categoryCombo.categories.map((cat: any) => ({
+    //     category: cat.name,
+    //     options:
+    //       (cat.categoryOptions || []).map((opt: any) => opt.name).join(', ') ||
+    //       '-',
+    //   }));
+    //   const catColumns: TableColumn[] = [
+    //     { header: 'Category', field: 'category' },
+    //     { header: 'Options', field: 'options' },
+    //   ];
+    //   container.appendChild(renderTable(catColumns, catRows));
+    // }
+    // Analytics Details
+    container.appendChild(renderSectionTitle('Analytics Details'));
+
+    const aggP = document.createElement('div');
+    aggP.textContent = `${details.aggregationType} through period and hierarchy`;
+    container.appendChild(aggP);
+
+    const domainP = document.createElement('div');
+    domainP.textContent = `${details.domainType} data sources`;
+    container.appendChild(domainP);
+
+    const zeroP = document.createElement('div');
+    zeroP.textContent = details.zeroIsSignificant
+      ? 'Stores zero data values'
+      : 'Does not store zero data values';
+    container.appendChild(zeroP);
+
+    let uniqueCategories: string[] = [];
+    if (details.categoryCombo?.categoryOptionCombos?.length) {
+      const categorySet = new Set<string>();
+      details.categoryCombo.categoryOptionCombos.forEach((combo: any) => {
+        (combo.categoryOptions || []).forEach((opt: any) => {
+          (opt.categories || []).forEach((cat: any) => {
+            if (!categorySet.has(cat.name)) {
+              categorySet.add(cat.name);
+              uniqueCategories.push(cat.name);
+            }
+          });
+        });
+      });
+    }
+
+    const categoriesString = uniqueCategories.length
+      ? uniqueCategories
+          .map((cat, idx) => `Category ${idx + 1}: ${cat}`)
+          .join(', ')
+      : '-';
+    const catComboDiv = document.createElement('div');
+    catComboDiv.innerHTML = `<b>${
+      details.categoryCombo?.name || '-'
+    }</b> cross-tabulation between ${uniqueCategories} with following details`;
+    container.appendChild(catComboDiv);
+
     if (details.categoryCombo?.categories?.length) {
-      container.appendChild(renderSectionTitle('Categories & Options'));
-      const catRows = details.categoryCombo.categories.map((cat: any) => ({
-        category: cat.name,
-        options:
+      const catUl = document.createElement('ul');
+      catUl.style.margin = '8px 0 0 24px';
+      details.categoryCombo.categories.forEach((cat: any) => {
+        const catLi = document.createElement('li');
+        catLi.innerHTML = `<b>${cat.name}</b> has ${
           (cat.categoryOptions || []).map((opt: any) => opt.name).join(', ') ||
-          '-',
-      }));
-      const catColumns: TableColumn[] = [
-        { header: 'Category', field: 'category' },
-        { header: 'Options', field: 'options' },
-      ];
-      container.appendChild(renderTable(catColumns, catRows));
+          '-'
+        }`;
+        catUl.appendChild(catLi);
+      });
+      container.appendChild(catUl);
+    }
+
+    if (details.categoryCombo?.categoryOptionCombos?.length) {
+      const combosTitle = document.createElement('div');
+      combosTitle.style.marginTop = '12px';
+      combosTitle.textContent = '';
+      container.appendChild(combosTitle);
+
+      const comboUl = document.createElement('ul');
+      comboUl.style.margin = '8px 0 0 24px';
+      details.categoryCombo.categoryOptionCombos.forEach((combo: any) => {
+        const comboLi = document.createElement('li');
+        let optionsHtml = '';
+        if (combo.categoryOptions?.length) {
+          optionsHtml =
+            '<ul style="margin: 4px 0 0 18px;">' +
+            combo.categoryOptions
+              .map(
+                (opt: any) =>
+                  `<li><b>${opt.name}</b> (${(opt.categories || [])
+                    .map((cat: any) => cat.name)
+                    .join(', ')})</li>`
+              )
+              .join('') +
+            '</ul>';
+        }
+        comboLi.innerHTML = `<b>${combo.name}</b>${optionsHtml}`;
+        comboUl.appendChild(comboLi);
+      });
+      container.appendChild(comboUl);
     }
 
     // Related Indicators
@@ -170,7 +256,6 @@ export class DataElementRenderer implements MetadataRenderer {
       { header: 'Name', field: 'name' },
       { header: 'Numerator', field: 'numerator' },
       { header: 'Denominator', field: 'denominator' },
-      { header: 'Type', field: 'indicatorType' },
       {
         header: 'Type',
         field: 'indicatorType',
