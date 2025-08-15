@@ -43,9 +43,9 @@ import { IFormField } from '../interfaces';
 import { FieldConfig } from '../models';
 import { FileUploadField } from './file-upload-field.component';
 import {
-  CustomOrgUnitConfig,
   OrgUnitFormField,
 } from './org-unit-form-field.component';
+import { CustomOrgUnitConfig } from '../models/org-unit.model';
 
 @Directive()
 export class BaseFormFieldComponent extends ReactWrapperModule {

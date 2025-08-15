@@ -22,7 +22,7 @@ import {
 } from '../../models';
 import { FormFieldComponent } from '../form-field/form-field.component';
 import { IFormField } from '../../interfaces';
-import { CustomOrgUnitConfig } from '../../components/org-unit-form-field.component';
+import { CustomOrgUnitConfig } from '../../models/org-unit.model';
 
 @Component({
   selector: 'ng-dhis2-ui-form',
