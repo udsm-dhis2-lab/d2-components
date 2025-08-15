@@ -31,11 +31,12 @@ export class ProgramIndicatorRenderer implements MetadataRenderer {
       renderIntroductionDetails(
         `It’s labelled in short as ${details.shortName || '-'}${
           details.code ? ` and has a code of ${details.code}` : ''
-        }. In analytics,${
+        }. ${
           details.decimals
-            ? ` it displays up to ${details.decimals} decimals.`
-            : ''
-        } ${
+            ? ` In analytics it displays up to ${details.decimals} decimals.`
+            : ``
+        } 
+        ${
           details.displayInForm
             ? `It’s set to display ${details.displayInForm}.`
             : ''
@@ -47,22 +48,29 @@ export class ProgramIndicatorRenderer implements MetadataRenderer {
     );
     container.appendChild(introSection);
 
-    // Data sources 
+    // Data sources
     container.appendChild(
       renderSectionTitle('Data sources (Datasets/Programs)')
     );
+
+    let eventType = '';
+    if (details.program?.programType === 'WITH_REGISTRATION') {
+      eventType = 'individual (case)';
+    } else if (details.program?.programType === 'WITHOUT_REGISTRATION') {
+      eventType = 'events';
+    }
+
     container.appendChild(
       renderIntroductionDetails(
-        'Indicator is captured from event based data collection with following program:'
+        `Indicator is captured from ${eventType} with the following program:`
       )
     );
-    if (details.program?.name) {
-      container.appendChild(
-        renderIntroductionDetails(
-          `${details.program.name} submitting records on every event (case or individual)`
-        )
-      );
-    }
+
+    container.appendChild(
+      renderIntroductionDetails(
+        `${details.program.name} submitting records on every event (case or individual)`
+      )
+    );
 
     // Program Indicator Facts
     container.appendChild(renderSectionTitle('Program Indicator Facts'));
@@ -134,7 +142,7 @@ export class ProgramIndicatorRenderer implements MetadataRenderer {
     container.appendChild(renderSectionTitle('Calculation details'));
     container.appendChild(
       renderIntroductionDetails(
-        `Calculation of the values will be ${details.aggregationType} of values across orgunit and period. Program indicator calculation will be based on ${details.analyticsType}, for distinction purposes:`
+        `Calculation of the values will be ${details.aggregationType} of ${details.analyticsType} across orgunit and period. Program indicator calculation will be based on ${details.analyticsType}, for distinction purposes:`
       )
     );
     const calcDetailsList = document.createElement('ul');
@@ -230,10 +238,24 @@ export class ProgramIndicatorRenderer implements MetadataRenderer {
     ];
     container.appendChild(renderTable(exprColumns, exprRows));
 
+    const analyticsType =
+      details.analyticsType === 'EVENT'
+        ? 'event analytics, event date will be used'
+        : details.analyticsType === 'ENROLLMENT'
+        ? 'enrollment analytics, enrollment date will be used'
+        : `${
+            details.analyticsType?.toLowerCase() || 'analytics'
+          }, relevant date will be used`;
     // Period Boundaries Table
+    const analyticsTypeExplanation =
+      details.analyticsType === 'EVENT'
+        ? 'for event analytics, event date will be used'
+        : details.analyticsType === 'ENROLLMENT'
+        ? 'for enrollment analytics, enrollment date will be used'
+        : 'for analytics, relevant date will be used';
     container.appendChild(
       renderIntroductionDetails(
-        'Below are period boundaries that determine which events or enrollments will be included in calculations of the program indicators, where for event analytics, event date will be used and for enrollment analytics, enrollment analytics will be used.'
+        `Below are period boundaries that determine which ${details.analyticsType} will be included in calculations of the program indicators, ${analyticsTypeExplanation}.`
       )
     );
     const periodColumns: TableColumn[] = [
@@ -274,6 +296,12 @@ export class ProgramIndicatorRenderer implements MetadataRenderer {
       {
         header: 'Expression part (Numerator/ Denominator)',
         field: 'expressionPart',
+        // render: (row, _col, _i) =>
+        //   details.dataElementsFromNumerator.includes(row.id)
+        //     ? 'Numerator'
+        //     : details.dataElementsFromDenominator.includes(row.id)
+        //     ? 'Denominator'
+        //     : '',
       },
       { header: 'Aggregation', field: 'aggregationType' },
       { header: 'Value Type', field: 'valueType' },
@@ -283,7 +311,7 @@ export class ProgramIndicatorRenderer implements MetadataRenderer {
         field: 'categories',
         render: (row) => {
           const ul = document.createElement('ul');
-          row.categoryCombo?.categoryOptionCombos?.[0]?.categoryOptions?.[0]?.categories?.forEach(
+          row.categoryCombo.categoryOptionCombos?.[0]?.categoryOptions?.[0]?.categories?.forEach(
             (category: { name: string }) => {
               const li = document.createElement('li');
               li.textContent = category.name;
@@ -298,7 +326,7 @@ export class ProgramIndicatorRenderer implements MetadataRenderer {
         field: 'dataSets',
         render: (row) => {
           const ul = document.createElement('ul');
-          row.dataSetElements?.forEach(
+          row.dataSetElements.forEach(
             (dataSetElement: { dataSet: { name: string } }) => {
               const li = document.createElement('li');
               li.textContent = dataSetElement.dataSet.name;
@@ -313,11 +341,11 @@ export class ProgramIndicatorRenderer implements MetadataRenderer {
         field: 'groups',
         render: (row) => {
           const ul = document.createElement('ul');
-          row.dataElementGroups?.forEach(
-            (group: { name: string; dataElements: number }) => {
+          row.dataElementGroups.forEach(
+            (dataSetGroup: { name: string; dataElements: number }) => {
               const li = document.createElement('li');
-              li.textContent = `${group.name}: with other ${(
-                group.dataElements - 1
+              li.textContent = `${dataSetGroup.name}: with other ${(
+                dataSetGroup.dataElements - 1
               ).toString()} data elements`;
               ul.appendChild(li);
             }

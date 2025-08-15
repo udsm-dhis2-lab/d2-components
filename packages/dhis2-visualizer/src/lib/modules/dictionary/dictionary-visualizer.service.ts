@@ -18,6 +18,8 @@ export class MetadataService {
         return await this.fetchProgramIndicatorMetadata(apiUrl, id, headers);
       } else if (href.includes('dataElements')) {
         return await this.fetchDataElementMetadata(apiUrl, id);
+      } else if (href.includes('dataSets')) {
+        return await this.fetchDataSetMetadata(apiUrl, id);
       } else {
         throw new Error(`Unsupported type in href: ${href}`);
       }
@@ -36,7 +38,6 @@ export class MetadataService {
     let referencedIds: string[] = [];
     if (rule.json.generator) {
       const expr = rule.json.generator.expression || '';
-      console.log('exp', expr);
       referencedIds = Array.from(new Set(this.extractIdentifiers(expr)));
     }
 
@@ -50,7 +51,6 @@ export class MetadataService {
 
           if (href.includes('dataElements')) {
             const de = await this.fetchDataElement(apiUrl, refId);
-            console.log('referencedDetails', de);
             return { ...de.data };
           } else if (href.includes('indicators')) {
             const ind = await this.fetchIndicator(apiUrl, refId);
@@ -66,7 +66,6 @@ export class MetadataService {
         }
       })
     );
-    console.log('referencedDetails', referencedDetails);
 
     return {
       ...functionData,
@@ -86,13 +85,24 @@ export class MetadataService {
     const dataSetIdsFromNumerator = this.extractAllDataElementIds(
       indicatorData.numerator
     );
+
     const dataSetIdsFromDenominator = this.extractAllDataElementIds(
       indicatorData.denominator
     );
-    const dataElementsFromIndicator = [
-      ...dataSetIdsFromNumerator,
-      ...dataSetIdsFromDenominator,
-    ];
+    const dataElementIdsFromNumerator = this.extractDataElements(
+      indicatorData.numerator
+    );
+    const dataElementIdsFromDenominator = this.extractDataElements(
+      indicatorData.denominator
+    );
+
+    const dataElementsFromIndicator = Array.from(
+      new Set([
+        ...dataElementIdsFromNumerator,
+        ...dataElementIdsFromDenominator,
+      ])
+    );
+
     const progIndicatorInNumerator = this.extractProgramIndicators(
       indicatorData.numerator
     );
@@ -103,10 +113,11 @@ export class MetadataService {
       ...progIndicatorInDenominator,
       ...progIndicatorInNumerator,
     ];
-    const dataSetIds = [
-      ...(indicatorData.dataSets?.map((dataSet: { id: any }) => dataSet.id) ||
-        []),
-    ];
+    // const dataSetIds = [
+    //   ...(indicatorData.dataSets?.map((dataSet: { id: any }) => dataSet.id) ||
+    //     []),
+    // ];
+     const dataSetIds = Array.from(new Set([...dataSetIdsFromNumerator, ...dataSetIdsFromDenominator]));
 
     const [
       numeratorResponse,
@@ -126,7 +137,7 @@ export class MetadataService {
       this.fetchDataSetIdSources(apiUrl, dataSetIdsFromNumerator),
       this.fetchDataSetIdSources(apiUrl, dataSetIdsFromDenominator),
       this.fetchProgramIndicatorsInIndicator(apiUrl, programIndicators),
-      this.fetchDataElementsInIndicator(apiUrl, dataElementsFromIndicator),
+      this.fetchDataElementsInMetaData(apiUrl, dataElementsFromIndicator),
       this.fetchDataSetsInIndicator(apiUrl, dataSetIds),
     ]);
 
@@ -184,10 +195,10 @@ export class MetadataService {
       programIndicatorData.filter !== undefined
         ? programIndicatorData.filter
         : '';
-    const dataElementsFromFilter = this.extractDataElements(
+    const dataElementsFromFilter = this.extractDataElementsFromFilter(
       programIndicatorFilter
     );
-    const dataElementsFromExpression = this.extractDataElements(
+    const dataElementsFromExpression = this.extractDataElementsFromFilter(
       programIndicatorData.expression
     );
     const dataElementsIds = [
@@ -196,7 +207,7 @@ export class MetadataService {
     ];
 
     const dataElementsInPogramIndicator =
-      await this.fetchDataElementsInProgramIndicator(apiUrl, dataElementsIds);
+      await this.fetchDataElementsInMetaData(apiUrl, dataElementsIds);
 
     return {
       ...programIndicatorData,
@@ -238,6 +249,18 @@ export class MetadataService {
         dataElementInDenominator.data.indicators.length,
       dataElementInValidationRuleLength:
         dataElementInValidationRule.data.validationRules.length,
+    };
+  }
+
+  private async fetchDataSetMetadata(apiUrl: string, id: string) {
+    //og://:all,id,name,shortName,code,description,periodType,categoryCombo[id,name,categoryOptionCombos[id,name,categoryOptions[id,name,categories[id,name]]]],dataSetElements[dataSet[id,name,periodType],dataElement[id,name,aggregationType,valueType,zeroIsSignificant,categoryCombo[id,name],dataElementGroups[id,name]]],organisationUnits[id,name]
+    //v1: `${apiUrl}dataSets/${id}.json?fields=id,name,created,lastUpdated,createdBy[id,displayName,name],lastUpdatedBy[id,displayName,name],formType,periodType,shortName,dimensionItemType,legendSets[id,name],timelyDays,expiryDays,validCompleteOnly,compulsoryFieldsCompleteOnly,compulsoryDataElementOperands[id,displayName,name],dataSetElements[dataSet[id,name,periodType],dataElement[id,name,aggregationType,valueType,zeroIsSignificant,categoryCombo[id,name,categoryOptionCombos[id,name,categoryOptions[id,name,categories[id,name]]]],dataElementGroups[id,name]]],categoryCombo[id,name,categoryOptionCombos[id,name,categoryOptions[id,name,categories[id,name]]]]`
+    //v3:   `${apiUrl}dataSets/${id}.json?fields=id,name,created,lastUpdated,createdBy[id,displayName,name],lastUpdatedBy[id,displayName,name],formType,periodType,shortName,dimensionItemType,legendSets[id,name],timelyDays,expiryDays,validCompleteOnly,compulsoryFieldsCompleteOnly,compulsoryDataElementOperands[id,displayName,name],dataSetElements[dataSet[id,name,periodType],dataElement[id,name,aggregationType,valueType,zeroIsSignificant,categoryCombo[id,name,categoryOptionCombos[id,name,categoryOptions[id,name]]],dataElementGroups[id,name]]],categoryCombo[id,name]`
+    const dataSetResponse = await axios.get(
+      `${apiUrl}dataSets/${id}.json?fields=:all,id,name,shortName,code,description,periodType,categoryCombo[id,name,categoryOptionCombos[id,name,categoryOptions[id,name,categories[id,name]]]],dataSetElements[dataSet[id,name,periodType],dataElement[id,name,aggregationType,valueType,zeroIsSignificant,categoryCombo[id,name],dataElementGroups[id,name]]],organisationUnits[id,name]`
+    );
+    return {
+      ...dataSetResponse.data,
     };
   }
 
@@ -294,24 +317,24 @@ export class MetadataService {
     );
   }
 
-  private async fetchDataElementsInIndicator(
+  private async fetchDataElementsInMetaData(
     apiUrl: string,
     dataElementsFromIndicator: string[]
   ) {
     return axios.get(
-      `${apiUrl}dataElements.json?filter=id:in:[${dataElementsFromIndicator}]&paging=false&fields=id,name,zeroIsSignificant,aggregationType,domainType,valueType,categoryCombo[id,name,categoryOptionCombos[id,name,categoryOptions[id,name,categories[id,name]]]],dataSetElements[dataSet[id,name,periodType]],dataElementGroups[id,name,dataElements~size]`
+      `${apiUrl}dataElements.json?filter=id:in:[${dataElementsFromIndicator}]&paging=false&fields=id,name,zeroIsSignificant,aggregationType,domainType,valueType,categoryCombo[id,name,categoryOptionCombos[id,name,categoryOptions[id,name,categories[id,name]]]],dataSetElements[dataSet[id,name,periodType]],dataElementGroups[id,name]`
     );
   }
 
   private async fetchDataSetsInIndicator(apiUrl: string, dataSetIds: string[]) {
     return axios.get(
-      `${apiUrl}dataSets.json?filter=id:in:[${dataSetIds}]&fields=*,organisationUnits[id,name],dataSetElements[dataElement[id,name]`
+      `${apiUrl}dataSets.json?filter=id:in:[${dataSetIds}]&fields=:all,organisationUnits[id,name],dataSetElements[dataElement[id,name]`
     );
   }
 
   private async fetchProgramIndicator(apiUrl: string, id: string) {
     return axios.get(
-      `${apiUrl}programIndicators/${id}.json?fields=:all,id,name,shortName,lastUpdated,analyticsPeriodBoundaries,created,userGroupAccesses[*],userAccesses[*],aggregationType,expression,filter,expiryDays,user[id,name,phoneNumber],lastUpdatedBy[id,name,phoneNumber],createdBy[id,name],programIndicatorGroups[id,name,code,programIndicators[id,name]]`
+      `${apiUrl}programIndicators/${id}.json?fields=:all,id,name,shortName,lastUpdated,program[id,name,programType],analyticsPeriodBoundaries,created,userGroupAccesses[*],userAccesses[*],aggregationType,expression,filter,expiryDays,user[id,name,phoneNumber],lastUpdatedBy[id,name,phoneNumber],createdBy[id,name],programIndicatorGroups[id,name,code,programIndicators[id,name]]`
     );
   }
 
@@ -351,15 +374,6 @@ export class MetadataService {
     );
   }
 
-  private async fetchDataElementsInProgramIndicator(
-    apiUrl: string,
-    dataElementsIds: string[]
-  ) {
-    return axios.get(
-      `${apiUrl}dataElements.json?filter=id:in:[${dataElementsIds}]&paging=false&fields=id,name,zeroIsSignificant,aggregationType,domainType,valueType,categoryCombo[id,name,categoryOptionCombos[id,name,categoryOptions[id,name,categories[id,name]]]],dataSetElements[dataSet[id,name,periodType]],dataElementGroups[id,name,dataElements~size]`
-    );
-  }
-
   private async fetchDataElement(apiUrl: string, id: string) {
     return axios.get(
       `${apiUrl}dataElements/${id}.json?fields=:all,id,name,shortName,code,formName,description,created,lastUpdated,createdBy[id,name],lastUpdatedBy[id,name],valueType,aggregationType,domainType,zeroIsSignificant,categoryCombo[id,name,categoryOptionCombos[id,name,categoryOptions[id,name,categories[id,name]]]],dataSetElements[dataSet[id,name,periodType,timelyDays]],programs[id,name]`
@@ -390,10 +404,17 @@ export class MetadataService {
     return matches.map((match) => match[1]);
   }
 
-  regex = /#{[A-Za-z0-9]{11}\.([A-Za-z0-9]{11})}/g;
+  regex = /#{([A-Za-z0-9]{11})\.([A-Za-z0-9]{11})}/g;
 
   extractDataElements(input: string): string[] {
     const matches = [...input.matchAll(this.regex)];
+    return matches.map((match) => match[1]);
+  }
+
+  filterExpressionregex = /#{[A-Za-z0-9]{11}\.([A-Za-z0-9]{11})}/g;
+
+  extractDataElementsFromFilter(input: string): string[] {
+    const matches = [...input.matchAll(this.filterExpressionregex)];
     return matches.map((match) => match[1]);
   }
 

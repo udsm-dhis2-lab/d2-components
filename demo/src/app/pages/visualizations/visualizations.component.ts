@@ -70,7 +70,7 @@ export class VisualizationsComponent {
       .setType('DICTIONARY')
       .setId('dictionary')
       // .setIdentifiers(['DvG2vanrUfZ.jvjQnsfaSgm', 'G6OhZ1IVOid.GAHqt096F68'])
-      .setIdentifiers(['qND1CpK3cO5', 'ykDWUlQzexW'])
+      .setIdentifiers(['c8UbkV1m3U0', 'rZ6bToIHdgC', 'PNlymabsMqd', 'pPJFYJ81oRe', 'qpcwPcj8D6u', 'zyevFuFfvJQ'])
       .draw();
 
     // const visualizer = new D2Visualizer();

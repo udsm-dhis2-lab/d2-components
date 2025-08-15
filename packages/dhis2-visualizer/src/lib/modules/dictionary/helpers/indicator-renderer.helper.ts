@@ -1,7 +1,13 @@
 import { MetadataRenderer } from '../models/metadata-renderer.model';
 import moment from 'moment';
 import { TableColumn } from '../models/table.model';
-import { renderIntroductionDetails, renderIntroductionTitle, renderSectionTitle, renderTable, renderTitle } from './helpers';
+import {
+  renderIntroductionDetails,
+  renderIntroductionTitle,
+  renderSectionTitle,
+  renderTable,
+  renderTitle,
+} from './helpers';
 
 export class IndicatorRenderer implements MetadataRenderer {
   draw(details: any, container: HTMLElement): void {
@@ -18,9 +24,7 @@ export class IndicatorRenderer implements MetadataRenderer {
     const introductionSection = document.createElement('section');
     introductionSection.style.marginBottom = '20px';
 
-    introductionSection.appendChild(
-      renderIntroductionTitle('Introduction')
-    );
+    introductionSection.appendChild(renderIntroductionTitle('Introduction'));
 
     const introDetails = renderIntroductionDetails(
       `${details.name} is a ${details.indicatorType.name} indicator measured by ${details.numeratorDescription} to ${details.denominatorDescription}.`
@@ -104,9 +108,7 @@ export class IndicatorRenderer implements MetadataRenderer {
     wrapper.appendChild(this.renderDataElementsTable(details));
 
     // Program Indicators Table
-    wrapper.appendChild(
-      renderSectionTitle('Program Indicators in indicator')
-    );
+    wrapper.appendChild(renderSectionTitle('Program Indicators in indicator'));
     const programIndicatorsSubtitle = document.createElement('p');
     programIndicatorsSubtitle.textContent =
       'The following is the summary of the program indicators used in calculations:';
@@ -126,9 +128,7 @@ export class IndicatorRenderer implements MetadataRenderer {
     wrapper.appendChild(this.renderDataSetsTable(details));
 
     // Accessibility & Sharing
-    wrapper.appendChild(
-      renderSectionTitle('Accessibility & Sharing settings')
-    );
+    wrapper.appendChild(renderSectionTitle('Accessibility & Sharing settings'));
     const createdformattedDate = moment(details.created).format(
       'MMMM DD, YYYY'
     );
@@ -219,7 +219,15 @@ export class IndicatorRenderer implements MetadataRenderer {
         header: 'Expression part (Numerator/ Denominator)',
         field: 'expressionPart',
         render: (row, _col, _i) =>
-          details.dataElementsFromNumerator.includes(row.id)
+          // details.dataElementsFromNumerator.includes(row.id)
+          //   ? 'Numerator'
+          //   : details.dataElementsFromDenominator.includes(row.id)
+          //   ? 'Denominator'
+          //   : '',
+          details.dataElementsFromNumerator.includes(row.id) &&
+          details.dataElementsFromDenominator.includes(row.id)
+            ? 'Numerator & Denominator'
+            : details.dataElementsFromNumerator.includes(row.id)
             ? 'Numerator'
             : details.dataElementsFromDenominator.includes(row.id)
             ? 'Denominator'
@@ -232,17 +240,38 @@ export class IndicatorRenderer implements MetadataRenderer {
         header: 'Categories',
         field: 'categories',
         render: (row) => {
+          const categorySet = new Set<string>();
+          row.categoryCombo?.categoryOptionCombos?.forEach((combo: any) => {
+            combo.categoryOptions?.forEach((option: any) => {
+              option.categories?.forEach((category: any) => {
+                categorySet.add(category.name);
+              });
+            });
+          });
           const ul = document.createElement('ul');
-          row.categoryCombo.categoryOptionCombos?.[0]?.categoryOptions?.[0]?.categories?.forEach(
-            (category: { name: string }) => {
-              const li = document.createElement('li');
-              li.textContent = category.name;
-              ul.appendChild(li);
-            }
-          );
+          Array.from(categorySet).forEach((catName) => {
+            const li = document.createElement('li');
+            li.textContent = catName;
+            ul.appendChild(li);
+          });
           return ul;
         },
       },
+      // {
+      //   header: 'Categories',
+      //   field: 'categories',
+      //   render: (row) => {
+      //     const ul = document.createElement('ul');
+      //     row.categoryCombo.categoryOptionCombos?.[0]?.categoryOptions?.[0]?.categories?.forEach(
+      //       (category: { name: string }) => {
+      //         const li = document.createElement('li');
+      //         li.textContent = category.name;
+      //         ul.appendChild(li);
+      //       }
+      //     );
+      //     return ul;
+      //   },
+      // },
       {
         header: 'Data Sets/ Programs',
         field: 'dataSets',
@@ -324,10 +353,7 @@ export class IndicatorRenderer implements MetadataRenderer {
         },
       },
     ];
-    return renderTable(
-      columns,
-      details.programIndicatorsInIndicator || []
-    );
+    return renderTable(columns, details.programIndicatorsInIndicator || []);
   }
 
   renderDataSetsTable(details: any): HTMLElement {

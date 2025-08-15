@@ -11,6 +11,7 @@ import { IndicatorRenderer } from './helpers/indicator-renderer.helper';
 import { ProgramIndicatorRenderer } from './helpers/program-indicator-renderer.helper';
 import { MetadataRenderer } from './models/metadata-renderer.model';
 import { FunctionRenderer } from './helpers/function-renderer.helper';
+import { DatasetRenderer } from './helpers/dataset-renderer.helper';
 export class DictionaryVisualizer extends BaseVisualizer implements Visualizer {
   private metadataService: MetadataService;
   private isFunction: boolean | null = null;
@@ -30,6 +31,8 @@ export class DictionaryVisualizer extends BaseVisualizer implements Visualizer {
         return new DataElementRenderer();
       case 'Function':
         return new FunctionRenderer();
+      case 'DataSet':
+        return new DatasetRenderer();
       default:
         throw new Error(`Unsupported metadata type: ${metadataType}`);
     }
@@ -96,12 +99,25 @@ export class DictionaryVisualizer extends BaseVisualizer implements Visualizer {
 
     metaDataArray.forEach((id: string) => {
       const tabText = document.createElement('span');
-      tabText.textContent = namesMap[id] || id;
+      const fullName = namesMap[id] || id;
+      const maxTabLength = 32;
+      let displayName = fullName;
+      if (fullName.length > maxTabLength) {
+        displayName = fullName.slice(0, maxTabLength - 3) + '...';
+      }
+      tabText.textContent = displayName;
+      tabText.title = fullName;
+
       tabText.style.padding = '5px 10px';
       tabText.style.fontSize = '16px';
       tabText.style.transition = 'border-bottom 0.3s';
       tabText.style.borderBottom =
         selectedTab === id ? '2px solid #007bff' : 'none';
+      tabText.style.maxWidth = '220px';
+      tabText.style.overflow = 'hidden';
+      tabText.style.textOverflow = 'ellipsis';
+      tabText.style.whiteSpace = 'nowrap';
+      tabText.style.display = 'inline-block';
 
       // Hover effects
       tabText.onmouseenter = () => (tabText.style.color = '#007bff');
@@ -144,6 +160,9 @@ export class DictionaryVisualizer extends BaseVisualizer implements Visualizer {
                 break;
               case 'DATA_ELEMENT':
                 metadataType = 'DataElement';
+                break;
+              case 'REPORTING_RATE':
+                metadataType = 'DataSet';
                 break;
               default:
                 throw new Error('Unsupported metadata type');
