@@ -75,7 +75,7 @@
     "@storybook/test-runner": "0.22.1",
     "@storybook/testing-library": "^0.2.2",
     "@swc-node/register": "1.9.2",
-    "@swc/core": "1.5.7",
+    "@swc/core": "1.13.3",
     "@swc/helpers": "0.5.12",
     "@types/base-64": "^1.0.2",
     "@types/jest": "30.0.0",
