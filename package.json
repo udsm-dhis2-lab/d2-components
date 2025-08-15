@@ -161,7 +161,7 @@
     "react-dom": "18.2.0",
     "react-query": "^3.39.3",
     "rxjs": "~7.8.0",
-    "storybook": "9.0.9",
+    "storybook": "9.1.2",
     "string-similarity": "^4.0.4",
     "styled-jsx": "^5.1.2",
     "tslib": "^2.3.0",
