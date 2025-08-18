@@ -233,16 +233,5 @@ export class FunctionRenderer implements MetadataRenderer {
         renderTable(userAccessColumns, details.userAccesses)
       );
     }
-
-    // User Group Access
-
-    container.appendChild(renderSectionTitle('User Group Access'));
-    const groupAccessColumns: TableColumn[] = [
-      { header: 'User Group', field: 'displayName' },
-      { header: 'Access', field: 'access' },
-    ];
-    container.appendChild(
-      renderTable(groupAccessColumns, details.userGroupAccesses)
-    );
   }
 }

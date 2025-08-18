@@ -66,10 +66,18 @@ export class IndicatorRenderer implements MetadataRenderer {
           {
             header: 'Code',
             field: 'code',
-            render: (row) => row.code || 'None',
+            render: (row) => row.code || '-',
           },
           {
             header: 'Indicators',
+            field: 'indicators',
+            render: (row) =>
+              Array.isArray(row.indicators)
+                ? row.indicators.length.toString()
+                : '0',
+          },
+          {
+            header: 'Indicator List',
             field: 'indicators',
             render: (row) => {
               if (Array.isArray(row.indicators) && row.indicators.length > 0) {
@@ -140,7 +148,6 @@ export class IndicatorRenderer implements MetadataRenderer {
     accessibilitySharingSettingsDescription.style.margin = '0 0 8px 0';
     wrapper.appendChild(accessibilitySharingSettingsDescription);
 
-    // Append everything to the container
     container.appendChild(wrapper);
   }
 
