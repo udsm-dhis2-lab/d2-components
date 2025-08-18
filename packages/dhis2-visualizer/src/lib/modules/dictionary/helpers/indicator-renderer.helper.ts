@@ -152,7 +152,6 @@ export class IndicatorRenderer implements MetadataRenderer {
   }
 
   renderExpressionsTable(details: any): HTMLElement {
-    // Custom rendering for toggle button
     const columns: TableColumn[] = [
       { header: 'Expression', field: 'label' },
       {
@@ -199,20 +198,115 @@ export class IndicatorRenderer implements MetadataRenderer {
       },
       { header: 'Sources', field: 'sources' },
     ];
+
+    // Helper to extract dataset/program names from sources
+    function getSources(
+      dataElementSource: any[],
+      programIndicatorSource: any[]
+    ): string {
+      const datasetNames = Array.isArray(dataElementSource)
+        ? dataElementSource.flatMap((de: any) =>
+            Array.isArray(de.dataSetElements)
+              ? de.dataSetElements
+                  .map((dse: any) => dse.dataSet?.name)
+                  .filter(Boolean)
+              : []
+          )
+        : [];
+      const programNames = Array.isArray(programIndicatorSource)
+        ? programIndicatorSource
+            .map((pi: any) => pi.program?.name)
+            .filter(Boolean)
+        : [];
+
+      const allSources = Array.from(
+        new Set([...datasetNames, ...programNames])
+      );
+      return allSources.length > 0 ? allSources.join(', ') : '';
+    }
+
     const rows = [
       {
         label: 'Numerator',
         value: details.numeratorExpressionMeaning || '',
-        sources: '',
+        sources: getSources(
+          details.dataElementNumeratorSource,
+          details.programIndicatorNumeratorSource
+        ),
       },
       {
         label: 'Denominator',
         value: details.denominatorExpressionMeaning || '',
-        sources: '',
+        sources: getSources(
+          details.dataElementDenominatorSource,
+          details.programIndicatorDenominatorSource
+        ),
       },
     ];
     return renderTable(columns, rows);
   }
+  // renderExpressionsTable(details: any): HTMLElement {
+  //   // Custom rendering for toggle button
+  //   const columns: TableColumn[] = [
+  //     { header: 'Expression', field: 'label' },
+  //     {
+  //       header: 'Formula',
+  //       field: 'value',
+  //       render: (row, _col, _i) => {
+  //         const valueSpan = document.createElement('span');
+  //         valueSpan.textContent = row.value;
+  //         const toggleButton = document.createElement('button');
+  //         toggleButton.textContent = 'Show Expression';
+  //         toggleButton.style.marginLeft = '10px';
+  //         toggleButton.style.cursor = 'pointer';
+  //         toggleButton.style.background = '#f5f5f5';
+  //         toggleButton.style.border = '1px solid #ccc';
+  //         toggleButton.style.borderRadius = '4px';
+  //         toggleButton.style.padding = '2px 8px';
+  //         toggleButton.style.fontSize = '0.95em';
+  //         toggleButton.addEventListener('click', () => {
+  //           if (row.label === 'Numerator') {
+  //             const currentValue = valueSpan.textContent;
+  //             if (currentValue === details.numeratorExpressionMeaning) {
+  //               valueSpan.textContent = details.numerator;
+  //               toggleButton.textContent = 'Show description';
+  //             } else {
+  //               valueSpan.textContent = details.numeratorExpressionMeaning;
+  //               toggleButton.textContent = 'Show Formula';
+  //             }
+  //           } else if (row.label === 'Denominator') {
+  //             const currentValue = valueSpan.textContent;
+  //             if (currentValue === details.denominatorExpressionMeaning) {
+  //               valueSpan.textContent = details.denominator;
+  //               toggleButton.textContent = 'Show description';
+  //             } else {
+  //               valueSpan.textContent = details.denominatorExpressionMeaning;
+  //               toggleButton.textContent = 'Show Formula';
+  //             }
+  //           }
+  //         });
+  //         const wrapper = document.createElement('span');
+  //         wrapper.appendChild(valueSpan);
+  //         wrapper.appendChild(toggleButton);
+  //         return wrapper;
+  //       },
+  //     },
+  //     { header: 'Sources', field: 'sources' },
+  //   ];
+  //   const rows = [
+  //     {
+  //       label: 'Numerator',
+  //       value: details.numeratorExpressionMeaning || '',
+  //       sources: '',
+  //     },
+  //     {
+  //       label: 'Denominator',
+  //       value: details.denominatorExpressionMeaning || '',
+  //       sources: '',
+  //     },
+  //   ];
+  //   return renderTable(columns, rows);
+  // }
 
   renderDataElementsTable(details: any): HTMLElement {
     const columns: TableColumn[] = [
@@ -225,20 +319,23 @@ export class IndicatorRenderer implements MetadataRenderer {
       {
         header: 'Expression part (Numerator/ Denominator)',
         field: 'expressionPart',
-        render: (row, _col, _i) =>
-          // details.dataElementsFromNumerator.includes(row.id)
-          //   ? 'Numerator'
-          //   : details.dataElementsFromDenominator.includes(row.id)
-          //   ? 'Denominator'
-          //   : '',
-          details.dataElementsFromNumerator.includes(row.id) &&
-          details.dataElementsFromDenominator.includes(row.id)
-            ? 'Numerator & Denominator'
-            : details.dataElementsFromNumerator.includes(row.id)
-            ? 'Numerator'
-            : details.dataElementsFromDenominator.includes(row.id)
-            ? 'Denominator'
-            : '',
+        render: (row) => {
+          console.log('row', row.id);
+          console.log('the numerator', details.numerator);
+          console.log('the numerator', details.denominator);
+          const inNumerator = details.numerator.includes(row.id);
+          const inDenominator = details.denominator.includes(row.id);
+          if (inNumerator && inDenominator) {
+            return `Numerator: ${details.numerator}\nDenominator: ${details.denominator}`;
+          }
+          if (inNumerator) {
+            return `Numerator: ${details.numerator}`;
+          }
+          if (inDenominator) {
+            return `Denominator: ${details.denominator}`;
+          }
+          return '';
+        },
       },
       { header: 'Aggregation', field: 'aggregationType' },
       { header: 'Value Type', field: 'valueType' },
@@ -264,21 +361,6 @@ export class IndicatorRenderer implements MetadataRenderer {
           return ul;
         },
       },
-      // {
-      //   header: 'Categories',
-      //   field: 'categories',
-      //   render: (row) => {
-      //     const ul = document.createElement('ul');
-      //     row.categoryCombo.categoryOptionCombos?.[0]?.categoryOptions?.[0]?.categories?.forEach(
-      //       (category: { name: string }) => {
-      //         const li = document.createElement('li');
-      //         li.textContent = category.name;
-      //         ul.appendChild(li);
-      //       }
-      //     );
-      //     return ul;
-      //   },
-      // },
       {
         header: 'Data Sets/ Programs',
         field: 'dataSets',
@@ -312,6 +394,12 @@ export class IndicatorRenderer implements MetadataRenderer {
         },
       },
     ];
+    console.log('dataElementsList', details.dataElementsList);
+    console.log('dataElementsFromNumerator', details.dataElementsFromNumerator);
+    console.log(
+      'dataElementsFromDenominator',
+      details.dataElementsFromDenominator
+    );
     return renderTable(columns, details.dataElementsList || []);
   }
 

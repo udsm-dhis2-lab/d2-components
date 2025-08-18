@@ -89,19 +89,25 @@ export class MetadataService {
     const dataSetIdsFromDenominator = this.extractAllDataElementIds(
       indicatorData.denominator
     );
-    const dataElementIdsFromNumerator = this.extractDataElements(
-      indicatorData.numerator
+    // const dataElementIdsFromNumerator = this.extractDataElements(
+    //   indicatorData.numerator
+    // );
+    // const dataElementIdsFromDenominator = this.extractDataElements(
+    //   indicatorData.denominator
+    // );
+    const dataElementIdsFromNumerator = Array.from(
+      new Set(this.extractDataElements(indicatorData.numerator))
     );
-    const dataElementIdsFromDenominator = this.extractDataElements(
-      indicatorData.denominator
+    const dataElementIdsFromDenominator = Array.from(
+      new Set(this.extractDataElements(indicatorData.denominator))
     );
 
-    const dataElementsFromIndicator = Array.from(
-      new Set([
-        ...dataElementIdsFromNumerator,
-        ...dataElementIdsFromDenominator,
-      ])
-    );
+    // const dataElementsFromIndicator = Array.from(
+    //   new Set([
+    //     ...dataElementIdsFromNumerator,
+    //     ...dataElementIdsFromDenominator,
+    //   ])
+    // );
 
     const progIndicatorInNumerator = this.extractProgramIndicators(
       indicatorData.numerator
@@ -117,15 +123,19 @@ export class MetadataService {
     //   ...(indicatorData.dataSets?.map((dataSet: { id: any }) => dataSet.id) ||
     //     []),
     // ];
-     const dataSetIds = Array.from(new Set([...dataSetIdsFromNumerator, ...dataSetIdsFromDenominator]));
+    const dataSetIds = Array.from(
+      new Set([...dataSetIdsFromNumerator, ...dataSetIdsFromDenominator])
+    );
 
     const [
       numeratorResponse,
       denominatorResponse,
       dataSetIdSourcesFromNumerator,
       dataSetIdSourcesFromDenominator,
-      programIndicatorsInIndicator,
-      dataElementsInIndicator,
+      programIndicatorsInNumerator,
+      programIndicatorsInDenomiator,
+      dataElementsInNumerator,
+      dataElementsInDenominator,
       dataSetsInIndicator,
     ] = await Promise.all([
       this.fetchNumeratorDescription(apiUrl, indicatorData.numerator, headers),
@@ -136,14 +146,23 @@ export class MetadataService {
       ),
       this.fetchDataSetIdSources(apiUrl, dataSetIdsFromNumerator),
       this.fetchDataSetIdSources(apiUrl, dataSetIdsFromDenominator),
-      this.fetchProgramIndicatorsInIndicator(apiUrl, programIndicators),
-      this.fetchDataElementsInMetaData(apiUrl, dataElementsFromIndicator),
+      this.fetchProgramIndicatorsInIndicator(apiUrl, progIndicatorInNumerator),
+      this.fetchProgramIndicatorsInIndicator(apiUrl, progIndicatorInDenominator),
+      this.fetchDataElementsInMetaData(apiUrl, dataElementIdsFromNumerator),
+      this.fetchDataElementsInMetaData(apiUrl, dataElementIdsFromDenominator),
       this.fetchDataSetsInIndicator(apiUrl, dataSetIds),
     ]);
 
     const numeratorDescription = numeratorResponse.data.description;
     const denominatorDescription = denominatorResponse.data.description;
-    const dataElements = dataElementsInIndicator.data.dataElements;
+    const dataElements = [
+      ...dataElementsInNumerator.data.dataElements,
+      ...dataElementsInDenominator.data.dataElements,
+    ];
+    const programIndicatorsInIndicator = [
+      ...programIndicatorsInNumerator.data.programIndicators,
+      ...programIndicatorsInDenomiator.data.programIndicators,
+    ];
 
     return {
       ...indicatorData,
@@ -153,8 +172,12 @@ export class MetadataService {
       dataElementsFromNumerator: dataSetIdsFromNumerator,
       dataElementsFromDenominator: dataSetIdsFromDenominator,
       programIndicatorsInIndicator:
-        programIndicatorsInIndicator.data.programIndicators,
+        programIndicatorsInIndicator,
       dataSetsInIndicator: dataSetsInIndicator.data.dataSets,
+      dataElementNumeratorSource: dataElementsInNumerator.data.dataElements,
+      dataElementDenominatorSource: dataElementsInDenominator.data.dataElements,
+      programIndicatorNumeratorSource: programIndicatorsInNumerator.data.programIndicators,
+      programIndicatorDenominatorSource: programIndicatorsInDenomiator.data.programIndicators,
     };
   }
 
@@ -313,7 +336,7 @@ export class MetadataService {
     programIndicators: string[]
   ) {
     return axios.get(
-      `${apiUrl}programIndicators.json?filter=id:in:[${programIndicators}]&fields=*,programIndicatorGroups[id,name]`
+      `${apiUrl}programIndicators.json?filter=id:in:[${programIndicators}]&fields=*,program[id,name],programIndicatorGroups[id,name]`
     );
   }
 
