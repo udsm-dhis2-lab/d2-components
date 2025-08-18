@@ -73,11 +73,11 @@ export class FunctionRenderer implements MetadataRenderer {
       )
     );
 
-    // Parse expressions on rules JSON for 11-char UIDs in object keys and values
+    // Parses expressions on rules JSON for 11-char UIDs in object keys and values
     const dataSourceUids = new Set<string>();
     if (Array.isArray(details.rules)) {
       details.rules.forEach((rule: any) => {
-        // Search for 11-char UIDs in rule.json and rule.json.data
+        // Searches for 11-char UIDs in rule.json and rule.json.data
         if (rule.json) {
           Object.values(rule.json).forEach((val: any) => {
             if (typeof val === 'string') {
@@ -130,7 +130,10 @@ export class FunctionRenderer implements MetadataRenderer {
         },
       },
     ];
-    container.appendChild(renderTable(rulesColumns, details.rules || []));
+    const otherRules = Array.isArray(details.rules)
+      ? details.rules.filter((r: any) => r.id !== details.ruleID)
+      : [];
+    container.appendChild(renderTable(rulesColumns, otherRules || []));
 
     // Function Facts
     container.appendChild(renderSectionTitle('Function Facts'));
@@ -172,7 +175,7 @@ export class FunctionRenderer implements MetadataRenderer {
         'The following are observed DHIS2 API end-points used in the function:'
       )
     );
-    // Parse endpoints from function string
+    // Parses endpoints from function string
     const endpointRegex = /\/api\/[a-zA-Z0-9/]+/g;
     const endpoints = (functionString.match(endpointRegex) || []).map(
       (ep: string) => ep.replace('../../../', '')
@@ -223,15 +226,15 @@ export class FunctionRenderer implements MetadataRenderer {
     );
 
     // User Access
-    if (details.userAccesses?.length) {
-      container.appendChild(renderSectionTitle('User Access'));
-      const userAccessColumns: TableColumn[] = [
-        { header: 'User', field: 'displayName' },
-        { header: 'Access', field: 'access' },
-      ];
-      container.appendChild(
-        renderTable(userAccessColumns, details.userAccesses)
-      );
-    }
+    // if (details.userAccesses?.length) {
+    //   container.appendChild(renderSectionTitle('User Access'));
+    //   const userAccessColumns: TableColumn[] = [
+    //     { header: 'User', field: 'displayName' },
+    //     { header: 'Access', field: 'access' },
+    //   ];
+    //   container.appendChild(
+    //     renderTable(userAccessColumns, details.userAccesses)
+    //   );
+    // }
   }
 }
