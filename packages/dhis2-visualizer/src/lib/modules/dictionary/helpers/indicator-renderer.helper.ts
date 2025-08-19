@@ -47,6 +47,44 @@ export class IndicatorRenderer implements MetadataRenderer {
     }
     wrapper.appendChild(introductionSection);
 
+    // Data sources (Datasets/Programs) section
+    wrapper.appendChild(renderSectionTitle('Data sources (Datasets/Programs)'));
+
+    const dataSourcesDescription = document.createElement('p');
+    const routineSources = (details.dataSetsInIndicator || [])
+      .map(
+        (ds: any) =>
+          `${ds.name} submitting ${ds.periodType}${
+            ds.timelyDays
+              ? ` after every ${ds.timelyDays} days for timely submission`
+              : ''
+          }`
+      )
+      .join('; ');
+
+    const eventSources = (details.programIndicatorsInIndicator || [])
+      .map(
+        (pi: any) =>
+          `${
+            pi.program?.name || pi.name
+          } submitting records on every event (case or individual)`
+      )
+      .join('; ');
+
+    let sourcesText = '';
+    if (routineSources) {
+      sourcesText += `Indicator is captured from routine data sources: ${routineSources}. `;
+    }
+    if (eventSources) {
+      sourcesText += `Indicator is also captured from event-based sources: ${eventSources}.`;
+    }
+    if (!sourcesText) {
+      sourcesText = 'No data sources available for this indicator.';
+    }
+    dataSourcesDescription.textContent = sourcesText;
+    dataSourcesDescription.style.margin = '0 0 8px 0';
+    wrapper.appendChild(dataSourcesDescription);
+
     // Indicator Facts
     wrapper.appendChild(renderSectionTitle('Indicator Facts'));
     const indicatorFactsDescription = document.createElement('p');
