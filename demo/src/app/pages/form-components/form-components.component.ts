@@ -17,7 +17,7 @@ import {
   ProgramEntryFormConfig,
 } from '@iapps/ng-dhis2-ui';
 import { format } from 'date-fns';
-import { CustomOrgUnitConfig } from 'packages/ng-dhis2-ui/src/lib/modules/form/components/org-unit-form-field.component';
+import { CustomOrgUnitConfig, OrgUnitLevel } from 'packages/ng-dhis2-ui/src/lib/modules/form/models/org-unit.model';
 
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
@@ -55,7 +55,10 @@ export class FormComponentsComponent {
     {
       field: 'RKOZF4JJNYm',
       orgUnit: 'VCT80xbdFyD',
+      level: OrgUnitLevel.FACILITY,
+      confidence: 90
     },
+    // { field: 'kvQrWGgmCCb', orgUnit: 'FZfTtWQJfry' },
   ];
 
   fields = [

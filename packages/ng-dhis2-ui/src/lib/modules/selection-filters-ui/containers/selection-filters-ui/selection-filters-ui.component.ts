@@ -16,7 +16,7 @@ import {
   ProgramAttributesFilter,
   ProgramStageDataElementFilter,
   SelectionFiltersProps,
-  TableRow,
+  SelectionFilterTableRow,
 } from '../../models/selection-filters-ui.model';
 
 import { toObservable } from '@angular/core/rxjs-interop';
@@ -51,7 +51,7 @@ export class SelectionFiltersComponent
   d2 = (window as unknown as D2Window).d2Web;
   @Input() actionOptions: {
     label: string;
-    onClick: (row: TableRow) => void;
+    onClick: (row: SelectionFilterTableRow) => void;
   }[] = [];
   @Input() programAttributesFilters: ProgramAttributesFilter[] = [];
   @Input() programStageDataElementFilters: ProgramStageDataElementFilter[] = [];

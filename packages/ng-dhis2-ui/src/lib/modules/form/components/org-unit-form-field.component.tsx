@@ -18,6 +18,7 @@ import { D2Window } from '@iapps/d2-web-sdk';
 import { debounce } from 'lodash';
 import { Chip } from '@dhis2/ui';
 import { Tooltip } from '@dhis2/ui';
+import { CustomOrgUnitConfig, OrgUnitLevel } from '../models/org-unit.model';
 
 const orgUnitFieldStyles = {
   container: {
@@ -80,8 +81,6 @@ const orgUnitFieldStyles = {
 //   previousOrgUnitId?: string;
 // };
 
-export type CustomOrgUnitConfig = { field: string; orgUnit: string };
-
 type OrgUnit = {
   id: string;
   name?: string;
@@ -97,6 +96,8 @@ type OrgUnitResponse = {
   code?: string;
   path: string;
   level: number;
+  children: OrgUnitResponse[];
+  ancestors: OrgUnitResponse[];
 };
 
 type Props = {
@@ -111,6 +112,80 @@ type Props = {
   disabled?: boolean;
   customOrgUnitRoots?: CustomOrgUnitConfig[];
   previousOrgUnitId?: string;
+};
+
+const FACILITY_KEYWORDS = [
+  'Hospital',
+  'Dispensary',
+  'Health Center',
+  'Clinic',
+  'Health Post',
+  'Medical Center',
+  'Polyclinic',
+];
+
+const LOWERCASE_FACILITY_KEYWORDS = FACILITY_KEYWORDS.map((k) =>
+  k.toLowerCase()
+);
+
+export const getFacilityMatch = (
+  name: string,
+  config?: CustomOrgUnitConfig
+): { type: OrgUnitLevel | 'UNKNOWN'; confidence: number } | null => {
+  if (!name) return null;
+
+  const cleanedName = name.trim().toLowerCase();
+  if (cleanedName.length < 3) return null;
+
+  const matchesKeyword = LOWERCASE_FACILITY_KEYWORDS.some((keyword) =>
+    cleanedName.includes(keyword)
+  );
+
+  if (!matchesKeyword) {
+    return null;
+  }
+
+  return {
+    type: config?.level ?? 'UNKNOWN',
+    confidence: config?.confidence ?? 0,
+  };
+};
+
+export const flattenChildren = (
+  rootUnits: OrgUnitResponse[]
+): OrgUnitResponse[] => {
+  const result: OrgUnitResponse[] = [];
+  const stack: OrgUnitResponse[] = [...rootUnits];
+
+  while (stack.length > 0) {
+    const current = stack.pop();
+    if (!current) continue;
+
+    result.push(current);
+
+    if (Array.isArray(current.children) && current.children.length > 0) {
+      stack.push(...current.children);
+    }
+  }
+
+  return result;
+};
+
+export const buildReadableFullName = (unit: OrgUnitResponse): string => {
+  const ancestors = (unit.ancestors || [])
+    .map((a) => a.displayName?.trim())
+    .filter(Boolean);
+
+  const currentName = (unit.displayName || unit.name || '').trim();
+
+  const pathParts: string[] = [];
+  for (const name of [...ancestors, currentName]) {
+    if (name && name !== pathParts[pathParts.length - 1]) {
+      pathParts.push(name);
+    }
+  }
+
+  return pathParts.join(' / ');
 };
 
 export const OrgUnitFormField = (props: Props) => {
@@ -205,33 +280,64 @@ export const OrgUnitFormField = (props: Props) => {
       setUseCustomRoots(true);
       setConfiguredRootsLoading(true);
 
-      Promise.all(
-        matchList.map((entry) =>
-          d2.httpInstance
-            .get(
-              `organisationUnits/${entry.orgUnit}.json?fields=id,displayName,name,code,path,level`
-            )
-            .then((res) => {
-              const orgUnitPayload = res.data as OrgUnitResponse;
-              return {
-                id: orgUnitPayload?.id,
-                name: orgUnitPayload?.displayName || orgUnitPayload?.name,
-                code: orgUnitPayload?.code,
-                path: orgUnitPayload?.path,
-                level: orgUnitPayload.level,
-              };
-            })
-        )
+      Promise.allSettled(
+        matchList.map(async (orgUnitConfig) => {
+          try {
+            const orgUnitResponse = await d2.httpInstance.get(
+              `organisationUnits/${orgUnitConfig.orgUnit}.json?fields=id,displayName,name,code,path,level,ancestors[displayName],children[id,displayName,name,code,path,level,ancestors[displayName],children[id,displayName,name,code,path,level,ancestors[displayName]]]&paging=false`
+            );
+
+            const rootOrgUnitData = orgUnitResponse.data as OrgUnitResponse;
+            const allDescendantOrgUnits = flattenChildren([rootOrgUnitData]);
+
+            const matchingConfig = customOrgUnitRoots?.find(
+              (config) => config.orgUnit === orgUnitConfig.orgUnit
+            );
+
+            const facilityResults: OrgUnit[] = allDescendantOrgUnits
+              .map((orgUnit) => {
+                const orgUnitName = orgUnit.displayName || orgUnit.name || '';
+                const facilityMatch = getFacilityMatch(
+                  orgUnitName,
+                  matchingConfig
+                );
+
+                if (!facilityMatch) return null;
+
+                return {
+                  id: orgUnit.id,
+                  name: buildReadableFullName(orgUnit),
+                  code: orgUnit.code,
+                  path: orgUnit.path,
+                  level: orgUnit.level,
+                  type: facilityMatch.type,
+                  confidence: facilityMatch.confidence,
+                };
+              })
+              .filter((facility): facility is any => facility !== null);
+
+            return facilityResults;
+          } catch (fetchError) {
+            console.warn(
+              `[OrgUnitFormField] Failed to fetch orgUnit ${orgUnitConfig.orgUnit}:`,
+              fetchError
+            );
+            return [];
+          }
+        })
       )
-        .then((result) => {
-          setConfiguredRootInfo(result);
+        .then((settledResults) => {
+          const allFacilities = settledResults
+            .filter(
+              (result): result is PromiseFulfilledResult<OrgUnit[]> =>
+                result.status === 'fulfilled'
+            )
+            .flatMap((result) => result.value);
+          setConfiguredRootInfo(allFacilities);
           setConfiguredRootsLoading(false);
         })
-        .catch((err) => {
-          console.warn(
-            `[OrgUnitFormField] Failed to fetch customOrgUnitRoots:`,
-            err
-          );
+        .catch((unexpectedError) => {
+          console.warn(`[OrgUnitFormField] Unexpected error:`, unexpectedError);
           setConfiguredRootsLoading(false);
         });
     }

@@ -31,7 +31,7 @@ import {
   Program,
   TrackedEntityInstance,
 } from '@iapps/d2-web-sdk';
-import { CustomOrgUnitConfig } from '../form/components/org-unit-form-field.component';
+import { CustomOrgUnitConfig } from '../form/models/org-unit.model';
 
 @Component({
   selector: 'ng-dhis2-ui-program-entry-form',
