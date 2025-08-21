@@ -47,12 +47,12 @@ export interface ProgramStageDataElementFilter {
     options: Option[];
 }
 
-export interface TableRow {
+export interface SelectionFilterTableRow {
     [key: string]: string | number;
     index: number;
 }
 
-export interface ColumnDefinition {
+export interface SelectionFilterColumnDefinition {
     column: string;
     display: string;
     index?: string;
