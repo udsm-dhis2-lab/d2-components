@@ -1,13 +1,14 @@
 import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { computed, Injectable } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 import {
   MatSnackBar,
   MatSnackBarRef,
   TextOnlySnackBar,
 } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
+import { D2Window } from '@iapps/d2-web-sdk';
 import { Period } from '@iapps/period-utilities';
 import { Store } from '@ngrx/store';
 import {
@@ -15,6 +16,7 @@ import {
   catchError,
   distinctUntilChanged,
   firstValueFrom,
+  from,
   map,
   Observable,
   of,
@@ -34,7 +36,6 @@ import { D2DashboardSelectionState } from '../store';
 import { DashboardSelectionActions } from '../store/actions/dashboard-selection.actions';
 import { DashboardConfigService } from './dashboard-config.service';
 import { DashboardMenuService } from './dashboard-menu.service';
-import { toObservable } from '@angular/core/rxjs-interop';
 
 interface DashboardStore {
   currentDashboardMenu?: DashboardMenuObject;
@@ -47,8 +48,6 @@ interface DashboardStore {
   startUpDataSelections: any;
 }
 
-interface DashboardState {}
-
 @Injectable()
 export class DashboardService {
   private _dashboardStore$: BehaviorSubject<DashboardStore>;
@@ -57,7 +56,6 @@ export class DashboardService {
   private _firstTimeLoad = true;
 
   constructor(
-    private httpClient: NgxDhis2HttpClientService,
     private router: Router,
     private _snackBar: MatSnackBar,
     private _snackBarRef: MatSnackBarRef<TextOnlySnackBar>,
@@ -190,21 +188,31 @@ export class DashboardService {
   }
 
   private _findByIdFromApi(id: string) {
-    return this.httpClient
-      .get(
+    const d2 = (window as unknown as D2Window).d2Web;
+    return from(
+      d2.httpInstance.get(
         `dashboards/${id}.json?fields=id,name,description,favorite,dashboardItems[id,type,x,y,height,width,shape,visualization[id],chart~rename(visualization)]`
       )
-      .pipe(
-        map((dashboardResponse) => new Dashboard(dashboardResponse).toObject())
-      );
+    ).pipe(
+      map((dashboardResponse) =>
+        new Dashboard(
+          dashboardResponse.data as Record<string, unknown>
+        ).toObject()
+      )
+    );
   }
 
   private _findByIdFromDataStore(id: string, config: DashboardConfig) {
-    return this.httpClient
-      .get(`dataStore/${config.dataStoreNamespace}/${id}`)
-      .pipe(
-        map((dashboardResponse) => new Dashboard(dashboardResponse).toObject())
-      );
+    const d2 = (window as unknown as D2Window).d2Web;
+    return from(
+      d2.httpInstance.get(`dataStore/${config.dataStoreNamespace}/${id}`)
+    ).pipe(
+      map((dashboardResponse) =>
+        new Dashboard(
+          dashboardResponse.data as Record<string, unknown>
+        ).toObject()
+      )
+    );
   }
 
   private _attachOverlay() {

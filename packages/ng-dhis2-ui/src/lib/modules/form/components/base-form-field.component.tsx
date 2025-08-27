@@ -34,7 +34,6 @@ import {
   DHIS2Event,
   TrackedEntityInstance,
 } from '@iapps/d2-web-sdk';
-import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
 import React, { useEffect, useMemo, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { filter, take } from 'rxjs';
@@ -43,12 +42,14 @@ import { useFieldValidation } from '../hooks';
 import { IFormField } from '../interfaces';
 import { FieldConfig } from '../models';
 import { FileUploadField } from './file-upload-field.component';
-import { OrgUnitFormField, CustomOrgUnitConfig } from './org-unit-form-field.component';
+import {
+  OrgUnitFormField,
+} from './org-unit-form-field.component';
+import { CustomOrgUnitConfig } from '../models/org-unit.model';
 
 @Directive()
 export class BaseFormFieldComponent extends ReactWrapperModule {
   ngZone = inject(NgZone);
-  httpClient = inject(NgxDhis2HttpClientService);
   fieldType = 'textbox';
   field = input.required<IFormField<string>>();
   fieldError = input<string | undefined>();
@@ -94,9 +95,8 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
     return (): React.JSX.Element => {
       const [value, setValue] = useState(
         this.form().get(this.field().id)?.value ||
-        this.form().get(this.field().key)?.value
+          this.form().get(this.field().key)?.value
       );
-
 
       const [selected, setSelected] = useState();
       const [touched, setTouched] = useState(false);
@@ -192,8 +192,14 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
       };
 
       const checkValueUniqueness = async () => {
-        if (this.field().unique || (this.field().extension?.isDataElementUnique ?? false) && value && value.length > 0 && touched) {
-        //  if (this.field().unique && value && value.length > 0 && touched) {
+        if (
+          this.field().unique ||
+          ((this.field().extension?.isDataElementUnique ?? false) &&
+            value &&
+            value.length > 0 &&
+            touched)
+        ) {
+          //  if (this.field().unique && value && value.length > 0 && touched) {
           setCheckingUniqueness(true);
           setRecordExistError(undefined);
           try {
@@ -242,7 +248,6 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
               />
             );
 
-
           case 'org-unit': {
             return (
               <OrgUnitFormField
@@ -259,7 +264,6 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
               />
             );
           }
-
 
           case 'transfer':
             return (
@@ -371,6 +375,30 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
                   />
                 ))}
               </MultiSelectField>
+            );
+          case 'date':
+          case 'date-time':
+            return (
+              <InputField
+                error={hasError}
+                validationText={validationError}
+                type={this.field().type as any}
+                inputWidth={inputWidth}
+                required={this.field().required}
+                name={this.field().id}
+                label={this.label()}
+                min={this.field().min?.toString()}
+                max={this.field().max?.toString()}
+                placeholder={this.placeholder()}
+                value={value}
+                readOnly={disabled}
+                onChange={(event: any) => {
+                  onValueChange(event.value);
+                }}
+                onBlur={() => {
+                  checkValueUniqueness();
+                }}
+              />
             );
           case 'file':
             return (

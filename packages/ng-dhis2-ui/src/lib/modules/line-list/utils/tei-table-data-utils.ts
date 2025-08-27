@@ -16,7 +16,8 @@ export const getTrackedEntityTableData = (
   response: LineListResponse,
   programId: string,
   pager: any,
-  metaData: Program
+  metaData: Program,
+  searcheableDataElements: string[]
 ): {
   columns: ColumnDefinition[];
   data: TableRow[];
@@ -36,25 +37,36 @@ export const getTrackedEntityTableData = (
   const attributeColumns = metaData.displayInListTrackedEntityAttributes
     .sort((a, b) => a.sortOrder! - b.sortOrder!)
     .map((trackedEntityAttribute) => ({
-      label: trackedEntityAttribute.formName ?? trackedEntityAttribute.name,
+      label: trackedEntityAttribute.name ?? trackedEntityAttribute.formName,
       key: trackedEntityAttribute.id,
     }));
 
-  // const dataElementColumns = metaData.displayInListDataElements
-  //   .sort((a, b) => a.sortOrder! - b.sortOrder!)
-  //   .map((dataElement) => ({
-  //     label: dataElement.formName || dataElement.name,
-  //     key: dataElement.id,
-  //   }));
-
-  const dataElementColumns = metaData
-    .programStages!.sort((a, b) => a.sortOrder - b.sortOrder) // Sorts stages by sortOrder
+  const tableSearcheableDataElements = metaData
+    .programStages!.sort((a, b) => a.sortOrder - b.sortOrder)
     .flatMap((stage) =>
       stage
         .programStageDataElements!.filter((psde) => psde.displayInReports)
-        .sort((a, b) => a.sortOrder - b.sortOrder) // Sorts data elements within stage
-        .map((psde) => ({ 
-          label: psde.dataElement.formName || psde.dataElement.name,
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .map((psde) => ({
+          label:
+            psde.dataElement.name || psde.dataElement.formName || 'default',
+          key: psde.dataElement.id,
+          valueType: psde.dataElement.valueType,
+          options: psde.dataElement.optionSet,
+          type: 'dataElement',
+        }))
+        .filter((col) => searcheableDataElements.includes(col.key))
+    );
+
+  const dataElementColumns = metaData
+    .programStages!.sort((a, b) => a.sortOrder - b.sortOrder)
+    .flatMap((stage) =>
+      stage
+        .programStageDataElements!.filter((psde) => psde.displayInReports)
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .map((psde) => ({
+          label:
+            psde.dataElement.name || psde.dataElement.formName || 'default',
           key: psde.dataElement.id,
         }))
     );
@@ -71,7 +83,7 @@ export const getTrackedEntityTableData = (
 
   const tableColumns = [
     {
-      label: orgUnitLabel || 'registering unit',
+      label: orgUnitLabel || 'Registering unit',
       key: 'orgUnit',
     },
     ...attributeColumns,
@@ -85,122 +97,258 @@ export const getTrackedEntityTableData = (
       key: attr.id,
       valueType: attr.valueType,
       options: attr.optionSet ?? undefined,
+      type: 'attribute',
     }));
 
-  const tableData = teis.map((tei: TrackedEntityInstance, idx: number) => {
+  const getOptionColor = (option: any): string | undefined =>
+    option?.color || option?.style?.color;
+
+  const formatDate = (value: string): string => {
+    try {
+      return format(parse(value, 'yyyy-MM-dd', new Date()), 'dd/MM/yyyy');
+    } catch {
+      return value;
+    }
+  };
+
+  const trackedEntityAttributeMap = new Map<string, any>();
+  (metaData.programTrackedEntityAttributes || []).forEach(
+    ({ trackedEntityAttribute }) => {
+      if (trackedEntityAttribute?.id) {
+        trackedEntityAttributeMap.set(
+          trackedEntityAttribute.id,
+          trackedEntityAttribute
+        );
+      }
+    }
+  );
+
+  const dataElementOptionMap = new Map<string, any>();
+  dataElementOptions.forEach((deo) => {
+    if (deo.id) {
+      dataElementOptionMap.set(deo.id, deo);
+    }
+  });
+
+  const tableData = teis.map((tei: TrackedEntityInstance, index: number) => {
     const row: TableRow = {
       trackedEntityInstance: { value: tei.trackedEntity },
-      index: { value: (pager.page - 1) * pager.pageSize + idx + 1 },
+      index: { value: (pager.page - 1) * pager.pageSize + index + 1 },
     };
 
-    const matchingEnrollment = tei.latestEnrollment;
+    const enrollment = tei.latestEnrollment;
+    if (!enrollment) return row;
 
-    let attributesData = matchingEnrollment.attributes;
-
-    const dataElementsData = matchingEnrollment!.events.flatMap(
-      (event) => event.dataValues
-    );
-
-    attributesData = attributesData!.map((attr: any) => {
-      if (attr?.valueType?.toLowerCase() === 'date') {
-        try {
-          return {
-            ...attr,
-            value: format(
-              parse(attr.value, 'yyyy-MM-dd', new Date()),
-              'dd/MM/yyyy'
-            ),
-          };
-        } catch {
-          return { ...attr }; 
-        }
+    const attributes = (enrollment.attributes || []).map((attr: any) => {
+      if (
+        attr?.valueType?.toLowerCase() === 'date' &&
+        typeof attr.value === 'string'
+      ) {
+        return { ...attr, value: formatDate(attr.value) };
       }
       return attr;
     });
-    // attributesData.forEach((attr: any) => {
-    //   const attributeMeta = metaData.programTrackedEntityAttributes?.find(
-    //     (metadata) => metadata.trackedEntityAttribute.id === attr.attribute
-    //   );
 
-    //   if (attributeMeta?.trackedEntityAttribute.optionSetValue) {
-    //     const optionSet = attributeMeta?.trackedEntityAttribute?.optionSet;
+    attributes.forEach((attr: any) => {
+      const attributeId = attr?.attribute;
+      const value = attr?.value;
+      if (!attributeId || value == null) return;
 
-    //     const option = optionSet?.options?.find(
-    //       (option) => option.code === attr.value
-    //     );
+      const attributeMeta = trackedEntityAttributeMap.get(attributeId);
+      const valueType = attributeMeta?.valueType;
 
-    //     row[attr.attribute] = option
-    //       ? { value: option?.name }
-    //       : { value: attr.value };
-    //   } else {
-    //     row[attr.attribute] = { value: attr.value };
-    //   }
-    // });
-    attributesData.forEach((attr: any) => {
-      const attributeMeta = metaData.programTrackedEntityAttributes?.find(
-        (metadata) => metadata.trackedEntityAttribute.id === attr.attribute
-      );
-    
-      const valueType = attributeMeta?.trackedEntityAttribute?.valueType;
-    
       if (valueType === 'ORGANISATION_UNIT') {
-        const orgUnitName = orgUnitMap?.get(attr.value);
-        row[attr.attribute] = { value: orgUnitName || attr.value };
-      } else if (attributeMeta?.trackedEntityAttribute.optionSetValue) {
-        const optionSet = attributeMeta?.trackedEntityAttribute?.optionSet;
-    
-        const option = optionSet?.options?.find(
-          (option) => option.code === attr.value
+        const name = orgUnitMap?.get(value);
+        row[attributeId] = { value: name || value };
+      } else if (
+        attributeMeta?.optionSetValue &&
+        attributeMeta?.optionSet?.options
+      ) {
+        const matchedOption = attributeMeta.optionSet.options.find(
+          (opt: any) => opt.code === value
         );
-    
-        row[attr.attribute] = option
-          ? { value: option?.name }
-          : { value: attr.value };
-      } else {
-        row[attr.attribute] = { value: attr.value };
-      }
-    });
-    
-
-    dataElementsData.forEach((element: DataValue) => {
-      // Finds the matching data element in dataElementOptions by ID
-      const dataElementOption = dataElementOptions.find(
-        (deo) => deo.id === element.dataElement
-      );
-
-      // finds a matching option within that data element's options
-      const matchingOption = dataElementOption?.options?.find(
-        (opt) => opt.name === element.value
-      );
-
-      // Builds the row entry with value and optional style
-      if (matchingOption) {
-        row[element.dataElement] = {
-          value: element.value,
-          style: matchingOption.color,
+        row[attributeId] = {
+          value: matchedOption?.name || value,
+          ...(getOptionColor(matchedOption) && {
+            style: getOptionColor(matchedOption),
+          }),
         };
       } else {
-        row[element.dataElement] = {
-          value: element.value,
-        };
+        row[attributeId] = { value };
       }
     });
 
-    // Includes orgUnit in the row for id access with style
-    row['orgUnitId'] = { value: matchingEnrollment!.orgUnit };
-    row['orgUnit'] = {
-      value: orgUnitMap?.get(matchingEnrollment!.orgUnit) || '-',
+    const dataValues =
+      enrollment.events?.flatMap((event) => event.dataValues || []) || [];
+
+    dataValues.forEach((dataValue: DataValue) => {
+      const dataElementId = dataValue.dataElement;
+      const value = dataValue.value;
+      if (!dataElementId || value == null) return;
+
+      const dataElementOption = dataElementOptionMap.get(dataElementId);
+      const matchedOption = dataElementOption?.options?.find(
+        (opt: any) => opt.name === value
+      );
+
+      row[dataElementId] = {
+        value,
+        ...(getOptionColor(matchedOption) && {
+          style: getOptionColor(matchedOption),
+        }),
+      };
+    });
+
+    const orgUnitId = enrollment.orgUnit;
+    const orgUnitName = orgUnitMap?.get(orgUnitId) || '-';
+
+    row['orgUnitId'] = { value: orgUnitId || '-' };
+    row['orgUnit'] = { value: orgUnitName };
+
+    const teiObject =
+      typeof tei.toObject === 'function' ? tei.toObject() : null;
+    row['responseData'] = {
+      value: (teiObject as TrackedEntityInstance) || null,
     };
-    row['responseData'] = { value: tei.toObject() as TrackedEntityInstance };
+
     return row;
   });
 
   return {
     columns: tableColumns,
     data: tableData,
-    filteredEntityColumns: tableFilters,
-    orgUnitLabel: orgUnitLabel,
+    filteredEntityColumns: [...tableFilters, ...tableSearcheableDataElements],
+    orgUnitLabel,
   };
+
+  // const tableData = teis.map((tei: TrackedEntityInstance, idx: number) => {
+  //   const row: TableRow = {
+  //     trackedEntityInstance: { value: tei.trackedEntity },
+  //     index: { value: (pager.page - 1) * pager.pageSize + idx + 1 },
+  //   };
+
+  //   const matchingEnrollment = tei.latestEnrollment;
+
+  //   let attributesData = matchingEnrollment.attributes;
+
+  //   const dataElementsData = matchingEnrollment!.events.flatMap(
+  //     (event) => event.dataValues
+  //   );
+
+  //   attributesData = attributesData!.map((attr: any) => {
+  //     if (attr?.valueType?.toLowerCase() === 'date') {
+  //       try {
+  //         return {
+  //           ...attr,
+  //           value: format(
+  //             parse(attr.value, 'yyyy-MM-dd', new Date()),
+  //             'dd/MM/yyyy'
+  //           ),
+  //         };
+  //       } catch {
+  //         return { ...attr };
+  //       }
+  //     }
+  //     return attr;
+  //   });
+
+  //   // Tracked Entity Instance Attributes
+  //   const trackedEntityAttributeMap = new Map<string, any>();
+  //   (metaData.programTrackedEntityAttributes || []).forEach(
+  //     (programAttribute) => {
+  //       const attributeId = programAttribute.trackedEntityAttribute?.id;
+  //       if (attributeId) {
+  //         trackedEntityAttributeMap.set(
+  //           attributeId,
+  //           programAttribute.trackedEntityAttribute
+  //         );
+  //       }
+  //     }
+  //   );
+
+  //   attributesData.forEach((attributeItem: any) => {
+  //     const attributeId = attributeItem?.attribute;
+  //     const attributeValue = attributeItem?.value;
+
+  //     if (!attributeId || attributeValue == null) return;
+
+  //     const trackedEntityAttribute = trackedEntityAttributeMap.get(attributeId);
+  //     const valueType = trackedEntityAttribute?.valueType;
+
+  //     if (valueType === 'ORGANISATION_UNIT') {
+  //       const organisationUnitName = orgUnitMap?.get(attributeValue);
+  //       row[attributeId] = {
+  //         value: organisationUnitName || attributeValue,
+  //       };
+  //     } else if (
+  //       trackedEntityAttribute?.optionSetValue &&
+  //       trackedEntityAttribute?.optionSet?.options
+  //     ) {
+  //       const matchedOption = trackedEntityAttribute.optionSet.options.find(
+  //         (option: any) => option.code === attributeValue
+  //       );
+
+  //       const optionColor = matchedOption?.color || matchedOption?.style?.color;
+
+  //       row[attributeId] = {
+  //         value: matchedOption?.name || attributeValue,
+  //         ...(optionColor && { style: optionColor }),
+  //       };
+  //     } else {
+  //       row[attributeId] = {
+  //         value: attributeValue,
+  //       };
+  //     }
+  //   });
+
+  //   // Program Stage Data Elements
+  //   const dataElementOptionMap = new Map(
+  //     dataElementOptions.map((deo) => [deo.id, deo])
+  //   );
+
+  //   dataElementsData.forEach((element: DataValue) => {
+  //     if (!element?.dataElement || element.value == null) return;
+
+  //     const dataElementOption = dataElementOptionMap.get(element.dataElement);
+  //     const matchingOption: any = dataElementOption?.options?.find(
+  //       (opt) => opt.name === element.value
+  //     );
+
+  //     const optionColor = matchingOption?.color || matchingOption?.style?.color;
+
+  //     row[element.dataElement] = {
+  //       value: element.value,
+  //       ...(optionColor && { style: optionColor }),
+  //     };
+  //   });
+
+  //   const orgUnitId = matchingEnrollment?.orgUnit;
+
+  //   if (orgUnitId) {
+  //     row['orgUnitId'] = { value: orgUnitId };
+
+  //     const orgUnitName = orgUnitMap?.get(orgUnitId) || '-';
+  //     row['orgUnit'] = { value: orgUnitName };
+  //   } else {
+  //     row['orgUnitId'] = { value: '-' };
+  //     row['orgUnit'] = { value: '-' };
+  //   }
+
+  //   const teiObject =
+  //     typeof tei?.toObject === 'function' ? tei.toObject() : null;
+  //   row['responseData'] = {
+  //     value: (teiObject as TrackedEntityInstance) || null,
+  //   };
+
+  //   return row;
+  // });
+
+  // return {
+  //   columns: tableColumns,
+  //   data: tableData,
+  //   filteredEntityColumns: [...tableFilters, ...tableSearcheableDataElements],
+  //   orgUnitLabel: orgUnitLabel,
+  // };
 };
 
 export const addActionsColumn = (

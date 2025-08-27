@@ -1,7 +1,10 @@
 import React from 'react';
-import { TableBody as DHISTableBody, DataTableRow, DataTableCell } from '@dhis2/ui';
+import {
+  TableBody as DHISTableBody,
+  DataTableRow,
+  DataTableCell,
+} from '@dhis2/ui';
 import { TableRow } from './tableRow';
-
 
 // export const TableBody = ({
 //   data,
@@ -42,7 +45,6 @@ import { TableRow } from './tableRow';
 //   </DHISTableBody>
 // );
 
-
 export const TableBody = ({
   data,
   columns,
@@ -53,10 +55,25 @@ export const TableBody = ({
   selectedRows,
   onRowToggle,
   selectable,
-  showActionButtons
+  showActionButtons,
+  error,
 }: any) => (
   <DHISTableBody>
-    {data.length > 0 ? (
+    {error ? (
+      <DataTableRow>
+        <DataTableCell
+          colSpan={columns.length.toString()}
+          style={{
+            textAlign: 'center',
+            fontWeight: 'bold',
+            color: 'red',
+            padding: '20px',
+          }}
+        >
+          {error}
+        </DataTableCell>
+      </DataTableRow>
+    ) : data.length > 0 ? (
       data.map((row: any) => (
         <TableRow
           key={row.index.value}
@@ -66,7 +83,10 @@ export const TableBody = ({
           actionOptions={actionOptions}
           actionOptionOrientation={actionOptionOrientation}
           actionSelected={actionSelected}
-          isChecked={selectedRows.some((r: { index: { value: any; }; }) => r.index?.value === row.index?.value)}
+          isChecked={selectedRows.some(
+            (r: { index: { value: any } }) =>
+              r.index?.value === row.index?.value
+          )}
           onToggle={onRowToggle}
           selectable={selectable}
           showActionButtons={showActionButtons}

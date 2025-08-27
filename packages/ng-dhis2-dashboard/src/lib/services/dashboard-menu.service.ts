@@ -1,10 +1,10 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
-import { firstValueFrom, map, Observable, of, switchMap, tap, zip } from 'rxjs';
-import { DashboardConfig, DashboardMenu, DashboardMenuObject } from '../models';
-import { DashboardConfigService } from './dashboard-config.service';
-import { userAuthorizedDashboards } from '../utilities/access-control.util';
 import { Router } from '@angular/router';
+import { CurrentUser, D2Window } from '@iapps/d2-web-sdk';
+import { from, map, Observable, of, switchMap, tap, zip } from 'rxjs';
+import { DashboardConfig, DashboardMenu, DashboardMenuObject } from '../models';
+import { userAuthorizedDashboards } from '../utilities/access-control.util';
+import { DashboardConfigService } from './dashboard-config.service';
 
 interface D2DashboardMenuState {
   loading: boolean;
@@ -28,10 +28,7 @@ const initialState: D2DashboardMenuState = {
 export class DashboardMenuService {
   #dashboardMenuStore = signal<D2DashboardMenuState>(initialState);
   #router = inject(Router);
-  constructor(
-    private dashboardConfigService: DashboardConfigService,
-    private httpClient: NgxDhis2HttpClientService
-  ) {}
+  constructor(private dashboardConfigService: DashboardConfigService) {}
 
   loading = computed(() => {
     return this.#dashboardMenuStore()?.loading;
@@ -160,19 +157,30 @@ export class DashboardMenuService {
     this.#router.navigate([config.rootUrl, selectedDashboardSubMenu.id]);
   }
 
-  #findAllFromApi() {
-    return this.httpClient.get('dashboards.json?fields=id,name&paging=false');
+  #findAllFromApi(): Observable<any> {
+    const d2 = (window as unknown as D2Window).d2Web;
+    return from(
+      d2.httpInstance.get('dashboards.json?fields=id,name&paging=false')
+    ).pipe(map((res) => res.data));
   }
 
   #findAllFromDataStore(config: DashboardConfig) {
-    return this.httpClient.me().pipe(
+    const d2 = (window as unknown as D2Window).d2Web;
+    return of(d2.currentUser).pipe(
       switchMap((user) => {
         return zip(
-          this.httpClient.get(`dataStore/${config.dataStoreNamespace}/summary`)
+          from(
+            d2.httpInstance.get(
+              `dataStore/${config.dataStoreNamespace}/summary`
+            )
+          )
         ).pipe(
           map((response) => {
             return {
-              dashboards: userAuthorizedDashboards(response[0] || [], user),
+              dashboards: userAuthorizedDashboards(
+                (response[0]?.data as unknown as DashboardMenuObject[]) || [],
+                user as CurrentUser
+              ),
             };
           })
         );

@@ -31,7 +31,7 @@ import {
   Program,
   TrackedEntityInstance,
 } from '@iapps/d2-web-sdk';
-import { CustomOrgUnitConfig } from '../form/components/org-unit-form-field.component';
+import { CustomOrgUnitConfig } from '../form/models/org-unit.model';
 
 @Component({
   selector: 'ng-dhis2-ui-program-entry-form',
@@ -79,9 +79,18 @@ export class ProgramEntryFormModule {
     return <CircularLoader small />;
   };
 
+  // dataId = computed(() => {
+  //   return this.instance()?.trackedEntity || this.instance()?.event;
+  // });
   dataId = computed(() => {
-    return this.instance()?.trackedEntity || this.instance()?.event;
-  });
+  if (this.config().formType === 'EVENT') {
+    return this.instance()?.event;
+  }
+  if (this.config().formType === 'TRACKER') {
+    return this.instance()?.trackedEntity;
+  }
+  return undefined;
+});
 
   FormActionButtons = computed(() => {
     if (this.config().hideActionButtons) {

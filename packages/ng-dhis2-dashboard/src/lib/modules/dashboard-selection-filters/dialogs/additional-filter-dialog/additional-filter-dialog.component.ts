@@ -6,16 +6,16 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { MatListModule, MatSelectionList } from '@angular/material/list';
-import { ErrorMessage } from '@iapps/ngx-dhis2-http-client';
 import { catchError, Observable, of, tap } from 'rxjs';
 import { DashboardAdditionalFilter } from '../../../../../lib/models';
 import { DashboardSelectionFilterService } from '../../services/dashboard-selection-filter.service';
 
 @Component({
-    imports: [CommonModule, MatDialogModule, MatSelectionList, MatListModule],
-    selector: 'd2-additional-filter-dialog',
-    templateUrl: './additional-filter-dialog.component.html',
-    styleUrls: ['./additional-filter-dialog.component.css']
+  imports: [CommonModule, MatDialogModule, MatSelectionList, MatListModule],
+  // eslint-disable-next-line @angular-eslint/component-selector
+  selector: 'd2-additional-filter-dialog',
+  templateUrl: './additional-filter-dialog.component.html',
+  styleUrls: ['./additional-filter-dialog.component.css'],
 })
 export class AdditionalFilterDialogComponent implements OnInit {
   filterSelection$!: Observable<DashboardAdditionalFilter | null>;
@@ -35,7 +35,7 @@ export class AdditionalFilterDialogComponent implements OnInit {
         tap(() => {
           this.loading = false;
         }),
-        catchError((error: ErrorMessage) => {
+        catchError((error: any) => {
           this.loading = false;
           this.loadingError = error;
           return of(null);

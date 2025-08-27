@@ -1,12 +1,9 @@
-import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
-  Component,
   ContentChild,
   Directive,
   ElementRef,
   Input,
-  OnChanges,
   OnDestroy,
 } from '@angular/core';
 import parse from 'html-react-parser';
@@ -48,7 +45,7 @@ export class ReactWrapperModule implements OnDestroy, AfterViewInit {
         : undefined;
 
       this.reactDomRoot.render(
-        <this.component {...this.props}> {jsxContent || ''} </this.component>
+        React.createElement(this.component, this.props, jsxContent || '')
       );
     }
   }

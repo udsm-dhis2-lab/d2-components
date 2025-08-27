@@ -1,23 +1,23 @@
 import {
   Component,
-  Input,
   ElementRef,
-  Output,
   EventEmitter,
+  Input,
+  Output,
 } from '@angular/core';
 import { DataProvider } from '@dhis2/app-runtime';
 import {
-  Modal,
-  ModalContent,
-  ModalActions,
-  ButtonStrip,
   Button,
+  ButtonStrip,
+  Modal,
+  ModalActions,
+  ModalContent,
   ModalTitle,
 } from '@dhis2/ui';
-import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
+import { D2Window } from '@iapps/d2-web-sdk';
 import React, { useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
-import { firstValueFrom } from 'rxjs';
+import { ReactWrapperModule } from '../../../react-wrapper/react-wrapper.component';
 import { PeriodDimension } from '../../components/PeriodDimension';
 import {
   BIMONTHLY,
@@ -30,7 +30,6 @@ import {
   WEEKLYTHU,
   WEEKLYWED,
 } from '../../components/utils';
-import { ReactWrapperModule } from '../../../react-wrapper/react-wrapper.component';
 
 type PeriodSelectionEvent = {
   dimensionId: string;
@@ -50,64 +49,71 @@ type PeriodSelectionEvent = {
   standalone: false,
 })
 export class PeriodSelectorModalComponent extends ReactWrapperModule {
+  d2 = (window as unknown as D2Window).d2Web;
   @Input() selectedPeriods: any[] = [];
 
   @Output() cancel = new EventEmitter();
   @Output() confirm = new EventEmitter();
 
-  constructor(
-    elementRef: ElementRef<HTMLElement>,
-    private httpClient: NgxDhis2HttpClientService
-  ) {
+  constructor(elementRef: ElementRef<HTMLElement>) {
     super(elementRef);
   }
 
   override async ngAfterViewInit() {
     if (!this.elementRef) throw new Error('No element ref');
     this.reactDomRoot = ReactDOM.createRoot(this.elementRef.nativeElement);
-    const systemInfo = await firstValueFrom(this.httpClient.systemInfo());
+    const systemInfo = this.d2.systemInfo;
     const excludedPeriodTypes = this.getExcludedPeriodTypes(systemInfo);
 
     this.component = () => {
       const [selected, setSelected] = useState(this.selectedPeriods);
-      return (
-        <DataProvider>
-          {
-            <Modal position="middle" large>
-              <ModalTitle>Period</ModalTitle>
-              <ModalContent>
-                <PeriodDimension
-                  selectedPeriods={selected}
-                  onSelect={(selectionEvent: PeriodSelectionEvent) =>
-                    setSelected(selectionEvent.items)
-                  }
-                  excludedPeriodTypes={excludedPeriodTypes}
-                  systemInfo={systemInfo}
-                />
-              </ModalContent>
-              <ModalActions>
-                <ButtonStrip end>
-                  <Button
-                    onClick={() => {
-                      this.onCancel();
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    primary
-                    disabled={selected.length === 0}
-                    onClick={() => {
-                      this.onConfirm(selected);
-                    }}
-                  >
-                    Confirm
-                  </Button>
-                </ButtonStrip>
-              </ModalActions>
-            </Modal>
-          }
-        </DataProvider>
+      return React.createElement(
+        DataProvider,
+        null,
+        React.createElement(
+          Modal,
+          { position: 'middle', large: true },
+          React.createElement(ModalTitle, null, 'Period'),
+          React.createElement(
+            ModalContent,
+            null,
+            React.createElement(PeriodDimension, {
+              selectedPeriods: selected,
+              onSelect: (selectionEvent: PeriodSelectionEvent) =>
+                setSelected(selectionEvent.items),
+              excludedPeriodTypes: excludedPeriodTypes,
+              systemInfo: systemInfo,
+            })
+          ),
+          React.createElement(
+            ModalActions,
+            null,
+            React.createElement(
+              ButtonStrip,
+              { end: true },
+              React.createElement(
+                Button,
+                {
+                  onClick: () => {
+                    this.onCancel();
+                  },
+                },
+                'Cancel'
+              ),
+              React.createElement(
+                Button,
+                {
+                  primary: true,
+                  disabled: selected.length === 0,
+                  onClick: () => {
+                    this.onConfirm(selected);
+                  },
+                },
+                'Confirm'
+              )
+            )
+          )
+        )
       );
     };
     this.render();

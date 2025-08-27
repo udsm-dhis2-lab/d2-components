@@ -1,21 +1,24 @@
-<!-- <ng-dhis2-ui-line-list
-  [programId]="'piWUQa85ell'"
-  [orgUnit]="'m0frOspS7JY'"
+<ng-dhis2-ui-line-list
+  [programId]="'zyBObUsin0Q'"
+  [orgUnit]="'xrku9x3XnV9'"
   [actionOptions]="[
     { label: 'View' },
     { label: 'Edit' },
     { label: 'Delete', destructive: true }
   ]"
   [ouMode]="'DESCENDANTS'"
-  [startDate]="'2024-03-01'"
-  [endDate]="'2025-02-28'"
-></ng-dhis2-ui-line-list> -->
+></ng-dhis2-ui-line-list>
 
-<!-- <h5>Header Bar component</h5>
+<!-- <h5>Header Bar component</h5> -->
 <ng-dhis2-ui-header-bar></ng-dhis2-ui-header-bar>
 
 <h5>Button component</h5>
-<ng-dhis2-ui-button [label]="'Button'" [primary]="true" [small]="true">
+<ng-dhis2-ui-button
+  [label]="'Button'"
+  [primary]="true"
+  [small]="true"
+  (buttonClick)="onButtonClick()"
+>
   <div #ngDhis2UiContent>
     <div>Button</div>
   </div>
@@ -27,14 +30,24 @@
   (selectPeriods)="onSelectPeriods($event)"
 ></ng-dhis2-ui-period-selector>
 
+<!-- <ng-dhis2-ui-period-selector-modal
+  [selectedPeriods]="selectedPeriods"
+  (confirm)="onSelectPeriods($event)"
+></ng-dhis2-ui-period-selector-modal> -->
+
 <h5>Organisation unit selector component</h5>
 <ng-dhis2-ui-org-unit-selector
   [selectedOrgUnits]="selectedOrgUnits"
   [orgUnitSelectionConfig]="orgUnitSelectionConfig"
   (selectOrgUnits)="onSelectOrgUnits($event)"
 ></ng-dhis2-ui-org-unit-selector>
+<!-- 
+<ng-dhis2-ui-org-unit-selector-modal
+  [selectedOrgUnits]="selectedOrgUnits"
+  (confirm)="onSelectOrgUnits($event)"
+></ng-dhis2-ui-org-unit-selector-modal> -->
 
-<h5>Dictionary</h5> -->
+<!--<h5>Dictionary</h5> -->
 <!-- <ngx-dhis2-dictionary-list
   [metadataIdentifiers]="[]"
 ></ngx-dhis2-dictionary-list> -->
@@ -255,7 +268,7 @@
 .setValue(this.batchNumber),]" -->
 
 <div>
-  <ng-dhis2-ui-line-list
+  <!-- <ng-dhis2-ui-line-list
     [programId]="'tOhKbXMiJ1J'"
     [orgUnit]="'gwcDrDXSxS0'"
     [actionOptions]="actionOptions"
@@ -270,13 +283,12 @@
     [triggerRefetch]="triggerRefetch"
   ></ng-dhis2-ui-line-list>
 
-  <!-- <ng-dhis2-ui-line-list
-    [programId]="'lw9fZTamYec'"
+  <ng-dhis2-ui-line-list
+    [programId]="'oUiYTdbtOuh'"
     [orgUnit]="'xrku9x3XnV9'"
     [showFilters]="true"
     [actionOptions]="actionOptions"
     [ouMode]="'DESCENDANTS'"
-    [programStageId]="'NtZXBym2KfD'"
     [actionOptionOrientation]="'LINK'"
   ></ng-dhis2-ui-line-list> -->
 </div>
@@ -302,17 +314,16 @@
   [showSaveButton]="false"
   class="w-full"
 /> -->
-<!-- <div class="p-4">
+<div class="p-4">
   <ng-dhis2-ui-line-list
-    [programId]="'lw9fZTamYec'"
-    [orgUnit]="'xrku9x3XnV9'"
+    [programId]="'bWW1WxiP9lY'"
+    [orgUnit]="'m0frOspS7JY'"
     [actionOptions]="[
     { label: 'View', },
     ]"
     (approvalSelected)="onApprovalSelected($event)"
     [ouMode]="'DESCENDANTS'"
     [showFilters]="true"
-    [filters]="rasFilters"
     (actionSelected)="onActionSelected($event)"
   ></ng-dhis2-ui-line-list>
 
@@ -332,4 +343,5 @@
       (selectBreadcrumb)="onSelectBreadcrumb($event)"
     />
   </div>
-</div> -->
+  <!--</div> -->
+</div>

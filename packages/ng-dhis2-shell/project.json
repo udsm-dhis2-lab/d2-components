@@ -2,7 +2,7 @@
   "name": "ng-dhis2-shell",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/ng-dhis2-shell/src",
-  "prefix": "ng-dhis2-ui",
+  "prefix": "ng-dhis2",
   "tags": [],
   "projectType": "library",
   "targets": {

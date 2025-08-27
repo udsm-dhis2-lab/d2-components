@@ -8,7 +8,6 @@ import { D2DashboardComponent } from './d2-dashboard.component';
 
 import { importProvidersFrom } from '@angular/core';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NgxDhis2HttpClientModule } from '@iapps/ngx-dhis2-http-client';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
 import { D2DashboardModule } from './d2-dashboard.module';
@@ -38,16 +37,7 @@ const meta: Meta<D2DashboardComponent> = {
       ],
     }),
     applicationConfig({
-      providers: [
-        importProvidersFrom(StoreModule.forRoot({})),
-        importProvidersFrom(
-          NgxDhis2HttpClientModule.forRoot({
-            version: 1,
-            namespace: 'organisation-unit',
-            models: [],
-          })
-        ),
-      ],
+      providers: [importProvidersFrom(StoreModule.forRoot({}))],
     }),
   ],
 };

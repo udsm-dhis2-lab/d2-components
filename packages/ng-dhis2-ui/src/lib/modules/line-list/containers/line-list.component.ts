@@ -86,6 +86,7 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() showActionButtons = true;
   @Input() showEnrollmentDates = true;
   @Input() showDownloadButton = false;
+  @Input() searcheableDataElements: string[] = [];
   private reactStateUpdaters: any = null;
 
   setReactStateUpdaters = (updaters: any) => {
@@ -183,23 +184,25 @@ export class LineListTableComponent extends ReactWrapperModule {
       string | undefined
     >(this.endDate);
     const [loading, setLoading] = useState<boolean>(false);
-    const [metaDataLoadng, setMetaDataLoading] = useState<boolean>(false);
     const [filteredColumns, setFilteredColumns] =
       useState<ColumnDefinition[]>();
     const [inputValues, setInputValues] = useState<Record<string, string>>({});
     const [orgUnitLabel, setOrgUnitLabel] = useState<string>('');
     const [selectedOrgUnit, setSelectedOrgUnit] = useState<string>('');
+    const [prevSelectedOrgUnit, setPrevSelectedOrgUnit] = useState<string>('');
     const [hide, setHide] = useState<boolean>(true);
     const [showAllFilters, setShowAllFilters] = useState(false);
     const visibleFilters = showAllFilters
       ? filteredColumns ?? []
-      : (filteredColumns ?? []).slice(0, 0);
+      : (filteredColumns ?? []).slice(0, 5);
     // const visibleFilters = showAllFilters
     //   ? filteredColumns ?? []
     //   : filteredColumns ?? []).slice(0, 2);
     const defaultOrgUnit = this.orgUnit;
-    const [prevValue, setPrevValue] = useState<string>();
     const [dateStates, setDateStates] = useState<{ [key: string]: string }>({});
+    const [prevDateStates, setPrevDateStates] = useState<{
+      [key: string]: string;
+    }>({});
     const [metaData, setMetaData] = useState<Program | null>(null);
     const [selectable, setSelectable] = useState<boolean>(
       this.allowRowsSelection
@@ -213,6 +216,9 @@ export class LineListTableComponent extends ReactWrapperModule {
     const [orgUnitModalVisible, setOrgUnitModalVisible] =
       useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const [prevInputValues, setPrevInputValues] = useState<
+      Record<string, string>
+    >({});
 
     const d2 = (window as unknown as D2Window).d2Web;
 
@@ -229,10 +235,6 @@ export class LineListTableComponent extends ReactWrapperModule {
       setTriggerRefetch,
       setTriggerTokenState,
     });
-
-    // useEffect(() => {
-    //   this.setReactStateUpdaters?.(updateRefs.current);
-    // }, []);
 
     useEffect(() => {
       this.setReactStateUpdaters?.(updateRefs.current);
@@ -273,22 +275,27 @@ export class LineListTableComponent extends ReactWrapperModule {
         endDateState ?? format(addDays(new Date(), 1), 'yyyy-MM-dd');
 
       if (this.programStageId || isEvent) {
-        setLoading(true);
-        d2.eventModule.event
-          .setEndDate(endDate)
-          .setStartDate(startDateState as string)
-          .setProgram(this.programId)
-          .setProgramStage(this.programStageId as string)
-          .setOrgUnit(orgUnitState)
-          .setOuMode(this.ouMode as OuMode)
-          .setPagination(
-            new Pager({
-              pageSize: pager.pageSize,
-              page: pager.page,
-            })
-          )
-          .get()
-          .then((response) => {
+        const fetchEventData = async () => {
+          try {
+            setError(null);
+            setLoading(true);
+            const response = await d2.eventModule.event
+              .setEndDate(endDate)
+              .setStartDate(startDateState as string)
+              .setProgram(this.programId)
+              .setProgramStage(this.programStageId as string)
+              .setOrgUnit(orgUnitState)
+              .setOuMode(this.ouMode as OuMode)
+              .setPagination(
+                new Pager({
+                  pageSize: pager.pageSize,
+                  page: pager.page,
+                })
+              )
+              .get();
+            if (response.responseStatus.status !== 200) {
+              throw new Error('failed to load data.');
+            }
             const eventsResponse: EventsResponse = {
               events: response.data!,
               pager: pager,
@@ -336,14 +343,21 @@ export class LineListTableComponent extends ReactWrapperModule {
 
             const pagerResponse = response.pagination;
 
-            setLoading(false);
             setColumns(finalColumns);
             setData(data);
             setPager(new Pager(pagerResponse || {}));
-          });
+          } catch {
+            console.error('Failed to fetch event data:', error);
+            setError('Could not load records. Please reload.');
+          } finally {
+            setLoading(false);
+          }
+        };
+        fetchEventData();
       } else if (isTracker) {
         const fetchTrackerData = async () => {
           try {
+            setError(null);
             setLoading(true);
             const response = await d2.trackerModule.trackedEntity
               .setEndDate(endDate)
@@ -367,9 +381,10 @@ export class LineListTableComponent extends ReactWrapperModule {
               .setOrderCriterias([
                 new DataOrderCriteria().setField('createdAt').setOrder('desc'),
               ])
-              .get(
-                
-              );
+              .get();
+            if (response.responseStatus.status !== 200) {
+              throw new Error('failed to load data.');
+            }
 
             const trackedEntityInstances = Array.isArray(response.data)
               ? response.data
@@ -411,7 +426,8 @@ export class LineListTableComponent extends ReactWrapperModule {
                 { data: trackedEntityResponse },
                 this.programId,
                 pager,
-                metaData
+                metaData,
+                this.searcheableDataElements
               );
 
             setFilteredColumns((prev) =>
@@ -444,7 +460,6 @@ export class LineListTableComponent extends ReactWrapperModule {
 
             const pagerResponse = response.pagination;
 
-            // setLoading(false);
             setColumns(finalColumns);
             setData(data);
             setPager(new Pager(pagerResponse || {}));
@@ -488,7 +503,6 @@ export class LineListTableComponent extends ReactWrapperModule {
       );
       const worksheetData = [header, ...rows];
 
-      // Creates worksheet and workbook, then writes to file
       const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'LineListData');
@@ -514,7 +528,6 @@ export class LineListTableComponent extends ReactWrapperModule {
       );
       const csvContent = [header, ...csvData].join('\n');
 
-      // Creates a Blob and triggers the download
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
 
@@ -526,7 +539,7 @@ export class LineListTableComponent extends ReactWrapperModule {
       document.body.removeChild(link);
     };
 
-    const handleInputChange = (key: string, value: string) => {
+    const handleInputChange = (key: string, value: string, type: string) => {
       setInputValues((prevValues) => ({
         ...prevValues,
         [key]: value ?? '',
@@ -537,22 +550,41 @@ export class LineListTableComponent extends ReactWrapperModule {
         const filteredFilters = prevFilters.filter((f) => f.attribute !== key);
 
         // adds new filter only if value is not empty
-        const updatedFilters = value.trim()
-          ? [
-              ...filteredFilters,
-              new DataQueryFilter()
-                .setAttribute(key)
-                .setCondition(DataFilterCondition.Like)
-                .setValue(value),
-            ]
-          : filteredFilters;
+        let updatedFilters;
+        if (type === 'dataElement') {
+          updatedFilters =
+            value && value.length
+              ? [
+                  ...filteredFilters,
+                  new DataQueryFilter()
+                    .setAttribute(key)
+                    .setCondition(DataFilterCondition.Like)
+                    .setValue(value)
+                    .setType('DATA_ELEMENT'),
+                ]
+              : filteredFilters;
+        } else {
+          updatedFilters = value.trim()
+            ? [
+                ...filteredFilters,
+                new DataQueryFilter()
+                  .setAttribute(key)
+                  .setCondition(DataFilterCondition.Like)
+                  .setValue(value),
+              ]
+            : filteredFilters;
+        }
 
         return updatedFilters;
       });
     };
 
     //TODO: MERGE THIS WITH HANDLE INPUT CHANGE PUT A CHECK FOR IF ITS A SELECT FIELD TO USE EQ
-    const handleInputChangeForSelectField = (key: string, value: string) => {
+    const handleInputChangeForSelectField = (
+      key: string,
+      value: string,
+      type: string
+    ) => {
       setInputValues((prevValues) => ({
         ...prevValues,
         [key]: value ?? '',
@@ -563,21 +595,36 @@ export class LineListTableComponent extends ReactWrapperModule {
         const filteredFilters = prevFilters.filter((f) => f.attribute !== key);
 
         // adds new filter only if value is not empty
-        const updatedFilters = value.trim()
-          ? [
-              ...filteredFilters,
-              new DataQueryFilter()
-                .setAttribute(key)
-                .setCondition(DataFilterCondition.Equal)
-                .setValue(value),
-            ]
-          : filteredFilters;
+        let updatedFilters;
+        if (type === 'dataElement') {
+          updatedFilters =
+            value && value.length
+              ? [
+                  ...filteredFilters,
+                  new DataQueryFilter()
+                    .setAttribute(key)
+                    .setCondition(DataFilterCondition.Equal)
+                    .setValue(value)
+                    .setType('DATA_ELEMENT'),
+                ]
+              : filteredFilters;
+        } else {
+          updatedFilters = value.trim()
+            ? [
+                ...filteredFilters,
+                new DataQueryFilter()
+                  .setAttribute(key)
+                  .setCondition(DataFilterCondition.Equal)
+                  .setValue(value),
+              ]
+            : filteredFilters;
+        }
 
         return updatedFilters;
       });
     };
 
-    const handleDateSelect = (key: string, selectedDate: any) => {
+    const handleDateSelect = (key: string, selectedDate: any, type: string) => {
       const selectedDateString = selectedDate?.calendarDateString ?? '';
 
       // Updates dateStates
@@ -592,161 +639,193 @@ export class LineListTableComponent extends ReactWrapperModule {
           (f) => f.attribute !== key
         );
 
-        const updatedFilters = selectedDateString.trim()
-          ? [
-              ...filteredFilters,
-              new DataQueryFilter()
-                .setAttribute(key)
-                .setCondition(DataFilterCondition.Equal)
-                .setValue(selectedDateString),
-            ]
-          : filteredFilters;
+        // const updatedFilters = selectedDateString.trim()
+        //   ? [
+        //       ...filteredFilters,
+        //       new DataQueryFilter()
+        //         .setAttribute(key)
+        //         .setCondition(DataFilterCondition.Equal)
+        //         .setValue(selectedDateString),
+        //     ]
+        //   : filteredFilters;
+        let updatedFilters;
+        if (type === 'dataElement') {
+          updatedFilters = selectedDateString.trim()
+            ? [
+                ...filteredFilters,
+                new DataQueryFilter()
+                  .setAttribute(key)
+                  .setCondition(DataFilterCondition.Equal)
+                  .setValue(selectedDateString)
+                  .setType('DATA_ELEMENT'),
+              ]
+            : filteredFilters;
+        } else {
+          updatedFilters = selectedDateString.trim()
+            ? [
+                ...filteredFilters,
+                new DataQueryFilter()
+                  .setAttribute(key)
+                  .setCondition(DataFilterCondition.Equal)
+                  .setValue(selectedDateString),
+              ]
+            : filteredFilters;
+        }
 
         return updatedFilters;
       });
     };
 
-    const handleSearch = () => (
-      setDataQueryFiltersState(tempDataQueryFiltersState),
-      setStartDateState(tempStartDateState),
-      setEndDateState(tempEndDateState),
-      setOrgUnitState(tempOrgUnitState)
-    );
+    const handleAdditionalFilters = () =>
+      setDataQueryFiltersState(tempDataQueryFiltersState);
+    const handleStartDateFilter = () => setStartDateState(tempStartDateState);
+    const handleEndDateFilter = () => setEndDateState(tempEndDateState);
+    const handleOrgUnitFilter = () => setOrgUnitState(tempOrgUnitState);
 
     function getTextColorFromBackGround(hex: string): string {
-      // Removes the hash if present
       hex = hex.replace('#', '');
 
-      // Converts to RGB
       const r = parseInt(hex.substr(0, 2), 16);
       const g = parseInt(hex.substr(2, 2), 16);
       const b = parseInt(hex.substr(4, 2), 16);
 
-      // YIQ formula to calculate brightness
       const yiq = (r * 299 + g * 587 + b * 114) / 1000;
 
       // Returns black for light backgrounds, white for dark backgrounds
       return yiq >= 128 ? colors.grey700 : '#FFFFFF';
     }
 
-    return (
-      <div>
-        {loading ? (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: 8,
-            }}
-          >
-            <CircularLoader small />
-            <div
-              style={{
-                fontSize: 14,
-              }}
-            >
-              Loading
-            </div>
-          </div>
-        ) : (
-          <div>
-            {this.showDownloadButton && (
-              <div
-                style={{
-                  paddingBottom: '1rem',
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                }}
-              >
-                <DropdownButton
-                  name="Download"
-                  component={
-                    <span>
-                      {' '}
-                      <MenuItem
-                        label="Download Csv"
-                        onClick={handleCsvDownload}
-                      />
-                      <MenuItem
-                        label="Download Excel"
-                        onClick={handleExcelDownload}
-                      />
-                    </span>
-                  }
-                  value="Download"
-                >
-                  Download
-                </DropdownButton>
-              </div>
-            )}
-            {orgUnitModalVisible && (
-              <OrgUnitSelector
-                hide={hide}
-                setHide={setHide}
-                selectedOrgUnit={selectedOrgUnit}
-                setSelectedOrgUnit={setSelectedOrgUnit}
-                setOrgUnitState={setOrgUnitState}
-                setTempOrgUnitState={setTempOrgUnitState}
-                tempOrgUnitState={tempOrgUnitState}
-              />
-            )}
-
-            {this.showFilters && (
-              <FilterToolbar
-                orgUnitLabel={orgUnitLabel}
-                selectedOrgUnit={selectedOrgUnit}
-                setSelectedOrgUnit={setSelectedOrgUnit}
-                setOrgUnitState={setOrgUnitState}
-                defaultOrgUnit={defaultOrgUnit}
-                setHide={setHide}
-                startDateState={startDateState}
-                setStartDateState={setStartDateState}
-                endDateState={endDateState}
-                setEndDateState={setEndDateState}
-                visibleFilters={visibleFilters}
-                dateStates={dateStates}
-                inputValues={inputValues}
-                setInputValues={setInputValues}
-                handleInputChange={handleInputChange}
-                handleInputChangeForSelectField={
-                  handleInputChangeForSelectField
-                }
-                handleDateSelect={handleDateSelect}
-                prevValue={prevValue}
-                setPrevValue={setPrevValue}
-                showAllFilters={showAllFilters}
-                setShowAllFilters={setShowAllFilters}
-                handleSearch={handleSearch}
-                setTempStartDateState={setTempStartDateState}
-                setTempEndDateState={setTempEndDateState}
-                setTempOrgUnitState={setTempOrgUnitState}
-                tempStartDateState={tempStartDateState}
-                tempEndDateState={tempEndDateState}
-                tempOrgUnitState={tempOrgUnitState}
-                dataQueryFiltersState={dataQueryFiltersState}
-                setDataQueryFiltersState={setDataQueryFiltersState}
-                SetOrgUnitModalVisible={setOrgUnitModalVisible}
-                showEnrollmentDates={this.showEnrollmentDates}
-                //  filteredFilters={filteredFilters}
-              />
-            )}
-            <LineListTable
-              columns={columns}
-              data={data}
-              pager={pager}
-              setPager={setPager}
-              getTextColorFromBackGround={getTextColorFromBackGround}
-              actionOptions={this.actionOptions}
-              actionOptionOrientation={this.actionOptionOrientation}
-              actionSelected={this.actionSelected}
-              selectable={selectable}
-              rowsSelected={this.rowsSelected}
-              showActionButtons={showActionButtons}
-            />
-          </div>
-        )}
-      </div>
+    return React.createElement(
+      'div',
+      null,
+      loading
+        ? React.createElement(
+            'div',
+            {
+              style: {
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: 8,
+              },
+            },
+            React.createElement(CircularLoader, { small: true }),
+            React.createElement(
+              'div',
+              {
+                style: {
+                  fontSize: 14,
+                },
+              },
+              'Loading'
+            )
+          )
+        : React.createElement(
+            'div',
+            null,
+            this.showDownloadButton &&
+              React.createElement(
+                'div',
+                {
+                  style: {
+                    paddingBottom: '1rem',
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                  },
+                },
+                React.createElement(
+                  DropdownButton,
+                  {
+                    name: 'Download',
+                    component: React.createElement(
+                      'span',
+                      null,
+                      ' ',
+                      React.createElement(MenuItem, {
+                        label: 'Download Csv',
+                        onClick: handleCsvDownload,
+                      }),
+                      React.createElement(MenuItem, {
+                        label: 'Download Excel',
+                        onClick: handleExcelDownload,
+                      })
+                    ),
+                    value: 'Download',
+                  },
+                  'Download'
+                )
+              ),
+            orgUnitModalVisible &&
+              React.createElement(OrgUnitSelector, {
+                hide: hide,
+                setHide: setHide,
+                selectedOrgUnit: selectedOrgUnit,
+                setSelectedOrgUnit: setSelectedOrgUnit,
+                setOrgUnitState: setOrgUnitState,
+                setTempOrgUnitState: setTempOrgUnitState,
+                tempOrgUnitState: tempOrgUnitState,
+              }),
+            this.showFilters &&
+              React.createElement(FilterToolbar, {
+                orgUnitLabel: orgUnitLabel,
+                selectedOrgUnit: selectedOrgUnit,
+                setSelectedOrgUnit: setSelectedOrgUnit,
+                setOrgUnitState: setOrgUnitState,
+                defaultOrgUnit: defaultOrgUnit,
+                setHide: setHide,
+                startDateState: startDateState,
+                setStartDateState: setStartDateState,
+                endDateState: endDateState,
+                setEndDateState: setEndDateState,
+                visibleFilters: visibleFilters,
+                dateStates: dateStates,
+                inputValues: inputValues,
+                setInputValues: setInputValues,
+                handleInputChange: handleInputChange,
+                handleInputChangeForSelectField:
+                  handleInputChangeForSelectField,
+                handleDateSelect: handleDateSelect,
+                showAllFilters: showAllFilters,
+                setShowAllFilters: setShowAllFilters,
+                setTempStartDateState: setTempStartDateState,
+                setTempEndDateState: setTempEndDateState,
+                setTempOrgUnitState: setTempOrgUnitState,
+                tempStartDateState: tempStartDateState,
+                tempEndDateState: tempEndDateState,
+                tempOrgUnitState: tempOrgUnitState,
+                dataQueryFiltersState: dataQueryFiltersState,
+                setDataQueryFiltersState: setDataQueryFiltersState,
+                SetOrgUnitModalVisible: setOrgUnitModalVisible,
+                showEnrollmentDates: this.showEnrollmentDates,
+                handleAdditionalFilters: handleAdditionalFilters,
+                handleStartDateFilter: handleStartDateFilter,
+                handleEndDateFilter: handleEndDateFilter,
+                handleOrgUnitFilter: handleOrgUnitFilter,
+                setDateStates: setDateStates,
+                prevInputValues: prevInputValues,
+                setPrevInputValues: setPrevInputValues,
+                setTempDataQueryFiltersState: setTempDataQueryFiltersState,
+                prevDateStates: prevDateStates,
+                setPrevDateStates: setPrevDateStates,
+                prevSelectedOrgUnit: prevSelectedOrgUnit,
+                setPrevSelectedOrgUnit: setPrevSelectedOrgUnit,
+                //  filteredFilters: filteredFilters
+              }),
+            React.createElement(LineListTable, {
+              columns: columns,
+              data: data,
+              pager: pager,
+              setPager: setPager,
+              getTextColorFromBackGround: getTextColorFromBackGround,
+              actionOptions: this.actionOptions,
+              actionOptionOrientation: this.actionOptionOrientation,
+              actionSelected: this.actionSelected,
+              selectable: selectable,
+              rowsSelected: this.rowsSelected,
+              showActionButtons: showActionButtons,
+              error: error,
+            })
+          )
     );
   };
 

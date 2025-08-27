@@ -18,7 +18,7 @@ import moment from 'moment';
 import { Subject, takeUntil } from 'rxjs';
 import { IFormField } from '../../interfaces';
 import { FieldConfig, IMetadataRuleAction } from '../../models';
-import { CustomOrgUnitConfig } from '../../components/org-unit-form-field.component';
+import { CustomOrgUnitConfig } from '../../models/org-unit.model';
 
 @Component({
   selector: 'ng-dhis2-ui-form-field',

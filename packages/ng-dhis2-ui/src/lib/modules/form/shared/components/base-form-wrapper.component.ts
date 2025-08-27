@@ -17,7 +17,7 @@ import {
 import { IFormField } from '../../interfaces';
 import { FormValue, IMetadataRule, IMetadataRuleAction } from '../../models';
 import { ProgramRuleEngine } from '@iapps/d2-web-sdk';
-import { CustomOrgUnitConfig } from '../../components/org-unit-form-field.component';
+import { CustomOrgUnitConfig } from '../../models/org-unit.model';
 
 @Directive()
 export class BaseFormWrapperComponent implements OnDestroy {
