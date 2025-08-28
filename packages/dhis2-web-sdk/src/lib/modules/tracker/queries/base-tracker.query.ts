@@ -332,9 +332,11 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
       .setStartDate(this.enrollmentEnrolledAfter as string)
       .setEndDate(this.enrollmentEnrolledBefore as string)
       .setProgram(this.program as string)
-      .setPagination(new Pager({
-        paging: false
-      }))
+      .setPagination(
+        new Pager({
+          paging: false,
+        })
+      )
       .setOrgUnit(this.orgUnit as string)
       .setOuMode(this.ouMode)
       .setProgramStage(programStage)

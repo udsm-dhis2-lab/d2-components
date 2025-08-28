@@ -61,6 +61,11 @@ export abstract class DataUrlGenerator<T extends DataUrlGenerator<T>> {
 
   addOrgUnit(url: string): string {
     const isThereParams = this.isThereQueryParams(url);
+
+    if (['ALL', 'CAPTURE', 'ACCESSIBLE'].includes(this.ouMode)) {
+      return url + `${isThereParams ? '&' : '?'}ouMode=${this.ouMode}`;
+    }
+
     if (!this.orgUnit) {
       return url + `${isThereParams ? '&' : '?'}ouMode=${this.ouMode}`;
     }
