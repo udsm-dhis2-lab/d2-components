@@ -76,7 +76,7 @@
     "@storybook/testing-library": "^0.2.2",
     "@swc-node/register": "1.9.2",
     "@swc/core": "1.5.7",
-    "@swc/helpers": "0.5.12",
+    "@swc/helpers": "0.5.17",
     "@types/base-64": "^1.0.2",
     "@types/jest": "30.0.0",
     "@types/mapbox-gl": "^3.1.0",
