@@ -131,12 +131,12 @@ export class ComponentsComponent implements OnInit {
     }, 10000);
   }
 
-  // onActionSelected(emitActionResponse: any) {
-  //   console.log(
-  //     'ON ACTION SELECTED::: ',
-  //     JSON.stringify(emitActionResponse, null, 4)
-  //   );
-  // }
+  onActionSelectedReportFilter(emitActionResponse: any) {
+    console.log(
+      'ON ACTION SELECTED::: ',
+      JSON.stringify(emitActionResponse, null, 4)
+    );
+  }
 
   onButtonClick() {
     console.log('BUTTON IS CLICKED HERE');
@@ -217,7 +217,9 @@ export class ComponentsComponent implements OnInit {
   //   { attribute: 'jI43wrfikTb', operator: 'eq', value: 'true' }
   // ]"
 
-  selectedOrgUnits = [];
+  selectedOrgUnit = {"id":"DzT1EohjekM","path":"/xrku9x3XnV9/DzT1EohjekM","name":"Regions","type":"ORGUNIT"};
+
+  selectedOrgUnits = [{"id":"DzT1EohjekM","path":"/xrku9x3XnV9/DzT1EohjekM","name":"Regions","type":"ORGUNIT"}];
   orgUnitSelectionConfig: OrganisationUnitSelectionConfig = {
     hideGroupSelect: false,
     hideLevelSelect: false,
