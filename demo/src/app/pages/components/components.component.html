@@ -1,3 +1,14 @@
+ <app-selection-filters-ui
+  [startDate]="'2024-03-01'"
+  [orgUnitFieldTitle]="'Report Organisation Unit Selection'"
+  [endDate]="'2025-02-28'"
+  [selectedOrgUnit]="selectedOrgUnit"
+  (actionSelected)="onActionSelectedReportFilter($event)"
+  [program]="'ABC1'"
+  [organisationUnit]="'EFG'"
+></app-selection-filters-ui>
+
+
 <ng-dhis2-ui-line-list
   [programId]="'zyBObUsin0Q'"
   [orgUnit]="'xrku9x3XnV9'"
