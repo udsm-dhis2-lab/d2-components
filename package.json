@@ -126,7 +126,7 @@
     "@angular/platform-browser-dynamic": "20.1.3",
     "@angular/router": "20.1.3",
     "@dhis2/analytics": "^26.6.1",
-    "@dhis2/app-adapter": "^12.1.0",
+    "@dhis2/app-adapter": "^12.8.0",
     "@dhis2/app-runtime": "^3.13.0",
     "@dhis2/d2-i18n": "^1.1.3",
     "@dhis2/pwa": "^10.3.10",
