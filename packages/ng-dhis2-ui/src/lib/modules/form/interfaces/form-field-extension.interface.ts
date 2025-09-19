@@ -3,6 +3,6 @@ export interface FormFieldExtension {
   accept?: string[];
   sizeLimit?: number;
   isDataElementUnique?: boolean;
-  optionSetGroup?: string;
+  optionsSourceCode?: string;
   organisationUnits?: any[]
 }

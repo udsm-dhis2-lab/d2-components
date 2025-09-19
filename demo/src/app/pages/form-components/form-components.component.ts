@@ -185,7 +185,7 @@ export class FormComponentsComponent {
     formFieldExtensions: [
       {
         id: 'gdKi4BcnrhR',
-       optionSetGroup: 'District',
+       optionsSourceCode: 'District',
       },
     ],
   });
