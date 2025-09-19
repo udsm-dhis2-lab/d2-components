@@ -253,10 +253,10 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
         if (
           this.config?.formFieldExtensions &&
           this.config.formFieldExtensions.length > 0 &&
-          this.config.formFieldExtensions[0]?.optionSetGroup
+          this.config.formFieldExtensions[0]?.optionsSourceCode
         ) {
           const orgUnitResponse = await this.d2.httpInstance.get(
-            `organisationUnits.json?fields=id,name,code&paging=false&filter=organisationUnitGroups.code:eq:${this.config.formFieldExtensions[0].optionSetGroup}`
+            `organisationUnits.json?fields=id,name,code&paging=false&filter=organisationUnitGroups.code:eq:${this.config.formFieldExtensions[0].optionsSourceCode}`
           );
           const orgUnitsResponse = orgUnitResponse?.data?.['organisationUnits'];
           const organisationUnits = Array.isArray(orgUnitsResponse) ? orgUnitsResponse : [];
