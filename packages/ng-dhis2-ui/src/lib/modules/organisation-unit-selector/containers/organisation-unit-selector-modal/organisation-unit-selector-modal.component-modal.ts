@@ -46,7 +46,6 @@ export class OrganisationUnitSelectorModalComponent extends ReactWrapperModule {
   @Input() selectedOrgUnits: any[] = [];
   @Input() orgUnitSelectionConfig: OrganisationUnitSelectionConfig =
     new OrganisationUnitSelectionConfig();
-  @Input() rootOrgUnits?: string[];
   @Output() selectOrgUnits = new EventEmitter();
   @Output() cancel = new EventEmitter();
   @Output() confirm = new EventEmitter();
@@ -64,8 +63,8 @@ export class OrganisationUnitSelectorModalComponent extends ReactWrapperModule {
   override async ngAfterViewInit() {
     if (!this.elementRef) throw new Error('No element ref');
     this.reactDomRoot = ReactDOM.createRoot(this.elementRef.nativeElement);
-    const rootOrgUnits = this.rootOrgUnits && this.rootOrgUnits.length > 0
-    ? this.rootOrgUnits
+    const rootOrgUnits = this.orgUnitSelectionConfig.rootOrgUnits && this.orgUnitSelectionConfig.rootOrgUnits.length > 0
+    ? this.orgUnitSelectionConfig.rootOrgUnits
     : await this.getRootOrgUnits();
 
     const config = await this.getAppConfig();

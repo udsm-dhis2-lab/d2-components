@@ -252,6 +252,7 @@ export class ComponentsComponent implements OnInit {
     allowSingleSelection: true,
     usageType: 'DATA_ENTRY',
     allowCaching: true,
+    rootOrgUnits: ['lgZ6HfZaj3f']
   };
   onSelectOrgUnits(orgUnits: any) {
     this.selectedOrgUnits = orgUnits;
