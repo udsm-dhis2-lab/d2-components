@@ -19,6 +19,7 @@ import {
   FlyoutMenu,
   IconDownload16,
 } from '@dhis2/ui';
+import { format } from 'date-fns';
 import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
 import { Period } from '@iapps/period-utilities';
 import { Button, IconView16, ButtonStrip } from '@dhis2/ui';
@@ -55,6 +56,32 @@ export class ComponentsComponent implements OnInit {
       },
     ],
   });
+
+  formConfig = new ProgramEntryFormConfig({
+      program: 'Gy65kx8gQv6',
+      programStage: 'edx4DaMDAyo',
+      hideRegistrationUnit: true,
+      formType: 'EVENT',
+      displayType: 'FLAT',
+      autoComplete: true,
+      autoAssignedValues: [
+        {
+          field: 'orgUnit',
+          value: 'xSIt9MfMKiM',
+        },
+        {
+          field: 'occurredAt',
+          value: format(new Date(), 'yyyy-MM-dd'),
+        },
+      ],
+      formFieldExtensions: [
+        {
+          id: 'seUJl7AEZtS',
+          accept: ['.pdf'],
+          sizeLimit: 2 * 1024 * 1024,
+        },
+      ],
+    });
 
   completedTrainingFilter = [
     new DataQueryFilter()
