@@ -17,7 +17,10 @@ import {
   ProgramEntryFormConfig,
 } from '@iapps/ng-dhis2-ui';
 import { format } from 'date-fns';
-import { CustomOrgUnitConfig, OrgUnitLevel } from 'packages/ng-dhis2-ui/src/lib/modules/form/models/org-unit.model';
+import {
+  CustomOrgUnitConfig,
+  OrgUnitLevel,
+} from 'packages/ng-dhis2-ui/src/lib/modules/form/models/org-unit.model';
 
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
@@ -56,7 +59,7 @@ export class FormComponentsComponent {
       field: 'RKOZF4JJNYm',
       orgUnit: 'VCT80xbdFyD',
       level: OrgUnitLevel.FACILITY,
-      confidence: 90
+      confidence: 90,
     },
     // { field: 'kvQrWGgmCCb', orgUnit: 'FZfTtWQJfry' },
   ];
@@ -162,31 +165,56 @@ export class FormComponentsComponent {
   // });
 
   programEntryConfig = new ProgramEntryFormConfig({
-    program: 'lw9fZTamYec',
+    program: 'UelF2YAJLli',
+    programStage: 'KZ352r6pzo6',
+    hideRegistrationUnit: true,
+    formType: 'EVENT',
     displayType: 'FLAT',
-    formType: 'TRACKER',
-    excludeProgramStages: true,
-    // excludeInheritedAttributes: true,
-
-    hideRegistrationUnit: false,
-    hideEnrollmentDate: true,
     autoComplete: true,
+    hideEnrollmentDate: true,
     autoAssignedValues: [
       {
-        field: 'batchNumber',
-        value: 'ND_BATCH_62712406',
+        field: 'occurredAt',
+        value: '2025-09-19',
+      },
+      {
+        field: 'orgUnit',
+        value: 'BIzrwoknkg5',
       },
     ],
-    hideCustomAssignedFields: true,
     formFieldExtensions: [
       {
-        id: 'seUJl7AEZtS',
-        accept: ['.pdf', '.docx', '.zip'],
-        sizeLimit: 2 * 1024 * 1024,
+        id: 'gdKi4BcnrhR',
+       optionSetGroup: 'District',
       },
     ],
-    updateTeiOrgUnit: true,
   });
+  // new ProgramEntryFormConfig({
+  //   program: 'lw9fZTamYec',
+  //   displayType: 'FLAT',
+  //   formType: 'TRACKER',
+  //   excludeProgramStages: true,
+  //   // excludeInheritedAttributes: true,
+
+  //   hideRegistrationUnit: false,
+  //   hideEnrollmentDate: true,
+  //   autoComplete: true,
+  //   autoAssignedValues: [
+  //     {
+  //       field: 'batchNumber',
+  //       value: 'ND_BATCH_62712406',
+  //     },
+  //   ],
+  //   hideCustomAssignedFields: true,
+  //   formFieldExtensions: [
+  //     {
+  //       id: 'seUJl7AEZtS',
+  //       accept: ['.pdf', '.docx', '.zip'],
+  //       sizeLimit: 2 * 1024 * 1024,
+  //     },
+  //   ],
+  //   updateTeiOrgUnit: true,
+  // });
 
   //   programEntryConfig =  ProgramEntryFormConfig({
   //     program: 'Gy65kx8gQv6',
@@ -218,6 +246,7 @@ export class FormComponentsComponent {
     //   .setEvent('ctmcl4b26Mk')
     //   .get();
     // console.log(eventResult.data);
+    //code: District
   }
   async onCancel() {
     console.log('cancel');

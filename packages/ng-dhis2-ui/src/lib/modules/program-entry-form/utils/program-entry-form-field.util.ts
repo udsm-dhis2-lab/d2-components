@@ -169,13 +169,15 @@ export class ProgramEntryFormFieldUtil {
   get fields(): IFormField<string>[] {
     const fields = [...this.attributes, ...this.dataElements]
       .map((field) => {
-        const options = FieldDropdown.getDropdownOptions(field);
-
-        const hasOptions = options?.length > 0;
-
+        
         const extension = this.config.formFieldExtensions?.find(
           (fieldExtension) => fieldExtension?.id === field.id
         );
+
+        const options = FieldDropdown.getDropdownOptions(field, undefined, extension);
+
+        const hasOptions = options?.length > 0;
+
 
         const autoAssignedValue = this.#getAutoAssignedValue(field);
 

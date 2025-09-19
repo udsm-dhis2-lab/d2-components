@@ -79,9 +79,6 @@ export class ProgramEntryFormModule {
     return <CircularLoader small />;
   };
 
-  // dataId = computed(() => {
-  //   return this.instance()?.trackedEntity || this.instance()?.event;
-  // });
   dataId = computed(() => {
   if (this.config().formType === 'EVENT') {
     return this.instance()?.event;
