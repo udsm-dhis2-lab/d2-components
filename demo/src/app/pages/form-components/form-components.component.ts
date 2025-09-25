@@ -164,31 +164,56 @@ export class FormComponentsComponent {
   //   ],
   // });
 
+  // programEntryConfig = new ProgramEntryFormConfig({
+  //   program: 'UelF2YAJLli',
+  //   programStage: 'KZ352r6pzo6',
+  //   hideRegistrationUnit: true,
+  //   formType: 'EVENT',
+  //   displayType: 'FLAT',
+  //   autoComplete: true,
+  //   hideEnrollmentDate: true,
+  //   autoAssignedValues: [
+  //     {
+  //       field: 'occurredAt',
+  //       value: '2025-09-19',
+  //     },
+  //     {
+  //       field: 'orgUnit',
+  //       value: 'BIzrwoknkg5',
+  //     },
+  //   ],
+  //   formFieldExtensions: [
+  //     {
+  //       id: 'gdKi4BcnrhR',
+  //      optionsSourceCode: 'District',
+  //     },
+  //   ],
+  // });
   programEntryConfig = new ProgramEntryFormConfig({
-    program: 'UelF2YAJLli',
-    programStage: 'KZ352r6pzo6',
-    hideRegistrationUnit: true,
-    formType: 'EVENT',
-    displayType: 'FLAT',
-    autoComplete: true,
-    hideEnrollmentDate: true,
-    autoAssignedValues: [
-      {
-        field: 'occurredAt',
-        value: '2025-09-19',
-      },
-      {
-        field: 'orgUnit',
-        value: 'BIzrwoknkg5',
-      },
-    ],
-    formFieldExtensions: [
-      {
-        id: 'gdKi4BcnrhR',
-       optionsSourceCode: 'District',
-      },
-    ],
-  });
+      program: 'Gy65kx8gQv6',
+      programStage: 'edx4DaMDAyo',
+      hideRegistrationUnit: true,
+      formType: 'EVENT',
+      displayType: 'FLAT',
+      autoComplete: true,
+      autoAssignedValues: [
+        {
+          field: 'orgUnit',
+          value: "'jsYgaCu4556'",
+        },
+        {
+          field: 'occurredAt',
+          value: format(new Date(), 'yyyy-MM-dd'),
+        },
+      ],
+      formFieldExtensions: [
+        {
+          id: 'seUJl7AEZtS',
+          accept: ['.pdf'],
+          sizeLimit: 2 * 1024 * 1024,
+        },
+      ],
+    })
   // new ProgramEntryFormConfig({
   //   program: 'lw9fZTamYec',
   //   displayType: 'FLAT',
