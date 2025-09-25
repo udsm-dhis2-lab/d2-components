@@ -28,6 +28,8 @@ export class BaseFormWrapperComponent implements OnDestroy {
   dataValues = input<Record<string, unknown>>({});
   dataId = input<string>();
   customOrgUnitRoots = input<CustomOrgUnitConfig[]>();
+ //TODO: FIND BETTER WAY TO PASS PROGRAM TO FIELDS i.e field extensions
+  program = input<string>();
 
 
   ruleActions = signal<IMetadataRuleAction[]>([]);

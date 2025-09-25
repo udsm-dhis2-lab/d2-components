@@ -38,6 +38,8 @@ export class FormFieldComponent implements OnInit, OnChanges, OnDestroy {
   maxDate = input(new Date());
   dataId = input<string>();
   customOrgUnitRoots = input<CustomOrgUnitConfig[]>();
+   //TODO: FIND BETTER WAY TO PASS PROGRAM TO FIELDS i.e field extensions
+  program = input<string>();
   color = 'primary';
   @Output() fieldUpdate: EventEmitter<FormGroup> =
     new EventEmitter<FormGroup>();

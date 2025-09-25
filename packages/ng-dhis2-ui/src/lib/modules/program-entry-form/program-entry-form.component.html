@@ -18,6 +18,7 @@
     [rules]="metaData()!.rules"
     [fields]="metaData()!.formFields"
     [customOrgUnitRoots]="customOrgUnitRoots()"
+    [program]="config().program"
     (formUpdate)="onFormUpdate($event)"
     (formValidityUpdate)="onValidityUpdate($event)"
   />

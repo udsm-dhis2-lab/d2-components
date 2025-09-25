@@ -9,18 +9,20 @@
     /> -->
 
     <!-- <ng-dhis2-ui-tracker-form [program]="'lw9fZTamYec'" /> -->
-    <ng-dhis2-ui-program-entry-form
+    <!-- <ng-dhis2-ui-program-entry-form
       [customOrgUnitRoots]="customOrgUnitRoots"
       [config]="programEntryConfig"
       [trackedEntity]="'Tj1TmxFxHVa'"
       (instanceSaveCompleted)="onSaveComplete($event)"
       (formCanceel)="onCancel()"
-    />
+    /> -->
 
     <ng-dhis2-ui-program-entry-form
+      [event]="'UUsAPT2yqyc'"
+      [enrollment]="'XXgdGzHazIj'"
       [config]="programEntryConfig"
       (instanceSaveCompleted)="onSaveComplete($event)"
-      (formCanceel)="onCancel()"
+      (formCancel)="onCancel()"
     />
     <!-- 
     <ng-dhis2-ui-program-entry-form
@@ -29,7 +31,7 @@
         [config]="formConfig"
       /> -->
 
-    <ng-dhis2-ui-program-entry-form
+    <!-- <ng-dhis2-ui-program-entry-form
       [event]="'Lv8KziKr1I8'"
       [enrollment]="'trT6QMNQgxx'"
       [config]="paymentInformationFormConfig"
@@ -39,7 +41,7 @@
       [program]="'lw9fZTamYec'"
       [programStage]="'k4ZFqYqRNDF'"
     />
-  </div>
+  </div> -->
 </div>
 <!-- new FormMetaData({
   programs: [program],
