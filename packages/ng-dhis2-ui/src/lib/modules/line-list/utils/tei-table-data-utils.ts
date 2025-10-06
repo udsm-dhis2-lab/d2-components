@@ -76,6 +76,7 @@ export const getTrackedEntityTableData = (
       id: element.id,
       options: element.optionSet?.options.map((opt) => ({
         name: opt.name,
+        code: opt.code,
         color: opt.style?.color,
       })),
     })
@@ -188,11 +189,11 @@ export const getTrackedEntityTableData = (
 
       const dataElementOption = dataElementOptionMap.get(dataElementId);
       const matchedOption = dataElementOption?.options?.find(
-        (opt: any) => opt.name === value
+        (opt: any) => opt.code === value
       );
 
       row[dataElementId] = {
-        value,
+       value: matchedOption?.name || value,
         ...(getOptionColor(matchedOption) && {
           style: getOptionColor(matchedOption),
         }),
