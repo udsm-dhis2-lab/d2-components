@@ -10,7 +10,7 @@ import {
   TableRow,
   TrackedEntityInstancesResponse,
 } from '../models/line-list.models';
-import { parse, format } from 'date-fns';
+import { parse, format, isValid } from 'date-fns';
 
 export const getTrackedEntityTableData = (
   response: LineListResponse,
@@ -104,12 +104,19 @@ export const getTrackedEntityTableData = (
   const getOptionColor = (option: any): string | undefined =>
     option?.color || option?.style?.color;
 
+//   const formatDate = (value: string): string => {
+//     try {
+//       return format(parse(value, 'yyyy-MM-dd', new Date()), 'dd/MM/yyyy');
+//     } catch {
+//       return value;
+//     }
+//   };
   const formatDate = (value: string): string => {
-    try {
-      return format(parse(value, 'yyyy-MM-dd', new Date()), 'dd/MM/yyyy');
-    } catch {
-      return value;
+    const date = new Date(value);
+    if (isValid(date)) {
+      return format(date, 'dd/MM/yyyy');
     }
+    return value;
   };
 
   const trackedEntityAttributeMap = new Map<string, any>();
