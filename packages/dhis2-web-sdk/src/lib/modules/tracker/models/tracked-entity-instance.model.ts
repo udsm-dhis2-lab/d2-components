@@ -11,6 +11,7 @@ import { Enrollment, IEnrollment } from './enrollment.model';
 import { DHIS2Event, IDHIS2Event } from '../../event/models/event.model';
 import { TrackerRelationship } from './tracker-relationship.model';
 import { Program } from '../../program';
+import { TrackedEntityConfig } from './tracked-entity-config.model';
 
 export interface ProgramOwner {
   ownerOrgUnit: string;
@@ -140,40 +141,19 @@ export class TrackedEntityInstance
   protected _latestEnrollment!: Enrollment;
 
   constructor(
-    trackedEntityInstanceObject?: Partial<TrackedEntityInstanceObject>
+    trackedEntityInstanceObject?: Partial<TrackedEntityInstanceObject>,
+    config?: TrackedEntityConfig
   ) {
     super(trackedEntityInstanceObject);
     if (!isEmpty(this)) {
       this.ownerOrgUnit = this.orgUnit;
       this.trackedEntity = this.trackedEntityInstance || this.trackedEntity;
 
-      this.enrollments = EnrollmentUtil.getEnrollments(
-        this.enrollments || [
-          EnrollmentUtil.generate({
-            date: new Date().toISOString(),
-            program: this.program,
-            trackedEntity: this.trackedEntity,
-            trackedEntityType: this.trackedEntityType,
-            orgUnit: this.orgUnit,
-          }),
-        ],
-        { program: this.program, trackedEntityType: this.trackedEntityType }
-      );
-
-      this.latestEnrollment = EnrollmentUtil.getLatestEnrollment(
-        this.enrollments.filter((enrollment) => {
-          if (!this.program) {
-            return true;
-          }
-
-          return enrollment.program === this.program;
-        }) || []
-      ) as Enrollment;
+      this.#initializeEnrollments(config);
 
       if (!this.program && this.latestEnrollment) {
         this.program = this.latestEnrollment.program;
       }
-
       // Spread event data values as standalone attributes of the class
       this.#spreadEvents();
 
@@ -188,6 +168,38 @@ export class TrackedEntityInstance
 
       this.spreadAttributes!(this.attributes || []);
     }
+  }
+
+  #initializeEnrollments(config?: TrackedEntityConfig) {
+    if (config?.skipEnrollmentGeneration) {
+      this.enrollments = EnrollmentUtil.getEnrollments(this.enrollments || [], {
+        program: this.program,
+        trackedEntityType: this.trackedEntityType,
+      });
+    } else {
+      this.enrollments = EnrollmentUtil.getEnrollments(
+        this.enrollments || [
+          EnrollmentUtil.generate({
+            date: new Date().toISOString(),
+            program: this.program,
+            trackedEntity: this.trackedEntity,
+            trackedEntityType: this.trackedEntityType,
+            orgUnit: this.orgUnit,
+          }),
+        ],
+        { program: this.program, trackedEntityType: this.trackedEntityType }
+      );
+    }
+
+    this.latestEnrollment = EnrollmentUtil.getLatestEnrollment(
+      this.enrollments.filter((enrollment) => {
+        if (!this.program) {
+          return true;
+        }
+
+        return enrollment.program === this.program;
+      }) || []
+    ) as Enrollment;
   }
 
   #spreadLastestEnrollment() {
@@ -309,12 +321,10 @@ export class TrackedEntityInstance
   }
 
   setEnrollment(enrollment: IEnrollment) {
-   // if (!enrollment.attributes || enrollment.attributes.length === 0) {
-      const attributes = this.#getAttributesFromFields();
+    const attributes = this.#getAttributesFromFields();
 
-      enrollment.attributes =
-        attributes.length > 0 ? attributes : this.attributes;
-  //  }
+    enrollment.attributes =
+      attributes.length > 0 ? attributes : this.attributes;
 
     const availableEnrollment = (this.enrollments || []).find(
       (enrollmentItem) => enrollmentItem.enrollment === enrollment.enrollment
@@ -448,7 +458,10 @@ export class TrackedEntityInstance
       .map((relatedEntity) => relatedEntity.trackedEntityInstance);
   }
 
-  updateDataValues(dataValueEntities: Record<string, unknown>, updateTeiOrgUnit?: boolean) {
+  updateDataValues(
+    dataValueEntities: Record<string, unknown>,
+    updateTeiOrgUnit?: boolean
+  ) {
     const dataValueKeys = Object.keys(dataValueEntities);
 
     dataValueKeys.forEach((key) => {
