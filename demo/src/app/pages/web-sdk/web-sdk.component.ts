@@ -150,5 +150,13 @@ export class WebSdkComponent {
     );
 
     console.log('DATA STORE', dataStoreIndexDbResponse);
+
+    const relationshipQuery = await this.d2.trackerModule.trackedEntity
+
+      .setProgram('bWW1WxiP9lY')
+      .setOuMode('ALL')
+      .get();
+
+    console.log('RELATIONSHIP QUERY', relationshipQuery);
   }
 }
