@@ -24,6 +24,7 @@ export class TrackerUrlGenerator extends DataUrlGenerator<TrackerUrlGenerator> {
     this.preferList = params.preferList;
     this.enrollmentStatus = params.enrollmentStatus;
     this.config = params.config;
+    this.baseEndpoint = params.baseEndpoint ?? this.baseEndpoint;
   }
 
   override generate(): string {
