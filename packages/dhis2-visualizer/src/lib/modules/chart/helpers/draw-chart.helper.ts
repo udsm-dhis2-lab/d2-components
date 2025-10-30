@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import { ChartAxisUtil } from '../utils';
-import { ChartSeries } from '../models';
+import { ChartSeries, ChartTitle } from '../models';
 
 export function drawChart(
   incomingAnalyticsObject: any,
@@ -13,7 +13,7 @@ export function drawChart(
 
   let chartObject: any = {
     chart: getChartAttributeOptions(chartConfiguration),
-    title: getChartTitleObject(chartConfiguration, analyticsObject),
+    title: new ChartTitle(chartConfiguration, analyticsObject.metaData).title(),
     subtitle: '',
     credits: getChartCreditsOptions(),
     colors: getChartColors(),
@@ -685,61 +685,6 @@ function getDataLabelsOptions(chartConfiguration: any) {
   }
 
   return dataLabels;
-}
-
-function getChartTitleObject(
-  chartConfiguration: any,
-  analyticsObject: any
-): any {
-  if (chartConfiguration.hideTitle) {
-    return null;
-  }
-
-  const metaData = analyticsObject?.metaData || {};
-  const subtitle = chartConfiguration.zAxisType
-    .map((dimension: any) => {
-      return (metaData[dimension] || [])
-        .map((item: any) => (metaData?.names || {})[item])
-        .join(',');
-    })
-    .filter((item: any) => item)
-    .join(' - ');
-  return {
-    text: subtitle,
-    align: 'center',
-    style: {
-      fontWeight: '400',
-      fontSize: '11px',
-    },
-  };
-}
-
-function getChartSubtitleObject(
-  chartConfiguration: any,
-  analyticsObject: any
-): any {
-  if (chartConfiguration.hideSubtitle) {
-    return null;
-  }
-
-  const metaData = analyticsObject?.metaData || {};
-  const subtitle = chartConfiguration.zAxisType
-    .map((dimension: any) => {
-      return (metaData[dimension] || [])
-        .map((item: any) => (metaData?.names || {})[item])
-        .join(',');
-    })
-    .filter((item: any) => item)
-    .join(' - ');
-
-  return {
-    text: subtitle,
-    align: 'center',
-    style: {
-      fontWeight: '400',
-      fontSize: '12px',
-    },
-  };
 }
 
 function getChartCreditsOptions(): any {

@@ -1,5 +1,6 @@
+import { AnalyticsMetaData } from './analytics-metadata.model';
 import { AnalyticsObject } from '../interfaces';
-import { Row } from './row';
+import { Row } from './row.model';
 
 /**
  * This represents the Analytics header
@@ -112,7 +113,7 @@ export class AnalyticsResult {
    * @returns {*|metaData|{dimensions, names, dx, pe, ou, co}|{ouHierarchy, items, dimensions}}
    */
   get metaData() {
-    return this._data.metaData;
+    return new AnalyticsMetaData(this._data.metaData);
   }
 
   /**
@@ -135,16 +136,16 @@ export class AnalyticsResult {
    *
    * @returns {Object|{id,name,!path}}
    */
-  getDimensionDetailsByName(name: string | number) {
-    var results: { id: any; name: string; path: any }[] = [];
+  // getDimensionDetailsByName(name: string | number) {
+  //   var results: { id: any; name: string; path: any }[] = [];
 
-    if (this.metaData.dimensions) {
-      this.metaData.dimensions[name].forEach((item: any) => {
-        results.push(this.getDimensionDetails(item));
-      });
-    }
-    return results;
-  }
+  //   if (this.metaData.dimensions) {
+  //     this.metaData.dimensions[name].forEach((item: any) => {
+  //       results.push(this.getDimensionDetails(item));
+  //     });
+  //   }
+  //   return results;
+  // }
 
   /**
    * Gets the ou of the analytics object
@@ -152,12 +153,9 @@ export class AnalyticsResult {
    * @returns {Array}
    */
   get rows(): any[] {
-    let rows: Row[] = [];
-
-    this._data.rows.forEach((row: any[]) => {
-      rows.push(new Row(row, this.headers, this.metaData));
-    });
-    return rows;
+    return (this._data.rows || []).map(
+      (row: any[]) => new Row(row, this.headers, this.metaData)
+    );
   }
 
   /**
@@ -166,23 +164,23 @@ export class AnalyticsResult {
    *
    * @returns {Object|{id,name,!path}}
    */
-  getDimensionDetails(id: string | number) {
-    var name = '';
+  // getDimensionDetails(id: string | number) {
+  //   var name = '';
 
-    if (this.metaData.names) {
-      name = this.metaData.names[id];
-    } else if (this.metaData.items) {
-      name = this.metaData.items[id] ? this.metaData.items[id].name : undefined;
-    }
-    return {
-      id: id,
-      name: name,
-      path:
-        this.metaData.ouHierarchy && this.metaData.ouHierarchy[id] !== undefined
-          ? this.metaData.ouHierarchy[id]
-          : undefined,
-    };
-  }
+  //   if (this.metaData.names) {
+  //     name = this.metaData.names[id];
+  //   } else if (this.metaData.items) {
+  //     name = this.metaData.items[id] ? this.metaData.items[id].name : undefined;
+  //   }
+  //   return {
+  //     id: id,
+  //     name: name,
+  //     path:
+  //       this.metaData.ouHierarchy && this.metaData.ouHierarchy[id] !== undefined
+  //         ? this.metaData.ouHierarchy[id]
+  //         : undefined,
+  //   };
+  // }
   /**
    * Gets the Analytics height
    *

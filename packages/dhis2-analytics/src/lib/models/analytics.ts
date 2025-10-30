@@ -1,5 +1,7 @@
-import { AnalyticsObject, AnalyticsMetadata } from '../interfaces';
-import { AnalyticsResult, Fetcher } from '../utilities';
+import { AnalyticsObject } from '../interfaces';
+import { Fetcher } from '../utilities';
+import { AnalyticsResult } from './analytics-result.model';
+import { AnalyticsMetaData } from './analytics-metadata.model';
 
 /**
  * @description
@@ -15,7 +17,7 @@ export class Analytics extends Fetcher {
    *
    * @param {Number} version - The version of dhis analytics structure to use
    */
-  constructor(version: number = 25) {
+  constructor(version = 25) {
     super();
     if (typeof version === 'boolean') {
       if (version) {
@@ -123,74 +125,9 @@ export class Analytics extends Fetcher {
    */
   standardizeAnalytics(
     analyticsObject: AnalyticsObject,
-    version: number = 25
+    version = 25
   ): AnalyticsResult {
-    if (typeof version === 'boolean') {
-      if (version) {
-        version = 25;
-      } else {
-        version = 26;
-      }
-    }
-    // if Serverside Event clustering do nothing
-    if (analyticsObject.count) {
-      return new AnalyticsResult(analyticsObject);
-    }
-    let sanitizedAnalyticsObject: AnalyticsObject = {
-      headers: [],
-      metaData: {
-        dimensions: {},
-        names: {},
-        dx: [],
-        pe: [],
-        ou: [],
-        co: [],
-      },
-      rows: [],
-    };
-
-    if (analyticsObject) {
-      /**
-       * Check headers
-       */
-      if (analyticsObject.headers) {
-        analyticsObject.headers.forEach((header) => {
-          try {
-            let newHeader = header;
-
-            sanitizedAnalyticsObject.headers.push(newHeader);
-          } catch (e) {
-            console.warn('Invalid header object');
-          }
-        });
-      }
-
-      /**
-       * Check metaData
-       */
-      if (analyticsObject.metaData) {
-        try {
-          let sanitizedMetadata = this.getSanitizedAnalyticsMetadata(
-            analyticsObject.metaData,
-            version
-          );
-
-          sanitizedAnalyticsObject.metaData = sanitizedMetadata;
-        } catch (e) {
-          console.warn('Invalid metadata object');
-        }
-      }
-
-      /**
-       * Check rows
-       */
-      if (analyticsObject.rows) {
-        sanitizedAnalyticsObject.rows = analyticsObject.rows;
-      }
-    }
-    sanitizedAnalyticsObject.height = analyticsObject.height;
-    sanitizedAnalyticsObject.width = analyticsObject.width;
-    return new AnalyticsResult(sanitizedAnalyticsObject);
+    return new AnalyticsResult(analyticsObject);
   }
 
   /**
@@ -200,60 +137,66 @@ export class Analytics extends Fetcher {
    * @param {Number} version - The version of dhis analytics structure to use
    * @returns {Object} - Object with the analytics metadata
    */
-  getSanitizedAnalyticsMetadata(
-    analyticMetadata: AnalyticsMetadata,
-    version: number
-  ): object {
-    let sanitizedMetadata: AnalyticsMetadata = {};
+  // getSanitizedAnalyticsMetadata(
+  //   analyticMetadata: AnalyticsMetaData,
+  //   version: number
+  // ): object {
+  //   let sanitizedMetadata: any = {
+  //     names: {},
+  //   };
 
-    if (analyticMetadata) {
-      if (analyticMetadata.ouHierarchy) {
-        sanitizedMetadata.ouHierarchy = analyticMetadata.ouHierarchy;
-      }
-      if (version < 26) {
-        // Get old structure
-        sanitizedMetadata.names = {};
-        if (analyticMetadata.names) {
-          sanitizedMetadata.names = analyticMetadata.names;
-        } else if (analyticMetadata.items) {
-          Object.keys(analyticMetadata.items).forEach((nameKey) => {
-            sanitizedMetadata.names[nameKey] =
-              analyticMetadata.items[nameKey].name;
-          });
-        }
+  //   if (analyticMetadata) {
+  //     if (analyticMetadata.ouHierarchy) {
+  //       sanitizedMetadata.ouHierarchy = analyticMetadata.ouHierarchy;
+  //     }
+  //     if (version < 26) {
+  //       // Get old structure
+  //       sanitizedMetadata.names = {};
+  //       if (analyticMetadata.names) {
+  //         sanitizedMetadata.names = analyticMetadata.names;
+  //       } else if (analyticMetadata.items) {
+  //         Object.keys(analyticMetadata.items).forEach((nameKey) => {
+  //           sanitizedMetadata.names[nameKey] =
+  //             analyticMetadata.items[nameKey]?.['name'];
+  //         });
+  //       }
 
-        if (analyticMetadata.dimensions) {
-          Object.keys(analyticMetadata.dimensions).forEach((nameKey) => {
-            sanitizedMetadata[nameKey] = analyticMetadata.dimensions[nameKey];
-          });
-        }
-      } else {
-        // Get new structure
-        sanitizedMetadata.items = {};
-        if (analyticMetadata.items) {
-          sanitizedMetadata.items = analyticMetadata.items;
-        } else if (analyticMetadata.names) {
-          Object.keys(analyticMetadata.items).forEach((nameKey) => {
-            analyticMetadata.items[nameKey] = {
-              name: analyticMetadata.names[nameKey],
-            };
-          });
-        }
+  //       if (analyticMetadata.dimensions) {
+  //         Object.keys(analyticMetadata.dimensions).forEach((nameKey) => {
+  //           sanitizedMetadata[nameKey] = (analyticMetadata.dimensions as any)[
+  //             nameKey
+  //           ];
+  //         });
+  //       }
+  //     } else {
+  //       // Get new structure
+  //       sanitizedMetadata.items = {};
+  //       if (analyticMetadata.items) {
+  //         sanitizedMetadata.items = analyticMetadata.items;
+  //       } else if (analyticMetadata.names) {
+  //         Object.keys(analyticMetadata.items).forEach((nameKey) => {
+  //           analyticMetadata.items[nameKey] = {
+  //             name: analyticMetadata.names![nameKey],
+  //           };
+  //         });
+  //       }
 
-        if (!analyticMetadata.dimensions) {
-          sanitizedMetadata.dimensions = {};
-          Object.keys(analyticMetadata).forEach((nameKey) => {
-            if (['names', 'items', 'dimensions'].indexOf(nameKey) === -1) {
-              sanitizedMetadata.dimensions[nameKey] = analyticMetadata[nameKey];
-            }
-          });
-        } else {
-          sanitizedMetadata.dimensions = analyticMetadata.dimensions;
-        }
-      }
-    }
-    return sanitizedMetadata;
-  }
+  //       if (!analyticMetadata.dimensions) {
+  //         sanitizedMetadata.dimensions = {};
+  //         Object.keys(analyticMetadata).forEach((nameKey) => {
+  //           if (['names', 'items', 'dimensions'].indexOf(nameKey) === -1) {
+  //             sanitizedMetadata.dimensions[nameKey] = (analyticMetadata as any)[
+  //               nameKey
+  //             ];
+  //           }
+  //         });
+  //       } else {
+  //         sanitizedMetadata.dimensions = analyticMetadata.dimensions;
+  //       }
+  //     }
+  //   }
+  //   return sanitizedMetadata;
+  // }
 
   /**
    * Gets the url for fetching

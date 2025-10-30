@@ -45,16 +45,6 @@ export class ChartVisualizer extends BaseVisualizer implements Visualizer {
 
   /**
    *
-   * @param chartType
-   * @returns
-   */
-  setChartType(chartType: string) {
-    // this._chart = chartType;
-    return this;
-  }
-
-  /**
-   *
    */
   draw() {
     if (this._config) {

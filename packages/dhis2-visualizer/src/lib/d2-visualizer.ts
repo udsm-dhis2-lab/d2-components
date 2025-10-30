@@ -393,8 +393,7 @@ export class D2Visualizer {
           .setId(this.id)
           .setConfig(this.config)
           .setData(data)
-          .setType(this.visualizationType as ChartType)
-          .setChartType(this.chartType);
+          .setType(this.visualizationType as ChartType);
 
         this.visualizer.draw();
         return this;

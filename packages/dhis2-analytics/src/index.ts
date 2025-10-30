@@ -1,12 +1,13 @@
 import { MultiFetcher, Runner } from './lib/utilities';
 import { Analytics } from './lib/models/analytics';
 import { EventAnalytics } from './lib/models/event-analytics';
-import { AnalyticsResult } from './lib/utilities/analytics-result';
+import { AnalyticsResult } from './lib/models/analytics-result.model';
 import { IdentifiableObject } from './lib/models/identifiable-object';
 import { SQLViewData } from './lib/models/sql-view';
 import { Dependency } from './lib/utilities/dependency';
 import { Fetcher } from './lib/utilities/fetcher';
 import { FnConfig } from './lib/interfaces/config.interface';
+import { AnalyticsMetaData } from './lib/models/analytics-metadata.model';
 /**
  * This is the main holder for the functionalities of the function
  * @namespace
@@ -26,7 +27,7 @@ function all(fetchers: Fetcher[]) {
   return new MultiFetcher(fetchers);
 }
 
-let Fn = {
+const Fn = {
   Analytics,
   EventAnalytics,
   AnalyticsResult,
@@ -71,4 +72,5 @@ export {
   Runner,
   MultiFetcher,
   Dependency,
+  AnalyticsMetaData,
 };
