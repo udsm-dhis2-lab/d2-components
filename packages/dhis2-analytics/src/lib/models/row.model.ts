@@ -1,4 +1,5 @@
-import { AnalyticsMetadata, DimensionItem } from '../interfaces';
+import { DimensionItem } from '../interfaces';
+import { AnalyticsMetaData } from './analytics-metadata.model';
 
 /**
  * This represents the Analytics Results
@@ -10,12 +11,12 @@ export class Row {
    *
    * @param {Array} row - The analytics row
    * @param {Array} headers - The analytics headers
-   * @param {AnalyticsMetadata} metaData - The analytics metadata
+   * @param {AnalyticsMetaData} metaData - The analytics metadata
    */
   constructor(
     public row: Array<any>,
     public headers: Array<any>,
-    public metaData: AnalyticsMetadata
+    public metaData: AnalyticsMetaData
   ) {}
 
   /**
@@ -24,7 +25,7 @@ export class Row {
    * @returns {DimensionItem} - The data object with name and id
    */
   dimension(id: string): DimensionItem {
-    var i = -1,
+    let i = -1,
       name = '';
 
     this.headers.forEach((header, index) => {
@@ -32,13 +33,9 @@ export class Row {
         i = index;
       }
     });
-    if (this.metaData.names) {
-      name = this.metaData.names[this.row[i]];
-    } else if (this.metaData.items) {
-      name = this.metaData.items[this.row[i]]
-        ? this.metaData.items[this.row[i]].name
-        : undefined;
-    }
+
+    name = this.metaData.names[this.row[i]];
+
     return {
       id: this.row[i],
       name: name,

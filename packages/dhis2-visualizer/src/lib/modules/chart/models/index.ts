@@ -3,3 +3,4 @@
 // license that can be found in the LICENSE file.
 export * from './multi-axis-type.model';
 export * from './chart-series.model';
+export * from './chart-title.model';
