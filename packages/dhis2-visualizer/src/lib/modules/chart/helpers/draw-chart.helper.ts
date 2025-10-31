@@ -1,22 +1,23 @@
 import * as _ from 'lodash';
 import { ChartAxisUtil } from '../utils';
-import { ChartSeries, ChartTitle } from '../models';
+import { ChartColor, ChartSeries, ChartTitle } from '../models';
+import { AnalyticsResult } from '@iapps/function-analytics';
 
 export function drawChart(
-  incomingAnalyticsObject: any,
+  analyticsResult: AnalyticsResult,
   chartConfiguration: any
 ): any {
   const analyticsObject = sanitizeAnalyticsBasedOnConfiguration(
-    incomingAnalyticsObject,
+    analyticsResult,
     chartConfiguration
   );
 
   let chartObject: any = {
     chart: getChartAttributeOptions(chartConfiguration),
-    title: new ChartTitle(chartConfiguration, analyticsObject.metaData).title(),
+    title: new ChartTitle(chartConfiguration, analyticsResult.metaData).title,
     subtitle: '',
     credits: getChartCreditsOptions(),
-    colors: getChartColors(),
+    colors: new ChartColor().colors,
     plotOptions: getPlotOptions(chartConfiguration),
     tooltip: getTooltipOptions(chartConfiguration),
     exporting: getChartExportingOptions(),
@@ -693,27 +694,6 @@ function getChartCreditsOptions(): any {
   };
 }
 
-function getChartColors(): any[] {
-  return [
-    '#A9BE3B',
-    '#558CC0',
-    '#D34957',
-    '#FF9F3A',
-    '#968F8F',
-    '#B7409F',
-    '#FFDA64',
-    '#4FBDAE',
-    '#B78040',
-    '#676767',
-    '#6A33CF',
-    '#4A7833',
-    '#434348',
-    '#7CB5EC',
-    '#F7A35C',
-    '#F15C80',
-  ];
-}
-
 function getChartExportingOptions(): any {
   return {
     buttons: {
@@ -1186,6 +1166,7 @@ function mapAnalyticsToCumulativeFormat(
   yAxisType: any
 ) {
   const newAnalyticsObject = _.clone(analyticsObject);
+  console.log(newAnalyticsObject);
 
   if (analyticsObject) {
     const yAxisDimensionArray = analyticsObject.metaData[yAxisType];

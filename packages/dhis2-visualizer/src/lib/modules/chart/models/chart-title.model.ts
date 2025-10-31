@@ -6,7 +6,7 @@ export class ChartTitle {
     public metaData: AnalyticsMetaData
   ) {}
 
-  title(): any | null {
+  get title(): any | null {
     if (this.config.hideTitle) {
       return null;
     }

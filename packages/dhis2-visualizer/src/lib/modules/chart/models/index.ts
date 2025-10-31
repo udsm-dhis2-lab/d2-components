@@ -4,3 +4,4 @@
 export * from './multi-axis-type.model';
 export * from './chart-series.model';
 export * from './chart-title.model';
+export * from './chart-color.model';

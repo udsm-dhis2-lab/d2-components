@@ -373,7 +373,7 @@ export class D2Visualizer {
     const data =
       this.visualizationType !== 'MAP'
         ? !this.trackedEntityInstances
-          ? this.dataAnalytics || (await this._getData())?._data
+          ? this.dataAnalytics || (await this._getData())
           : undefined
         : undefined;
 
