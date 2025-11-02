@@ -130,6 +130,7 @@ export class D2Visualizer {
    *
    * @param chartType
    * @returns
+   * @deprecated
    */
   setChartType(chartType: string) {
     this.chartType = chartType;

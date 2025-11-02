@@ -5,7 +5,7 @@ import ExportData from 'highcharts/modules/export-data';
 import HighchartsMore from 'highcharts/highcharts-more';
 import HighchartDrilldown from 'highcharts/modules/drilldown';
 import HighchartGauge from 'highcharts/modules/solid-gauge';
-import HighchartsGroupedCategories from 'highcharts-grouped-categories';
+// import HighchartsGroupedCategories from 'highcharts-grouped-categories';
 
 import {
   BaseVisualizer,
@@ -16,8 +16,9 @@ import { VisualizationDownloader } from '../../shared/models/visualization-downl
 import { VisualizationLayout } from '../../shared/models/visualization-layout.model';
 import { ChartType } from '../../shared/models/visualization-type.model';
 import { drawChart } from './helpers/draw-chart.helper';
+import { ChartObject } from './models';
 
-HighchartsGroupedCategories(Highcharts);
+// HighchartsGroupedCategories(Highcharts);
 Exporting(Highcharts);
 OfflineExporting(Highcharts);
 ExportData(Highcharts);
@@ -51,7 +52,12 @@ export class ChartVisualizer extends BaseVisualizer implements Visualizer {
       this._config.config.type = this._type.toLowerCase();
     }
 
-    const chartObject = drawChart(this._data, this._config);
+    const chartObject = drawChart(this._data, this._config as any);
+    console.log('INITIAL CHART OBJECT', chartObject);
+    console.log(
+      'NEW CHART OBJECT',
+      new ChartObject(this._data, this._config as any)
+    );
 
     setTimeout(() => {
       this.dispose();

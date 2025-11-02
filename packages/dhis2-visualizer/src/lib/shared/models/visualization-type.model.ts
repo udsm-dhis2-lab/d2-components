@@ -10,6 +10,7 @@ export type ChartType =
   | 'AREA'
   | 'RADAR'
   | 'SOLIDGAUGE';
+
 export type VisualizationType =
   | ChartType
   | 'CHART'
