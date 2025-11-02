@@ -52,7 +52,7 @@ export class ChartAxisUtil {
     return items;
   }
 
-  static sanitizeYAxisTextAlignment(textAlign: 'LEFT' | 'RIGHT'): string {
+  static formatAxisTextAlignment(textAlign: 'LEFT' | 'RIGHT'): string {
     switch (textAlign) {
       case 'LEFT':
         return 'low';

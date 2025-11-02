@@ -2,6 +2,7 @@ import * as _ from 'lodash';
 import { ChartAxisUtil } from '../utils';
 import { ChartColor, ChartSeries, ChartTitle } from '../models';
 import { AnalyticsResult } from '@iapps/function-analytics';
+import { ChartType, VisualizationConfiguration } from '../../../shared';
 
 export function drawChart(
   analyticsResult: AnalyticsResult,
@@ -704,10 +705,6 @@ function getChartExportingOptions(): any {
   };
 }
 
-function getChartLabelOptions(chartConfiguration: any) {
-  return {};
-}
-
 function getTooltipOptions(chartConfiguration: any) {
   const tooltipChartType = getAllowedChartType(chartConfiguration.type);
   let tooltipObject: any = {};
@@ -937,7 +934,7 @@ function getXAxisOptions(xAxisCategories: any[], chartConfiguration: any) {
           title: {
             text: xAxisConfig?.title?.text,
             margin: 16,
-            align: ChartAxisUtil.sanitizeYAxisTextAlignment(
+            align: ChartAxisUtil.formatAxisTextAlignment(
               xAxisConfig?.title?.fontStyle?.textAlign
             ),
             style: {
@@ -1055,7 +1052,7 @@ function getYAxisOptions(chartConfiguration: any) {
         title: {
           text: yAxis?.title?.text,
           margin: 16,
-          align: ChartAxisUtil.sanitizeYAxisTextAlignment(
+          align: ChartAxisUtil.formatAxisTextAlignment(
             yAxis?.title?.fontStyle?.textAlign
           ),
           style: {
@@ -1166,7 +1163,6 @@ function mapAnalyticsToCumulativeFormat(
   yAxisType: any
 ) {
   const newAnalyticsObject = _.clone(analyticsObject);
-  console.log(newAnalyticsObject);
 
   if (analyticsObject) {
     const yAxisDimensionArray = analyticsObject.metaData[yAxisType];
@@ -1301,6 +1297,9 @@ function getSanitizedChartObject(chartObject: any, chartConfiguration: any) {
   return {
     ...chartObject,
     series: newSeries,
-    xAxis: { ...chartObject.xAxis, categories: newCategories },
+    xAxis: {
+      ...chartObject.xAxis,
+      categories: newCategories.map((category) => category.name),
+    },
   };
 }
