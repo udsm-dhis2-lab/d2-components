@@ -21,6 +21,10 @@ export class AnalyticsMetaData {
     this.ouHierarchy = metaData.ouHierarchy;
   }
 
+  getName(id: string): string {
+    return this.names[id];
+  }
+
   #setNames(metaDataItems: Record<string, AnalyticsMetaDataItem>): void {
     this.names = Object.keys(metaDataItems || {}).reduce(
       (itemEntity, itemKey) => {
