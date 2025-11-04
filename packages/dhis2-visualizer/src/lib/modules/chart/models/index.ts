@@ -7,4 +7,7 @@ export * from './chart-title.model';
 export * from './chart-color.model';
 export * from './chart-object.model';
 export * from './chart-option.model';
+export * from './chart-axis-title.model';
+export * from './chart-axis-label.model';
 export * from './chart-x-axis.model';
+export * from './chart-y-axis.model';

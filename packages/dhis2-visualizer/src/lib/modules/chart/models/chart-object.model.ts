@@ -8,6 +8,7 @@ import {
   ChartTooltipOptions,
 } from './chart-option.model';
 import { ChartXAxis } from './chart-x-axis.model';
+import { ChartYAxis } from './chart-y-axis.model';
 
 export class ChartObject {
   title: Partial<ChartTitle>;
@@ -19,7 +20,8 @@ export class ChartObject {
     enabled: false,
   };
   exporting = this.#getExportingOptions();
-  xAxis: ChartXAxis;
+  xAxis: ChartXAxis[];
+  yAxis: ChartYAxis[];
 
   constructor(analyticsResult: AnalyticsResult, config: any) {
     this.title = new ChartTitle(config, analyticsResult.metaData).title;
@@ -29,7 +31,8 @@ export class ChartObject {
     this.plotOptions = chartOption.plotOptions;
     this.tooltip = chartOption.tooltipOptions;
 
-    this.xAxis = new ChartXAxis(config);
+    this.xAxis = ChartXAxis.getAxes(config, analyticsResult.metaData);
+    this.yAxis = ChartYAxis.getAxes(config);
   }
 
   #getExportingOptions() {
