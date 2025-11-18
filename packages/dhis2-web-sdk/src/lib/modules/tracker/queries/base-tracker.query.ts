@@ -387,6 +387,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
         ? 'tracker/enrollments'
         : 'tracker/trackedEntities';
 
+    // Find if there are any data element filters, in order to fetch from event endpoint
     const dataElementFilters = (this.filters || []).filter(
       (filter) => filter.attributeType === 'DATA_ELEMENT'
     );

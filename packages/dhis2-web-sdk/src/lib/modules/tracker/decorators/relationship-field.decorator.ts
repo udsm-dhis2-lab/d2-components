@@ -56,9 +56,14 @@ export function RelationshipFieldDecorator(
         if (RelationshipClass) {
           return multiple
             ? relationships.map(
-                (relationship) => new RelationshipClass(relationship)
+                (relationship) =>
+                  new RelationshipClass(relationship, {
+                    skipEnrollmentGeneration: true,
+                  })
               )
-            : new RelationshipClass((relationships || [])[0] || {});
+            : new RelationshipClass((relationships || [])[0] || {}, {
+                skipEnrollmentGeneration: true,
+              });
         }
 
         return relationships;
