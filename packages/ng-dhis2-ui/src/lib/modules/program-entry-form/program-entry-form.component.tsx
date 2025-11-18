@@ -61,6 +61,10 @@ export class ProgramEntryFormModule {
     | BaseTrackerQuery<TrackedEntityInstance>
     | BaseEventQuery<DHIS2Event>;
 
+  preprocess = input<(payload: {
+   instance: TrackedEntityInstance | DHIS2Event;
+  }) => void>();
+
   @Output() instanceSave = new EventEmitter<
     TrackedEntityInstance | DHIS2Event
   >();
@@ -216,6 +220,13 @@ export class ProgramEntryFormModule {
     | D2EventResponse<DHIS2Event>
     | null
   > {
+
+  if (this.preprocess() && this.instance()) {
+    this.preprocess()!({
+      instance: this.instance()!,
+    });
+  }
+
     switch (this.config().formType) {
       case 'TRACKER': {
         if (this.config().autoComplete) {
