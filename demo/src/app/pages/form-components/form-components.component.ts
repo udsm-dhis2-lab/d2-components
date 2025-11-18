@@ -4,7 +4,12 @@
 /* eslint-disable @angular-eslint/use-lifecycle-interface */
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { D2Window, OrgUnitField } from '@iapps/d2-web-sdk';
+import {
+  D2Window,
+  DHIS2Event,
+  OrgUnitField,
+  TrackedEntityInstance,
+} from '@iapps/d2-web-sdk';
 import {
   D2FormModule,
   DateField,
@@ -190,30 +195,68 @@ export class FormComponentsComponent {
   //   ],
   // });
   programEntryConfig = new ProgramEntryFormConfig({
-      program: 'Gy65kx8gQv6',
-      programStage: 'edx4DaMDAyo',
-      hideRegistrationUnit: true,
-      formType: 'EVENT',
-      displayType: 'FLAT',
-      autoComplete: true,
-      autoAssignedValues: [
-        {
-          field: 'orgUnit',
-          value: "'jsYgaCu4556'",
-        },
-        {
-          field: 'occurredAt',
-          value: format(new Date(), 'yyyy-MM-dd'),
-        },
-      ],
-      formFieldExtensions: [
-        {
-          id: 'seUJl7AEZtS',
-          accept: ['.pdf'],
-          sizeLimit: 2 * 1024 * 1024,
-        },
-      ],
-    })
+    program: 'Gy65kx8gQv6',
+    programStage: 'edx4DaMDAyo',
+    hideRegistrationUnit: true,
+    formType: 'EVENT',
+    displayType: 'FLAT',
+    autoComplete: true,
+    autoAssignedValues: [
+      {
+        field: 'orgUnit',
+        value: "'jsYgaCu4556'",
+      },
+      {
+        field: 'occurredAt',
+        value: format(new Date(), 'yyyy-MM-dd'),
+      },
+    ],
+    formFieldExtensions: [
+      {
+        id: 'seUJl7AEZtS',
+        accept: ['.pdf'],
+        sizeLimit: 2 * 1024 * 1024,
+      },
+    ],
+  });
+
+  // beforeSave = ({
+  //   instance,
+  // }: {
+  //   instance: TrackedEntityInstance | DHIS2Event;
+  // }) => {
+  //   console.log('Preprocessing before save', instance);
+  //   if ('updateDataValues' in instance) {
+  //     instance.program = 'hello';
+  //     console.log('Updating data value before save', instance);
+  //     instance.updateDataValues({
+  //       seUJl7AEZtS: 'New Value',
+  //     });
+  //   }
+  // };
+
+
+  beforeSave = ({
+    instance,
+  }: {
+    instance: TrackedEntityInstance | DHIS2Event;
+  }) => {
+  // console.log('Original instance inside form:', instance);
+
+  // Make changes here
+  if ('updateDataValues' in instance) {
+    instance.updateDataValues({
+      seUJl7AEZtS: 'New Value',
+    });
+
+    instance.program = 'hello';
+  }
+
+  // IMPORTANT: return the mutated instance
+  return instance;
+};
+
+
   // new ProgramEntryFormConfig({
   //   program: 'lw9fZTamYec',
   //   displayType: 'FLAT',
