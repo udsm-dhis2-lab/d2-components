@@ -59,6 +59,8 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
   isValueAssigned = input<boolean>();
   dataId = input<string>();
   customOrgUnitRoots = input<CustomOrgUnitConfig[]>();
+   //TODO: FIND BETTER WAY TO PASS PROGRAM TO FIELDS i.e field extensions
+  program = input<string>();
 
   value = model<string>();
   protected value$ = toObservable(this.value);
@@ -425,7 +427,14 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
                   onUploadSuccess={(fileId: string) => {
                     onValueChange(fileId);
                   }}
+                  onRemoveFile={() => {
+                    onValueChange('');
+                  }}
                   extension={this.field()?.extension}
+                  value={value}
+                  metaType={this.field().metaType}
+                  dataId={this.dataId()}
+                  program={this.program()}
                 />
               </>
             );

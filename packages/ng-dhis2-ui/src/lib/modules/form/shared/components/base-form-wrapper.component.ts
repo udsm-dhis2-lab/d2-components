@@ -33,6 +33,9 @@ export class BaseFormWrapperComponent implements OnDestroy {
   formMetaData = input<IFormMetadata>();
   programEntryFormMetaData = input<IProgramEntryFormMetaData>();
   programStage = input<string>();
+ //TODO: FIND BETTER WAY TO PASS PROGRAM TO FIELDS i.e field extensions
+  program = input<string>();
+
 
   ruleActions = signal<IMetadataRuleAction[]>([]);
   isFormValid = signal<boolean>(true);

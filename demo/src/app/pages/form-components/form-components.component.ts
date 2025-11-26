@@ -4,7 +4,12 @@
 /* eslint-disable @angular-eslint/use-lifecycle-interface */
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { D2Window, OrgUnitField } from '@iapps/d2-web-sdk';
+import {
+  D2Window,
+  DHIS2Event,
+  OrgUnitField,
+  TrackedEntityInstance,
+} from '@iapps/d2-web-sdk';
 import {
   D2FormModule,
   DateField,
@@ -97,6 +102,10 @@ export class FormComponentsComponent {
         //   baseConfidence: 80,
         // },
       ],
+      // field: 'RKOZF4JJNYm',
+      // orgUnit: 'lgZ6HfZaj3f',
+      // level: OrgUnitLevel.FACILITY,
+      // confidence: 90,
     },
     // {
     //   field: 'RKOZF4JJNYm',
@@ -333,32 +342,120 @@ export class FormComponentsComponent {
   //   ],
   // });
 
+  // programEntryConfig = new ProgramEntryFormConfig({
+  //   program: 'UelF2YAJLli',
+  //   programStage: 'KZ352r6pzo6',
+  //   hideRegistrationUnit: true,
+  //   formType: 'EVENT',
+  //   displayType: 'FLAT',
+  //   autoComplete: true,
+  //   hideEnrollmentDate: true,
+  //   autoAssignedValues: [
+  //     {
+  //       field: 'occurredAt',
+  //       value: '2025-09-19',
+  //     },
+  //     {
+  //       field: 'orgUnit',
+  //       value: 'BIzrwoknkg5',
+  //     },
+  //   ],
+  //   formFieldExtensions: [
+  //     {
+  //       id: 'gdKi4BcnrhR',
+  //      optionsSourceCode: 'District',
+  //     },
+  //   ],
+  // });
   programEntryConfig = new ProgramEntryFormConfig({
-    program: 'lw9fZTamYec',
+    program: 'Gy65kx8gQv6',
+    programStage: 'edx4DaMDAyo',
+    hideRegistrationUnit: true,
+    formType: 'EVENT',
     displayType: 'FLAT',
-    formType: 'TRACKER',
-    excludeProgramStages: true,
-    // excludeInheritedAttributes: true,
-
-    hideRegistrationUnit: false,
-    hideEnrollmentDate: true,
     autoComplete: true,
     autoAssignedValues: [
       {
-        field: 'batchNumber',
-        value: 'ND_BATCH_62712406',
+        field: 'orgUnit',
+        value: "'jsYgaCu4556'",
+      },
+      {
+        field: 'occurredAt',
+        value: format(new Date(), 'yyyy-MM-dd'),
       },
     ],
-    hideCustomAssignedFields: true,
     formFieldExtensions: [
       {
         id: 'seUJl7AEZtS',
-        accept: ['.pdf', '.docx', '.zip'],
+        accept: ['.pdf'],
         sizeLimit: 2 * 1024 * 1024,
       },
     ],
-    updateTeiOrgUnit: true,
   });
+
+  // beforeSave = ({
+  //   instance,
+  // }: {
+  //   instance: TrackedEntityInstance | DHIS2Event;
+  // }) => {
+  //   console.log('Preprocessing before save', instance);
+  //   if ('updateDataValues' in instance) {
+  //     instance.program = 'hello';
+  //     console.log('Updating data value before save', instance);
+  //     instance.updateDataValues({
+  //       seUJl7AEZtS: 'New Value',
+  //     });
+  //   }
+  // };
+
+
+  beforeSave = ({
+    instance,
+  }: {
+    instance: TrackedEntityInstance | DHIS2Event;
+  }) => {
+  // console.log('Original instance inside form:', instance);
+
+  // Make changes here
+  if ('updateDataValues' in instance) {
+    instance.updateDataValues({
+      seUJl7AEZtS: 'New Value',
+    });
+
+    instance.program = 'hello';
+  }
+
+  // IMPORTANT: return the mutated instance
+  return instance;
+};
+
+
+  // new ProgramEntryFormConfig({
+  //   program: 'lw9fZTamYec',
+  //   displayType: 'FLAT',
+  //   formType: 'TRACKER',
+  //   excludeProgramStages: true,
+  //   // excludeInheritedAttributes: true,
+
+  //   hideRegistrationUnit: false,
+  //   hideEnrollmentDate: true,
+  //   autoComplete: true,
+  //   autoAssignedValues: [
+  //     {
+  //       field: 'batchNumber',
+  //       value: 'ND_BATCH_62712406',
+  //     },
+  //   ],
+  //   hideCustomAssignedFields: true,
+  //   formFieldExtensions: [
+  //     {
+  //       id: 'seUJl7AEZtS',
+  //       accept: ['.pdf', '.docx', '.zip'],
+  //       sizeLimit: 2 * 1024 * 1024,
+  //     },
+  //   ],
+  //   updateTeiOrgUnit: true,
+  // });
 
   //   programEntryConfig =  ProgramEntryFormConfig({
   //     program: 'Gy65kx8gQv6',
@@ -390,6 +487,7 @@ export class FormComponentsComponent {
     //   .setEvent('ctmcl4b26Mk')
     //   .get();
     // console.log(eventResult.data);
+    //code: District
   }
   async onCancel() {
     console.log('cancel');

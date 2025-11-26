@@ -1,5 +1,5 @@
 import { sortBy } from 'lodash';
-import { FieldType, IFieldDropdown } from '../interfaces';
+import { FieldType, FormFieldExtension, IFieldDropdown } from '../interfaces';
 
 export class FieldDropdown implements IFieldDropdown {
   key!: string;
@@ -23,7 +23,24 @@ export class FieldDropdown implements IFieldDropdown {
     };
   }
 
-  static getDropdownOptions(field: any, locale?: string): FieldDropdown[] {
+  static getDropdownOptions(field: any, locale?: string, extension?: FormFieldExtension): FieldDropdown[] {
+        if (
+      extension?.organisationUnits &&
+      extension.organisationUnits.length > 0
+    ) {
+      return sortBy(
+        extension.organisationUnits.map(
+          (orgUnit: { id: any; name: any }) => {
+            return new FieldDropdown({
+              key: orgUnit.id,
+              value: orgUnit.id,
+              label: orgUnit.name,
+            });
+          }
+        ),
+        'label' 
+      );
+    }
     if (field?.valueType === FieldType.BOOLEAN) {
       return [
         {

@@ -21,7 +21,7 @@
 ></ng-dhis2-ui-line-list>
 
 <!-- <h5>Header Bar component</h5> -->
-<ng-dhis2-ui-header-bar></ng-dhis2-ui-header-bar>
+<!-- <ng-dhis2-ui-header-bar></ng-dhis2-ui-header-bar>
 
 <h5>Button component</h5>
 <ng-dhis2-ui-button
@@ -39,7 +39,7 @@
 <ng-dhis2-ui-period-selector
   [selectedPeriods]="selectedPeriods"
   (selectPeriods)="onSelectPeriods($event)"
-></ng-dhis2-ui-period-selector>
+></ng-dhis2-ui-period-selector> -->
 
 <!-- <ng-dhis2-ui-period-selector-modal
   [selectedPeriods]="selectedPeriods"
@@ -325,6 +325,13 @@
   [showSaveButton]="false"
   class="w-full"
 /> -->
+
+ <ng-dhis2-ui-program-entry-form
+      [event]="'Q6a515VSBSH'"
+      [enrollment]="'oWmjB3QXKPp'"
+      [config]="formConfig"
+    />
+
 <div class="p-4">
   <ng-dhis2-ui-line-list
     [programId]="'bWW1WxiP9lY'"
@@ -337,7 +344,7 @@
     [showFilters]="true"
     (actionSelected)="onActionSelected($event)"
   ></ng-dhis2-ui-line-list>
-
+<!-- 
   <div class="p-3">
     <ng-dhis2-ui-breadcrumb
       [breadcrumbs]="[
@@ -353,6 +360,6 @@
       ]"
       (selectBreadcrumb)="onSelectBreadcrumb($event)"
     />
-  </div>
+  </div> -->
   <!--</div> -->
 </div>

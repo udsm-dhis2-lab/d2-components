@@ -18,11 +18,14 @@
     /> -->
 
     <!-- <ng-dhis2-ui-program-entry-form
+    <ng-dhis2-ui-program-entry-form
+      [event]="'UUsAPT2yqyc'"
+      [enrollment]="'XXgdGzHazIj'"
       [config]="programEntryConfig"
+        [preprocess]="beforeSave"
       (instanceSaveCompleted)="onSaveComplete($event)"
       (formCanceel)="onCancel()"
-    /> -->
-    <!-- 
+    /> 
     <ng-dhis2-ui-program-entry-form
         [event]="paymentInformationId()!"
         [enrollment]="applicant()!.latestEnrollment!.enrollment!"
