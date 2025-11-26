@@ -17,7 +17,14 @@ import {
   ProgramEntryFormConfig,
 } from '@iapps/ng-dhis2-ui';
 import { format } from 'date-fns';
-import { CustomOrgUnitConfig, OrgUnitLevel } from 'packages/ng-dhis2-ui/src/lib/modules/form/models/org-unit.model';
+import {
+  CustomOrgUnitConfig,
+  FACILITY_KEYWORDS,
+  GLOBAL_TYPE_RULES,
+  LevelMatchMode,
+  LevelSelectorMode,
+  OrgUnitLevel,
+} from 'packages/ng-dhis2-ui/src/lib/modules/form/models/org-unit.model';
 
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
@@ -53,13 +60,178 @@ export class FormComponentsComponent {
 
   customOrgUnitRoots: CustomOrgUnitConfig[] = [
     {
-      field: 'RKOZF4JJNYm',
-      orgUnit: 'lgZ6HfZaj3f',
-      level: OrgUnitLevel.FACILITY,
-      confidence: 90
+      field: 'tFZMAc73X6H',
+      orgUnit: 'wsCWwNbLJNY',
+      levelMatchMode: LevelMatchMode.STRICT,
+      levelSelector: {
+        mode: LevelSelectorMode.RELATIVE,
+        offset: 3,
+        maxOffset: 3,
+      },
+      // level: OrgUnitLevel.FACILITY,
+      confidence: 95,
+      typeRules: [
+        {
+          type: 'FACILITY',
+          keywords: FACILITY_KEYWORDS,
+          baseConfidence: 99,
+        },
+        // {
+        //   type: 'HAMLET',
+        //   keywords: ['Kitongoji', 'Hamlet'],
+        //   baseConfidence: 99,
+        // },
+        // {
+        //   type: 'WARD',
+        //   keywords: ['Kata', 'Ward'],
+        //   baseConfidence: 99,
+        // },
+        // {
+        //   type: 'STREET',
+        //   keywords: ['Mtaa', 'Street'],
+        //   baseConfidence: 99,
+        // },
+        // {
+        //   type: 'VILLAGE',
+        //   keywords: ['Village', 'Kijiji'],
+        //   baseConfidence: 80,
+        // },
+      ],
     },
-    // { field: 'kvQrWGgmCCb', orgUnit: 'FZfTtWQJfry' },
+    // {
+    //   field: 'RKOZF4JJNYm',
+    //   orgUnit: 'lgZ6HfZaj3f',
+    //   confidence: 80,
+    //   levelSelector: {
+    //     mode: LevelSelectorMode.KEYWORD,
+    //     keyword: 'Health Center',
+    //   },
+    //   typeRules: [
+    //     {
+    //       type: 'FACILITY',
+    //       keywords: FACILITY_KEYWORDS,
+    //       baseConfidence: 80,
+    //     },
+    // {
+    //   type: 'HAMLET',
+    //   keywords: ['Kitongoji', 'Hamlet'],
+    //   baseConfidence: 80,
+    // },
+    // {
+    //   type: 'WARD',
+    //   keywords: ['Kata', 'Ward'],
+    //   baseConfidence: 85,
+    // },
+    // {
+    //   type: 'STREET',
+    //   keywords: ['Mtaa', 'Street'],
+    //   baseConfidence: 85,
+    // },
+    // {
+    //   type: 'VILLAGE',
+    //   keywords: ['Village', 'Kijiji'],
+    //   baseConfidence: 80,
+    // },
+    //   ],
+    // },
   ];
+
+  // customOrgUnitRoots: CustomOrgUnitConfig[] = [
+  //   {
+  //     field: 'RKOZF4JJNYm',
+  //     orgUnit: 'wsCWwNbLJNY',
+  //     levelMatchMode: LevelMatchMode.STRICT,
+  //     levelSelector: {
+  //       mode: LevelSelectorMode.RELATIVE,
+  //       offset: 3,
+  //       maxOffset: 3,
+  //     },
+  //     // level: OrgUnitLevel.FACILITY,
+  //     confidence: 95,
+  //     typeRules: [
+  //       {
+  //         type: 'FACILITY',
+  //         keywords: FACILITY_KEYWORDS,
+  //         baseConfidence: 99,
+  //       },
+  //       // {
+  //       //   type: 'HAMLET',
+  //       //   keywords: ['Kitongoji', 'Hamlet'],
+  //       //   baseConfidence: 99,
+  //       // },
+  //       // {
+  //       //   type: 'WARD',
+  //       //   keywords: ['Kata', 'Ward'],
+  //       //   baseConfidence: 99,
+  //       // },
+  //       // {
+  //       //   type: 'STREET',
+  //       //   keywords: ['Mtaa', 'Street'],
+  //       //   baseConfidence: 99,
+  //       // },
+  //       // {
+  //       //   type: 'VILLAGE',
+  //       //   keywords: ['Village', 'Kijiji'],
+  //       //   baseConfidence: 80,
+  //       // },
+  //     ],
+  //   },
+  //   // {
+  //   //   field: 'RKOZF4JJNYm',
+  //   //   orgUnit: 'lgZ6HfZaj3f',
+  //   //   confidence: 80,
+  //   //   levelSelector: {
+  //   //     mode: LevelSelectorMode.KEYWORD,
+  //   //     keyword: 'Health Center',
+  //   //   },
+  //   //   typeRules: [
+  //   //     {
+  //   //       type: 'FACILITY',
+  //   //       keywords: FACILITY_KEYWORDS,
+  //   //       baseConfidence: 80,
+  //   //     },
+  //   // {
+  //   //   type: 'HAMLET',
+  //   //   keywords: ['Kitongoji', 'Hamlet'],
+  //   //   baseConfidence: 80,
+  //   // },
+  //   // {
+  //   //   type: 'WARD',
+  //   //   keywords: ['Kata', 'Ward'],
+  //   //   baseConfidence: 85,
+  //   // },
+  //   // {
+  //   //   type: 'STREET',
+  //   //   keywords: ['Mtaa', 'Street'],
+  //   //   baseConfidence: 85,
+  //   // },
+  //   // {
+  //   //   type: 'VILLAGE',
+  //   //   keywords: ['Village', 'Kijiji'],
+  //   //   baseConfidence: 80,
+  //   // },
+  //   //   ],
+  //   // },
+  // ];
+
+  // [
+  //   // {
+  //   //   field: 'RKOZF4JJNYm',
+  //   //   orgUnit: 'lgZ6HfZaj3f',
+  //   //   level: OrgUnitLevel.COUNCIL,
+  //   //   confidence: 90
+  //   // },
+  //   // { field: 'kvQrWGgmCCb', orgUnit: 'FZfTtWQJfry' },
+  //   {
+  //     field: 'RKOZF4JJNYm',
+  //     orgUnit: 'lgZ6HfZaj3f',
+  //     levelSelector: {
+  //       mode: 'relative',
+  //       offset: 2,
+  //     },
+  //     confidence: 90,
+  //   },
+  // ];
 
   fields = [
     new FormField<string>({
@@ -223,7 +395,7 @@ export class FormComponentsComponent {
     console.log('cancel');
   }
 
-  async onSaveComplete(reponse: any) {}
+  async onSaveComplete(reponse: any) { }
   paymentInformationFormConfig = new ProgramEntryFormConfig({
     program: 'Gy65kx8gQv6',
     programStage: 'fUVVkgQZHN5',
@@ -251,5 +423,43 @@ export class FormComponentsComponent {
         isDataElementUnique: true,
       },
     ],
+  });
+
+  malariaCaseNotification = new ProgramEntryFormConfig({
+    program: 'GNRIrbL5o0n',
+    hideRegistrationUnit: true,
+    hideActionButtons: true,
+    formType: 'TRACKER',
+    displayType: 'FLAT',
+    autoComplete: true,
+    autoAssignedValues: [],
+    formFieldExtensions: [],
+  });
+
+  householdMembers = new ProgramEntryFormConfig({
+    program: 'GNRIrbL5o0n',
+    programStage: 'tgs4pBEHiYo',
+    hideRegistrationUnit: true,
+    formType: 'EVENT',
+    displayType: 'FLAT',
+    autoComplete: true,
+    autoAssignedValues: [],
+    formFieldExtensions: [],
+  });
+
+  incidentManagement = new ProgramEntryFormConfig({
+    program: 'zyBObUsin0Q',
+    programStage: 'M62TM9ZPu8m',
+    hideRegistrationUnit: true,
+    formType: 'EVENT',
+    displayType: 'FLAT',
+    autoComplete: true,
+    autoAssignedValues: [
+      {
+        field: 'occurredAt',
+        value: format(new Date(), 'yyyy-MM-dd'),
+      },
+    ],
+    formFieldExtensions: [],
   });
 }

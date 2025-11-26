@@ -39,13 +39,13 @@ import * as ReactDOM from 'react-dom/client';
 import { filter, take } from 'rxjs';
 import { ReactWrapperModule } from '../../react-wrapper/react-wrapper.component';
 import { useFieldValidation } from '../hooks';
-import { IFormField } from '../interfaces';
-import { FieldConfig } from '../models';
+// import { IFormField } from '../interfaces';
+// import { FieldConfig } from '../models';
 import { FileUploadField } from './file-upload-field.component';
-import {
-  OrgUnitFormField,
-} from './org-unit-form-field.component';
+import { OrgUnitFormField } from './org-unit-form-field.component';
 import { CustomOrgUnitConfig } from '../models/org-unit.model';
+import { IFormField } from '../interfaces/form-field.interface';
+import { FieldConfig } from '../models/field-config.model';
 
 @Directive()
 export class BaseFormFieldComponent extends ReactWrapperModule {
@@ -189,6 +189,17 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
 
         setValue(value);
         setTouched(true);
+      };
+
+      const generateUUID = (): string => {
+        return (
+          globalThis.crypto?.randomUUID?.() ??
+          'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+            const r = (Math.random() * 16) | 0;
+            const v = c === 'x' ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
+          })
+        );
       };
 
       const checkValueUniqueness = async () => {
@@ -335,7 +346,7 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
               >
                 {(this.field().options || []).map((option) => (
                   <SingleSelectOption
-                    key={crypto.randomUUID() || option.key}
+                    key={generateUUID()}
                     label={option.label}
                     value={option.value}
                   />
@@ -369,7 +380,7 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
               >
                 {(this.field().options || []).map((option) => (
                   <MultiSelectOption
-                    key={option.key}
+                    key={generateUUID()}
                     label={option.label}
                     value={option.value}
                   />

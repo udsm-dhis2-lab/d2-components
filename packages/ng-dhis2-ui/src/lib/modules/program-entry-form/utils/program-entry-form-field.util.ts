@@ -5,19 +5,16 @@
 import {
   DataElement,
   Program,
-  ProgramStage,
   TrackedEntityAttribute,
 } from '@iapps/d2-web-sdk';
-import { ProgramEntryFormConfig } from '../models';
-import {
-  DateField,
-  FieldDropdown,
-  FieldUtil,
-  FormField,
-  FormFieldMetaType,
-  IFormField,
-} from '../../form';
 import { camelCase, flatten, isUndefined } from 'lodash';
+import { ProgramEntryFormConfig } from '../models/program-entry-form.config';
+import { FormField } from '../../form/models/form-field.model';
+import { DateField } from '../../form/models/date-field.model';
+import { IFormField } from '../../form/interfaces/form-field.interface';
+import { FieldDropdown } from '../../form/models/field-dropdown.model';
+import { FieldUtil } from '../../form/utils/field.util';
+import { FormFieldMetaType } from '../../form/interfaces/form-field-meta-type.interface';
 
 export class ProgramEntryFormFieldUtil {
   constructor(

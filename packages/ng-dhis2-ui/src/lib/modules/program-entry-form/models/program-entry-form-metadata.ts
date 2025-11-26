@@ -4,12 +4,15 @@
 
 import { D2Window, Program, ProgramRule } from '@iapps/d2-web-sdk';
 import { ProgramEntryFormConfig } from './program-entry-form.config';
-import { IFormField, IMetadataRule, MetadataRule } from '../../form';
 import { IProgramEntryFormSection } from './program-entry-form-section.model';
+import { IFormField } from '../../form/interfaces/form-field.interface';
 import {
-  ProgramEntryFormFieldUtil,
-  ProgramEntryFormSectionUtil,
-} from '../utils';
+  IMetadataRule,
+  MetadataRule,
+} from '../../form/models/form-metadata-rule.model';
+import { ProgramEntryFormFieldUtil } from '../utils/program-entry-form-field.util';
+import { ProgramStageEntryFormSectionUtil } from '../utils/program-stage-entry-form-section.util';
+import { ProgramEntryFormSectionUtil } from '../utils/program-entry-form-section.util';
 
 export interface IProgramEntryFormMetaData {
   id: string;
@@ -18,6 +21,7 @@ export interface IProgramEntryFormMetaData {
   program: Program;
   formFields: IFormField<string>[];
   sections: IProgramEntryFormSection[];
+  programStageSections: IProgramEntryFormSection[];
   rules: IMetadataRule[];
 }
 
@@ -211,11 +215,43 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
   }
 
   get sections(): IProgramEntryFormSection[] {
-    if (!this.program || this.config.displayType !== 'SECTION') {
+    if (!this.program) {
       return [];
     }
 
-    return new ProgramEntryFormSectionUtil(this.program, this.config).sections;
+    const { displayType, formType } = this.config;
+
+    if (!this.program || this.config.displayType !== 'FLAT') {
+      return [];
+    }
+
+    if (displayType === 'FLAT' && formType === 'TRACKER') {
+      return new ProgramEntryFormSectionUtil(this.program, this.config)
+        .programEntryFormSections;
+    }
+
+    return new ProgramEntryFormSectionUtil(this.program, this.config)
+      .programEntryFormSections;
+  }
+
+  get programStageSections(): IProgramEntryFormSection[] {
+    if (!this.program) {
+      return [];
+    }
+
+    const { displayType, formType } = this.config;
+
+    if (displayType === 'FLAT' && formType === 'EVENT') {
+      return new ProgramStageEntryFormSectionUtil(this.program, this.config)
+        .programStageEntryFormSections;
+    }
+
+    if (displayType === 'SECTION') {
+      return new ProgramStageEntryFormSectionUtil(this.program, this.config)
+        .programStageEntryFormSections;
+    }
+
+    return [];
   }
 
   get rules(): IMetadataRule[] {
@@ -239,6 +275,7 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
       program: this.program,
       formFields: this.formFields,
       sections: this.sections,
+      programStageSections: this.programStageSections,
       rules: this.rules,
     };
   }
