@@ -64,6 +64,10 @@ export class ProgramEntryFormModule {
     | BaseTrackerQuery<TrackedEntityInstance>
     | BaseEventQuery<DHIS2Event>;
 
+  preprocess = input<(payload: {
+   instance: TrackedEntityInstance | DHIS2Event;
+  }) => void>();
+
   @Output() instanceSave = new EventEmitter<
     TrackedEntityInstance | DHIS2Event
   >();
@@ -82,9 +86,6 @@ export class ProgramEntryFormModule {
     return <CircularLoader small />;
   };
 
-  // dataId = computed(() => {
-  //   return this.instance()?.trackedEntity || this.instance()?.event;
-  // });
   dataId = computed(() => {
   if (this.config().formType === 'EVENT') {
     return this.instance()?.event;
@@ -222,6 +223,13 @@ export class ProgramEntryFormModule {
     | D2EventResponse<DHIS2Event>
     | null
   > {
+
+  if (this.preprocess() && this.instance()) {
+    this.preprocess()!({
+      instance: this.instance()!,
+    });
+  }
+
     switch (this.config().formType) {
       case 'TRACKER': {
         if (this.config().autoComplete) {

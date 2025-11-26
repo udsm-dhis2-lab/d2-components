@@ -47,6 +47,8 @@ export class FormComponent implements OnChanges, OnDestroy, OnInit {
   dataEntities = input<any>(undefined);
   dataId = input<string>();
   customOrgUnitRoots = input<CustomOrgUnitConfig[]>();
+ //TODO: FIND BETTER WAY TO PASS PROGRAM TO FIELDS i.e field extensions
+  program = input<string>();
 
   collapsibleSections = input<boolean>(false);
   private openSectionId = signal<string | number | null>(null);
