@@ -483,179 +483,6 @@ export const OrgUnitFormField = (props: Props) => {
 
   const ORGUNIT_ROOT_CACHE = new Map<string, RootData>();
 
-  // useEffect(() => {
-  //   if (!customOrgUnitRoots || !customOrgUnitRoots.length) {
-  //     return;
-  //   }
-
-  //   const fieldKey = field || key;
-
-  //   const matchingConfigs =
-  //     customOrgUnitRoots.filter((entry) => entry.field === fieldKey) || [];
-
-  //   if (!matchingConfigs.length) {
-  //     return;
-  //   }
-
-  //   let isCancelled = false;
-
-  //   setUseCustomRoots(true);
-  //   setConfiguredRootsLoading(true);
-
-  //   const fetchOrgUnitsForConfig = async (
-  //     orgUnitConfig: CustomOrgUnitRootConfig
-  //   ): Promise<OrgUnit[]> => {
-  //     try {
-  //       const response = await d2.httpInstance.get(
-  //         `organisationUnits/${orgUnitConfig.orgUnit}.json` +
-  //           '?fields=id,displayName,name,code,path,level,' +
-  //           'ancestors[displayName],' +
-  //           'children[id,displayName,name,code,path,level,ancestors[displayName],' +
-  //           'children[id,displayName,name,code,path,level,ancestors[displayName],' +
-  //           'children[id,displayName,name,code,path,level,ancestors[displayName]]]]' +
-  //           '&paging=false'
-  //       );
-
-  //       const rootOrgUnit = response.data as OrgUnitResponse;
-
-  //       const allDescendants = flattenChildren([rootOrgUnit]);
-
-  //       const targetLevels = resolveTargetLevels(
-  //         rootOrgUnit.level,
-  //         orgUnitConfig.levelSelector
-  //       );
-
-  //       const hasLevelFilter =
-  //         Array.isArray(targetLevels) && targetLevels.length > 0;
-
-  //       const hasNumericLevels =
-  //         Array.isArray(targetLevels) && targetLevels.length > 0;
-
-  //       const isStrict = orgUnitConfig.levelMatchMode === LevelMatchMode.STRICT;
-
-  //       // const baseCandidates: OrgUnit[] = hasLevelFilter
-  //       //   ? filterOrgUnitsByLevels(allDescendants, targetLevels)
-  //       //   : allDescendants;
-
-  //       const baseCandidates: OrgUnit[] =
-  //         hasNumericLevels && isStrict
-  //           ? filterOrgUnitsByLevels(allDescendants, targetLevels)
-  //           : allDescendants;
-
-  //       type CandidateWithMatch = {
-  //         orgUnit: OrgUnit;
-  //         match: { type: string; confidence: number } | null;
-  //       };
-
-  //       // const candidatesWithMatches: CandidateWithMatch[] = baseCandidates.map(
-  //       //   (orgUnit) => {
-  //       //     const orgUnitName = orgUnit.displayName || orgUnit.name || '';
-  //       //     const match = getOrgUnitTypeMatch(orgUnitName, orgUnitConfig);
-  //       //     return { orgUnit, match };
-  //       //   }
-  //       // );
-
-  //       const candidatesWithMatches: CandidateWithMatch[] = baseCandidates.map(
-  //         (orgUnit) => {
-  //           const match = getOrgUnitTypeMatch(orgUnit, orgUnitConfig);
-  //           return { orgUnit, match };
-  //         }
-  //       );
-
-  //       const hasKeywordMatch = candidatesWithMatches.some(
-  //         (c) => c.match !== null
-  //       );
-
-  //       // if (!hasLevelFilter && !hasKeywordMatch) {
-  //       //   const rootWithMeta: OrgUnit = {
-  //       //     ...rootOrgUnit,
-  //       //     type: 'UNKNOWN',
-  //       //     confidence: 0,
-  //       //   } as OrgUnit;
-
-  //       //   return [rootWithMeta];
-  //       // }
-
-  //       if (isStrict && !hasLevelFilter && !hasKeywordMatch) {
-  //         const rootWithMeta: OrgUnit = {
-  //           ...rootOrgUnit,
-  //           type: 'UNKNOWN',
-  //           confidence: 0,
-  //           children: [],
-  //           ancestors: [],
-  //         } as OrgUnit;
-
-  //         return [rootWithMeta];
-  //       }
-
-  //       const effectiveCandidates: CandidateWithMatch[] = hasKeywordMatch
-  //         ? candidatesWithMatches.filter((c) => c.match !== null)
-  //         : candidatesWithMatches;
-
-  //       const flatOrgUnits: OrgUnit[] = effectiveCandidates.map(
-  //         ({ orgUnit, match }) => ({
-  //           id: orgUnit.id,
-  //           name: buildReadableFullName(orgUnit),
-  //           code: orgUnit.code,
-  //           path: orgUnit.path,
-  //           level: orgUnit.level,
-  //           type: match?.type ?? 'UNKNOWN',
-  //           confidence: match?.confidence ?? 0,
-  //           children: [],
-  //           ancestors: [],
-  //         })
-  //       );
-
-  //       flatOrgUnits.sort((a, b) => {
-  //         const confA = a.confidence ?? 0;
-  //         const confB = b.confidence ?? 0;
-
-  //         if (confB !== confA) {
-  //           return confB - confA;
-  //         }
-
-  //         return a.name.localeCompare(b.name);
-  //       });
-
-  //       return flatOrgUnits;
-  //     } catch (error) {
-  //       console.warn(
-  //         `[OrgUnitFormField] Failed to fetch orgUnit ${orgUnitConfig.orgUnit}:`,
-  //         error
-  //       );
-  //       return [];
-  //     }
-  //   };
-
-  //   Promise.allSettled(matchingConfigs.map(fetchOrgUnitsForConfig))
-  //     .then((settledResults) => {
-  //       if (isCancelled) return;
-
-  //       const allOrgUnits = settledResults
-  //         .filter(
-  //           (result): result is PromiseFulfilledResult<OrgUnit[]> =>
-  //             result.status === 'fulfilled'
-  //         )
-  //         .flatMap((result) => result.value);
-
-  //       setConfiguredRootInfo(allOrgUnits);
-  //       setConfiguredRootsLoading(false);
-  //     })
-  //     .catch((unexpectedError) => {
-  //       if (isCancelled) return;
-
-  //       console.warn(
-  //         `[OrgUnitFormField] Unexpected error while resolving custom roots:`,
-  //         unexpectedError
-  //       );
-  //       setConfiguredRootsLoading(false);
-  //     });
-
-  //   return () => {
-  //     isCancelled = true;
-  //   };
-  // }, [customOrgUnitRoots, key, field, d2.httpInstance]);
-
   useEffect(() => {
     if (!customOrgUnitRoots || !customOrgUnitRoots.length) {
       return;
@@ -689,7 +516,6 @@ export const OrgUnitFormField = (props: Props) => {
         let rootData = ORGUNIT_ROOT_CACHE.get(orgUnitConfig.orgUnit);
 
         if (!rootData) {
-          // 1) Root OU
           const rootUrl =
             `organisationUnits/${orgUnitConfig.orgUnit}.json` +
             `?fields=${encodeURIComponent(baseFields)}` +
@@ -700,7 +526,6 @@ export const OrgUnitFormField = (props: Props) => {
 
           const rootOrgUnit = rootResponse.data as OrgUnitResponse;
 
-          // 2) Flat descendants
           const descendantsUrl =
             'organisationUnits.json' +
             `?paging=false` +
@@ -803,7 +628,6 @@ export const OrgUnitFormField = (props: Props) => {
         return [];
       }
     };
-
 
     Promise.allSettled(matchingConfigs.map(fetchOrgUnitsForConfig))
       .then((settledResults) => {
@@ -960,7 +784,9 @@ export const OrgUnitFormField = (props: Props) => {
     return searchText?.length ? !searchLoading : !loading;
   }, [searchText, searchLoading, loading]);
 
+
   const renderOrgUnitTree = () => {
+
     if (searchText && searchText?.length > 0) {
       if (searchLoading) {
         return (
@@ -1010,6 +836,7 @@ export const OrgUnitFormField = (props: Props) => {
   };
 
   return (
+
     config && (
       <Provider
         config={config}

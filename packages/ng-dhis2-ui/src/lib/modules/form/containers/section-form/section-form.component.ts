@@ -14,9 +14,12 @@ import { FormGroup } from '@angular/forms';
 import { ProgramRuleEngine } from '@iapps/d2-web-sdk';
 import { isEmpty } from 'lodash';
 import { Observable } from 'rxjs';
-import { IFormFieldGroup, IFormMetadata } from '../../interfaces';
-import { FormValue } from '../../models';
+// import { IFormFieldGroup, IFormMetadata } from '../../interfaces';
+// import { FormValue } from '../../models';
 import { FormUtil } from '../../utils';
+import type { IFormMetadata } from '../../interfaces/form-metadata.interface';
+import { FormValue } from '../../models/form-value.model';
+import type { IFormFieldGroup } from '../../interfaces/form-field-group.interface';
 
 @Component({
   selector: 'ng-dhis2-ui-section-form',

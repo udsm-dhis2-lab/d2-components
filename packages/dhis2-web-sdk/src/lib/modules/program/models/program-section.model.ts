@@ -13,6 +13,7 @@ export type ProgramSectionField =
   | IdentifiableField
   | 'formName'
   | 'sortOrder'
+  | 'description'
   | 'renderType';
 
 export class ProgramSection extends IdentifiableObject<ProgramSection> {
@@ -21,11 +22,13 @@ export class ProgramSection extends IdentifiableObject<ProgramSection> {
   static fields: ProgramSectionField[] = [
     ...IDENTIFIABLE_FIELDS,
     'formName',
+    'description',
     'sortOrder',
     'renderType',
   ];
   formName?: string;
   sortOrder!: number;
+  description!: string;
   renderType?: string;
   trackedEntityAttributes?: TrackedEntityAttribute[];
 

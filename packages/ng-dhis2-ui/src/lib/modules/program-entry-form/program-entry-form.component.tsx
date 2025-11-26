@@ -15,7 +15,6 @@ import {
   ProgramEntryFormConfig,
   ProgramEntryFormMetaData,
 } from './models';
-import { D2FormModule } from '../form';
 import { CircularLoader, ButtonStrip, Button } from '@dhis2/ui';
 import React, { useEffect, useState } from 'react';
 import { ReactWrapperModule } from '../react-wrapper/react-wrapper.component';
@@ -32,6 +31,8 @@ import {
   TrackedEntityInstance,
 } from '@iapps/d2-web-sdk';
 import { CustomOrgUnitConfig } from '../form/models/org-unit.model';
+import { D2FormModule } from '../form/form.module';
+import { IFormMetadata } from '../form/interfaces/form-metadata.interface';
 
 @Component({
   selector: 'ng-dhis2-ui-program-entry-form',
@@ -48,6 +49,8 @@ export class ProgramEntryFormModule {
   enrollment = input<string>();
   orgUnit = input<string>();
   customOrgUnitRoots = input<CustomOrgUnitConfig[]>();
+  formMetaData = input<IFormMetadata>();
+  collapsibleSections = input<boolean>(false);
 
   ngZone = inject(NgZone);
   d2 = (window as unknown as D2Window).d2Web;
