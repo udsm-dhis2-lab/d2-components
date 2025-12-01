@@ -2562,20 +2562,20 @@
   resolved "https://registry.npmjs.org/@humanwhocodes/object-schema/-/object-schema-2.0.3.tgz"
   integrity sha512-93zYdMES/c1D69yZiKDBj0V24vqNzB/koF26KPaagAfd3P/4gUlh3Dys5ogAK+Exi9QyzlD8x/08Zt7wIKcDcA==
 
-"@iapps/d2-dashboard@file:/home/cainamist/workspaces/web-apps/d2-components/packages/ng-dhis2-dashboard":
+"@iapps/d2-dashboard@file:/home/cainamist/workspaces/web-apps/d2-components-demo/packages/ng-dhis2-dashboard":
   version "1.0.17"
   resolved "file:packages/ng-dhis2-dashboard"
   dependencies:
     tslib "^2.3.0"
 
-"@iapps/d2-visualizer@file:/home/cainamist/workspaces/web-apps/d2-components/packages/dhis2-visualizer":
+"@iapps/d2-visualizer@file:/home/cainamist/workspaces/web-apps/d2-components-demo/packages/dhis2-visualizer":
   version "1.1.12"
   resolved "file:packages/dhis2-visualizer"
   dependencies:
     tslib "^2.3.0"
 
-"@iapps/d2-web-sdk@file:/home/cainamist/workspaces/web-apps/d2-components/packages/dhis2-web-sdk":
-  version "1.1.5"
+"@iapps/d2-web-sdk@file:/home/cainamist/workspaces/web-apps/d2-components-demo/packages/dhis2-web-sdk":
+  version "1.1.6"
   resolved "file:packages/dhis2-web-sdk"
   dependencies:
     axios "^1.8.1"
@@ -2583,31 +2583,31 @@
     lodash "^4.17.21"
     tslib "^2.3.0"
 
-"@iapps/function-analytics@file:/home/cainamist/workspaces/web-apps/d2-components/packages/dhis2-analytics":
+"@iapps/function-analytics@file:/home/cainamist/workspaces/web-apps/d2-components-demo/packages/dhis2-analytics":
   version "1.0.0-beta.24"
   resolved "file:packages/dhis2-analytics"
   dependencies:
     tslib "^2.3.0"
 
-"@iapps/ng-dhis2-shell@file:/home/cainamist/workspaces/web-apps/d2-components/packages/ng-dhis2-shell":
+"@iapps/ng-dhis2-shell@file:/home/cainamist/workspaces/web-apps/d2-components-demo/packages/ng-dhis2-shell":
   version "1.0.8"
   resolved "file:packages/ng-dhis2-shell"
   dependencies:
     tslib "^2.3.0"
 
-"@iapps/ng-dhis2-ui@file:/home/cainamist/workspaces/web-apps/d2-components/packages/ng-dhis2-ui":
-  version "1.2.114"
+"@iapps/ng-dhis2-ui@file:/home/cainamist/workspaces/web-apps/d2-components-demo/packages/ng-dhis2-ui":
+  version "1.2.129"
   resolved "file:packages/ng-dhis2-ui"
   dependencies:
     tslib "^2.3.0"
 
-"@iapps/ngx-dhis2-dictionary@file:/home/cainamist/workspaces/web-apps/d2-components/packages/ng-dhis2-dictionary":
+"@iapps/ngx-dhis2-dictionary@file:/home/cainamist/workspaces/web-apps/d2-components-demo/packages/ng-dhis2-dictionary":
   version "1.0.7"
   resolved "file:packages/ng-dhis2-dictionary"
   dependencies:
     tslib "^2.3.0"
 
-"@iapps/ngx-dhis2-http-client@file:/home/cainamist/workspaces/web-apps/d2-components/packages/ng-dhis2-http-client":
+"@iapps/ngx-dhis2-http-client@file:/home/cainamist/workspaces/web-apps/d2-components-demo/packages/ng-dhis2-http-client":
   version "3.0.4"
   resolved "file:packages/ng-dhis2-http-client"
   dependencies:
@@ -2627,7 +2627,7 @@
   dependencies:
     tslib "^2.3.0"
 
-"@iapps/period-utilities@file:/home/cainamist/workspaces/web-apps/d2-components/packages/dhis2-period-utilities":
+"@iapps/period-utilities@file:/home/cainamist/workspaces/web-apps/d2-components-demo/packages/dhis2-period-utilities":
   version "1.0.4"
   resolved "file:packages/dhis2-period-utilities"
   dependencies:
@@ -4402,6 +4402,11 @@
   dependencies:
     "@react-hook/passive-layout-effect" "^1.2.0"
     "@react-hook/resize-observer" "^1.2.1"
+
+"@react-leaflet/core@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.npmjs.org/@react-leaflet/core/-/core-2.1.0.tgz"
+  integrity sha512-Qk7Pfu8BSarKGqILj4x7bCSZ1pjuAPZ+qmRwH5S7mDS91VSbVVsJSrW4qA+GPrro8t69gFYVMWb1Zc4yFmPiVg==
 
 "@rollup/plugin-json@^6.1.0":
   version "6.1.0"
@@ -6498,6 +6503,13 @@
   version "7.0.15"
   resolved "https://registry.npmjs.org/@types/json-schema/-/json-schema-7.0.15.tgz"
   integrity sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==
+
+"@types/leaflet@^1.9.21":
+  version "1.9.21"
+  resolved "https://registry.npmjs.org/@types/leaflet/-/leaflet-1.9.21.tgz"
+  integrity sha512-TbAd9DaPGSnzp6QvtYngntMZgcRk+igFELwR2N99XZn7RXUdKgsXMR+28bUO0rPsWp8MIu/f47luLIQuSLYv/w==
+  dependencies:
+    "@types/geojson" "*"
 
 "@types/lodash@^4.14.202", "@types/lodash@^4.17.15":
   version "4.17.20"
@@ -13569,6 +13581,11 @@ launch-editor@^2.6.1:
     picocolors "^1.1.1"
     shell-quote "^1.8.3"
 
+leaflet@^1.9.4:
+  version "1.9.4"
+  resolved "https://registry.npmjs.org/leaflet/-/leaflet-1.9.4.tgz"
+  integrity sha512-nxS1ynzJOmOlHp+iL3FyWqK89GtNL8U8rvlMOsQdTTssxZwCXh8N2NB3GDQOL+YR3XnWyZAxwQixURb+FA74PA==
+
 less-loader@^11.1.0:
   version "11.1.4"
   resolved "https://registry.npmjs.org/less-loader/-/less-loader-11.1.4.tgz"
@@ -16558,6 +16575,13 @@ react-is@^18.3.1:
   version "18.3.1"
   resolved "https://registry.npmjs.org/react-is/-/react-is-18.3.1.tgz"
   integrity sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg==
+
+react-leaflet@^4.2.1:
+  version "4.2.1"
+  resolved "https://registry.npmjs.org/react-leaflet/-/react-leaflet-4.2.1.tgz"
+  integrity sha512-p9chkvhcKrWn/H/1FFeVSqLdReGwn2qmiobOQGO3BifX+/vV/39qhY8dGqbdcPh1e6jxh/QHriLXr7a4eLFK4Q==
+  dependencies:
+    "@react-leaflet/core" "^2.1.0"
 
 react-lifecycles-compat@^3.0.0:
   version "3.0.4"

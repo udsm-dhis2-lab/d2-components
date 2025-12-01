@@ -52,8 +52,12 @@ export class FieldUtil {
         return 'org-unit';
       case FieldType.DATE:
         return 'date';
+      case FieldType.DATE_TIME:
+        return 'date-time';
       case FieldType.FILE_RESOURCE:
         return 'file';
+      case FieldType.COORDINATE:
+        return 'coordinate';
       default:
         return 'text';
     }
@@ -88,6 +92,8 @@ export class FieldUtil {
         return 'image';
       case FieldType.FILE_RESOURCE:
         return 'file';
+      case FieldType.COORDINATE:
+        return 'coordinate';
       default:
         return 'textbox';
     }

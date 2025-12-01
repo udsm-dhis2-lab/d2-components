@@ -1,1 +1,29 @@
 /* You can add global styles to this file, and also import other style files */
+/* Make the coordinate picker modal content wider */
+// .coordinate-modal .dhis2-uicore-modal__content {
+//   width: 60vw;
+//   max-width: 60vw;
+// }
+
+@import "../../node_modules//leaflet/dist/leaflet.css";
+
+// .coordinate-modal .dhis2-ui-modal__paper {
+//   width: 80vw !important;
+//   max-width: 80vw !important;
+// }
+
+/* WIDEN THE MODAL */
+.coordinate-modal[data-test="dhis2-uicore-modal"] {
+    width: 80vw !important;
+    max-width: 80vw !important;
+    height: auto !important;
+    max-height: 80vh !important;
+}
+
+/* WIDEN THE INNER CARD */
+.coordinate-modal [data-test="dhis2-uicore-card"] {
+    width: 80vw !important;
+    max-width: 80vw !important;
+    height: auto !important;
+}
+

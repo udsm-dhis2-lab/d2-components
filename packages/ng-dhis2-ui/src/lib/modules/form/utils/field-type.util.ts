@@ -13,6 +13,10 @@ export class FormFieldTypeUtil {
         return 'image';
       case FieldType.FILE_RESOURCE:
         return 'file';
+      case FieldType.COORDINATE:
+        return 'coordinate';
+      case FieldType.DATE_TIME:
+        return 'date-time';
       default:
         return 'text';
     }

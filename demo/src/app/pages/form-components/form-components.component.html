@@ -17,6 +17,14 @@
       (formCanceel)="onCancel()"
     /> -->
 
+    <ng-dhis2-ui-program-entry-form
+      [customOrgUnitRoots]="[]"
+      [config]="mcn"
+      [trackedEntity]="''"
+      (instanceSaveCompleted)="onSaveComplete($event)"
+      (formCanceel)="onCancel()"
+    />
+
     <!-- <ng-dhis2-ui-program-entry-form
     <ng-dhis2-ui-program-entry-form
       [event]="'UUsAPT2yqyc'"
@@ -38,12 +46,12 @@
       [config]="paymentInformationFormConfig"
     /> -->
 
-    <ng-dhis2-ui-program-entry-form
+    <!-- <ng-dhis2-ui-program-entry-form
       [customOrgUnitRoots]="customOrgUnitRoots"
       [event]="'PRTGEpZPeP8'"
       [enrollment]="'EydnXvsmfZM'"
       [config]="incidentManagement"
-    />
+    /> -->
 
     <!-- <ng-dhis2-ui-program-entry-form
         [collapsibleSections]="true"
