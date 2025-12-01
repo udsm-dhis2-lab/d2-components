@@ -658,7 +658,9 @@ export const OrgUnitFormField = (props: Props) => {
 
   useEffect(() => {
     if (!customOrgUnitRoots || !customOrgUnitRoots.length) {
-      return;
+      return () => {
+      // no-op
+      };
     }
 
     const fieldKey = field || key;
@@ -667,7 +669,9 @@ export const OrgUnitFormField = (props: Props) => {
       customOrgUnitRoots.filter((entry) => entry.field === fieldKey) || [];
 
     if (!matchingConfigs.length) {
-      return;
+      return () => {
+        // no-op
+      };
     }
 
     let isCancelled = false;

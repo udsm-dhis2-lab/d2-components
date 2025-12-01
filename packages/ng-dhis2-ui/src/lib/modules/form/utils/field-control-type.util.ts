@@ -37,6 +37,8 @@ export class FieldControlTypeUtil {
         return 'image';
       case FieldType.FILE_RESOURCE:
         return 'file';
+      case FieldType.COORDINATE:
+        return 'coordinate'
       default:
         return 'textbox';
     }

@@ -11,4 +11,5 @@ export type FieldControlType =
   | 'file'
   | 'boolean'
   | 'transfer'
+  | 'coordinate'
   | 'search';

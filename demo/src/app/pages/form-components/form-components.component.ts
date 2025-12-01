@@ -367,6 +367,18 @@ export class FormComponentsComponent {
   //     },
   //   ],
   // });
+
+  mcn = new ProgramEntryFormConfig({
+        program:'GNRIrbL5o0n',
+        hideRegistrationUnit: true,
+        hideActionButtons: true,
+        formType: 'TRACKER',
+        displayType: 'FLAT',
+        autoComplete: false,
+        autoAssignedValues: [],
+        formFieldExtensions: [],
+      })
+
   programEntryConfig = new ProgramEntryFormConfig({
     program: 'Gy65kx8gQv6',
     programStage: 'edx4DaMDAyo',
