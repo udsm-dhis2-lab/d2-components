@@ -469,7 +469,7 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
             const field = this.field();
             const isDateTimeField = field.type === 'date-time';
 
-            const inputType: React.HTMLInputTypeAttribute = isDateTimeField
+            const inputType: any = isDateTimeField
               ? 'datetime-local'
               : 'date';
 
