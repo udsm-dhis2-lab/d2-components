@@ -25,6 +25,7 @@ export interface IFormField<T> {
   isDataElement?: boolean;
   isAttribute?: boolean;
   isOrgUnit?: boolean;
+  isGeometryField?: boolean;
   isEnrollmentDate?: boolean;
   event?: string;
   programStage?: string;

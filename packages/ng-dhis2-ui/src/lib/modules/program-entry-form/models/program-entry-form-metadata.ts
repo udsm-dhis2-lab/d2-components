@@ -296,8 +296,11 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
             `organisationUnits.json?fields=id,name,code&paging=false&filter=organisationUnitGroups.code:eq:${this.config.formFieldExtensions[0].optionsSourceCode}`
           );
           const orgUnitsResponse = orgUnitResponse?.data?.['organisationUnits'];
-          const organisationUnits = Array.isArray(orgUnitsResponse) ? orgUnitsResponse : [];
-          this.config.formFieldExtensions[0].organisationUnits = organisationUnits
+          const organisationUnits = Array.isArray(orgUnitsResponse)
+            ? orgUnitsResponse
+            : [];
+          this.config.formFieldExtensions[0].organisationUnits =
+            organisationUnits;
         }
 
         return this.toJson();

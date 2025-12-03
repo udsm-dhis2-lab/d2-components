@@ -370,11 +370,11 @@ export class FormComponentsComponent {
 
   mcn = new ProgramEntryFormConfig({
         program:'GNRIrbL5o0n',
-        hideRegistrationUnit: true,
-        hideActionButtons: true,
+        hideRegistrationUnit: false,
+        hideActionButtons: false,
         formType: 'TRACKER',
         displayType: 'FLAT',
-        autoComplete: false,
+        autoComplete: true,
         autoAssignedValues: [],
         formFieldExtensions: [],
       })
@@ -550,6 +550,9 @@ export class FormComponentsComponent {
     program: 'GNRIrbL5o0n',
     programStage: 'tgs4pBEHiYo',
     hideRegistrationUnit: true,
+    hideActionButtons: false,
+    hideGeometryField: false,
+    hideEventDate: false,
     formType: 'EVENT',
     displayType: 'FLAT',
     autoComplete: true,

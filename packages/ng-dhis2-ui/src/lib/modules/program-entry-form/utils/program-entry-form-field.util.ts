@@ -5,6 +5,7 @@
 import {
   DataElement,
   Program,
+  ProgramStage,
   TrackedEntityAttribute,
 } from '@iapps/d2-web-sdk';
 import { camelCase, flatten, isUndefined } from 'lodash';
@@ -15,6 +16,10 @@ import { IFormField } from '../../form/interfaces/form-field.interface';
 import { FieldDropdown } from '../../form/models/field-dropdown.model';
 import { FieldUtil } from '../../form/utils/field.util';
 import { FormFieldMetaType } from '../../form/interfaces/form-field-meta-type.interface';
+import {
+  IProgramEntryFormSection,
+  ProgramEntryFormSection,
+} from '../models/program-entry-form-section.model';
 
 export class ProgramEntryFormFieldUtil {
   constructor(
@@ -121,6 +126,47 @@ export class ProgramEntryFormFieldUtil {
     });
   }
 
+  #getGeometryField(): IFormField<string> | null {
+    const rawFeatureType = this.program?.featureType ?? '';
+    const featureType = rawFeatureType.toUpperCase() as
+      | 'NONE'
+      | 'POINT'
+      | 'POLYGON'
+      | 'MULTI_POLYGON'
+      | '';
+
+    const isGeometryProgram =
+      featureType === 'POINT' ||
+      featureType === 'POLYGON' ||
+      featureType === 'MULTI_POLYGON';
+
+    if (!isGeometryProgram) {
+      if (this.config?.hideGeometryField) {
+        return null;
+      }
+
+      return null;
+    }
+
+    const sharedOptions = {
+      required: true,
+      disabled: this.config?.disableRegistrationUnit ?? false,
+      isGeometryField: true as const,
+    };
+
+    const label =
+      featureType === 'POINT' ? 'Location (coordinates)' : 'Boundary (polygon)';
+
+    return new FormField<string>({
+      id: 'geometry',
+      key: 'geometry',
+      label,
+      code: 'geometry',
+      controlType: 'coordinate',
+      ...sharedOptions,
+    });
+  }
+
   #getEnrollmentDateField() {
     if (this.config.hideEnrollmentDate || this.config.programStage) {
       return null;
@@ -155,26 +201,113 @@ export class ProgramEntryFormFieldUtil {
     });
   }
 
+  #getStageIdFromConfig(): string | null {
+    const programStageId = (this.config as ProgramEntryFormConfig)
+      ?.programStage;
+
+    if (!programStageId) {
+      return null;
+    }
+
+    const trimmed = programStageId.trim();
+    return trimmed ? trimmed : null;
+  }
+
+  #findStageById(stageId: string): ProgramStage | null {
+    return (
+      (this.program.programStages || []).find(
+        (stage: ProgramStage) => (stage as ProgramStage)?.id === stageId
+      ) ?? null
+    );
+  }
+
+  #getEventDateField(): IFormField<string> | null {
+    if (this.config?.hideEventDate) {
+      return null;
+    }
+
+    const stageId = this.#getStageIdFromConfig();
+    if (!stageId) {
+      return null;
+    }
+
+    const programStage = this.#findStageById(stageId);
+    if (!programStage) {
+      return null;
+    }
+
+    const eventDateLabel =
+      programStage.executionDateLabel ||
+      `Reporting date - ${
+        programStage.displayName || programStage.name || 'Event'
+      }`;
+
+    const todayIso = new Date().toISOString().slice(0, 10);
+
+    return new FormField<string>({
+      id: 'occurredAt',
+      key: 'occurredAt',
+      code: 'OCCURRED_AT',
+      label: eventDateLabel,
+      required: true,
+      controlType: 'date',
+      type: 'date',
+      value: todayIso,
+      disabled: this.config?.disableEventDate ?? false,
+      max: todayIso,
+      hidden: false,
+    });
+  }
+
   get reportFields() {
     return [
       this.#getOrgUniField(),
       this.#getEnrollmentDateField(),
       this.#getIncidentDateField(),
+      this.#getGeometryField(),
     ].filter((field) => field != null);
+  }
+
+  get eventReportFields(): IFormField<string>[] {
+    const fields: Array<IFormField<string> | null> = [
+      this.#getOrgUniField(),
+      this.#getGeometryField(),
+      this.#getEventDateField(),
+    ];
+
+    return fields.filter(
+      (field): field is IFormField<string> => field !== null
+    );
+  }
+
+  get defaultSection(): IProgramEntryFormSection {
+    const coreFields = this.reportFields.filter(
+      (field): field is FormField<string> => !!field
+    );
+
+    return new ProgramEntryFormSection({
+      id: `${this.program.id}_basic_information`,
+      name: 'Basic Information',
+      description: '',
+      formFields: coreFields,
+      orientation: 'VERTICAL',
+    });
   }
 
   get fields(): IFormField<string>[] {
     const fields = [...this.attributes, ...this.dataElements]
       .map((field) => {
-        
         const extension = this.config.formFieldExtensions?.find(
           (fieldExtension) => fieldExtension?.id === field.id
         );
 
-        const options = FieldDropdown.getDropdownOptions(field, undefined, extension);
+        const options = FieldDropdown.getDropdownOptions(
+          field,
+          undefined,
+          extension
+        );
 
         const hasOptions = options?.length > 0;
-
 
         const autoAssignedValue = this.#getAutoAssignedValue(field);
 

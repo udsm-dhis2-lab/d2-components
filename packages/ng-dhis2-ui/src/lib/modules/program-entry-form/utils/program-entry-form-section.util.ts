@@ -20,6 +20,7 @@ import { FormField } from '../../form/models/form-field.model';
 import { FieldUtil } from '../../form/utils/field.util';
 import { FormFieldExtension } from '../../form/interfaces/form-field-extension.interface';
 import { IEntityFormFieldBase } from '../models/form-field-base.model';
+import { ProgramEntryFormFieldUtil } from './program-entry-form-field.util';
 
 // export class ProgramEntryFormSectionUtil {
 //   constructor(
@@ -33,58 +34,143 @@ import { IEntityFormFieldBase } from '../models/form-field-base.model';
 // }
 
 export class ProgramEntryFormSectionUtil {
+  private readonly fieldUtil: ProgramEntryFormFieldUtil;
+
   constructor(
     private program: Program,
     private config: ProgramEntryFormConfig
-  ) {}
+  ) {
+    this.fieldUtil = new ProgramEntryFormFieldUtil(program, config);
+  }
+
+  // get programEntryFormSections(): IProgramEntryFormSection[] {
+  //   const pteas = this.#getPteas();
+  //   if (!pteas.length) return [];
+
+  //   const byAttrId = new Map(
+  //     pteas.map(
+  //       (programTrackedEntityAttribute: ProgramTrackedEntityAttribute) => [
+  //         programTrackedEntityAttribute?.trackedEntityAttribute?.id,
+  //         programTrackedEntityAttribute,
+  //       ]
+  //     )
+  //   );
+  //   const programSections = this.#getProgramSections();
+  //   if (programSections.length) {
+  //     return programSections
+  //       .map(
+  //         (programSection: ProgramSection) =>
+  //           new ProgramEntryFormSection({
+  //             id: programSection.id,
+  //             name: programSection.displayName ?? programSection.name ?? '',
+  //             description:
+  //               programSection.description ?? programSection.description ?? '',
+  //             formFields: this.#mapSectionToFormFields(
+  //               programSection,
+  //               byAttrId
+  //             ),
+  //             orientation: 'VERTICAL',
+  //           })
+  //       )
+  //       .filter(
+  //         (iProgramEntryFormSection: IProgramEntryFormSection) =>
+  //           iProgramEntryFormSection.formFields.length > 0
+  //       );
+  //   }
+
+  //   return [
+  //     new ProgramEntryFormSection({
+  //       id: `${this.program.id}_enrollment`,
+  //       name: this.program.displayName ?? 'Enrollment',
+  //       description: '',
+  //       formFields: this.#mapAllPteasToFormFields(pteas),
+  //       orientation: 'VERTICAL',
+  //     }),
+  //   ];
+  // }
 
   get programEntryFormSections(): IProgramEntryFormSection[] {
-    const pteas = this.#getPteas();
-    if (!pteas.length) return [];
+    if (!this.program) {
+      return [];
+    }
 
-    const byAttrId = new Map(
-      pteas.map(
-        (programTrackedEntityAttribute: ProgramTrackedEntityAttribute) => [
-          programTrackedEntityAttribute?.trackedEntityAttribute?.id,
-          programTrackedEntityAttribute,
-        ]
-      )
-    );
+    const programTrackedEntityAttributes = this.#getPteas();
+    if (!programTrackedEntityAttributes.length) {
+      return [];
+    }
+
+    const sections: IProgramEntryFormSection[] = [];
+
+    const generalDetailsSection = this.fieldUtil.defaultSection;
+    if (generalDetailsSection?.formFields?.length) {
+      sections.push(generalDetailsSection);
+    }
 
     const programSections = this.#getProgramSections();
 
-    // Prefer explicit program sections (enrollment sections)
     if (programSections.length) {
-      return programSections
-        .map(
-          (programSection: ProgramSection) =>
-            new ProgramEntryFormSection({
-              id: programSection.id,
-              name: programSection.displayName ?? programSection.name ?? '',
-              description:
-                programSection.description ?? programSection.description ?? '',
-              formFields: this.#mapSectionToFormFields(
-                programSection,
-                byAttrId
-              ),
-              orientation: 'VERTICAL',
-            })
-        )
-        .filter(
-          (iProgramEntryFormSection: IProgramEntryFormSection) =>
-            iProgramEntryFormSection.formFields.length > 0
+      const attributesById = new Map<string, ProgramTrackedEntityAttribute>(
+        programTrackedEntityAttributes
+          .map((programTrackedEntityAttribute) => {
+            const trackedEntityAttributeId =
+              programTrackedEntityAttribute?.trackedEntityAttribute?.id;
+
+            return trackedEntityAttributeId
+              ? ([
+                  trackedEntityAttributeId,
+                  programTrackedEntityAttribute,
+                ] as const)
+              : null;
+          })
+          .filter(
+            (
+              entry
+            ): entry is readonly [string, ProgramTrackedEntityAttribute] =>
+              entry !== null
+          )
+      );
+
+      for (const programSection of programSections) {
+        const sectionFormFields = this.#mapSectionToFormFields(
+          programSection,
+          attributesById
         );
+
+        if (!sectionFormFields.length) {
+          continue;
+        }
+
+        sections.push(
+          new ProgramEntryFormSection({
+            id: programSection.id,
+            name: programSection.displayName ?? programSection.name ?? '',
+            description: programSection.description ?? '',
+            formFields: sectionFormFields,
+            orientation: 'VERTICAL',
+          })
+        );
+      }
+
+      return sections;
     }
 
-    return [
-      new ProgramEntryFormSection({
-        id: `${this.program.id}_enrollment`,
-        name: this.program.displayName ?? 'Enrollment',
-        description: '',
-        formFields: this.#mapAllPteasToFormFields(pteas),
-        orientation: 'VERTICAL',
-      }),
-    ];
+    const enrollmentFormFields = this.#mapAllPteasToFormFields(
+      programTrackedEntityAttributes
+    );
+
+    if (enrollmentFormFields.length) {
+      sections.push(
+        new ProgramEntryFormSection({
+          id: `${this.program.id}_enrollment`,
+          name: this.program.displayName ?? 'Enrollment',
+          description: '',
+          formFields: enrollmentFormFields,
+          orientation: 'VERTICAL',
+        })
+      );
+    }
+
+    return sections;
   }
 
   #getProgramSections(): Array<ProgramSection> {

@@ -12,7 +12,7 @@ import { DHIS2Event, IDHIS2Event } from '../../event/models/event.model';
 import { TrackerRelationship } from './tracker-relationship.model';
 import { Program } from '../../program';
 import { TrackedEntityConfig } from './tracked-entity-config.model';
-
+import { parseCoordinates } from '../helpers/form.helper';
 export interface ProgramOwner {
   ownerOrgUnit: string;
   program: string;
@@ -53,7 +53,8 @@ interface TrackerFieldProperty {
     | 'DATA_ELEMENT'
     | 'ENROLLMENT_DATE'
     | 'INCIDENT_DATE'
-    | 'ORG_UNIT';
+    | 'ORG_UNIT'
+    | 'GEOMETRY';
   generated?: boolean;
   pattern?: string;
   stageId?: string;
@@ -72,6 +73,10 @@ const DEFAULT_FIELD_PROPERTIES: Record<string, TrackerFieldProperty> = {
   orgUnit: {
     id: 'orgUnit',
     type: 'ORG_UNIT',
+  },
+  geometry: {
+    id: 'geometry',
+    type: 'GEOMETRY',
   },
 };
 
@@ -101,6 +106,7 @@ export interface ITrackedEntityInstance {
   setEnrollment?: (enrollment: IEnrollment) => void;
   setEnrollmentDate?: (enrollmentDate: string) => void;
   setIncidentDate?: (incidentDate: string) => void;
+  setEnrollmentGeometry?: (coordinateValue: string) => void;
   getEventByStage?: (programStage: string) => void;
   setEvent?: (event: IDHIS2Event) => void;
   setOrgUnit?: (orgUnit: string) => void;
@@ -251,6 +257,27 @@ export class TrackedEntityInstance
         this[attribute.attribute] = attribute.value;
       }
     });
+  }
+
+  setEnrollmentGeometry(coordinateValue: string) {
+
+    if (!this.latestEnrollment) {
+      return;
+    }
+
+    const parsed = parseCoordinates(coordinateValue);
+    if (!parsed) {
+      return;
+    }
+
+    const [lonText, latText] = parsed;
+    const longitude = Number(lonText);
+    const latitude = Number(latText);
+
+    (this.latestEnrollment as any).geometry = {
+      type: 'Point',
+      coordinates: [longitude, latitude],
+    };
   }
 
   setOrgUnit(orgUnit: string, updateTeiOrgUnit?: boolean) {
@@ -458,6 +485,51 @@ export class TrackedEntityInstance
       .map((relatedEntity) => relatedEntity.trackedEntityInstance);
   }
 
+  // updateDataValues(
+  //   dataValueEntities: Record<string, unknown>,
+  //   updateTeiOrgUnit?: boolean
+  // ) {
+  //   const dataValueKeys = Object.keys(dataValueEntities);
+
+  //   dataValueKeys.forEach((key) => {
+  //     const dataValue = dataValueEntities[key] as string;
+  //     const field = (this.fields || {})[key];
+
+  //     switch (field?.type) {
+  //       case 'ATTRIBUTE': {
+  //         this.setAttributeValue(field.id, dataValue);
+  //         break;
+  //       }
+  //       case 'DATA_ELEMENT': {
+  //         this.setDataValue(field.id, dataValue, field.stageId!);
+  //         break;
+  //       }
+  //       case 'ENROLLMENT_DATE':
+  //         this.setEnrollmentDate(dataValue);
+  //         break;
+  //       case 'INCIDENT_DATE':
+  //         this.setIncidentDate(dataValue);
+  //         break;
+  //       case 'ORG_UNIT':
+  //         this.setOrgUnit(dataValue, updateTeiOrgUnit);
+  //         break;
+
+  //       default: {
+  //         if (isArray(dataValue)) {
+  //           (dataValue as Record<string, unknown>[]).forEach((data) => {
+  //             this.updateDataValues(data);
+  //           });
+  //         } else if (isPlainObject(dataValue)) {
+  //           this.updateDataValues(
+  //             dataValue as unknown as Record<string, unknown>
+  //           );
+  //         }
+  //         break;
+  //       }
+  //     }
+  //   });
+  // }
+
   updateDataValues(
     dataValueEntities: Record<string, unknown>,
     updateTeiOrgUnit?: boolean
@@ -474,7 +546,11 @@ export class TrackedEntityInstance
           break;
         }
         case 'DATA_ELEMENT': {
-          this.setDataValue(field.id, dataValue, field.stageId!);
+          this.setDataValue(
+            field.id,
+            dataValue,
+            field.stageId ? field.stageId : ''
+          );
           break;
         }
         case 'ENROLLMENT_DATE':
@@ -486,11 +562,14 @@ export class TrackedEntityInstance
         case 'ORG_UNIT':
           this.setOrgUnit(dataValue, updateTeiOrgUnit);
           break;
+        case 'GEOMETRY':
+          this.setEnrollmentGeometry(dataValue);
+          break;
 
         default: {
           if (isArray(dataValue)) {
-            (dataValue as Record<string, unknown>[]).forEach((data) => {
-              this.updateDataValues(data);
+            (dataValue as Record<string, unknown>[]).forEach((nested) => {
+              this.updateDataValues(nested);
             });
           } else if (isPlainObject(dataValue)) {
             this.updateDataValues(
