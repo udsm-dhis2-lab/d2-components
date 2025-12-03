@@ -513,6 +513,9 @@
   <div class="form__empty">No fields to display.</div>
   } } } @else { @for (field of sanitizedFields; track field?.id ?? $index) {
   <div class="form__field form-field-{{ configuration().direction }}">
+        <div>
+          {{ sanitizedFields | json }}
+    </div>
     <ng-dhis2-ui-form-field
       [field]="field"
       [fieldConfig]="configuration().fieldConfig"
@@ -626,6 +629,9 @@
   </section>
   } @empty { @for (field of sanitizedFields; track field?.id ?? $index) {
   <div class="form__field form-field-{{ configuration().direction }}">
+        <div>
+      0099 Lorem ipsum dolor sit amet consectetur adipisicing elit. Fugit corporis animi, voluptatem sunt praesentium et voluptates perferendis magni velit architecto eius repudiandae repellat impedit accusamus beatae ipsam cupiditate possimus dignissimos.
+    </div>
     <ng-dhis2-ui-form-field
       [field]="field"
       [fieldConfig]="configuration().fieldConfig"
@@ -644,6 +650,7 @@
   <div class="form__empty">No fields to display.</div>
   } } } @else { @for (field of sanitizedFields; track field?.id ?? $index) {
   <div class="form__field form-field-{{ configuration().direction }}">
+
     <ng-dhis2-ui-form-field
       [field]="field"
       [fieldConfig]="configuration().fieldConfig"
@@ -664,6 +671,9 @@
   <div class="form__empty">No metadata available</div>
   @for (field of sanitizedFields; track field?.id ?? $index) {
   <div class="form__field form-field-{{ configuration().direction }}">
+    <div>
+      1111 Lorem ipsum dolor sit amet consectetur adipisicing elit. Fugit corporis animi, voluptatem sunt praesentium et voluptates perferendis magni velit architecto eius repudiandae repellat impedit accusamus beatae ipsam cupiditate possimus dignissimos.
+    </div>
     <ng-dhis2-ui-form-field
       [field]="field"
       [fieldConfig]="configuration().fieldConfig"

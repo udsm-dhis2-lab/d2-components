@@ -134,6 +134,7 @@ export class FormUtil {
         isDataElement: field.isDataElement,
         isAttribute: field.isAttribute,
         isOrgUnit: field.isOrgUnit,
+        isGeometryField: field.isGeometryField,
         isEnrollmentDate: field.isEnrollmentDate,
         programStage: field.stageId,
         event: field.event,
