@@ -17,6 +17,8 @@ export class FormFieldTypeUtil {
         return 'coordinate';
       case FieldType.DATE_TIME:
         return 'date-time';
+      case FieldType.PHONE_NUMBER:
+        return 'tel';
       default:
         return 'text';
     }

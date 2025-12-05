@@ -157,6 +157,8 @@ export class FormUtil {
       | 'dropdown'
       | 'textarea'
       | 'coordinate'
+      | 'number'
+      | 'tel'
       | 'date-time'
       | 'transfer'
       | 'search'
