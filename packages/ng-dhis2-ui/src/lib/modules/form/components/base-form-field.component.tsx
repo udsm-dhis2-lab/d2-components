@@ -48,6 +48,7 @@ import { IFormField } from '../interfaces/form-field.interface';
 import { FieldConfig } from '../models/field-config.model';
 import { CoordinatePickerField } from './coordinate-field-component';
 import { NoticeBox } from '@dhis2/ui';
+import { InternationalPhoneField } from './phone-number-field.component';
 
 @Directive()
 export class BaseFormFieldComponent extends ReactWrapperModule {
@@ -99,7 +100,7 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
     return (): React.JSX.Element => {
       const [value, setValue] = useState(
         this.form().get(this.field().id)?.value ||
-        this.form().get(this.field().key)?.value
+          this.form().get(this.field().key)?.value
       );
 
       const [selected, setSelected] = useState();
@@ -214,7 +215,6 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
             value.length > 0 &&
             touched)
         ) {
-          //  if (this.field().unique && value && value.length > 0 && touched) {
           setCheckingUniqueness(true);
           setRecordExistError(undefined);
           try {
@@ -241,6 +241,50 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
 
       const formFieldContent = () => {
         switch (this.field().controlType) {
+          case 'number':
+            return (
+              <InputField
+                error={hasError}
+                validationText={validationError}
+                type={this.field().type as any}
+                inputWidth={inputWidth}
+                required={this.field().required}
+                name={this.field().id}
+                label={this.label()}
+                min={this.field().min?.toString()}
+                max={this.field().max?.toString()}
+                placeholder={this.placeholder()}
+                value={value}
+                readOnly={disabled}
+                onChange={(event: any) => {
+                  onValueChange(event.value);
+                }}
+                onBlur={() => {
+                  checkValueUniqueness();
+                }}
+              />
+            );
+          case 'tel':
+            return (
+              <InternationalPhoneField
+                name={this.field().id}
+                label={this.label()}
+                placeholder={this.placeholder()}
+                value={value ?? ''}
+                required={this.field().required}
+                disabled={disabled}
+                error={hasError}
+                validationText={validationError}
+                inputWidth={this.fieldConfig()?.inputWidth}
+                defaultCountryIsoCode="TZ"
+                onChange={(localNumber: string) => {
+                  onValueChange(localNumber);
+                }}
+                onBlur={() => {
+                  checkValueUniqueness();
+                }}
+              />
+            );
           case 'coordinate':
             return (
               <div
@@ -290,7 +334,6 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
                 />
               </div>
             );
-
           case 'textarea':
             return (
               <TextAreaField
@@ -312,7 +355,6 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
                 }}
               />
             );
-
           case 'org-unit': {
             return (
               <OrgUnitFormField
@@ -469,9 +511,7 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
             const field = this.field();
             const isDateTimeField = field.type === 'date-time';
 
-            const inputType: any = isDateTimeField
-              ? 'datetime-local'
-              : 'date';
+            const inputType: any = isDateTimeField ? 'datetime-local' : 'date';
 
             // Value coming from DHIS2 store
             const htmlValue = this.formatValueForHtmlInputFromDhis(
@@ -481,17 +521,17 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
 
             const htmlMin = field.min
               ? this.formatValueForHtmlInputFromDhis(
-                String(field.min),
-                isDateTimeField
-              )
+                  String(field.min),
+                  isDateTimeField
+                )
               : undefined;
 
             // Max defined in metadata (if any)
             const metadataMax = field.max
               ? this.formatValueForHtmlInputFromDhis(
-                String(field.max),
-                isDateTimeField
-              )
+                  String(field.max),
+                  isDateTimeField
+                )
               : undefined;
 
             // System max = “now” (no future allowed)

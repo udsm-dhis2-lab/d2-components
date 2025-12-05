@@ -79,9 +79,9 @@ export class FieldUtil {
       case FieldType.TRUE_ONLY:
         return 'checkbox';
       case FieldType.NUMBER:
-        return 'textbox';
+        return 'number';
       case FieldType.PHONE_NUMBER:
-        return 'textbox';
+        return 'tel';
       case FieldType.ORG_UNIT:
         return 'org-unit';
       case FieldType.DATE:
