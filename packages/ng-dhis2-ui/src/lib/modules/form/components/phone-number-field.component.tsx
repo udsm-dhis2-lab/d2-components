@@ -5,6 +5,15 @@ import { ALL_COUNTRIES, CountryMeta } from './countries';
 
 const DEFAULT_COUNTRY_ISO = 'TZ';
 
+type SingleSelectFieldWithFilterProps = React.ComponentProps<
+  typeof SingleSelectField
+> & {
+  onFilterChange?: (args: { value: string }) => void;
+};
+
+const FilterableSingleSelectField =
+  SingleSelectField as React.ComponentType<SingleSelectFieldWithFilterProps>;
+
 export interface InternationalPhoneFieldProps {
   name: string;
   label?: string;
@@ -183,7 +192,7 @@ export const InternationalPhoneField: React.FC<
             width: 260,
           }}
         >
-          <SingleSelectField
+          {/* <SingleSelectField
             selected={selectedIsoCode}
             onChange={handleCountryChange}
             disabled={disabled}
@@ -201,7 +210,26 @@ export const InternationalPhoneField: React.FC<
                 label={`${country.flag} ${country.name} (${country.dialCode})`}
               />
             ))}
-          </SingleSelectField>
+          </SingleSelectField> */}
+          <FilterableSingleSelectField
+            selected={selectedIsoCode}
+            onChange={handleCountryChange}
+            disabled={disabled}
+            dense
+            filterable
+            onFilterChange={({ value }: { value: string }) =>
+              setFilterText(value)
+            }
+            noMatchText="No matching country"
+          >
+            {filteredCountries.map((country) => (
+              <SingleSelectOption
+                key={country.isoCode}
+                value={country.isoCode}
+                label={`${country.flag} ${country.name} (${country.dialCode})`}
+              />
+            ))}
+          </FilterableSingleSelectField>
         </div>
 
         <div style={{ flex: '1 1 0', minWidth: 0 }}>
@@ -215,8 +243,7 @@ export const InternationalPhoneField: React.FC<
             error={hasError}
             validationText={effectiveValidationText}
             autoComplete="tel"
-            inputMode="tel"
-            maxLength={selectedCountry.isoCode === 'TZ' ? 9 : 15}
+            max={selectedCountry.isoCode === 'TZ' ? '9' : '15'}
             onChange={handleLocalChange}
             onBlur={() => {
               if (selectedCountry.isoCode === 'TZ') {
