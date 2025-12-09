@@ -13,6 +13,12 @@ export class FormFieldTypeUtil {
         return 'image';
       case FieldType.FILE_RESOURCE:
         return 'file';
+      case FieldType.COORDINATE:
+        return 'coordinate';
+      case FieldType.DATE_TIME:
+        return 'date-time';
+      case FieldType.PHONE_NUMBER:
+        return 'tel';
       default:
         return 'text';
     }

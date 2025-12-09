@@ -4,20 +4,19 @@ import { FormMetadataSection } from './form-metadata-section.model';
 import { IMetadataRule, MetadataRule } from './form-metadata-rule.model';
 import { FormField } from './form-field.model';
 import { Program, ProgramRule, ProgramRuleVariable } from '@iapps/d2-web-sdk';
-import {
-  IFormField,
-  IFormMetadata,
-  IFormMetadataSection,
-  FormFieldExtension,
-} from '../interfaces';
 import { DateField } from './date-field.model';
 import { TranslationUtil } from '../utils';
+import { IFormMetadata } from '../interfaces/form-metadata.interface';
+import { IFormMetadataSection } from '../interfaces/form-metadata-section.interface';
+import { FormFieldExtension } from '../interfaces/form-field-extension.interface';
+import { IFormField } from '../interfaces/form-field.interface';
 
 export class FormMetaData implements IFormMetadata {
   id!: string;
   name!: string;
   description?: string | undefined;
   downloadSqlView?: string | undefined;
+  programStageSections!: IFormMetadataSection[];
 
   constructor(
     private params: {
@@ -138,7 +137,7 @@ export class FormMetaData implements IFormMetadata {
           name: programStage.name,
           fieldGroups:
             (programStage.programStageSections || []).length > 0
-              ? programStage.programStageSections!.map(
+              ? (programStage.programStageSections || []).map(
                   (programStageSection) => {
                     return {
                       id: programStageSection.id,
@@ -374,6 +373,7 @@ export class FormMetaData implements IFormMetadata {
       ),
       fields: this.fields,
       sections: this.sections,
+      programStageSections: this.programStageSections,
       rules: this.rules,
     };
   }

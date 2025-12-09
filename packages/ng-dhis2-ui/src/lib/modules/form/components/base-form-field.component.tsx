@@ -39,13 +39,16 @@ import * as ReactDOM from 'react-dom/client';
 import { filter, take } from 'rxjs';
 import { ReactWrapperModule } from '../../react-wrapper/react-wrapper.component';
 import { useFieldValidation } from '../hooks';
-import { IFormField } from '../interfaces';
-import { FieldConfig } from '../models';
+// import { IFormField } from '../interfaces';
+// import { FieldConfig } from '../models';
 import { FileUploadField } from './file-upload-field.component';
-import {
-  OrgUnitFormField,
-} from './org-unit-form-field.component';
+import { OrgUnitFormField } from './org-unit-form-field.component';
 import { CustomOrgUnitConfig } from '../models/org-unit.model';
+import { IFormField } from '../interfaces/form-field.interface';
+import { FieldConfig } from '../models/field-config.model';
+import { CoordinatePickerField } from './coordinate-field-component';
+import { NoticeBox } from '@dhis2/ui';
+import { InternationalPhoneField } from './phone-number-field.component';
 
 @Directive()
 export class BaseFormFieldComponent extends ReactWrapperModule {
@@ -59,7 +62,7 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
   isValueAssigned = input<boolean>();
   dataId = input<string>();
   customOrgUnitRoots = input<CustomOrgUnitConfig[]>();
-   //TODO: FIND BETTER WAY TO PASS PROGRAM TO FIELDS i.e field extensions
+  //TODO: FIND BETTER WAY TO PASS PROGRAM TO FIELDS i.e field extensions
   program = input<string>();
 
   value = model<string>();
@@ -193,6 +196,17 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
         setTouched(true);
       };
 
+      const generateUUID = (): string => {
+        return (
+          globalThis.crypto?.randomUUID?.() ??
+          'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+            const r = (Math.random() * 16) | 0;
+            const v = c === 'x' ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
+          })
+        );
+      };
+
       const checkValueUniqueness = async () => {
         if (
           this.field().unique ||
@@ -201,7 +215,6 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
             value.length > 0 &&
             touched)
         ) {
-          //  if (this.field().unique && value && value.length > 0 && touched) {
           setCheckingUniqueness(true);
           setRecordExistError(undefined);
           try {
@@ -228,6 +241,99 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
 
       const formFieldContent = () => {
         switch (this.field().controlType) {
+          case 'number':
+            return (
+              <InputField
+                error={hasError}
+                validationText={validationError}
+                type={this.field().type as any}
+                inputWidth={inputWidth}
+                required={this.field().required}
+                name={this.field().id}
+                label={this.label()}
+                min={this.field().min?.toString()}
+                max={this.field().max?.toString()}
+                placeholder={this.placeholder()}
+                value={value}
+                readOnly={disabled}
+                onChange={(event: any) => {
+                  onValueChange(event.value);
+                }}
+                onBlur={() => {
+                  checkValueUniqueness();
+                }}
+              />
+            );
+          case 'tel':
+            return (
+              <InternationalPhoneField
+                name={this.field().id}
+                label={this.label()}
+                placeholder={this.placeholder()}
+                value={value ?? ''}
+                required={this.field().required}
+                disabled={disabled}
+                error={hasError}
+                validationText={validationError}
+                inputWidth={this.fieldConfig()?.inputWidth}
+                defaultCountryIsoCode="TZ"
+                onChange={(localNumber: string) => {
+                  onValueChange(localNumber);
+                }}
+                onBlur={() => {
+                  checkValueUniqueness();
+                }}
+              />
+            );
+          case 'coordinate':
+            return (
+              <div
+                style={{ display: 'flex', flexDirection: 'column', gap: 12 }}
+              >
+                <NoticeBox title="Location capture required">
+                  <p style={{ margin: 0 }}>
+                    This field requires selecting the exact geographic location
+                    on the map.
+                  </p>
+                  <ul
+                    style={{ margin: '6px 0 0 18px', padding: 0, fontSize: 13 }}
+                  >
+                    <li>
+                      Click <strong>“Pick location on map”</strong> to open the
+                      street map.
+                    </li>
+                    <li>
+                      Pan and zoom until you locate the correct facility,
+                      building, house or area.
+                    </li>
+                    <li>
+                      Click once on the map to place or move the marker
+                      accurately.
+                    </li>
+                    <li>
+                      Click <strong>“Use Selected Location”</strong> to save the
+                      coordinates.
+                    </li>
+                  </ul>
+                </NoticeBox>
+
+                <CoordinatePickerField
+                  error={hasError}
+                  validationText={validationError}
+                  required={this.field().required}
+                  name={this.field().id}
+                  disabled={disabled}
+                  label={this.label()}
+                  value={value}
+                  onChange={(newValue: string | null) => {
+                    onValueChange(newValue);
+                  }}
+                  onBlur={() => {
+                    checkValueUniqueness();
+                  }}
+                />
+              </div>
+            );
           case 'textarea':
             return (
               <TextAreaField
@@ -249,7 +355,6 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
                 }}
               />
             );
-
           case 'org-unit': {
             return (
               <OrgUnitFormField
@@ -266,7 +371,6 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
               />
             );
           }
-
           case 'transfer':
             return (
               <Transfer
@@ -337,7 +441,7 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
               >
                 {(this.field().options || []).map((option) => (
                   <SingleSelectOption
-                    key={crypto.randomUUID() || option.key}
+                    key={generateUUID()}
                     label={option.label}
                     value={option.value}
                   />
@@ -371,37 +475,101 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
               >
                 {(this.field().options || []).map((option) => (
                   <MultiSelectOption
-                    key={option.key}
+                    key={generateUUID()}
                     label={option.label}
                     value={option.value}
                   />
                 ))}
               </MultiSelectField>
             );
+          // case 'date':
+          // case 'date-time':
+          //   return (
+          //     <InputField
+          //       error={hasError}
+          //       validationText={validationError}
+          //       type={this.field().type as any}
+          //       inputWidth={inputWidth}
+          //       required={this.field().required}
+          //       name={this.field().id}
+          //       label={this.label()}
+          //       min={this.field().min?.toString()}
+          //       max={this.field().max?.toString()}
+          //       placeholder={this.placeholder()}
+          //       value={value}
+          //       readOnly={disabled}
+          //       onChange={(event: any) => {
+          //         onValueChange(event.value);
+          //       }}
+          //       onBlur={() => {
+          //         checkValueUniqueness();
+          //       }}
+          //     />
+          //   );
           case 'date':
-          case 'date-time':
+          case 'date-time': {
+            const field = this.field();
+            const isDateTimeField = field.type === 'date-time';
+
+            const inputType: any = isDateTimeField ? 'datetime-local' : 'date';
+
+            // Value coming from DHIS2 store
+            const htmlValue = this.formatValueForHtmlInputFromDhis(
+              value,
+              isDateTimeField
+            );
+
+            const htmlMin = field.min
+              ? this.formatValueForHtmlInputFromDhis(
+                  String(field.min),
+                  isDateTimeField
+                )
+              : undefined;
+
+            // Max defined in metadata (if any)
+            const metadataMax = field.max
+              ? this.formatValueForHtmlInputFromDhis(
+                  String(field.max),
+                  isDateTimeField
+                )
+              : undefined;
+
+            // System max = “now” (no future allowed)
+            const systemMax = this.getNowForHtmlDateInput(isDateTimeField);
+
+            // Effective max = earliest of metadataMax and systemMax
+            const htmlMax = this.pickEarlierDateLimit(metadataMax, systemMax);
+
             return (
               <InputField
                 error={hasError}
                 validationText={validationError}
-                type={this.field().type as any}
+                type={inputType}
                 inputWidth={inputWidth}
-                required={this.field().required}
-                name={this.field().id}
+                required={field.required}
+                name={field.id}
                 label={this.label()}
-                min={this.field().min?.toString()}
-                max={this.field().max?.toString()}
+                min={htmlMin}
+                max={htmlMax}
                 placeholder={this.placeholder()}
-                value={value}
+                value={htmlValue}
                 readOnly={disabled}
-                onChange={(event: any) => {
-                  onValueChange(event.value);
+                onChange={({ value: newValue }: { value: string }) => {
+                  const normalized = this.normalizeDateValueFromHtmlInput(
+                    newValue,
+                    isDateTimeField,
+                    true
+                  );
+
+                  onValueChange(normalized);
                 }}
                 onBlur={() => {
                   checkValueUniqueness();
                 }}
               />
             );
+          }
+
           case 'file':
             return (
               <>
@@ -480,6 +648,173 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
 
   onChange(event: any): void {
     this.value.set(event);
+  }
+
+  formatValueForHtmlDateInput(
+    rawValue: string | null | undefined,
+    isDateTimeField: boolean
+  ): string {
+    if (!rawValue) return '';
+
+    const trimmed = rawValue.trim();
+    if (!trimmed) return '';
+
+    if (!isDateTimeField) {
+      const datePart = trimmed.split('T')[0].split(' ')[0];
+      return /^\d{4}-\d{2}-\d{2}$/.test(datePart) ? datePart : '';
+    }
+
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(trimmed)) {
+      return trimmed;
+    }
+
+    const date = new Date(trimmed);
+    if (Number.isNaN(date.getTime())) {
+      return '';
+    }
+
+    const pad = (n: number) => String(n).padStart(2, '0');
+
+    return (
+      `${date.getFullYear()}-` +
+      `${pad(date.getMonth() + 1)}-` +
+      `${pad(date.getDate())}T` +
+      `${pad(date.getHours())}:` +
+      `${pad(date.getMinutes())}`
+    );
+  }
+
+  formatValueForHtmlInputFromDhis(
+    rawValue: string | null | undefined,
+    isDateTimeField: boolean
+  ): string {
+    if (!rawValue) return '';
+
+    const trimmed = rawValue.trim();
+    if (!trimmed) return '';
+
+    const pad = (n: number) => String(n).padStart(2, '0');
+
+    if (!isDateTimeField) {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+        return trimmed;
+      }
+
+      const date = new Date(trimmed);
+      if (Number.isNaN(date.getTime())) {
+        return '';
+      }
+
+      return (
+        `${date.getFullYear()}-` +
+        `${pad(date.getMonth() + 1)}-` +
+        `${pad(date.getDate())}`
+      );
+    }
+
+    const parsedDate = new Date(trimmed);
+    if (Number.isNaN(parsedDate.getTime())) {
+      return '';
+    }
+
+    const year = parsedDate.getFullYear();
+    const month = pad(parsedDate.getMonth() + 1);
+    const day = pad(parsedDate.getDate());
+    const hours = pad(parsedDate.getHours());
+    const minutes = pad(parsedDate.getMinutes());
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+
+  getNowForHtmlDateInput(isDateTimeField: boolean): string {
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+
+    const datePart =
+      `${now.getFullYear()}-` +
+      `${pad(now.getMonth() + 1)}-` +
+      `${pad(now.getDate())}`;
+
+    if (!isDateTimeField) {
+      return datePart;
+    }
+
+    const timePart = `${pad(now.getHours())}:` + `${pad(now.getMinutes())}`;
+
+    return `${datePart}T${timePart}`;
+  }
+
+  pickEarlierDateLimit(
+    metadataMax?: string,
+    systemMax?: string
+  ): string | undefined {
+    if (!metadataMax && !systemMax) return undefined;
+    if (!metadataMax) return systemMax;
+    if (!systemMax) return metadataMax;
+
+    return metadataMax < systemMax ? metadataMax : systemMax;
+  }
+
+  /**
+   * Normalizes value from the HTML input into DHIS storage format.
+   *
+   * For date:
+   *   - Input: "YYYY-MM-DD"
+   *   - Output: "YYYY-MM-DD"
+   *
+   * For datetime:
+   *   - Input: "YYYY-MM-DDTHH:mm" (local)
+   *   - Output: ISO string in UTC: "YYYY-MM-DDTHH:mm:ss.sssZ"
+   *
+   * If disallowFuture = true, any value beyond "now" is clamped to now.
+   */
+  normalizeDateValueFromHtmlInput(
+    inputValue: string | null | undefined,
+    isDateTimeField: boolean,
+    disallowFuture: boolean
+  ): string | null {
+    const trimmed = (inputValue ?? '').trim();
+    if (!trimmed) return null;
+
+    if (!isDateTimeField) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+        return null;
+      }
+
+      if (disallowFuture) {
+        const todayStr = this.getNowForHtmlDateInput(false);
+        if (trimmed > todayStr) {
+          return todayStr;
+        }
+      }
+
+      return trimmed;
+    }
+
+    // ---- DATETIME (date-time) ----
+    // HTML datetime-local gives "YYYY-MM-DDTHH:mm" (local)
+    if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(trimmed)) {
+      return null;
+    }
+
+    // Interpret as LOCAL time
+    const localDate = new Date(trimmed);
+    if (Number.isNaN(localDate.getTime())) {
+      return null;
+    }
+
+    if (disallowFuture) {
+      const now = new Date();
+      if (localDate.getTime() > now.getTime()) {
+        // Option A: clamp to now
+        return now.toISOString();
+        // Option B: reject:
+        // return null;
+      }
+    }
+
+    // Store as UTC ISO string with millis, e.g. "2025-11-26T21:01:00.000Z"
+    return localDate.toISOString();
   }
 
   async searchForDuplicates(value: string) {
