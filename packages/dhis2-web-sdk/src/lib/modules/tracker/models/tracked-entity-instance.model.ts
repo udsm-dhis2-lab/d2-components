@@ -260,7 +260,6 @@ export class TrackedEntityInstance
   }
 
   setEnrollmentGeometry(coordinateValue: string) {
-
     if (!this.latestEnrollment) {
       return;
     }
@@ -530,56 +529,144 @@ export class TrackedEntityInstance
   //   });
   // }
 
+  // updateDataValues(
+  //   dataValueEntities: Record<string, unknown>,
+  //   updateTeiOrgUnit?: boolean
+  // ) {
+  //   const dataValueKeys = Object.keys(dataValueEntities);
+
+  //   dataValueKeys.forEach((key) => {
+  //     const dataValue = dataValueEntities[key] as string;
+  //     const field = (this.fields || {})[key];
+
+  //     switch (field?.type) {
+  //       case 'ATTRIBUTE': {
+  //         this.setAttributeValue(field.id, dataValue);
+  //         break;
+  //       }
+  //       case 'DATA_ELEMENT': {
+  //         this.setDataValue(
+  //           field.id,
+  //           dataValue,
+  //           field.stageId ? field.stageId : ''
+  //         );
+  //         break;
+  //       }
+  //       case 'ENROLLMENT_DATE':
+  //         this.setEnrollmentDate(dataValue);
+  //         break;
+  //       case 'INCIDENT_DATE':
+  //         this.setIncidentDate(dataValue);
+  //         break;
+  //       case 'ORG_UNIT':
+  //         this.setOrgUnit(dataValue, updateTeiOrgUnit);
+  //         break;
+  //       case 'GEOMETRY':
+  //         this.setEnrollmentGeometry(dataValue);
+  //         break;
+
+  //       default: {
+  //         if (isArray(dataValue)) {
+  //           (dataValue as Record<string, unknown>[]).forEach((nested) => {
+  //             this.updateDataValues(nested);
+  //           });
+  //         } else if (isPlainObject(dataValue)) {
+  //           this.updateDataValues(
+  //             dataValue as unknown as Record<string, unknown>
+  //           );
+  //         }
+  //         break;
+  //       }
+  //     }
+  //   });
+  // }
+
   updateDataValues(
     dataValueEntities: Record<string, unknown>,
     updateTeiOrgUnit?: boolean
   ) {
-    const dataValueKeys = Object.keys(dataValueEntities);
+    if (!dataValueEntities) {
+      return;
+    }
 
-    dataValueKeys.forEach((key) => {
-      const dataValue = dataValueEntities[key] as string;
-      const field = (this.fields || {})[key];
+    const fields = this.fields || {};
 
-      switch (field?.type) {
-        case 'ATTRIBUTE': {
-          this.setAttributeValue(field.id, dataValue);
-          break;
-        }
-        case 'DATA_ELEMENT': {
-          this.setDataValue(
-            field.id,
-            dataValue,
-            field.stageId ? field.stageId : ''
-          );
-          break;
-        }
-        case 'ENROLLMENT_DATE':
-          this.setEnrollmentDate(dataValue);
-          break;
-        case 'INCIDENT_DATE':
-          this.setIncidentDate(dataValue);
-          break;
-        case 'ORG_UNIT':
-          this.setOrgUnit(dataValue, updateTeiOrgUnit);
-          break;
-        case 'GEOMETRY':
-          this.setEnrollmentGeometry(dataValue);
-          break;
+    for (const key in dataValueEntities) {
+      if (!Object.prototype.hasOwnProperty.call(dataValueEntities, key)) {
+        continue;
+      }
 
-        default: {
-          if (isArray(dataValue)) {
-            (dataValue as Record<string, unknown>[]).forEach((nested) => {
-              this.updateDataValues(nested);
-            });
-          } else if (isPlainObject(dataValue)) {
-            this.updateDataValues(
-              dataValue as unknown as Record<string, unknown>
-            );
+      const value = dataValueEntities[key];
+      const field = fields[key] as
+        | {
+            id: string;
+            type?: string;
+            stageId?: string;
           }
-          break;
+        | undefined;
+
+      if (field && field.type) {
+        switch (field.type) {
+          case 'ATTRIBUTE': {
+            this.setAttributeValue(field.id, value as string);
+            break;
+          }
+
+          case 'DATA_ELEMENT': {
+            this.setDataValue(field.id, value as string, field.stageId || '');
+            break;
+          }
+
+          case 'ENROLLMENT_DATE': {
+            this.setEnrollmentDate(value as string);
+            break;
+          }
+
+          case 'INCIDENT_DATE': {
+            this.setIncidentDate(value as string);
+            break;
+          }
+
+          case 'ORG_UNIT': {
+            this.setOrgUnit(value as string, updateTeiOrgUnit);
+            break;
+          }
+
+          case 'GEOMETRY': {
+            this.setEnrollmentGeometry(value as string);
+            break;
+          }
+
+          default: {
+            break;
+          }
+        }
+
+        if (
+          field.type === 'ATTRIBUTE' ||
+          field.type === 'DATA_ELEMENT' ||
+          field.type === 'ENROLLMENT_DATE' ||
+          field.type === 'INCIDENT_DATE' ||
+          field.type === 'ORG_UNIT' ||
+          field.type === 'GEOMETRY'
+        ) {
+          continue;
         }
       }
-    });
+
+      if (value && typeof value === 'object') {
+        if (isArray(value)) {
+          (value as Record<string, unknown>[]).forEach((nested) => {
+            this.updateDataValues(nested, updateTeiOrgUnit);
+          });
+        } else if (isPlainObject(value)) {
+          this.updateDataValues(
+            value as Record<string, unknown>,
+            updateTeiOrgUnit
+          );
+        }
+      }
+    }
   }
 
   setDataValue(

@@ -224,6 +224,7 @@ export const InternationalPhoneField: React.FC<
           >
             {filteredCountries.map((country) => (
               <SingleSelectOption
+                disabled={disabled}
                 key={country.isoCode}
                 value={country.isoCode}
                 label={`${country.flag} ${country.name} (${country.dialCode})`}
