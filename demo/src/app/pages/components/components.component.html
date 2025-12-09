@@ -1,4 +1,15 @@
-<!-- <ng-dhis2-ui-line-list
+ <app-selection-filters-ui
+  [startDate]="'2024-03-01'"
+  [orgUnitFieldTitle]="'Report Organisation Unit Selection'"
+  [endDate]="'2025-02-28'"
+  [selectedOrgUnit]="selectedOrgUnit"
+  (actionSelected)="onActionSelectedReportFilter($event)"
+  [program]="'ABC1'"
+  [organisationUnit]="'EFG'"
+></app-selection-filters-ui>
+
+
+<ng-dhis2-ui-line-list
   [programId]="'zyBObUsin0Q'"
   [orgUnit]="'xrku9x3XnV9'"
   [actionOptions]="[
@@ -7,7 +18,7 @@
     { label: 'Delete', destructive: true }
   ]"
   [ouMode]="'DESCENDANTS'"
-></ng-dhis2-ui-line-list> -->
+></ng-dhis2-ui-line-list>
 
 <!-- <h5>Header Bar component</h5> -->
 <!-- <ng-dhis2-ui-header-bar></ng-dhis2-ui-header-bar>

@@ -7,6 +7,7 @@ export interface IFormMetadata {
   description?: string;
   fields: IFormField<string>[];
   sections: IFormMetadataSection[];
+  programStageSections: IFormMetadataSection[];
   rules: any[];
   downloadSqlView?: string;
 }

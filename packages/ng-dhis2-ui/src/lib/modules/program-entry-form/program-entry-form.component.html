@@ -10,8 +10,21 @@
 
   <!-- Flat display -->
   @case ('FLAT') {
+    <ng-dhis2-ui-flat-form
+      [programEntryFormConfig]="config()"
+      [collapsibleSections]="collapsibleSections()"
+      [programEntryFormMetaData]="metaData()!"
+      [name]="metaData()!.name"
+      [dataValues]="instance() || {}"
+      [dataId]="dataId()"
+      [rules]="metaData()!.rules"
+      [fields]="metaData()!.formFields"
+      [customOrgUnitRoots]="customOrgUnitRoots()"
+      (formUpdate)="onFormUpdate($event)"
+      (formValidityUpdate)="onValidityUpdate($event)"
+    />
 
-  <ng-dhis2-ui-flat-form
+  <!-- <ng-dhis2-ui-flat-form
     [name]="metaData()!.name"
     [dataValues]="instance() || {}"
     [dataId]="dataId()"
@@ -21,7 +34,7 @@
     [program]="config().program"
     (formUpdate)="onFormUpdate($event)"
     (formValidityUpdate)="onValidityUpdate($event)"
-  />
+  /> -->
   }
 
   <!-- SECTION display -->

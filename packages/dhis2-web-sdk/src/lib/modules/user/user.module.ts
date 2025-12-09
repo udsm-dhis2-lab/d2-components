@@ -12,7 +12,7 @@ export class UserModule {
   async currentUser(): Promise<CurrentUser | null> {
     const [userResponse, authorityResponse] = await Promise.all([
       this.httpClient.get(
-        'me?fields=id,name,displayName,created,' +
+        'me?fields=id,name,firstName,surname,username,gender,phoneNumber,email,displayName,created,' +
           'lastUpdated,email,dataViewOrganisationUnits[id,code,path,name,level],' +
           'organisationUnits[id,code,path,name,level],userCredentials[username],userGroups[id,name]'
       ),

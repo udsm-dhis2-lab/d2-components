@@ -10,5 +10,8 @@ export type FieldControlType =
   | 'org-unit'
   | 'file'
   | 'boolean'
+  | 'number'
+  | 'tel'
   | 'transfer'
+  | 'coordinate'
   | 'search';

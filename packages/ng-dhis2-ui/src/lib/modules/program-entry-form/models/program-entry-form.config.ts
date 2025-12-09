@@ -13,12 +13,15 @@ export interface IProgramEntryFormConfig {
   formType: 'TRACKER' | 'EVENT';
   hideRegistrationUnit?: boolean;
   hideEnrollmentDate?: boolean;
+  hideGeometryField?: boolean;
   hideTrackedEntityTypeAttributes?: boolean;
   disableRegistrationUnit?: boolean;
   disableEnrollmentDate?: boolean;
   disabledIncidentDate?: boolean;
   excludeProgramStages?: boolean;
   excludeInheritedAttributes?: boolean;
+  disableEventDate?: boolean;
+  hideEventDate?: boolean;
   includedProgramStages?: string[];
   submitButtonLabel?: string;
   cancelButtonLabel?: string;
@@ -39,10 +42,13 @@ export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   formType!: 'TRACKER' | 'EVENT';
   hideRegistrationUnit?: boolean;
   hideEnrollmentDate?: boolean;
+  hideGeometryField?: boolean;
   hideTrackedEntityTypeAttributes?: boolean;
   disableRegistrationUnit?: boolean;
   disableEnrollmentDate?: boolean;
   disabledIncidentDate?: boolean;
+  disableEventDate?: boolean;
+  hideEventDate?: boolean;
   excludeProgramStages?: boolean;
   excludeInheritedAttributes?: boolean;
   includedProgramStages?: string[];
@@ -56,7 +62,7 @@ export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   hideCustomAssignedFields?: boolean;
   autoComplete?: boolean;
   formFieldExtensions?: FormFieldExtension[];
-  updateTeiOrgUnit: boolean = false;
+  updateTeiOrgUnit = false;
 
   constructor(config: IProgramEntryFormConfig) {
     Object.assign(this, config);

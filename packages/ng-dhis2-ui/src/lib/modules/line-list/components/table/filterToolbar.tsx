@@ -393,7 +393,7 @@ export const FilterToolbar = ({
                           >
                             {(options.options ?? []).map((opt: any) => (
                               <SingleSelectOption
-                                key={opt.id}
+                                key={crypto.randomUUID() || opt.key}
                                 label={opt.name}
                                 value={opt.code}
                               />

@@ -1,4 +1,4 @@
-import { IFormFieldGroup } from './form-field-group.interface';
+import type { IFormFieldGroup } from './form-field-group.interface';
 
 export interface IFormMetadataSection {
   id: string;

@@ -9,6 +9,7 @@ export interface IEnrollment {
   storedBy?: string;
   created?: string;
   orgUnit: string;
+  geometry?: any;
   createdAtClient?: string;
   program: string;
   trackedEntity: string;
@@ -49,8 +50,7 @@ export interface IEnrollment {
 }
 export class Enrollment
   extends BaseTrackerSDKModel<Enrollment>
-  implements IEnrollment
-{
+  implements IEnrollment {
   enrollment!: string;
   storedBy?: string;
   created?: string;
@@ -225,6 +225,7 @@ export class Enrollment
       enrollment: this.enrollment,
       enrolledAt: this.enrolledAt,
       occurredAt: this.occurredAt,
+      geometry: this.geometry,
       status: this.status || 'ACTIVE',
       program: this.program,
       orgUnit: this?.orgUnit,

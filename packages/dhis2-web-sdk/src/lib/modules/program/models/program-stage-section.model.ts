@@ -11,6 +11,7 @@ import {
 export type ProgramStageSectionField =
   | IdentifiableField
   | 'sortOrder'
+  | 'description'
   | 'renderType'
   | 'dataElements';
 export class ProgramStageSection extends IdentifiableObject<ProgramStageSection> {
@@ -20,11 +21,13 @@ export class ProgramStageSection extends IdentifiableObject<ProgramStageSection>
   static fields: ProgramStageSectionField[] = [
     ...IDENTIFIABLE_FIELDS,
     'sortOrder',
+    'description',
     'renderType',
     'dataElements',
   ];
   sortOrder!: number;
   renderType: any;
+  description!: string;
   dataElements!: DataElement[];
 
   constructor(programStageSection: Partial<ProgramStageSection>) {

@@ -134,6 +134,7 @@ export class FormUtil {
         isDataElement: field.isDataElement,
         isAttribute: field.isAttribute,
         isOrgUnit: field.isOrgUnit,
+        isGeometryField: field.isGeometryField,
         isEnrollmentDate: field.isEnrollmentDate,
         programStage: field.stageId,
         event: field.event,
@@ -155,6 +156,10 @@ export class FormUtil {
       | 'textbox'
       | 'dropdown'
       | 'textarea'
+      | 'coordinate'
+      | 'number'
+      | 'tel'
+      | 'date-time'
       | 'transfer'
       | 'search'
       | 'file',

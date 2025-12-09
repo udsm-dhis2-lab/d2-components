@@ -9,6 +9,7 @@ import {
   EventFieldProperty,
 } from '../interfaces';
 import { Program } from '../../program';
+import { parseCoordinates } from '../../tracker/helpers/form.helper';
 
 const DEFAULT_FIELD_PROPERTIES: Record<string, EventFieldProperty> = {
   occurredAt: {
@@ -23,6 +24,10 @@ const DEFAULT_FIELD_PROPERTIES: Record<string, EventFieldProperty> = {
     id: 'orgUnit',
     type: 'ORG_UNIT',
   },
+  geometry: {
+    id: 'geometry',
+    type: 'GEOMETRY',
+  },
 };
 
 export interface IDHIS2Event {
@@ -32,6 +37,7 @@ export interface IDHIS2Event {
   createdAtClient?: string;
   program: string;
   event: string;
+  geometry?: any;
   programStage: string;
   orgUnit: string;
   trackedEntity?: string;
@@ -88,6 +94,7 @@ export class DHIS2Event
   orgUnitName?: string;
   lastUpdatedAtClient?: string;
   eventDate!: string;
+  geometry: any;
   occurredAt!: string;
   attributeCategoryOptions?: string;
   lastUpdated?: string;
@@ -216,6 +223,30 @@ export class DHIS2Event
     ) as any;
   }
 
+  /**
+   * Sets event geometry from a coordinate string input.
+   * Accepts formats like:
+   *  - "[39.319364,-6.069623]"
+   *  - "39.319364,-6.069623"
+   *  - "39.319364 -6.069623"
+   * and stores as GeoJSON Point in this.geometry.
+   */
+  setEventGeometry(coordinateValue: string) {
+    const parsed = parseCoordinates(coordinateValue);
+    if (!parsed) {
+      return;
+    }
+
+    const [lonText, latText] = parsed;
+    const longitude = Number(lonText);
+    const latitude = Number(latText);
+
+    this.geometry = {
+      type: 'Point',
+      coordinates: [longitude, latitude],
+    };
+  }
+
   updateDataValues(dataValueEntities: Record<string, unknown>) {
     const dataValueKeys = Object.keys(dataValueEntities);
 
@@ -236,6 +267,11 @@ export class DHIS2Event
         case 'ORG_UNIT':
           this.orgUnit = dataValue;
           break;
+        case 'GEOMETRY':
+          this.setEventGeometry(dataValue);
+          break;
+        default:
+          break;
       }
     });
   }
@@ -253,6 +289,7 @@ export class DHIS2Event
       event: this.event,
       status: this.status,
       program: this.program,
+      geometry: this.geometry,
       programStage: this.programStage,
       enrollment: this.enrollment,
       trackedEntity: this.trackedEntity,

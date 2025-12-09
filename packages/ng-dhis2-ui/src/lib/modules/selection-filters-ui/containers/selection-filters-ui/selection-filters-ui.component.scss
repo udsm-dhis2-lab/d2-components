@@ -17,3 +17,8 @@
     width: 100%;
     /* Ensure the inputs and selects take full width within the grid */
 }
+
+/* Make the actual <input> area show a pointer cursor too */
+.clickable-field input {
+    cursor: pointer !important;
+}
