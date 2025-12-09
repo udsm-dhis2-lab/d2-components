@@ -599,7 +599,7 @@ export class SingleValueVisualizer
 
     const titleFontSize = 11;
     const filterFontSize = 8;
-    const valueFontSize = 33;
+    const valueFontSize = 30;
     const lineHeightMultiplier = 1.3;
 
     const innerWidth = viewBoxWidth - horizontalPadding * 2;
@@ -650,6 +650,8 @@ export class SingleValueVisualizer
       fontWeight: '600',
     });
 
+    titleText.setAttribute('fill-opacity', '0.85');
+
     this.appendWrappedText(
       svgNamespace,
       titleText,
@@ -666,7 +668,7 @@ export class SingleValueVisualizer
         fontSize: filterFontSize,
         fill: '#9e9e9e',
         anchor: 'middle',
-        fontWeight: '600',
+        fontWeight: '500',
       });
 
       this.appendWrappedText(

@@ -369,15 +369,26 @@ export class FormComponentsComponent {
   // });
 
   mcn = new ProgramEntryFormConfig({
-        program:'GNRIrbL5o0n',
-        hideRegistrationUnit: false,
-        hideActionButtons: false,
-        formType: 'TRACKER',
-        displayType: 'FLAT',
-        autoComplete: true,
-        autoAssignedValues: [],
-        formFieldExtensions: [],
-      })
+    program: 'GNRIrbL5o0n',
+    hideRegistrationUnit: false,
+    hideActionButtons: false,
+    formType: 'TRACKER',
+    displayType: 'FLAT',
+    autoComplete: true,
+    autoAssignedValues: [
+      {
+        // OabCFumWtKz | reporterPhoneNumber
+        field: 'OabCFumWtKz',
+        value: '777777778',
+      },
+      {
+        // Eg8qx9O2nRk | referenceInOpdRegister
+        field: 'Eg8qx9O2nRk',
+        value: '123',
+      },
+    ],
+    formFieldExtensions: [],
+  });
 
   programEntryConfig = new ProgramEntryFormConfig({
     program: 'Gy65kx8gQv6',
@@ -420,27 +431,25 @@ export class FormComponentsComponent {
   //   }
   // };
 
-
   beforeSave = ({
     instance,
   }: {
     instance: TrackedEntityInstance | DHIS2Event;
   }) => {
-  // console.log('Original instance inside form:', instance);
+    // console.log('Original instance inside form:', instance);
 
-  // Make changes here
-  if ('updateDataValues' in instance) {
-    instance.updateDataValues({
-      seUJl7AEZtS: 'New Value',
-    });
+    // Make changes here
+    if ('updateDataValues' in instance) {
+      instance.updateDataValues({
+        seUJl7AEZtS: 'New Value',
+      });
 
-    instance.program = 'hello';
-  }
+      instance.program = 'hello';
+    }
 
-  // IMPORTANT: return the mutated instance
-  return instance;
-};
-
+    // IMPORTANT: return the mutated instance
+    return instance;
+  };
 
   // new ProgramEntryFormConfig({
   //   program: 'lw9fZTamYec',
@@ -505,7 +514,7 @@ export class FormComponentsComponent {
     console.log('cancel');
   }
 
-  async onSaveComplete(reponse: any) { }
+  async onSaveComplete(reponse: any) {}
   paymentInformationFormConfig = new ProgramEntryFormConfig({
     program: 'Gy65kx8gQv6',
     programStage: 'fUVVkgQZHN5',
