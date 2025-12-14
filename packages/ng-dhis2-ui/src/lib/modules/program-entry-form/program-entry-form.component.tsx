@@ -282,9 +282,49 @@ export class ProgramEntryFormModule {
   //   this.#updateInstance(assignedDataValues);
   // }
 
+  // #updateInstanceWithAutoAssignedValues(
+  //   autoAssignedValues: AutoAssignedValues[]
+  // ) {
+  //   const valueCount = autoAssignedValues?.length ?? 0;
+  //   if (valueCount === 0) {
+  //     return;
+  //   }
+
+  //   const metaData = this.metaData();
+  //   const aggregatedValues: Record<string, unknown> = {};
+
+  //   for (let index = 0; index < valueCount; index++) {
+  //     const { field: configuredKey, value } = autoAssignedValues[index];
+
+  //     const semanticKey = metaData
+  //       ? this.#resolveFieldRuntimeId(configuredKey, metaData)
+  //       : configuredKey;
+
+  //     aggregatedValues[semanticKey] = value;
+
+  //     if (configuredKey !== semanticKey) {
+  //       aggregatedValues[configuredKey] = value;
+  //     }
+  //   }
+
+  //   if (Object.keys(aggregatedValues).length === 0) {
+  //     return;
+  //   }
+
+  //   this.#updateInstance(aggregatedValues);
+  // }
+
   #updateInstanceWithAutoAssignedValues(
     autoAssignedValues: AutoAssignedValues[]
   ) {
+    const trackedEntityId = this.trackedEntity?.();
+    if (
+      typeof trackedEntityId === 'string' &&
+      trackedEntityId.trim().length > 0
+    ) {
+      return;
+    }
+
     const valueCount = autoAssignedValues?.length ?? 0;
     if (valueCount === 0) {
       return;
