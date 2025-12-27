@@ -20,6 +20,7 @@ import { IFormMetadata } from '../../interfaces/form-metadata.interface'
 import { IProgramEntryFormMetaData } from '../../../program-entry-form/models/program-entry-form-metadata';
 import { IFormField } from '../../interfaces/form-field.interface';
 import { IMetadataRule, IMetadataRuleAction } from '../../models/form-metadata-rule.model';
+import { CoordinatePickerGeoConfig } from '../../components/coordinate-field-component';
 
 @Directive()
 export class BaseFormWrapperComponent implements OnDestroy {
@@ -30,6 +31,7 @@ export class BaseFormWrapperComponent implements OnDestroy {
   dataValues = input<Record<string, unknown>>({});
   dataId = input<string>();
   customOrgUnitRoots = input<CustomOrgUnitConfig[]>();
+  coordinatePickerGeoConfig = input<CoordinatePickerGeoConfig>();
   formMetaData = input<IFormMetadata>();
   programEntryFormMetaData = input<IProgramEntryFormMetaData>();
   programStage = input<string>();

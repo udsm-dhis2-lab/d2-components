@@ -2,6 +2,674 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// import {
+//   computed,
+//   Directive,
+//   EventEmitter,
+//   inject,
+//   input,
+//   model,
+//   NgZone,
+//   Output,
+//   Signal,
+// } from '@angular/core';
+// import { toObservable } from '@angular/core/rxjs-interop';
+// import { FormGroup } from '@angular/forms';
+// import {
+//   Checkbox,
+//   CircularLoader,
+//   colors,
+//   InputField,
+//   MultiSelectField,
+//   MultiSelectOption,
+//   SingleSelectField,
+//   SingleSelectOption,
+//   TextAreaField,
+//   Transfer,
+// } from '@dhis2/ui';
+// import {
+//   D2Window,
+//   DataFilterCondition,
+//   DataQueryFilter,
+//   DHIS2Event,
+//   TrackedEntityInstance,
+// } from '@iapps/d2-web-sdk';
+// import React, { useEffect, useMemo, useState } from 'react';
+// import * as ReactDOM from 'react-dom/client';
+// import { filter, take } from 'rxjs';
+// import { ReactWrapperModule } from '../../react-wrapper/react-wrapper.component';
+// import { useFieldValidation } from '../hooks';
+// // import { IFormField } from '../interfaces';
+// // import { FieldConfig } from '../models';
+// import { FileUploadField } from './file-upload-field.component';
+// import { OrgUnitFormField } from './org-unit-form-field.component';
+// import { CustomOrgUnitConfig } from '../models/org-unit.model';
+// import { IFormField } from '../interfaces/form-field.interface';
+// import { FieldConfig } from '../models/field-config.model';
+// import { CoordinatePickerField } from './coordinate-field-component';
+// import { NoticeBox } from '@dhis2/ui';
+// import { InternationalPhoneField } from './phone-number-field.component';
+// import {
+//   DEFAULT_OPTIONS_PATH_CASCADE,
+//   OptionsPathCascadeConfig,
+//   OptionsPathCascadeConfigMap,
+// } from '../types/field-cascade.types';
+// import { FieldCascadeUtil } from '../utils/field-cascade.util';
+
+// @Directive()
+// export class BaseFormFieldComponent extends ReactWrapperModule {
+//   ngZone = inject(NgZone);
+//   fieldType = 'textbox';
+//   field = input.required<IFormField<string>>();
+//   fieldError = input<string | undefined>();
+//   fieldConfig = input<FieldConfig>(new FieldConfig());
+//   form = model.required<FormGroup>();
+//   isValid = input<boolean>();
+//   isValueAssigned = input<boolean>();
+//   dataId = input<string>();
+//   customOrgUnitRoots = input<CustomOrgUnitConfig[]>();
+//   optionCascadeConfigs = input<OptionsPathCascadeConfig[]>();
+//   optionCascadeConfigMap = input<OptionsPathCascadeConfigMap>(
+//     {} as OptionsPathCascadeConfigMap
+//   );
+//   //TODO: FIND BETTER WAY TO PASS PROGRAM TO FIELDS i.e field extensions
+//   program = input<string>();
+
+//   value = model<string>();
+//   protected value$ = toObservable(this.value);
+//   protected isValueAssigned$ = toObservable(this.isValueAssigned);
+//   protected fieldError$ = toObservable(this.fieldError);
+
+//   label: Signal<string | undefined> = computed(() => {
+//     return !this.fieldConfig()?.hideLabel ? this.field().label : undefined;
+//   });
+
+//   placeholder: Signal<string> = computed(() => {
+//     return (
+//       this.field()?.placeholder || `Enter ${this.field()?.label || 'value'}`
+//     );
+//   });
+
+//   InputField = this.#getInputField();
+
+//   @Output() update = new EventEmitter<{ form: FormGroup; value: any }>();
+//   @Output() immediateUpdate = new EventEmitter<{
+//     form: FormGroup;
+//     value: any;
+//   }>();
+
+//   override async ngAfterViewInit() {
+//     if (!this.elementRef) throw new Error('No element ref');
+//     this.reactDomRoot = ReactDOM.createRoot(this.elementRef.nativeElement);
+
+//     this.component = this.InputField;
+//     this.render();
+//   }
+
+//   #getInputField() {
+//     return (): React.JSX.Element => {
+//       const [value, setValue] = useState(
+//         this.form().get(this.field().id)?.value ||
+//           this.form().get(this.field().key)?.value
+//       );
+//       const [selected, setSelected] = useState();
+//       const [touched, setTouched] = useState(false);
+//       const [disabled, setDisabled] = useState<boolean>(
+//         this.field()?.disabled ?? this.field()?.generated ?? false
+//       );
+//       const [initialError, setInitialError] = useState<string>();
+//       const [recordExistError, setRecordExistError] = useState<
+//         string | undefined
+//       >();
+//       const [checkingUniqueness, setCheckingUniqueness] = useState<boolean>();
+
+//       useEffect(() => {
+//         const isAssignedSubscription = this.isValueAssigned$
+//           .pipe(filter((isValueAssigned) => isValueAssigned === true))
+//           .subscribe({
+//             next: () => {
+//               const value =
+//                 this.form().get(this.field().id)?.value ||
+//                 this.form().get(this.field().key)?.value;
+//               setValue(value);
+//               setDisabled(true);
+//               checkValueUniqueness();
+//             },
+//           });
+
+//         return () => {
+//           isAssignedSubscription.unsubscribe();
+//         };
+//       }, []);
+
+//       // TODO: Review error handling as take() has potential to missed any other updated error information
+//       useEffect(() => {
+//         const fieldErrorSubscription = this.fieldError$
+//           .pipe(
+//             filter((error) => error !== initialError),
+//             take(1)
+//           )
+//           .subscribe({
+//             next: (error: string | undefined) => {
+//               setInitialError(error);
+//             },
+//           });
+
+//         return () => {
+//           fieldErrorSubscription.unsubscribe();
+//         };
+//       }, [initialError]); // Add initialError as a dependency to avoid stale closures
+
+//       const arrayValue = useMemo(() => {
+//         if (value && value.length > 0) {
+//           return value.split(',');
+//         }
+
+//         return [];
+//       }, [value]);
+
+//       const inputWidth = useMemo(() => {
+//         if (
+//           this.field().controlType === 'date' ||
+//           this.field().controlType === 'date-time'
+//         ) {
+//           return '360px';
+//         }
+
+//         return this.fieldConfig()?.inputWidth;
+//       }, []);
+
+//       const { validationError, hasError } = useFieldValidation({
+//         field: this.field(),
+//         form: this.form(),
+//         initialError,
+//         recordExistError,
+//         value,
+//         touched,
+//       });
+
+//       const onValueChange = (value: unknown) => {
+//         this.ngZone.run(() => {
+//           (
+//             this.form().get(this.field().id) ||
+//             this.form().get(this.field().key)
+//           )?.setValue(value);
+
+//           this.update.emit({
+//             form: this.form(),
+//             value,
+//           });
+//         });
+
+//         setValue(value);
+//         setTouched(true);
+//       };
+
+//       const generateUUID = (): string => {
+//         return (
+//           globalThis.crypto?.randomUUID?.() ??
+//           'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+//             const r = (Math.random() * 16) | 0;
+//             const v = c === 'x' ? r : (r & 0x3) | 0x8;
+//             return v.toString(16);
+//           })
+//         );
+//       };
+
+//       const checkValueUniqueness = async () => {
+//         if (
+//           this.field().unique ||
+//           ((this.field().extension?.isDataElementUnique ?? false) &&
+//             value &&
+//             value.length > 0 &&
+//             touched)
+//         ) {
+//           setCheckingUniqueness(true);
+//           setRecordExistError(undefined);
+//           try {
+//             const isDuplicate = await this.searchForDuplicates(value);
+
+//             setCheckingUniqueness(false);
+
+//             if (isDuplicate) {
+//               const customError = `Record with this ${this.label()} is already registered`;
+//               (
+//                 this.form().controls[this.field().id] ||
+//                 this.form().controls[this.field().key]
+//               )?.setErrors({
+//                 customError,
+//               });
+//               setRecordExistError(customError);
+//             }
+//           } catch (e) {
+//             setCheckingUniqueness(false);
+//             setRecordExistError(undefined);
+//           }
+//         }
+//       };
+
+//       const formFieldContent = () => {
+//         switch (this.field().controlType) {
+//           case 'number':
+//             return (
+//               <InputField
+//                 error={hasError}
+//                 validationText={validationError}
+//                 type={this.field().type as any}
+//                 inputWidth={inputWidth}
+//                 required={this.field().required}
+//                 name={this.field().id}
+//                 label={this.label()}
+//                 min={this.field().min?.toString()}
+//                 max={this.field().max?.toString()}
+//                 placeholder={this.placeholder()}
+//                 value={value}
+//                 readOnly={disabled}
+//                 onChange={(event: any) => {
+//                   onValueChange(event.value);
+//                 }}
+//                 onBlur={() => {
+//                   checkValueUniqueness();
+//                 }}
+//               />
+//             );
+//           case 'tel':
+//             return (
+//               <InternationalPhoneField
+//                 name={this.field().id}
+//                 label={this.label()}
+//                 placeholder={this.placeholder()}
+//                 value={value ?? ''}
+//                 required={this.field().required}
+//                 disabled={disabled}
+//                 error={hasError}
+//                 validationText={validationError}
+//                 inputWidth={this.fieldConfig()?.inputWidth}
+//                 defaultCountryIsoCode="TZ"
+//                 onChange={(localNumber: string) => {
+//                   onValueChange(localNumber);
+//                 }}
+//                 onBlur={() => {
+//                   checkValueUniqueness();
+//                 }}
+//               />
+//             );
+//           case 'coordinate':
+//             return (
+//               <div
+//                 style={{ display: 'flex', flexDirection: 'column', gap: 12 }}
+//               >
+//                 <NoticeBox title="Location capture required">
+//                   <p style={{ margin: 0 }}>
+//                     This field requires selecting the exact geographic location
+//                     on the map.
+//                   </p>
+//                   <ul
+//                     style={{ margin: '6px 0 0 18px', padding: 0, fontSize: 13 }}
+//                   >
+//                     <li>
+//                       Click <strong>“Pick location on map”</strong> to open the
+//                       street map.
+//                     </li>
+//                     <li>
+//                       Pan and zoom until you locate the correct facility,
+//                       building, house or area.
+//                     </li>
+//                     <li>
+//                       Click once on the map to place or move the marker
+//                       accurately.
+//                     </li>
+//                     <li>
+//                       Click <strong>“Use Selected Location”</strong> to save the
+//                       coordinates.
+//                     </li>
+//                   </ul>
+//                 </NoticeBox>
+
+//                 <CoordinatePickerField
+//                   error={hasError}
+//                   validationText={validationError}
+//                   required={this.field().required}
+//                   name={this.field().id}
+//                   disabled={disabled}
+//                   label={this.label()}
+//                   value={value}
+//                   onChange={(newValue: string | null) => {
+//                     onValueChange(newValue);
+//                   }}
+//                   onBlur={() => {
+//                     checkValueUniqueness();
+//                   }}
+//                 />
+//               </div>
+//             );
+//           case 'textarea':
+//             return (
+//               <TextAreaField
+//                 error={hasError}
+//                 validationText={validationError}
+//                 inputWidth={this.fieldConfig()?.inputWidth}
+//                 required={this.field().required}
+//                 name={this.field().id}
+//                 disabled={disabled}
+//                 label={this.label()}
+//                 rows={5}
+//                 placeholder={this.placeholder()}
+//                 value={value}
+//                 onChange={(event: any) => {
+//                   onValueChange(event.value);
+//                 }}
+//                 onBlur={() => {
+//                   checkValueUniqueness();
+//                 }}
+//               />
+//             );
+//           case 'org-unit': {
+//             return (
+//               <OrgUnitFormField
+//                 label={this.label()}
+//                 key={this.field().id}
+//                 field={this.field().id}
+//                 required={this.field().required}
+//                 disabled={disabled}
+//                 customOrgUnitRoots={this.customOrgUnitRoots()}
+//                 onSelectOrgUnit={(selectedOrgUnit: string) => {
+//                   onValueChange(selectedOrgUnit);
+//                 }}
+//                 selected={value}
+//               />
+//             );
+//           }
+//           case 'transfer':
+//             return (
+//               <Transfer
+//                 filterable
+//                 filterPlaceholder="Search"
+//                 selected={selected}
+//                 leftHeader={
+//                   <div
+//                     style={{
+//                       fontSize: 14,
+//                       padding: '8px 4px',
+//                     }}
+//                   >
+//                     {this.field().availableOptionsLabel}
+//                   </div>
+//                 }
+//                 rightHeader={
+//                   <div
+//                     style={{
+//                       fontSize: 14,
+//                       padding: '8px 4px',
+//                     }}
+//                   >
+//                     {this.field().selectedOptionsLabel}
+//                   </div>
+//                 }
+//                 options={this.field().options}
+//                 onChange={(event: any) => {
+//                   onValueChange(event.selected);
+//                 }}
+//               />
+//             );
+//           case 'checkbox':
+//             return (
+//               <Checkbox
+//                 checked={Boolean(value)}
+//                 error={hasError}
+//                 label={this.label()}
+//                 name={this.field().id}
+//                 disabled={disabled}
+//                 onChange={(event: any) => {
+//                   onValueChange(event.checked);
+//                 }}
+//                 onBlur={() => {
+//                   checkValueUniqueness();
+//                 }}
+//               />
+//             );
+//           case 'dropdown':
+//             return (
+//               <SingleSelectField
+//                 filterable={(this.field().options || []).length > 5}
+//                 clearable
+//                 error={hasError}
+//                 validationText={validationError}
+//                 inputWidth={this.fieldConfig()?.inputWidth}
+//                 disabled={disabled}
+//                 required={this.field().required}
+//                 className="select"
+//                 label={this.label()}
+//                 selected={value}
+//                 onChange={(event: any) => {
+//                   onValueChange(event.selected);
+//                 }}
+//                 onBlur={() => {
+//                   checkValueUniqueness();
+//                 }}
+//               >
+//                 {(this.field().options || []).map((option) => (
+//                   <SingleSelectOption
+//                     key={generateUUID()}
+//                     label={option.label}
+//                     value={option.value}
+//                   />
+//                 ))}
+//               </SingleSelectField>
+//             );
+//           case 'multi-dropdown':
+//             return (
+//               <MultiSelectField
+//                 clearText="Clear"
+//                 clearable
+//                 empty="No data found"
+//                 filterable={(this.field().options || []).length > 5}
+//                 filterPlaceholder="Type to filter options"
+//                 error={hasError}
+//                 validationText={validationError}
+//                 inputWidth={this.fieldConfig()?.inputWidth}
+//                 disabled={disabled}
+//                 label={this.label()}
+//                 required={this.field().required}
+//                 loadingText="Loading options"
+//                 noMatchText="No options found"
+//                 onChange={(event: { selected: string[] }) => {
+//                   const selectedValue = (event.selected || []).join(',');
+//                   onValueChange(selectedValue);
+//                 }}
+//                 onBlur={() => {
+//                   checkValueUniqueness();
+//                 }}
+//                 selected={arrayValue}
+//               >
+//                 {(this.field().options || []).map((option) => (
+//                   <MultiSelectOption
+//                     key={generateUUID()}
+//                     label={option.label}
+//                     value={option.value}
+//                   />
+//                 ))}
+//               </MultiSelectField>
+//             );
+//           // case 'date':
+//           // case 'date-time':
+//           //   return (
+//           //     <InputField
+//           //       error={hasError}
+//           //       validationText={validationError}
+//           //       type={this.field().type as any}
+//           //       inputWidth={inputWidth}
+//           //       required={this.field().required}
+//           //       name={this.field().id}
+//           //       label={this.label()}
+//           //       min={this.field().min?.toString()}
+//           //       max={this.field().max?.toString()}
+//           //       placeholder={this.placeholder()}
+//           //       value={value}
+//           //       readOnly={disabled}
+//           //       onChange={(event: any) => {
+//           //         onValueChange(event.value);
+//           //       }}
+//           //       onBlur={() => {
+//           //         checkValueUniqueness();
+//           //       }}
+//           //     />
+//           //   );
+//           case 'date':
+//           case 'date-time': {
+//             const field = this.field();
+//             const isDateTimeField = field.type === 'date-time';
+
+//             const inputType: any = isDateTimeField ? 'datetime-local' : 'date';
+
+//             // Value coming from DHIS2 store
+//             const htmlValue = this.formatValueForHtmlInputFromDhis(
+//               value,
+//               isDateTimeField
+//             );
+
+//             const htmlMin = field.min
+//               ? this.formatValueForHtmlInputFromDhis(
+//                   String(field.min),
+//                   isDateTimeField
+//                 )
+//               : undefined;
+
+//             // Max defined in metadata (if any)
+//             const metadataMax = field.max
+//               ? this.formatValueForHtmlInputFromDhis(
+//                   String(field.max),
+//                   isDateTimeField
+//                 )
+//               : undefined;
+
+//             // System max = “now” (no future allowed)
+//             const systemMax = this.getNowForHtmlDateInput(isDateTimeField);
+
+//             // Effective max = earliest of metadataMax and systemMax
+//             const htmlMax = this.pickEarlierDateLimit(metadataMax, systemMax);
+
+//             return (
+//               <InputField
+//                 error={hasError}
+//                 validationText={validationError}
+//                 type={inputType}
+//                 inputWidth={inputWidth}
+//                 required={field.required}
+//                 name={field.id}
+//                 label={this.label()}
+//                 min={htmlMin}
+//                 max={htmlMax}
+//                 placeholder={this.placeholder()}
+//                 value={htmlValue}
+//                 readOnly={disabled}
+//                 onChange={({ value: newValue }: { value: string }) => {
+//                   const normalized = this.normalizeDateValueFromHtmlInput(
+//                     newValue,
+//                     isDateTimeField,
+//                     true
+//                   );
+
+//                   onValueChange(normalized);
+//                 }}
+//                 onBlur={() => {
+//                   checkValueUniqueness();
+//                 }}
+//               />
+//             );
+//           }
+
+//           case 'file':
+//             return (
+//               <>
+//                 <FileUploadField
+//                   label={this.label()}
+//                   id={this.field().id}
+//                   hasError={hasError}
+//                   required={this.field().required}
+//                   validationText={validationError}
+//                   performUpload={true}
+//                   uploadUrl={'fileResources'}
+//                   onUploadSuccess={(fileId: string) => {
+//                     onValueChange(fileId);
+//                   }}
+//                   onRemoveFile={() => {
+//                     onValueChange('');
+//                   }}
+//                   extension={this.field()?.extension}
+//                   value={value}
+//                   metaType={this.field().metaType}
+//                   dataId={this.dataId()}
+//                   program={this.program()}
+//                 />
+//               </>
+//             );
+//           default:
+//             return (
+//               <InputField
+//                 error={hasError}
+//                 validationText={validationError}
+//                 type={this.field().type as any}
+//                 inputWidth={inputWidth}
+//                 required={this.field().required}
+//                 name={this.field().id}
+//                 label={this.label()}
+//                 min={this.field().min?.toString()}
+//                 max={this.field().max?.toString()}
+//                 placeholder={this.placeholder()}
+//                 value={value}
+//                 readOnly={disabled}
+//                 onChange={(event: any) => {
+//                   onValueChange(event.value);
+//                 }}
+//                 onBlur={() => {
+//                   checkValueUniqueness();
+//                 }}
+//               />
+//             );
+//         }
+//       };
+
+//       {
+//         return (
+//           <React.Fragment>
+//             {formFieldContent()}
+//             {checkingUniqueness && (
+//               <div
+//                 style={{
+//                   display: 'flex',
+//                   alignItems: 'center',
+//                   gap: 8,
+//                   paddingTop: 8,
+//                 }}
+//               >
+//                 <CircularLoader small />
+//                 <div style={{ color: colors.grey800, fontSize: 14 }}>
+//                   Checking...
+//                 </div>
+//               </div>
+//             )}
+//           </React.Fragment>
+//         );
+//       }
+//     };
+//   }
+
+// ✅ DROP-IN REPLACEMENT: BaseFormFieldComponent (only the relevant changed parts)
+// You can comment your existing #getInputField() implementation and paste this one.
+//
+// Notes:
+// - Implements OPTIONS_PATH cascading using optionCascadeConfigMap (preferred) and falls back to optionCascadeConfigs.
+// - Filters dropdown + multi-dropdown options using FieldCascadeUtil.
+// - Disables child until parent selected (if configured).
+// - Clears child value when parent changes (if configured) ONLY when current value is no longer valid.
+// - Avoids generateUUID() for option keys (uses stable keys).
+// - Keeps your existing “generated/disabled/isAssigned” semantics.
+
+// Copyright 2024 UDSM DHIS2 Lab. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 import {
   computed,
   Directive,
@@ -26,6 +694,7 @@ import {
   SingleSelectOption,
   TextAreaField,
   Transfer,
+  NoticeBox,
 } from '@dhis2/ui';
 import {
   D2Window,
@@ -34,50 +703,67 @@ import {
   DHIS2Event,
   TrackedEntityInstance,
 } from '@iapps/d2-web-sdk';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { filter, take } from 'rxjs';
 import { ReactWrapperModule } from '../../react-wrapper/react-wrapper.component';
 import { useFieldValidation } from '../hooks';
-// import { IFormField } from '../interfaces';
-// import { FieldConfig } from '../models';
+import { CoordinatePickerField, CoordinatePickerGeoConfig } from './coordinate-field-component';
 import { FileUploadField } from './file-upload-field.component';
+import { InternationalPhoneField } from './phone-number-field.component';
 import { OrgUnitFormField } from './org-unit-form-field.component';
-import { CustomOrgUnitConfig } from '../models/org-unit.model';
 import { IFormField } from '../interfaces/form-field.interface';
 import { FieldConfig } from '../models/field-config.model';
-import { CoordinatePickerField } from './coordinate-field-component';
-import { NoticeBox } from '@dhis2/ui';
-import { InternationalPhoneField } from './phone-number-field.component';
+import { CustomOrgUnitConfig } from '../models/org-unit.model';
+import {
+  DEFAULT_OPTIONS_PATH_CASCADE,
+  OptionsPathCascadeConfig,
+  OptionsPathCascadeConfigMap,
+} from '../types/field-cascade.types';
+import { FieldCascadeUtil } from '../utils/field-cascade.util';
 
 @Directive()
 export class BaseFormFieldComponent extends ReactWrapperModule {
-  ngZone = inject(NgZone);
+  private readonly ngZone = inject(NgZone);
+
   fieldType = 'textbox';
+
   field = input.required<IFormField<string>>();
   fieldError = input<string | undefined>();
   fieldConfig = input<FieldConfig>(new FieldConfig());
   form = model.required<FormGroup>();
+
+  // kept for compatibility (even if not used directly here)
   isValid = input<boolean>();
   isValueAssigned = input<boolean>();
   dataId = input<string>();
   customOrgUnitRoots = input<CustomOrgUnitConfig[]>();
-  //TODO: FIND BETTER WAY TO PASS PROGRAM TO FIELDS i.e field extensions
+
+  // Cascade
+  optionCascadeConfigs = input<OptionsPathCascadeConfig[]>([]);
+  optionCascadeConfigMap = input<OptionsPathCascadeConfigMap>(
+    {} as OptionsPathCascadeConfigMap
+  );
+  coordinatePickerGeoConfig = input<CoordinatePickerGeoConfig>();
+  fieldControlKeyById = input<Record<string, string>>({});
+
+  // kept for compatibility (used by FileUploadField)
   program = input<string>();
 
   value = model<string>();
-  protected value$ = toObservable(this.value);
-  protected isValueAssigned$ = toObservable(this.isValueAssigned);
-  protected fieldError$ = toObservable(this.fieldError);
+  protected readonly value$ = toObservable(this.value);
+  protected readonly isValueAssigned$ = toObservable(this.isValueAssigned);
+  protected readonly fieldError$ = toObservable(this.fieldError);
 
-  label: Signal<string | undefined> = computed(() => {
-    return !this.fieldConfig()?.hideLabel ? this.field().label : undefined;
+  readonly label: Signal<string | undefined> = computed(() => {
+    const cfg = this.fieldConfig();
+    const f = this.field();
+    return cfg?.hideLabel ? undefined : f.label;
   });
 
-  placeholder: Signal<string> = computed(() => {
-    return (
-      this.field()?.placeholder || `Enter ${this.field()?.label || 'value'}`
-    );
+  readonly placeholder: Signal<string> = computed(() => {
+    const f = this.field();
+    return f?.placeholder || `Enter ${f?.label || 'value'}`;
   });
 
   InputField = this.#getInputField();
@@ -96,195 +782,308 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
     this.render();
   }
 
+  // -------------------------------
+  // Cascade helpers (UID -> control)
+  // -------------------------------
+  #resolveCascadeForCurrentField(): OptionsPathCascadeConfig | undefined {
+    const f = this.field();
+    const map = this.optionCascadeConfigMap?.() ?? ({} as any);
+
+    const byId = f?.id ? map?.[f.id] : undefined;
+    const byKey = f?.key ? map?.[f.key] : undefined;
+    if (byId || byKey) return (byId || byKey) as OptionsPathCascadeConfig;
+
+    const list = this.optionCascadeConfigs?.() ?? [];
+    const id = f?.id;
+    const key = f?.key;
+    return list.find((c) => c?.fieldId === id || c?.fieldId === key);
+  }
+
+  #resolveControlName(fieldIdOrKey: string | undefined): string | null {
+    if (!fieldIdOrKey) return null;
+    const mapped = this.fieldControlKeyById?.()?.[fieldIdOrKey];
+    return mapped ?? fieldIdOrKey;
+  }
+
+  #getControl(fg: FormGroup, fieldIdOrKey: string | undefined) {
+    const name = this.#resolveControlName(fieldIdOrKey);
+    return name ? fg.get(name) : null;
+  }
+
+  #getCurrentFieldControl(fg: FormGroup) {
+    const f = this.field();
+    return this.#getControl(fg, f?.id) || this.#getControl(fg, f?.key);
+  }
+
+  #getOptionKey(option: any): string {
+    // Stable React key, avoids generateUUID re-mounting.
+    return String(
+      option?.value ?? option?.id ?? option?.code ?? option?.label ?? ''
+    );
+  }
+
   #getInputField() {
     return (): React.JSX.Element => {
-      const [value, setValue] = useState(
-        this.form().get(this.field().id)?.value ||
-          this.form().get(this.field().key)?.value
-      );
+      const fg = this.form();
+      const field = this.field();
 
-      const [selected, setSelected] = useState();
-      const [touched, setTouched] = useState(false);
-      const [disabled, setDisabled] = useState<boolean>(
-        this.field()?.disabled ?? this.field()?.generated ?? false
+      // Refs prevent stale closures in subscriptions
+      const valueRef = useRef<string>('');
+      const touchedRef = useRef(false);
+
+      // State
+      const [value, setValue] = useState<string>(() => {
+        const ctrl = this.#getCurrentFieldControl(fg);
+        const v = ctrl?.value;
+        const s = v == null ? '' : String(v);
+        valueRef.current = s;
+        return s;
+      });
+
+      const [filteredOptions, setFilteredOptions] = useState<any[]>(
+        () => field.options ?? []
       );
+      const [selected, setSelected] = useState<any>();
+      const [touched, setTouched] = useState(false);
+
+      const baseDisabled =
+        !!(field?.disabled ?? false) || !!(field?.generated ?? false);
+      const [disabled, setDisabled] = useState<boolean>(baseDisabled);
+
       const [initialError, setInitialError] = useState<string>();
       const [recordExistError, setRecordExistError] = useState<
         string | undefined
       >();
-      const [checkingUniqueness, setCheckingUniqueness] = useState<boolean>();
+      const [checkingUniqueness, setCheckingUniqueness] =
+        useState<boolean>(false);
+
+      // Keep refs synced
+      useEffect(() => {
+        valueRef.current = value;
+      }, [value]);
 
       useEffect(() => {
-        const isAssignedSubscription = this.isValueAssigned$
-          .pipe(filter((isValueAssigned) => isValueAssigned === true))
-          .subscribe({
-            next: () => {
-              const value =
-                this.form().get(this.field().id)?.value ||
-                this.form().get(this.field().key)?.value;
-              setValue(value);
-              setDisabled(true);
-              checkValueUniqueness();
-            },
-          });
+        touchedRef.current = touched;
+      }, [touched]);
 
-        return () => {
-          isAssignedSubscription.unsubscribe();
-        };
-      }, []);
-
-      // TODO: Review error handling as take() has potential to missed any other updated error information
+      // ----------------------------
+      // Error stream: keep first new error
+      // ----------------------------
       useEffect(() => {
-        const fieldErrorSubscription = this.fieldError$
+        const sub = this.fieldError$
           .pipe(
             filter((error) => error !== initialError),
             take(1)
           )
+          .subscribe({ next: (error) => setInitialError(error) });
+
+        return () => sub.unsubscribe();
+      }, [initialError]);
+
+      // ----------------------------
+      // Uniqueness checker (stable)
+      // ----------------------------
+      const checkValueUniqueness = async (rawValue?: string) => {
+        const currentValue = (rawValue ?? valueRef.current ?? '').trim();
+
+        const f = this.field();
+        const isEligible =
+          f.unique ||
+          ((f.extension?.isDataElementUnique ?? false) &&
+            currentValue.length > 0 &&
+            touchedRef.current);
+
+        if (!isEligible) return;
+
+        setCheckingUniqueness(true);
+        setRecordExistError(undefined);
+
+        try {
+          const isDuplicate = await this.searchForDuplicates(currentValue);
+          setCheckingUniqueness(false);
+
+          if (!isDuplicate) return;
+
+          const customError = `Record with this ${this.label()} is already registered`;
+          const ctrl =
+            fg.controls[f.id] || (f.key ? fg.controls[f.key] : undefined);
+
+          ctrl?.setErrors({ customError });
+          setRecordExistError(customError);
+        } catch {
+          setCheckingUniqueness(false);
+          setRecordExistError(undefined);
+        }
+      };
+
+      // ----------------------------
+      // Auto-assigned -> lock field + uniqueness check
+      // ----------------------------
+      useEffect(() => {
+        const sub = this.isValueAssigned$
+          .pipe(filter((v) => v === true))
           .subscribe({
-            next: (error: string | undefined) => {
-              setInitialError(error);
+            next: () => {
+              const ctrl = this.#getCurrentFieldControl(fg);
+              const v = ctrl?.value == null ? '' : String(ctrl.value);
+              setValue(v);
+              setDisabled(true);
+              checkValueUniqueness(v);
             },
           });
 
-        return () => {
-          fieldErrorSubscription.unsubscribe();
-        };
-      }, [initialError]); // Add initialError as a dependency to avoid stale closures
+        return () => sub.unsubscribe();
+      }, []);
 
-      const arrayValue = useMemo(() => {
-        if (value && value.length > 0) {
-          return value.split(',');
+      // ----------------------------
+      // Cascade wiring (parent -> child)
+      // ----------------------------
+      useEffect(() => {
+        const cascade = this.#resolveCascadeForCurrentField();
+
+        if (!cascade || cascade.kind !== 'OPTIONS_PATH') {
+          setFilteredOptions(field.options ?? []);
+          setDisabled(baseDisabled);
+          return;
         }
 
-        return [];
+        const parentCtrl = this.#getControl(fg, cascade.parentFieldId);
+        const childCtrl = this.#getCurrentFieldControl(fg);
+
+        if (!parentCtrl || !childCtrl) {
+          setFilteredOptions(field.options ?? []);
+          setDisabled(baseDisabled);
+          return;
+        }
+
+        const merged = { ...DEFAULT_OPTIONS_PATH_CASCADE, ...cascade };
+
+        const applyCascade = (
+          parentValue: any,
+          reason: 'init' | 'parentChange'
+        ) => {
+          const parentStr = String(parentValue ?? '');
+
+          // disable logic
+          const cascadeDisable = FieldCascadeUtil.shouldDisableChildField(
+            cascade,
+            parentStr
+          );
+          setDisabled(baseDisabled || cascadeDisable);
+
+          // filter options
+          const nextOptions = FieldCascadeUtil.filterChildOptionsByParentPath(
+            field.options ?? [],
+            cascade,
+            parentStr
+          );
+          setFilteredOptions(nextOptions);
+
+          // clear invalid child on parent change if configured
+          if (merged.clearOnParentChange && reason === 'parentChange') {
+            const currentChildValue = String(childCtrl.value ?? '').trim();
+            if (currentChildValue) {
+              const stillValid = nextOptions.some((o: any) => {
+                const ov = String(o?.value ?? o?.id ?? '');
+                return ov === currentChildValue;
+              });
+
+              if (!stillValid) {
+                childCtrl.setValue(null, { emitEvent: true });
+                setValue('');
+              }
+            }
+          }
+        };
+
+        applyCascade(parentCtrl.value, 'init');
+
+        const sub = parentCtrl.valueChanges.subscribe((v) =>
+          applyCascade(v, 'parentChange')
+        );
+
+        return () => sub.unsubscribe();
+      }, []);
+
+      // Derived
+      const arrayValue = useMemo(() => {
+        const str = String(value ?? '');
+        return str.length > 0 ? str.split(',') : [];
       }, [value]);
 
       const inputWidth = useMemo(() => {
-        if (
-          this.field().controlType === 'date' ||
-          this.field().controlType === 'date-time'
-        ) {
+        const f = this.field();
+        if (f.controlType === 'date' || f.controlType === 'date-time') {
           return '360px';
         }
-
         return this.fieldConfig()?.inputWidth;
       }, []);
 
       const { validationError, hasError } = useFieldValidation({
-        field: this.field(),
-        form: this.form(),
+        field,
+        form: fg,
         initialError,
         recordExistError,
         value,
         touched,
       });
 
-      const onValueChange = (value: unknown) => {
+      const onValueChange = (newValue: unknown) => {
         this.ngZone.run(() => {
-          (
-            this.form().get(this.field().id) ||
-            this.form().get(this.field().key)
-          )?.setValue(value);
+          const ctrl = this.#getCurrentFieldControl(fg);
+          ctrl?.setValue(newValue);
 
-          this.update.emit({
-            form: this.form(),
-            value,
-          });
+          this.update.emit({ form: fg, value: newValue });
         });
 
-        setValue(value);
+        const s = newValue == null ? '' : String(newValue);
+        setValue(s);
         setTouched(true);
       };
 
-      const generateUUID = (): string => {
-        return (
-          globalThis.crypto?.randomUUID?.() ??
-          'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-            const r = (Math.random() * 16) | 0;
-            const v = c === 'x' ? r : (r & 0x3) | 0x8;
-            return v.toString(16);
-          })
-        );
-      };
-
-      const checkValueUniqueness = async () => {
-        if (
-          this.field().unique ||
-          ((this.field().extension?.isDataElementUnique ?? false) &&
-            value &&
-            value.length > 0 &&
-            touched)
-        ) {
-          setCheckingUniqueness(true);
-          setRecordExistError(undefined);
-          try {
-            const isDuplicate = await this.searchForDuplicates(value);
-
-            setCheckingUniqueness(false);
-
-            if (isDuplicate) {
-              const customError = `Record with this ${this.label()} is already registered`;
-              (
-                this.form().controls[this.field().id] ||
-                this.form().controls[this.field().key]
-              )?.setErrors({
-                customError,
-              });
-              setRecordExistError(customError);
-            }
-          } catch (e) {
-            setCheckingUniqueness(false);
-            setRecordExistError(undefined);
-          }
-        }
-      };
-
+      // UI renderer
       const formFieldContent = () => {
-        switch (this.field().controlType) {
+        const f = this.field();
+
+        switch (f.controlType) {
           case 'number':
             return (
               <InputField
                 error={hasError}
                 validationText={validationError}
-                type={this.field().type as any}
+                type={f.type as any}
                 inputWidth={inputWidth}
-                required={this.field().required}
-                name={this.field().id}
+                required={f.required}
+                name={f.id}
                 label={this.label()}
-                min={this.field().min?.toString()}
-                max={this.field().max?.toString()}
+                min={f.min?.toString()}
+                max={f.max?.toString()}
                 placeholder={this.placeholder()}
                 value={value}
                 readOnly={disabled}
-                onChange={(event: any) => {
-                  onValueChange(event.value);
-                }}
-                onBlur={() => {
-                  checkValueUniqueness();
-                }}
+                onChange={(event: any) => onValueChange(event.value)}
+                onBlur={() => checkValueUniqueness()}
               />
             );
+
           case 'tel':
             return (
               <InternationalPhoneField
-                name={this.field().id}
+                name={f.id}
                 label={this.label()}
                 placeholder={this.placeholder()}
                 value={value ?? ''}
-                required={this.field().required}
+                required={f.required}
                 disabled={disabled}
                 error={hasError}
                 validationText={validationError}
                 inputWidth={this.fieldConfig()?.inputWidth}
                 defaultCountryIsoCode="TZ"
-                onChange={(localNumber: string) => {
-                  onValueChange(localNumber);
-                }}
-                onBlur={() => {
-                  checkValueUniqueness();
-                }}
+                onChange={(localNumber: string) => onValueChange(localNumber)}
+                onBlur={() => checkValueUniqueness()}
               />
             );
+
           case 'coordinate':
             return (
               <div
@@ -312,65 +1111,64 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
                     </li>
                     <li>
                       Click <strong>“Use Selected Location”</strong> to save the
-                      coordinates.
+                      coordinates. 
                     </li>
                   </ul>
                 </NoticeBox>
 
+                
+
                 <CoordinatePickerField
                   error={hasError}
                   validationText={validationError}
-                  required={this.field().required}
-                  name={this.field().id}
+                  required={f.required}
+                  name={f.id}
                   disabled={disabled}
                   label={this.label()}
                   value={value}
-                  onChange={(newValue: string | null) => {
-                    onValueChange(newValue);
-                  }}
-                  onBlur={() => {
-                    checkValueUniqueness();
-                  }}
+                  geoConfig={this.coordinatePickerGeoConfig()}
+                  onChange={(newValue: string | null) =>
+                    onValueChange(newValue)
+                  }
+                  onBlur={() => checkValueUniqueness()}
                 />
               </div>
             );
+
           case 'textarea':
             return (
               <TextAreaField
                 error={hasError}
                 validationText={validationError}
                 inputWidth={this.fieldConfig()?.inputWidth}
-                required={this.field().required}
-                name={this.field().id}
+                required={f.required}
+                name={f.id}
                 disabled={disabled}
                 label={this.label()}
                 rows={5}
                 placeholder={this.placeholder()}
                 value={value}
-                onChange={(event: any) => {
-                  onValueChange(event.value);
-                }}
-                onBlur={() => {
-                  checkValueUniqueness();
-                }}
+                onChange={(event: any) => onValueChange(event.value)}
+                onBlur={() => checkValueUniqueness()}
               />
             );
-          case 'org-unit': {
+
+          case 'org-unit':
             return (
               <OrgUnitFormField
                 label={this.label()}
-                key={this.field().id}
-                field={this.field().id}
-                required={this.field().required}
+                key={f.id}
+                field={f.id}
+                required={f.required}
                 disabled={disabled}
                 customOrgUnitRoots={this.customOrgUnitRoots()}
-                onSelectOrgUnit={(selectedOrgUnit: string) => {
-                  onValueChange(selectedOrgUnit);
-                }}
+                onSelectOrgUnit={(selectedOrgUnit: string) =>
+                  onValueChange(selectedOrgUnit)
+                }
                 selected={value}
               />
             );
-          }
+
           case 'transfer':
             return (
               <Transfer
@@ -378,166 +1176,117 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
                 filterPlaceholder="Search"
                 selected={selected}
                 leftHeader={
-                  <div
-                    style={{
-                      fontSize: 14,
-                      padding: '8px 4px',
-                    }}
-                  >
-                    {this.field().availableOptionsLabel}
+                  <div style={{ fontSize: 14, padding: '8px 4px' }}>
+                    {f.availableOptionsLabel}
                   </div>
                 }
                 rightHeader={
-                  <div
-                    style={{
-                      fontSize: 14,
-                      padding: '8px 4px',
-                    }}
-                  >
-                    {this.field().selectedOptionsLabel}
+                  <div style={{ fontSize: 14, padding: '8px 4px' }}>
+                    {f.selectedOptionsLabel}
                   </div>
                 }
-                options={this.field().options}
-                onChange={(event: any) => {
-                  onValueChange(event.selected);
-                }}
+                options={f.options}
+                onChange={(event: any) => onValueChange(event.selected)}
               />
             );
+
           case 'checkbox':
             return (
               <Checkbox
                 checked={Boolean(value)}
                 error={hasError}
                 label={this.label()}
-                name={this.field().id}
+                name={f.id}
                 disabled={disabled}
-                onChange={(event: any) => {
-                  onValueChange(event.checked);
-                }}
-                onBlur={() => {
-                  checkValueUniqueness();
-                }}
+                onChange={(event: any) => onValueChange(event.checked)}
+                onBlur={() => checkValueUniqueness()}
               />
             );
+
           case 'dropdown':
             return (
               <SingleSelectField
-                filterable={(this.field().options || []).length > 5}
+                filterable={(filteredOptions || []).length > 5}
                 clearable
                 error={hasError}
                 validationText={validationError}
                 inputWidth={this.fieldConfig()?.inputWidth}
                 disabled={disabled}
-                required={this.field().required}
+                required={f.required}
                 className="select"
                 label={this.label()}
                 selected={value}
-                onChange={(event: any) => {
-                  onValueChange(event.selected);
-                }}
-                onBlur={() => {
-                  checkValueUniqueness();
-                }}
+                onChange={(event: any) => onValueChange(event.selected)}
+                onBlur={() => checkValueUniqueness()}
               >
-                {(this.field().options || []).map((option) => (
+                {(filteredOptions || []).map((option: any) => (
                   <SingleSelectOption
-                    key={generateUUID()}
-                    label={option.label}
-                    value={option.value}
+                    key={this.#getOptionKey(option)}
+                    label={option.label ?? option.name ?? option.displayName}
+                    value={option.value ?? option.id}
                   />
                 ))}
               </SingleSelectField>
             );
+
           case 'multi-dropdown':
             return (
               <MultiSelectField
                 clearText="Clear"
                 clearable
                 empty="No data found"
-                filterable={(this.field().options || []).length > 5}
+                filterable={(filteredOptions || []).length > 5}
                 filterPlaceholder="Type to filter options"
                 error={hasError}
                 validationText={validationError}
                 inputWidth={this.fieldConfig()?.inputWidth}
                 disabled={disabled}
                 label={this.label()}
-                required={this.field().required}
+                required={f.required}
                 loadingText="Loading options"
                 noMatchText="No options found"
                 onChange={(event: { selected: string[] }) => {
                   const selectedValue = (event.selected || []).join(',');
                   onValueChange(selectedValue);
                 }}
-                onBlur={() => {
-                  checkValueUniqueness();
-                }}
+                onBlur={() => checkValueUniqueness()}
                 selected={arrayValue}
               >
-                {(this.field().options || []).map((option) => (
+                {(filteredOptions || []).map((option: any) => (
                   <MultiSelectOption
-                    key={generateUUID()}
-                    label={option.label}
-                    value={option.value}
+                    key={this.#getOptionKey(option)}
+                    label={option.label ?? option.name ?? option.displayName}
+                    value={option.value ?? option.id}
                   />
                 ))}
               </MultiSelectField>
             );
-          // case 'date':
-          // case 'date-time':
-          //   return (
-          //     <InputField
-          //       error={hasError}
-          //       validationText={validationError}
-          //       type={this.field().type as any}
-          //       inputWidth={inputWidth}
-          //       required={this.field().required}
-          //       name={this.field().id}
-          //       label={this.label()}
-          //       min={this.field().min?.toString()}
-          //       max={this.field().max?.toString()}
-          //       placeholder={this.placeholder()}
-          //       value={value}
-          //       readOnly={disabled}
-          //       onChange={(event: any) => {
-          //         onValueChange(event.value);
-          //       }}
-          //       onBlur={() => {
-          //         checkValueUniqueness();
-          //       }}
-          //     />
-          //   );
+
           case 'date':
           case 'date-time': {
-            const field = this.field();
-            const isDateTimeField = field.type === 'date-time';
-
+            const isDateTimeField = f.type === 'date-time';
             const inputType: any = isDateTimeField ? 'datetime-local' : 'date';
 
-            // Value coming from DHIS2 store
             const htmlValue = this.formatValueForHtmlInputFromDhis(
               value,
               isDateTimeField
             );
 
-            const htmlMin = field.min
+            const htmlMin = f.min
               ? this.formatValueForHtmlInputFromDhis(
-                  String(field.min),
+                  String(f.min),
                   isDateTimeField
                 )
               : undefined;
 
-            // Max defined in metadata (if any)
-            const metadataMax = field.max
+            const metadataMax = f.max
               ? this.formatValueForHtmlInputFromDhis(
-                  String(field.max),
+                  String(f.max),
                   isDateTimeField
                 )
               : undefined;
 
-            // System max = “now” (no future allowed)
             const systemMax = this.getNowForHtmlDateInput(isDateTimeField);
-
-            // Effective max = earliest of metadataMax and systemMax
             const htmlMax = this.pickEarlierDateLimit(metadataMax, systemMax);
 
             return (
@@ -546,8 +1295,8 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
                 validationText={validationError}
                 type={inputType}
                 inputWidth={inputWidth}
-                required={field.required}
-                name={field.id}
+                required={f.required}
+                name={f.id}
                 label={this.label()}
                 min={htmlMin}
                 max={htmlMax}
@@ -560,89 +1309,75 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
                     isDateTimeField,
                     true
                   );
-
                   onValueChange(normalized);
                 }}
-                onBlur={() => {
-                  checkValueUniqueness();
-                }}
+                onBlur={() => checkValueUniqueness()}
               />
             );
           }
 
           case 'file':
             return (
-              <>
-                <FileUploadField
-                  label={this.label()}
-                  id={this.field().id}
-                  hasError={hasError}
-                  required={this.field().required}
-                  validationText={validationError}
-                  performUpload={true}
-                  uploadUrl={'fileResources'}
-                  onUploadSuccess={(fileId: string) => {
-                    onValueChange(fileId);
-                  }}
-                  onRemoveFile={() => {
-                    onValueChange('');
-                  }}
-                  extension={this.field()?.extension}
-                  value={value}
-                  metaType={this.field().metaType}
-                  dataId={this.dataId()}
-                  program={this.program()}
-                />
-              </>
+              <FileUploadField
+                label={this.label()}
+                id={f.id}
+                hasError={hasError}
+                required={f.required}
+                validationText={validationError}
+                performUpload={true}
+                uploadUrl={'fileResources'}
+                onUploadSuccess={(fileId: string) => onValueChange(fileId)}
+                onRemoveFile={() => onValueChange('')}
+                extension={f?.extension}
+                value={value}
+                metaType={f.metaType}
+                dataId={this.dataId()}
+                program={this.program()}
+              />
             );
+
           default:
             return (
               <InputField
                 error={hasError}
                 validationText={validationError}
-                type={this.field().type as any}
+                type={f.type as any}
                 inputWidth={inputWidth}
-                required={this.field().required}
-                name={this.field().id}
+                required={f.required}
+                name={f.id}
                 label={this.label()}
-                min={this.field().min?.toString()}
-                max={this.field().max?.toString()}
+                min={f.min?.toString()}
+                max={f.max?.toString()}
                 placeholder={this.placeholder()}
                 value={value}
                 readOnly={disabled}
-                onChange={(event: any) => {
-                  onValueChange(event.value);
-                }}
-                onBlur={() => {
-                  checkValueUniqueness();
-                }}
+                onChange={(event: any) => onValueChange(event.value)}
+                onBlur={() => checkValueUniqueness()}
               />
             );
         }
       };
 
-      {
-        return (
-          <React.Fragment>
-            {formFieldContent()}
-            {checkingUniqueness && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  paddingTop: 8,
-                }}
-              >
-                <CircularLoader small />
-                <div style={{ color: colors.grey800, fontSize: 14 }}>
-                  Checking...
-                </div>
+      return (
+        <React.Fragment>
+          {formFieldContent()}
+          {checkingUniqueness && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                paddingTop: 8,
+              }}
+            >
+              <CircularLoader small />
+              <div style={{ color: colors.grey800, fontSize: 14 }}>
+                Checking...
               </div>
-            )}
-          </React.Fragment>
-        );
-      }
+            </div>
+          )}
+        </React.Fragment>
+      );
     };
   }
 

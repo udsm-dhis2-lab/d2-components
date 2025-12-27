@@ -24,6 +24,13 @@ import { FieldsData } from '../../models/fields-data.model';
 import { IMetadataRuleAction } from '../../models/form-metadata-rule.model';
 import { FormValue } from '../../models/form-value.model';
 import { ProgramSection, ProgramStageSection } from '@iapps/d2-web-sdk';
+import {
+  CascadeConfigMap,
+  CascadeKind,
+  OptionsPathCascadeConfig,
+} from '../../types/field-cascade.types';
+import { FieldCascadeUtil } from '../../utils/field-cascade.util';
+import { CoordinatePickerGeoConfig } from '../../components/coordinate-field-component';
 
 @Component({
   selector: 'ng-dhis2-ui-form',
@@ -47,7 +54,25 @@ export class FormComponent implements OnChanges, OnDestroy, OnInit {
   dataEntities = input<any>(undefined);
   dataId = input<string>();
   customOrgUnitRoots = input<CustomOrgUnitConfig[]>();
- //TODO: FIND BETTER WAY TO PASS PROGRAM TO FIELDS i.e field extensions
+  optionCascadeConfigs = input<OptionsPathCascadeConfig[]>([]);
+  coordinatePickerGeoConfig = input<CoordinatePickerGeoConfig>();
+
+  /** ✅ Build map once when configs change */
+  optionCascadeConfigMap = computed<CascadeConfigMap>(() => {
+    const configs = this.optionCascadeConfigs() ?? [];
+
+    // (optional) guard if you later widen union types
+    const optionPathConfigs = configs.filter(
+      (c): c is OptionsPathCascadeConfig => c?.kind === CascadeKind.OPTIONS_PATH
+    );
+
+    // util returns: Readonly<Record<string, OptionsPathCascadeConfig>>
+    return FieldCascadeUtil.buildConfigByChildFieldId(
+      optionPathConfigs
+    ) as unknown as CascadeConfigMap;
+  });
+
+  //TODO: FIND BETTER WAY TO PASS PROGRAM TO FIELDS i.e field extensions
   program = input<string>();
 
   collapsibleSections = input<boolean>(false);
@@ -101,6 +126,20 @@ export class FormComponent implements OnChanges, OnDestroy, OnInit {
   //     return availableRule.actionType !== 'HIDEFIELD';
   //   });
   // }
+
+  readonly fieldControlKeyById = computed<Record<string, string>>(() => {
+    const list = this.fields() ?? []; // or sanitizedFields
+    const map: Record<string, string> = Object.create(null);
+
+    for (const f of list) {
+      if (!f?.id) continue;
+
+      // Prefer explicit key if present, else fall back to id.
+      map[f.id] = f.key || f.id;
+    }
+
+    return map;
+  });
 
   get layoutCssClass(): string {
     if (!this.isFormHorizontal()) {
@@ -234,8 +273,6 @@ export class FormComponent implements OnChanges, OnDestroy, OnInit {
     this.formValidityUpdate.emit(
       new FormValue(this.form(), this.fields()).isValid
     );
-
-    console.log();
   }
   // ngOnChanges(changes: SimpleChanges): void {
   //   this.values = this.form.getRawValue();

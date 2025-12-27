@@ -24,13 +24,27 @@
       [config]="householdMembers"
     /> -->
 
+    <!-- <ng-dhis2-ui-program-entry-form
+      [collapsibleSections]="true"
+      [event]="''"
+      [enrollment]="''"
+      [config]="verification"
+    /> -->
+
     <ng-dhis2-ui-program-entry-form
+      [collapsibleSections]="true"
+      [event]="''"
+      [enrollment]="''"
+      [config]="household"
+    />
+
+    <!-- <ng-dhis2-ui-program-entry-form
       [customOrgUnitRoots]="[]"
       [config]="mcn"
       [trackedEntity]="''"
       (instanceSaveCompleted)="onSaveComplete($event)"
       (formCanceel)="onCancel()"
-    />
+    /> -->
 
     <!-- <ng-dhis2-ui-program-entry-form
     <ng-dhis2-ui-program-entry-form

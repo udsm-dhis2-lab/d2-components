@@ -25,6 +25,7 @@ import {
   OrgUnitSemanticType,
   OrgUnitTypeKeywordRule,
 } from '../models/org-unit.model';
+import { NoticeBox } from '@dhis2/ui';
 
 const orgUnitFieldStyles = {
   container: {
@@ -659,7 +660,7 @@ export const OrgUnitFormField = (props: Props) => {
   useEffect(() => {
     if (!customOrgUnitRoots || !customOrgUnitRoots.length) {
       return () => {
-      // no-op
+        // no-op
       };
     }
 
@@ -808,7 +809,6 @@ export const OrgUnitFormField = (props: Props) => {
       }
     };
 
-
     Promise.allSettled(matchingConfigs.map(fetchOrgUnitsForConfig))
       .then((settledResults) => {
         if (isCancelled) return;
@@ -873,6 +873,7 @@ export const OrgUnitFormField = (props: Props) => {
     initiallyExpanded
   );
   const [showOrgUnitTree, setShowOrgUnitTree] = useState<boolean>(!selected);
+  const [showRequiredNotice, setShowRequiredNotice] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -1042,6 +1043,23 @@ export const OrgUnitFormField = (props: Props) => {
                   ) : (
                     <Chip
                       onRemove={() => {
+                        // setShowOrgUnitTree(true);
+
+                        // Clear internal state
+                        setSelectedOrgUnit(undefined);
+                        setSearchText(undefined);
+                        setSearchData(undefined);
+                        setSearchLoading(false);
+                        setExpanded(initiallyExpanded);
+
+                        // Emit cleared value
+                        onSelectOrgUnit('');
+
+                        // Show required warning if applicable
+                        if (required) {
+                          setShowRequiredNotice(true);
+                        }
+
                         setShowOrgUnitTree(true);
                       }}
                     >
@@ -1075,6 +1093,14 @@ export const OrgUnitFormField = (props: Props) => {
                   style={{ maxHeight: '200px', overflowY: 'auto' }}
                 >
                   {renderOrgUnitTree()}
+                </div>
+              )}
+
+              {showRequiredNotice && required && (
+                <div style={{ margin: '8px' }}>
+                  <NoticeBox error dense>
+                    This field is required. Please select an organisation unit.
+                  </NoticeBox>
                 </div>
               )}
             </div>
