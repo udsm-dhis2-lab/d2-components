@@ -3,6 +3,8 @@
 // license that can be found in the LICENSE file.
 
 import { FormFieldExtension } from '../../form';
+import { CoordinatePickerGeoConfig } from '../../form/components/coordinate-field-component';
+import { OptionsPathCascadeConfig } from '../../form/types/field-cascade.types';
 
 export type AutoAssignedValues = { field: string; value: string };
 
@@ -34,6 +36,8 @@ export interface IProgramEntryFormConfig {
   autoComplete?: boolean;
   formFieldExtensions?: FormFieldExtension[];
   updateTeiOrgUnit?: boolean;
+  optionCascadeConfigs?: OptionsPathCascadeConfig[];
+  coordinatePickerGeoConfig?: CoordinatePickerGeoConfig;
 }
 export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   program!: string;
@@ -63,6 +67,8 @@ export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   autoComplete?: boolean;
   formFieldExtensions?: FormFieldExtension[];
   updateTeiOrgUnit = false;
+  optionCascadeConfigs?: OptionsPathCascadeConfig[];
+  coordinatePickerGeoConfig?: CoordinatePickerGeoConfig;
 
   constructor(config: IProgramEntryFormConfig) {
     Object.assign(this, config);
