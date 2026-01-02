@@ -90,11 +90,9 @@
 //   }
 // }
 
-
 import { format } from 'date-fns';
 import { dhisD2Functions } from './utils/run-d2-expression.util';
 import { Option } from '../../option-set';
-
 
 export interface IMetadataRuleAction {
   field: string;
@@ -107,7 +105,6 @@ export interface IMetadataRuleAction {
 }
 
 type Rule = { condition?: string; actions?: IMetadataRuleAction[] };
-
 
 type ExecuteOptions = {
   /** return only triggered actions */
@@ -156,11 +153,13 @@ export class ProgramRuleEngine {
 
         if (triggeredOnly && !triggered) continue;
 
-        const actionType = triggered ? (action.actionType ?? '') : '';
+        const actionType = triggered ? action.actionType ?? '' : '';
 
         let assignedData: any = undefined;
         if (triggered && actionType === 'ASSIGN') {
-          const expr = this.prepareExpression(String(action.assignedData ?? ''));
+          const expr = this.prepareExpression(
+            String(action.assignedData ?? '')
+          );
           // If you want the computed VALUE, evaluate it:
           const valRes = this.safeEvalAny(expr);
           assignedData = valRes.ok ? valRes.value : undefined;
@@ -194,6 +193,13 @@ export class ProgramRuleEngine {
     }
 
     return dedupeByField ? [...byField.values()] : out;
+
+    // const resolvedActions = dedupeByField ? [...byField.values()] : out;
+
+    // return resolvedActions.filter((action) => {
+    //   const normalizedActionType = String(action.actionType ?? '').trim();
+    //   return normalizedActionType.length > 0;
+    // });
   }
 
   /** Replace {var} with safe JS literals + resolve d2: functions */
@@ -220,14 +226,18 @@ export class ProgramRuleEngine {
     return exp;
   }
 
-  private safeEvalBoolean(expression: string): { ok: true; value: boolean } | { ok: false; error: string } {
+  private safeEvalBoolean(
+    expression: string
+  ): { ok: true; value: boolean } | { ok: false; error: string } {
     const res = this.safeEvalAny(expression);
     return res.ok
       ? { ok: true, value: !!res.value }
       : { ok: false, error: res.error };
   }
 
-  private safeEvalAny(expression: string): { ok: true; value: any } | { ok: false; error: string } {
+  private safeEvalAny(
+    expression: string
+  ): { ok: true; value: any } | { ok: false; error: string } {
     try {
       // NOTE: still evaluates JS, but does not capture outer scope.
       // Upgrade later to AST evaluation for full safety.

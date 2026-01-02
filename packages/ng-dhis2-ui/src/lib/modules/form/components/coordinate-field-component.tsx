@@ -1262,10 +1262,6 @@ Only proceed if you are certain this is intentional and acceptable according to 
           onClose={handleCloseMapDialog}
           position="middle"
           className="coordinate-modal"
-          style={{
-            borderRadius: 10,
-            overflow: 'hidden',
-          }}
         >
           {/* -------- HEADER -------- */}
           <ModalTitle>

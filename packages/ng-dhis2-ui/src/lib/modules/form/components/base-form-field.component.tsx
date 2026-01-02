@@ -823,7 +823,7 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
   }
 
   #getInputField() {
-    return (): React.JSX.Element => {
+    return (): React.JSX.Element | React.ReactElement | null => {
       const fg = this.form();
       const field = this.field();
 
@@ -944,7 +944,8 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
         if (!cascade || cascade.kind !== 'OPTIONS_PATH') {
           setFilteredOptions(field.options ?? []);
           setDisabled(baseDisabled);
-          return;
+          // return null;
+          return undefined;
         }
 
         const parentCtrl = this.#getControl(fg, cascade.parentFieldId);
@@ -953,7 +954,8 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
         if (!parentCtrl || !childCtrl) {
           setFilteredOptions(field.options ?? []);
           setDisabled(baseDisabled);
-          return;
+          // return null;
+          return undefined;
         }
 
         const merged = { ...DEFAULT_OPTIONS_PATH_CASCADE, ...cascade };
