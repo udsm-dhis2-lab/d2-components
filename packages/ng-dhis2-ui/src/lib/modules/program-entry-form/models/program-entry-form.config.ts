@@ -46,6 +46,7 @@ export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   formType!: 'TRACKER' | 'EVENT';
   hideRegistrationUnit?: boolean;
   hideEnrollmentDate?: boolean;
+  hideIncidentDate?: boolean;
   hideGeometryField?: boolean;
   hideTrackedEntityTypeAttributes?: boolean;
   disableRegistrationUnit?: boolean;

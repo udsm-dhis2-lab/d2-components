@@ -1098,7 +1098,7 @@ export const OrgUnitFormField = (props: Props) => {
 
               {showRequiredNotice && required && (
                 <div style={{ margin: '8px' }}>
-                  <NoticeBox error dense>
+                  <NoticeBox error>
                     This field is required. Please select an organisation unit.
                   </NoticeBox>
                 </div>
