@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 // Copyright 2025 UDSM DHIS2 Lab. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
@@ -35,6 +37,10 @@ import { ProgramEntryFormFieldUtil } from './program-entry-form-field.util';
 
 export class ProgramEntryFormSectionUtil {
   private readonly fieldUtil: ProgramEntryFormFieldUtil;
+  #sortedCanonicalFieldsCache: {
+    sourceMap: Map<string, IFormField<string>>;
+    sortedFields: IFormField<string>[];
+  } | null = null;
 
   constructor(
     private program: Program,
@@ -130,10 +136,15 @@ export class ProgramEntryFormSectionUtil {
           )
       );
 
+      const canonicalFieldsById = this.#buildCanonicalFieldsById(
+        programTrackedEntityAttributes
+      );
+
       for (const programSection of programSections) {
         const sectionFormFields = this.#mapSectionToFormFields(
           programSection,
-          attributesById
+          attributesById,
+          canonicalFieldsById
         );
 
         if (!sectionFormFields.length) {
@@ -181,35 +192,125 @@ export class ProgramEntryFormSectionUtil {
     return (this.program as Program)?.programTrackedEntityAttributes ?? [];
   }
 
+  // #mapSectionToFormFields(
+  //   section: ProgramSection,
+  //   byAttrId: Map<string, any>
+  // ): IFormField<string>[] {
+  //   const ids: string[] =
+  //     section?.trackedEntityAttributes?.map(
+  //       (trackedEntityAttribute: TrackedEntityAttribute) =>
+  //         trackedEntityAttribute?.id
+  //     ) ??
+  //     section?.trackedEntityAttributes?.map(
+  //       (trackedEntityAttribute: TrackedEntityAttribute) =>
+  //         trackedEntityAttribute?.id
+  //     ) ??
+  //     [];
+
+  //   const fields = (
+  //     ids.length
+  //       ? ids.map((id: string) => byAttrId.get(id)).filter(Boolean)
+  //       : Array.from(byAttrId.values())
+  //   )
+  //     .map((programTrackedEntityAttribute: ProgramTrackedEntityAttribute) =>
+  //       this.#mapPteaToFormField(programTrackedEntityAttribute)
+  //     )
+  //     .filter((f): f is IFormField<string> => f != null)
+  //     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+  //   // const extraReportFields = (this as any)?.reportFields ?? [];
+  //   // return [...extraReportFields, ...fields];
+  //   return [...fields];
+  // }
+
+  // #mapSectionToFormFields(
+  //   section: ProgramSection,
+  //   byAttrId: Map<string, ProgramTrackedEntityAttribute>,
+  //   canonicalFieldsById: Map<string, IFormField<string>>
+  // ): IFormField<string>[] {
+  //   const ids: string[] =
+  //     section?.trackedEntityAttributes
+  //       ?.map(
+  //         (trackedEntityAttribute: TrackedEntityAttribute) =>
+  //           trackedEntityAttribute?.id
+  //       )
+  //       .filter(Boolean as any) ?? [];
+
+  //   if (ids.length) {
+  //     const fields = ids
+  //       .map((id, index) => {
+  //         const canonical = canonicalFieldsById.get(id);
+  //         if (!canonical) return null;
+
+  //         // Clone to avoid mutating the canonical instance
+  //         return {
+  //           ...canonical,
+  //           // preserve stable order in the section (optional but recommended)
+  //           order: index + 1,
+  //         } as IFormField<string>;
+  //       })
+  //       .filter((f): f is IFormField<string> => f != null);
+
+  //     return fields;
+  //   }
+
+  //   // Fallback: no section ids => return all canonical fields
+  //   return Array.from(canonicalFieldsById.values()).sort(
+  //     (a, b) => (a.order ?? 0) - (b.order ?? 0)
+  //   );
+  // }
+
   #mapSectionToFormFields(
-    section: ProgramSection,
-    byAttrId: Map<string, any>
+    programSection: ProgramSection,
+    _unusedAttributeMap: Map<string, ProgramTrackedEntityAttribute>, // intentionally unused
+    canonicalFieldsByAttributeId: Map<string, IFormField<string>>
   ): IFormField<string>[] {
-    const ids: string[] =
-      section?.trackedEntityAttributes?.map(
-        (trackedEntityAttribute: TrackedEntityAttribute) =>
-          trackedEntityAttribute?.id
-      ) ??
-      section?.trackedEntityAttributes?.map(
-        (trackedEntityAttribute: TrackedEntityAttribute) =>
-          trackedEntityAttribute?.id
-      ) ??
-      [];
+    const sectionTrackedEntityAttributes =
+      programSection?.trackedEntityAttributes;
 
-    const fields = (
-      ids.length
-        ? ids.map((id: string) => byAttrId.get(id)).filter(Boolean)
-        : Array.from(byAttrId.values())
-    )
-      .map((programTrackedEntityAttribute: ProgramTrackedEntityAttribute) =>
-        this.#mapPteaToFormField(programTrackedEntityAttribute)
-      )
-      .filter((f): f is IFormField<string> => f != null)
-      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    const sectionAttributeCount = sectionTrackedEntityAttributes?.length ?? 0;
 
-    // const extraReportFields = (this as any)?.reportFields ?? [];
-    // return [...extraReportFields, ...fields];
-    return [...fields];
+    if (sectionAttributeCount > 0) {
+      const sectionFields: IFormField<string>[] = [];
+
+      for (let index = 0; index < sectionAttributeCount; index++) {
+        const attributeId = sectionTrackedEntityAttributes![index]?.id;
+        if (!attributeId) continue;
+
+        const canonicalField = canonicalFieldsByAttributeId.get(attributeId);
+        if (!canonicalField) continue;
+
+        sectionFields.push({
+          ...canonicalField,
+          order: index + 1,
+        });
+      }
+
+      return sectionFields;
+    }
+
+    return this.#getSortedCanonicalFields(canonicalFieldsByAttributeId);
+  }
+
+  #getSortedCanonicalFields(
+    canonicalFieldsByAttributeId: Map<string, IFormField<string>>
+  ): IFormField<string>[] {
+    const cache = this.#sortedCanonicalFieldsCache;
+
+    if (cache?.sourceMap === canonicalFieldsByAttributeId) {
+      return cache.sortedFields;
+    }
+
+    const sortedFields = Array.from(canonicalFieldsByAttributeId.values()).sort(
+      (a, b) => (a.order ?? 0) - (b.order ?? 0)
+    );
+
+    this.#sortedCanonicalFieldsCache = {
+      sourceMap: canonicalFieldsByAttributeId,
+      sortedFields,
+    };
+
+    return sortedFields;
   }
 
   #mapAllPteasToFormFields(
@@ -277,14 +378,19 @@ export class ProgramEntryFormSectionUtil {
       type: FieldUtil.getFieldType(iTrackedEntityFormFieldBase.valueType!),
       options,
       hasOptions,
-      disabled: this.#getDisabledStatus(iTrackedEntityFormFieldBase),
+      disabled:
+        this.#getDisabledStatus(iTrackedEntityFormFieldBase) || !!tea.generated,
       order: iTrackedEntityFormFieldBase.sortOrder,
       controlType: FieldUtil.getFieldControlType(
         iTrackedEntityFormFieldBase.valueType!,
         hasOptions
       ),
       extension: fieldExtension,
-    });
+      generated: !!tea.generated,
+      unique: !!tea.unique,
+      pattern: tea.pattern,
+      optionSetValue: !!tea.optionSetValue,
+    } as any);
   }
 
   #getAutoAssignedValue(field: IEntityFormFieldBase): unknown {
@@ -295,5 +401,25 @@ export class ProgramEntryFormSectionUtil {
   #getDisabledStatus(field: IEntityFormFieldBase): boolean {
     const impl = (this as any)?.['#getDisabledStatus'];
     return typeof impl === 'function' ? impl.call(this, field) : false;
+  }
+
+  #buildCanonicalFieldsById(
+    programTrackedEntityAttributes: ProgramTrackedEntityAttribute[]
+  ): Map<string, IFormField<string>> {
+    const fieldsByAttributeId = new Map<string, IFormField<string>>();
+
+    for (let i = 0; i < programTrackedEntityAttributes.length; i++) {
+      const programTrackedEntityAttribute = programTrackedEntityAttributes[i];
+
+      const canonicalField = this.#mapPteaToFormField(
+        programTrackedEntityAttribute
+      );
+
+      if (!canonicalField?.id) continue;
+
+      fieldsByAttributeId.set(canonicalField.id, canonicalField);
+    }
+
+    return fieldsByAttributeId;
   }
 }
