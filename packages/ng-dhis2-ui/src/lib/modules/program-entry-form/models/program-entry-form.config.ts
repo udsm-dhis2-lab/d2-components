@@ -4,7 +4,7 @@
 
 import { FormFieldExtension } from '../../form';
 import { CoordinatePickerGeoConfig } from '../../form/components/coordinate-field-component';
-import { OptionsPathCascadeConfig } from '../../form/types/field-cascade.types';
+import { OptionsPathCascadeConfig } from '../../form/models/field-cascade.types';
 
 export type AutoAssignedValues = { field: string; value: string };
 
@@ -18,6 +18,7 @@ export interface IProgramEntryFormConfig {
   hideGeometryField?: boolean;
   hideTrackedEntityTypeAttributes?: boolean;
   disableRegistrationUnit?: boolean;
+  disableGeometryField?: boolean;
   disableEnrollmentDate?: boolean;
   disabledIncidentDate?: boolean;
   excludeProgramStages?: boolean;
@@ -48,6 +49,7 @@ export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   hideEnrollmentDate?: boolean;
   hideIncidentDate?: boolean;
   hideGeometryField?: boolean;
+  disableGeometryField?: boolean;
   hideTrackedEntityTypeAttributes?: boolean;
   disableRegistrationUnit?: boolean;
   disableEnrollmentDate?: boolean;

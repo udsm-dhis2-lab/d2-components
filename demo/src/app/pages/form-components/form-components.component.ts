@@ -20,6 +20,10 @@ import {
   EventFormModule,
   ProgramEntryFormModule,
   ProgramEntryFormConfig,
+  CascadeKind,
+  ParentMatchMode,
+  OptionPathField,
+  ParentValueType,
 } from '@iapps/ng-dhis2-ui';
 import { format } from 'date-fns';
 import {
@@ -30,13 +34,20 @@ import {
   LevelSelectorMode,
   OrgUnitLevel,
 } from 'packages/ng-dhis2-ui/src/lib/modules/form/models/org-unit.model';
-import {
-  CascadeKind,
-  OptionPathField,
-  ParentMatchMode,
-  ParentValueType,
-} from 'packages/ng-dhis2-ui/src/lib/modules/form/types/field-cascade.types';
+// import {
+//   CascadeKind,
+//   OptionPathField,
+//   ParentMatchMode,
+//   ParentValueType,
+// } from 'packages/ng-dhis2-ui/src/lib/modules/form/types/field-cascade.types';
 import { Polygon } from 'react-leaflet';
+
+const SHEHIA_KEYWORDS = [
+  'shehia', // EN
+  'sheia', // common typo
+  'shehiya', // variant
+  // add any local naming patterns you actually see in OU names
+];
 
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
@@ -72,85 +83,101 @@ export class FormComponentsComponent {
 
   customOrgUnitRoots: CustomOrgUnitConfig[] = [
     {
-      field: 'tFZMAc73X6H',
-      orgUnit: 'wsCWwNbLJNY',
-      levelMatchMode: LevelMatchMode.STRICT,
-      levelSelector: {
-        mode: LevelSelectorMode.RELATIVE,
-        offset: 3,
-        maxOffset: 3,
-      },
-      // level: OrgUnitLevel.FACILITY,
-      confidence: 95,
+      field: 'fQQ6z8JqoyP',
+      orgUnit: 'eCeku5fUWg8',
+      levelMatchMode: LevelMatchMode.SOFT,
+      confidence: 60,
       typeRules: [
         {
-          type: 'FACILITY',
-          keywords: FACILITY_KEYWORDS,
-          baseConfidence: 99,
+          type: 'SHEHIA',
+          keywords: SHEHIA_KEYWORDS,
+          baseConfidence: 95,
         },
-        // {
-        //   type: 'HAMLET',
-        //   keywords: ['Kitongoji', 'Hamlet'],
-        //   baseConfidence: 99,
-        // },
-        // {
-        //   type: 'WARD',
-        //   keywords: ['Kata', 'Ward'],
-        //   baseConfidence: 99,
-        // },
-        // {
-        //   type: 'STREET',
-        //   keywords: ['Mtaa', 'Street'],
-        //   baseConfidence: 99,
-        // },
-        // {
-        //   type: 'VILLAGE',
-        //   keywords: ['Village', 'Kijiji'],
-        //   baseConfidence: 80,
-        // },
       ],
-      // field: 'RKOZF4JJNYm',
-      // orgUnit: 'lgZ6HfZaj3f',
-      // level: OrgUnitLevel.FACILITY,
-      // confidence: 90,
     },
-    // {
-    //   field: 'RKOZF4JJNYm',
-    //   orgUnit: 'lgZ6HfZaj3f',
-    //   confidence: 80,
-    //   levelSelector: {
-    //     mode: LevelSelectorMode.KEYWORD,
-    //     keyword: 'Health Center',
-    //   },
-    //   typeRules: [
-    //     {
-    //       type: 'FACILITY',
-    //       keywords: FACILITY_KEYWORDS,
-    //       baseConfidence: 80,
-    //     },
-    // {
-    //   type: 'HAMLET',
-    //   keywords: ['Kitongoji', 'Hamlet'],
-    //   baseConfidence: 80,
-    // },
-    // {
-    //   type: 'WARD',
-    //   keywords: ['Kata', 'Ward'],
-    //   baseConfidence: 85,
-    // },
-    // {
-    //   type: 'STREET',
-    //   keywords: ['Mtaa', 'Street'],
-    //   baseConfidence: 85,
-    // },
-    // {
-    //   type: 'VILLAGE',
-    //   keywords: ['Village', 'Kijiji'],
-    //   baseConfidence: 80,
-    // },
-    //   ],
-    // },
   ];
+
+  // customOrgUnitRoots: CustomOrgUnitConfig[] = [
+  //   {
+  //     field: 'tFZMAc73X6H',
+  //     orgUnit: 'wsCWwNbLJNY',
+  //     levelMatchMode: LevelMatchMode.STRICT,
+  //     levelSelector: {
+  //       mode: LevelSelectorMode.RELATIVE,
+  //       offset: 3,
+  //       maxOffset: 3,
+  //     },
+  //     // level: OrgUnitLevel.FACILITY,
+  //     confidence: 95,
+  //     typeRules: [
+  //       {
+  //         type: 'FACILITY',
+  //         keywords: FACILITY_KEYWORDS,
+  //         baseConfidence: 99,
+  //       },
+  //       // {
+  //       //   type: 'HAMLET',
+  //       //   keywords: ['Kitongoji', 'Hamlet'],
+  //       //   baseConfidence: 99,
+  //       // },
+  //       // {
+  //       //   type: 'WARD',
+  //       //   keywords: ['Kata', 'Ward'],
+  //       //   baseConfidence: 99,
+  //       // },
+  //       // {
+  //       //   type: 'STREET',
+  //       //   keywords: ['Mtaa', 'Street'],
+  //       //   baseConfidence: 99,
+  //       // },
+  //       // {
+  //       //   type: 'VILLAGE',
+  //       //   keywords: ['Village', 'Kijiji'],
+  //       //   baseConfidence: 80,
+  //       // },
+  //     ],
+  //     // field: 'RKOZF4JJNYm',
+  //     // orgUnit: 'lgZ6HfZaj3f',
+  //     // level: OrgUnitLevel.FACILITY,
+  //     // confidence: 90,
+  //   },
+  //   // {
+  //   //   field: 'RKOZF4JJNYm',
+  //   //   orgUnit: 'lgZ6HfZaj3f',
+  //   //   confidence: 80,
+  //   //   levelSelector: {
+  //   //     mode: LevelSelectorMode.KEYWORD,
+  //   //     keyword: 'Health Center',
+  //   //   },
+  //   //   typeRules: [
+  //   //     {
+  //   //       type: 'FACILITY',
+  //   //       keywords: FACILITY_KEYWORDS,
+  //   //       baseConfidence: 80,
+  //   //     },
+  //   // {
+  //   //   type: 'HAMLET',
+  //   //   keywords: ['Kitongoji', 'Hamlet'],
+  //   //   baseConfidence: 80,
+  //   // },
+  //   // {
+  //   //   type: 'WARD',
+  //   //   keywords: ['Kata', 'Ward'],
+  //   //   baseConfidence: 85,
+  //   // },
+  //   // {
+  //   //   type: 'STREET',
+  //   //   keywords: ['Mtaa', 'Street'],
+  //   //   baseConfidence: 85,
+  //   // },
+  //   // {
+  //   //   type: 'VILLAGE',
+  //   //   keywords: ['Village', 'Kijiji'],
+  //   //   baseConfidence: 80,
+  //   // },
+  //   //   ],
+  //   // },
+  // ];
 
   // customOrgUnitRoots: CustomOrgUnitConfig[] = [
   //   {
@@ -375,6 +402,36 @@ export class FormComponentsComponent {
   //   ],
   // });
 
+  demoForm = new ProgramEntryFormConfig({
+    program: 'QAFsf0A8XrR',
+    hideRegistrationUnit: true,
+    hideActionButtons: true,
+    hideEnrollmentDate: false,
+    disabledIncidentDate: false,
+    disableEnrollmentDate: true,
+    disableRegistrationUnit: true,
+    formType: 'TRACKER',
+    displayType: 'FLAT',
+    autoComplete: false,
+    autoAssignedValues: [],
+    optionCascadeConfigs: [
+      {
+        kind: CascadeKind.OPTIONS_PATH,
+        fieldId: 'qy2OxnGk4vx',
+        parentFieldId: 'gSn6wIflIWZ',
+        optionPathSeparator: '/',
+        parentMatchMode: ParentMatchMode.CONTAINS,
+        childPathField: OptionPathField.VALUE,
+        parentValueType: ParentValueType.CODE,
+        disableUntilParentSelected: true,
+        clearOnParentChange: true,
+        allowAllIfParentMissing: false,
+      },
+    ],
+
+    formFieldExtensions: [],
+  });
+
   mcn = new ProgramEntryFormConfig({
     program: 'GNRIrbL5o0n',
     hideRegistrationUnit: false,
@@ -395,6 +452,56 @@ export class FormComponentsComponent {
       },
     ],
     formFieldExtensions: [],
+    optionCascadeConfigs: [
+      {
+        kind: CascadeKind.OPTIONS_PATH,
+        fieldId: 'OEK5CV1ks8U',
+        parentFieldId: 'ps5rF1JLB1r',
+        optionPathSeparator: '/',
+        parentMatchMode: ParentMatchMode.CONTAINS,
+        childPathField: OptionPathField.VALUE,
+        parentValueType: ParentValueType.CODE,
+        disableUntilParentSelected: true,
+        clearOnParentChange: true,
+        allowAllIfParentMissing: false,
+      },
+      {
+        kind: CascadeKind.OPTIONS_PATH,
+        fieldId: 'h3hWLuqLNVj',
+        parentFieldId: 'hCMZRFLKvoY',
+        optionPathSeparator: '/',
+        parentMatchMode: ParentMatchMode.CONTAINS,
+        childPathField: OptionPathField.VALUE,
+        parentValueType: ParentValueType.CODE,
+        disableUntilParentSelected: true,
+        clearOnParentChange: true,
+        allowAllIfParentMissing: false,
+      },
+      {
+        kind: CascadeKind.OPTIONS_PATH,
+        fieldId: 'w0l2y9H3Be9',
+        parentFieldId: 'SrOIGB0MIk6',
+        optionPathSeparator: '/',
+        parentMatchMode: ParentMatchMode.CONTAINS,
+        childPathField: OptionPathField.VALUE,
+        parentValueType: ParentValueType.CODE,
+        disableUntilParentSelected: false,
+        clearOnParentChange: true,
+        allowAllIfParentMissing: false,
+      },
+      {
+        kind: CascadeKind.OPTIONS_PATH,
+        fieldId: 'keqqmeJcIFf',
+        parentFieldId: 'w0l2y9H3Be9',
+        optionPathSeparator: '/',
+        parentMatchMode: ParentMatchMode.CONTAINS,
+        childPathField: OptionPathField.VALUE,
+        parentValueType: ParentValueType.CODE,
+        disableUntilParentSelected: false,
+        clearOnParentChange: true,
+        allowAllIfParentMissing: false,
+      },
+    ],
   });
 
   programEntryConfig = new ProgramEntryFormConfig({
@@ -419,6 +526,32 @@ export class FormComponentsComponent {
         id: 'seUJl7AEZtS',
         accept: ['.pdf'],
         sizeLimit: 2 * 1024 * 1024,
+      },
+    ],
+    optionCascadeConfigs: [
+      {
+        kind: CascadeKind.OPTIONS_PATH,
+        fieldId: 'OEK5CV1ks8U',
+        parentFieldId: 'ps5rF1JLB1r',
+        optionPathSeparator: '/',
+        parentMatchMode: ParentMatchMode.PREFIX,
+        childPathField: OptionPathField.VALUE,
+        parentValueType: ParentValueType.CODE,
+        disableUntilParentSelected: true,
+        clearOnParentChange: true,
+        allowAllIfParentMissing: false,
+      },
+      {
+        kind: CascadeKind.OPTIONS_PATH,
+        fieldId: 'h3hWLuqLNVj',
+        parentFieldId: 'hCMZRFLKvoY',
+        optionPathSeparator: '/',
+        parentMatchMode: ParentMatchMode.CONTAINS,
+        childPathField: OptionPathField.VALUE,
+        parentValueType: ParentValueType.CODE,
+        disableUntilParentSelected: true,
+        clearOnParentChange: true,
+        allowAllIfParentMissing: false,
       },
     ],
   });
@@ -521,7 +654,9 @@ export class FormComponentsComponent {
     console.log('cancel');
   }
 
-  async onSaveComplete(reponse: any) {}
+  async onSaveComplete(reponse: any) {
+    console.log("RESPONSE::: ", JSON.stringify(reponse));
+  }
   paymentInformationFormConfig = new ProgramEntryFormConfig({
     program: 'Gy65kx8gQv6',
     programStage: 'fUVVkgQZHN5',
@@ -567,7 +702,6 @@ export class FormComponentsComponent {
     programStage: 'cIXQE5ZOvjz',
     hideRegistrationUnit: true,
     hideActionButtons: false,
-    hideGeometryField: false,
     hideEventDate: false,
     formType: 'EVENT',
     displayType: 'FLAT',

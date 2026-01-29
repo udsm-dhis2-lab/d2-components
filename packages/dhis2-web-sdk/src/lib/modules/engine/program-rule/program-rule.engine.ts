@@ -203,16 +203,17 @@ export class ProgramRuleEngine {
   }
 
   /** Replace {var} with safe JS literals + resolve d2: functions */
+  /** Replace placeholders with safe JS literals + resolve d2: functions */
   private prepareExpression(expression: string): string {
     let exp = expression ?? '';
 
-    // Replace {key} placeholders
-    exp = exp.replace(/\{([^}]+)\}/g, (_m, keyRaw) => {
+    // Replace DHIS2 placeholders:
+    //   A{attr}  V{var}  #{de}  {plain}
+    exp = exp.replace(/(?:A|V|#)?\{([^}]+)\}/g, (_m, keyRaw) => {
       const key = String(keyRaw).trim();
       const val = (this.dataValues as any)[key];
 
-      // Decide how to treat missing values:
-      // In DHIS2 rules, missing often behaves like empty string
+      // missing behaves like empty string (DHIS2-ish)
       if (val === undefined) return "''";
 
       return toJsLiteral(val);
@@ -220,7 +221,7 @@ export class ProgramRuleEngine {
 
     // Resolve d2: functions (after placeholders are resolved)
     if (exp.includes('d2:')) {
-      exp = dhisD2Functions(exp, {}); // your util (fix its bugs below)
+      exp = dhisD2Functions(exp, {});
     }
 
     return exp;

@@ -9,7 +9,7 @@ import {
   OptionsPathCascadeConfig,
   ParentMatchMode,
   ParentValueType,
-} from '../types/field-cascade.types';
+} from '../models/field-cascade.types';
 
 export class FieldCascadeUtil {
   static buildConfigByChildFieldId(
@@ -70,9 +70,7 @@ export class FieldCascadeUtil {
     if (!childPath || !parentLeaf) return false;
 
     const token = `${separator}${parentLeaf}`;
-    return (
-      childPath.endsWith(token) || childPath.includes(token + separator)
-    );
+    return childPath.endsWith(token) || childPath.includes(token + separator);
   }
 
   /**
@@ -96,7 +94,8 @@ export class FieldCascadeUtil {
   }
 
   static getParentEffectiveValue(
-    merged: typeof DEFAULT_OPTIONS_PATH_CASCADE & Partial<OptionsPathCascadeConfig>,
+    merged: typeof DEFAULT_OPTIONS_PATH_CASCADE &
+      Partial<OptionsPathCascadeConfig>,
     parentValue: string | null | undefined
   ): string {
     const raw = String(parentValue ?? '').trim();
@@ -109,6 +108,107 @@ export class FieldCascadeUtil {
     return FieldCascadeUtil.normalizePath(raw, merged.optionPathSeparator);
   }
 
+  // static matchesChildToParent(
+  //   childPathRaw: string,
+  //   parentEffectiveRaw: string,
+  //   mode: ParentMatchMode,
+  //   separator = '/'
+  // ): boolean {
+  //   const childPath = FieldCascadeUtil.normalizePath(childPathRaw, separator);
+
+  //   console.log("STABILITY::: ", JSON.stringify(childPath));
+
+  //   const parentEffective = FieldCascadeUtil.normalizePath(
+  //     parentEffectiveRaw,
+  //     separator
+  //   );
+
+  //   if (!childPath || !parentEffective) return false;
+
+  //   switch (mode) {
+  //     // case ParentMatchMode.PREFIX: {
+  //     //   // Allow exact node match and boundary-safe prefix
+  //     //   if (childPath === parentEffective) return true;
+
+  //     //   const prefix = parentEffective.endsWith(separator)
+  //     //     ? parentEffective
+  //     //     : parentEffective + separator;
+
+  //     //   return childPath.startsWith(prefix);
+  //     // }
+
+  //     default: {
+  //       const leaf = FieldCascadeUtil.getPathLeaf(parentEffective, separator);
+  //       return FieldCascadeUtil.containsLeafToken(childPath, leaf, separator);
+  //     }
+  //   }
+  // }
+
+  /**
+   * Segment-safe "contains" match:
+   * checks if parent segments appear contiguously anywhere in child segments
+   */
+  static containsPathSegments(
+    childPath: string,
+    parentPath: string,
+    separator = '/'
+  ): boolean {
+    const childSegs = FieldCascadeUtil.splitSegments(childPath, separator);
+    const parentSegs = FieldCascadeUtil.splitSegments(parentPath, separator);
+
+    if (parentSegs.length === 0 || childSegs.length === 0) return false;
+    if (parentSegs.length > childSegs.length) return false;
+
+    // sliding window
+    for (
+      let start = 0;
+      start <= childSegs.length - parentSegs.length;
+      start++
+    ) {
+      let ok = true;
+      for (let j = 0; j < parentSegs.length; j++) {
+        if (childSegs[start + j] !== parentSegs[j]) {
+          ok = false;
+          break;
+        }
+      }
+      if (ok) return true;
+    }
+    return false;
+  }
+
+  /** Split normalized path into non-empty segments */
+  static splitSegments(path: string, separator = '/'): string[] {
+    const p = FieldCascadeUtil.normalizePath(path, separator);
+    if (!p) return [];
+    return p
+      .split(separator)
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+
+  /**
+   * Segment-safe "prefix" match:
+   * - exact match OR child starts with parent + separator boundary
+   */
+  static startsWithPathSegments(
+    childPath: string,
+    parentPath: string,
+    separator = '/'
+  ): boolean {
+    const childSegs = FieldCascadeUtil.splitSegments(childPath, separator);
+    const parentSegs = FieldCascadeUtil.splitSegments(parentPath, separator);
+
+    if (parentSegs.length === 0 || childSegs.length === 0) return false;
+    if (parentSegs.length > childSegs.length) return false;
+
+    for (let i = 0; i < parentSegs.length; i++) {
+      if (childSegs[i] !== parentSegs[i]) return false;
+    }
+    return true;
+  }
+
+  /** Your requested method: no includes/contains; all segment-safe */
   static matchesChildToParent(
     childPathRaw: string,
     parentEffectiveRaw: string,
@@ -125,17 +225,37 @@ export class FieldCascadeUtil {
 
     switch (mode) {
       case ParentMatchMode.PREFIX: {
-        // Allow exact node match and boundary-safe prefix
-        if (childPath === parentEffective) return true;
+        // exact node match or boundary-safe prefix (segment-based)
+        return FieldCascadeUtil.startsWithPathSegments(
+          childPath,
+          parentEffective,
+          separator
+        );
+      }
 
-        const prefix = parentEffective.endsWith(separator)
-          ? parentEffective
-          : parentEffective + separator;
+      case ParentMatchMode.CONTAINS: {
+        // boundary-safe contains (segment-based)
 
-        return childPath.startsWith(prefix);
+        // const nana = FieldCascadeUtil.containsPathSegments(
+        //   childPath,
+        //   parentEffective,
+        //   separator
+        // );
+
+        // console.log("MAMA::: ", childPath);
+        // console.log("MAMA 1111::: ", parentEffective);
+        // console.log("MAMA 2222::: ", separator);
+        // console.log("MAMA 2222::: ", separator);
+
+        return FieldCascadeUtil.containsPathSegments(
+          childPath,
+          parentEffective,
+          separator
+        );
       }
 
       default: {
+        // your existing behavior: match by leaf token, but segment-safe
         const leaf = FieldCascadeUtil.getPathLeaf(parentEffective, separator);
         return FieldCascadeUtil.containsLeafToken(childPath, leaf, separator);
       }
@@ -161,8 +281,10 @@ export class FieldCascadeUtil {
 
     if (merged.parentValueType === ParentValueType.CODE) {
       return (
-        FieldCascadeUtil.getPathLeaf(parentEffective, merged.optionPathSeparator)
-          .length === 0
+        FieldCascadeUtil.getPathLeaf(
+          parentEffective,
+          merged.optionPathSeparator
+        ).length === 0
       );
     }
 
@@ -174,6 +296,8 @@ export class FieldCascadeUtil {
     cascade: OptionsPathCascadeConfig | undefined,
     parentValue: string | null | undefined
   ): TOption[] {
+    console.log('MERGE::: ', cascade);
+
     if (!cascade || cascade.kind !== CascadeKind.OPTIONS_PATH) {
       return (childOptions ?? []) as TOption[];
     }
@@ -198,8 +322,17 @@ export class FieldCascadeUtil {
 
     for (let i = 0; i < (childOptions?.length ?? 0); i += 1) {
       const opt = childOptions[i];
-      const childPath = FieldCascadeUtil.getChildOptionPath(opt, pathField, sep);
+      const childPath = FieldCascadeUtil.getChildOptionPath(
+        opt,
+        pathField,
+        sep
+      );
       if (!childPath) continue;
+
+      // console.log('CHILDPATH::: ', childPath);
+      // console.log('PARENTEFFECTIVE::: ', parentEffective);
+      // console.log('MODE::: ', mode);
+      // console.log('SEP::: ', sep);
 
       if (
         FieldCascadeUtil.matchesChildToParent(

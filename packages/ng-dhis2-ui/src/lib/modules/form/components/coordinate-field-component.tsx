@@ -740,8 +740,8 @@ Only proceed if you are certain this is intentional and acceptable according to 
     : `Location outside allowed area (review required)`;
 
   // Optional debug logs (keep outside JSX)
-  console.log('rawAllowedArea:', rawAllowedArea);
-  console.log('safeAllowedAreaGeoJson:', safeAllowedAreaGeoJson);
+  // console.log('rawAllowedArea:', rawAllowedArea);
+  // console.log('safeAllowedAreaGeoJson:', safeAllowedAreaGeoJson);
 
   return (
     <>

@@ -17,14 +17,15 @@
       (formCanceel)="onCancel()"
     /> -->
 
-    <ng-dhis2-ui-program-entry-form
+    <!-- <ng-dhis2-ui-program-entry-form
       [collapsibleSections]="true"
       [event]="''"
       [enrollment]="''"
       [config]="householdMembers"
-    />
+    /> -->
 
     <!-- <ng-dhis2-ui-program-entry-form
+      [customOrgUnitRoots]="customOrgUnitRoots"
       [collapsibleSections]="true"
       [event]="''"
       [enrollment]="''"
@@ -40,12 +41,21 @@
 
     <!-- <ng-dhis2-ui-program-entry-form
       [customOrgUnitRoots]="[]"
-      [collapsibleSections]="true"
+      [collapsibleSections]="false"
+      [config]="demoForm"
+      [trackedEntity]="''"
+      (instanceUpdate)="onSaveComplete($event)"
+      (formCanceel)="onCancel()"
+    /> -->
+
+    <ng-dhis2-ui-program-entry-form
+      [customOrgUnitRoots]="[]"
+      [collapsibleSections]="false"
       [config]="mcn"
       [trackedEntity]="''"
       (instanceSaveCompleted)="onSaveComplete($event)"
       (formCanceel)="onCancel()"
-    /> -->
+    />
 
     <!-- <ng-dhis2-ui-program-entry-form
     <ng-dhis2-ui-program-entry-form
