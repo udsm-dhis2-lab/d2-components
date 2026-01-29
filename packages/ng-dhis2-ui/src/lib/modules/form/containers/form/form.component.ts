@@ -28,7 +28,7 @@ import {
   CascadeConfigMap,
   CascadeKind,
   OptionsPathCascadeConfig,
-} from '../../types/field-cascade.types';
+} from '../../models/field-cascade.types';
 import { FieldCascadeUtil } from '../../utils/field-cascade.util';
 import { CoordinatePickerGeoConfig } from '../../components/coordinate-field-component';
 

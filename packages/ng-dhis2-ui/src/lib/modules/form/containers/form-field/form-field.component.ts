@@ -19,7 +19,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { IFormField } from '../../interfaces';
 import { FieldConfig, IMetadataRuleAction } from '../../models';
 import { CustomOrgUnitConfig } from '../../models/org-unit.model';
-import { OptionsPathCascadeConfig, OptionsPathCascadeConfigMap } from '../../types/field-cascade.types';
+import { OptionsPathCascadeConfig, OptionsPathCascadeConfigMap } from '../../models/field-cascade.types';
 import { CoordinatePickerGeoConfig } from '../../components/coordinate-field-component';
 
 @Component({

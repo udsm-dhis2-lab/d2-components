@@ -4,6 +4,7 @@ import { BaseTrackerSDKModel } from './base.model';
 import { DataValue, DataValueUtil } from '../../event/models/data-value.model';
 import { DHIS2Event, IDHIS2Event } from '../../event/models/event.model';
 import { AttributeUtil } from '../utils';
+import { parseCoordinates } from '../helpers/form.helper';
 
 export interface IEnrollment {
   storedBy?: string;
@@ -50,7 +51,8 @@ export interface IEnrollment {
 }
 export class Enrollment
   extends BaseTrackerSDKModel<Enrollment>
-  implements IEnrollment {
+  implements IEnrollment
+{
   enrollment!: string;
   storedBy?: string;
   created?: string;
@@ -209,6 +211,30 @@ export class Enrollment
   setGeometry(geometry: any) {
     this.geometry = geometry;
   }
+
+  /**
+   * Sets event geometry from a coordinate string input.
+   * Accepts formats like:
+   *  - "[39.319364,-6.069623]"
+   *  - "39.319364,-6.069623"
+   *  - "39.319364 -6.069623"
+   * and stores as GeoJSON Point in this.geometry.
+   */
+  // setGeometry(coordinateValue: any) {
+  //   const parsed = parseCoordinates(coordinateValue);
+  //   if (!parsed) {
+  //     return;
+  //   }
+
+  //   const [lonText, latText] = parsed;
+  //   const longitude = Number(lonText);
+  //   const latitude = Number(latText);
+
+  //   this.geometry = {
+  //     type: 'Point',
+  //     coordinates: [longitude, latitude],
+  //   };
+  // }
 
   getEventsByProgramStage(programStage: string): IDHIS2Event[] {
     return cloneDeep(

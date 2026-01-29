@@ -719,7 +719,7 @@ import {
   DEFAULT_OPTIONS_PATH_CASCADE,
   OptionsPathCascadeConfig,
   OptionsPathCascadeConfigMap,
-} from '../types/field-cascade.types';
+} from '../models/field-cascade.types';
 import { FieldCascadeUtil } from '../utils/field-cascade.util';
 
 @Directive()
@@ -979,6 +979,11 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
             cascade,
             parentStr
           );
+
+          // console.log("NOEW PARENT STR::: ", JSON.stringify(parentStr));
+          // console.log("NOEW FIELD OPTIONS::: ", JSON.stringify(field.options));
+          // console.log("NOEW PARENT CASCADE::: ", JSON.stringify(cascade));
+
           setFilteredOptions(nextOptions);
 
           // clear invalid child on parent change if configured
@@ -1045,6 +1050,7 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
 
       // UI renderer
       const formFieldContent = () => {
+
         const f = this.field();
 
         switch (f.controlType) {

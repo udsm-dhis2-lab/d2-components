@@ -127,56 +127,46 @@ export class ProgramEntryFormFieldUtil {
   }
 
   // #getGeometryField(): IFormField<string> | null {
-  //   const rawFeatureType = this.program?.featureType ?? '';
-  //   console.log(
-  //     'REACHED HERE AND FEATURE TYPE ACTIVATED::: ',
-  //     JSON.stringify(rawFeatureType)
-  //   );
-  //   const featureType = rawFeatureType.toUpperCase() as
+  //   if (this.config?.hideGeometryField) return null;
+
+  //   const effectiveFeatureTypeRaw = this.#resolveEffectiveFeatureType();
+
+  //   const normalizedFeatureType = effectiveFeatureTypeRaw.toUpperCase() as
   //     | 'NONE'
   //     | 'POINT'
   //     | 'POLYGON'
   //     | 'MULTI_POLYGON'
   //     | '';
 
-  //   const isGeometryProgram =
-  //     featureType === 'POINT' ||
-  //     featureType === 'POLYGON' ||
-  //     featureType === 'MULTI_POLYGON';
+  //   const supportsGeometry =
+  //     normalizedFeatureType === 'POINT' ||
+  //     normalizedFeatureType === 'POLYGON' ||
+  //     normalizedFeatureType === 'MULTI_POLYGON';
 
-  //   if (!isGeometryProgram) {
-  //     if (this.config?.hideGeometryField) {
-  //       return null;
-  //     }
+  //   if (!supportsGeometry) return null;
 
-  //     return null;
-  //   }
-
-  //   const sharedOptions = {
-  //     required: true,
-  //     disabled: this.config?.disableRegistrationUnit ?? false,
-  //     isGeometryField: true as const,
-  //   };
-
-  //   const label =
-  //     featureType === 'POINT' ? 'Location (coordinates)' : 'Boundary (polygon)';
+  //   const geometryFieldLabel =
+  //     normalizedFeatureType === 'POINT'
+  //       ? 'Location (coordinates)'
+  //       : 'Boundary (polygon)';
 
   //   return new FormField<string>({
   //     id: 'geometry',
   //     key: 'geometry',
-  //     label,
   //     code: 'geometry',
+  //     label: geometryFieldLabel,
   //     controlType: 'coordinate',
-  //     ...sharedOptions,
+  //     required: true,
+  //     disabled: this.config?.disableGeometryField ?? false,
+  //     isGeometryField: true,
   //   });
   // }
 
   #getGeometryField(): IFormField<string> | null {
-    if (this.config?.hideGeometryField) return null;
+    // Hide by default unless explicitly enabled
+    if (this.config?.hideGeometryField !== false) return null;
 
-    const effectiveFeatureTypeRaw = this.#resolveEffectiveFeatureType();
-
-    const normalizedFeatureType = effectiveFeatureTypeRaw.toUpperCase() as
+    const featureType = this.#resolveEffectiveFeatureType().toUpperCase() as
       | 'NONE'
       | 'POINT'
       | 'POLYGON'
@@ -184,44 +174,68 @@ export class ProgramEntryFormFieldUtil {
       | '';
 
     const supportsGeometry =
-      normalizedFeatureType === 'POINT' ||
-      normalizedFeatureType === 'POLYGON' ||
-      normalizedFeatureType === 'MULTI_POLYGON';
+      featureType === 'POINT' ||
+      featureType === 'POLYGON' ||
+      featureType === 'MULTI_POLYGON';
 
     if (!supportsGeometry) return null;
 
-    const geometryFieldLabel =
-      normalizedFeatureType === 'POINT'
-        ? 'Location (coordinates)'
-        : 'Boundary (polygon)';
+    const label =
+      featureType === 'POINT' ? 'Location (coordinates)' : 'Boundary (polygon)';
 
     return new FormField<string>({
       id: 'geometry',
       key: 'geometry',
       code: 'geometry',
-      label: geometryFieldLabel,
+      label,
       controlType: 'coordinate',
       required: true,
-      disabled: this.config?.disableRegistrationUnit ?? false,
+      disabled: this.config?.disableGeometryField ?? false,
       isGeometryField: true,
     });
   }
 
+  // #resolveEffectiveFeatureType(): string {
+  //   const programMeta = this.program;
+  //   const configuredProgramStageId = this.config?.programStage;
+
+  //   if (configuredProgramStageId && programMeta?.programStages?.length) {
+  //     const configuredStage = programMeta.programStages.find(
+  //       (stage: ProgramStage) => stage?.id === configuredProgramStageId
+  //     );
+
+  //     const stageFeatureTypeRaw = configuredStage?.featureType ?? '';
+  //     if (stageFeatureTypeRaw) return String(stageFeatureTypeRaw);
+  //   }
+
+  //   const programFeatureTypeRaw = (programMeta as Program)?.featureType ?? '';
+  //   return String(programFeatureTypeRaw);
+  // }
+
   #resolveEffectiveFeatureType(): string {
     const programMeta = this.program;
-    const configuredProgramStageId = this.config?.programStage;
+    if (!programMeta) return '';
 
-    if (configuredProgramStageId && programMeta?.programStages?.length) {
-      const configuredStage = programMeta.programStages.find(
-        (stage: ProgramStage) => stage?.id === configuredProgramStageId
+    const configuredStageId = this.config?.programStage;
+
+    if (configuredStageId && Array.isArray(programMeta.programStages)) {
+      const stage = programMeta.programStages.find(
+        (s: ProgramStage) => s?.id === configuredStageId
       );
 
-      const stageFeatureTypeRaw = configuredStage?.featureType ?? '';
-      if (stageFeatureTypeRaw) return String(stageFeatureTypeRaw);
+      const stageFeatureType = String(stage?.featureType ?? '').trim();
+
+      if (stageFeatureType) {
+        return stageFeatureType;
+      }
     }
 
-    const programFeatureTypeRaw = (programMeta as Program)?.featureType ?? '';
-    return String(programFeatureTypeRaw);
+    // 2) Fallback to program (enrollment-level) featureType
+    const programFeatureType = String(
+      (programMeta as Program)?.featureType ?? ''
+    ).trim();
+
+    return programFeatureType;
   }
 
   #getEnrollmentDateField() {

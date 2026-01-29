@@ -50,6 +50,7 @@ export const TableBody = ({
   columns,
   getTextColorFromBackGround,
   actionOptions,
+  rowActionFilterConfig,
   actionOptionOrientation,
   actionSelected,
   selectedRows,
@@ -81,6 +82,7 @@ export const TableBody = ({
           columns={columns}
           getTextColorFromBackGround={getTextColorFromBackGround}
           actionOptions={actionOptions}
+          rowActionFilterConfig={rowActionFilterConfig}
           actionOptionOrientation={actionOptionOrientation}
           actionSelected={actionSelected}
           isChecked={selectedRows.some(
