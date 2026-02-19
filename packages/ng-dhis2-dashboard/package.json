@@ -1,6 +1,6 @@
 {
   "name": "@iapps/d2-dashboard",
-  "version": "1.0.19",
+  "version": "1.0.28",
   "peerDependencies": {
     "@angular/common": "^20.0.0",
     "@angular/core": "^20.0.0",
