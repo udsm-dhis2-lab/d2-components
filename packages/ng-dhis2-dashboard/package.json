@@ -1,10 +1,10 @@
 {
   "name": "@iapps/d2-dashboard",
-  "version": "1.0.17",
+  "version": "1.0.19",
   "peerDependencies": {
     "@angular/common": "^20.0.0",
     "@angular/core": "^20.0.0",
-    "@iapps/d2-visualizer": "^1.1.6",
+    "@iapps/d2-visualizer": "^1.1.25",
     "@dhis2/ui": "~8.14.9",
     "react": "18.2.0",
     "react-dom": "18.2.0",

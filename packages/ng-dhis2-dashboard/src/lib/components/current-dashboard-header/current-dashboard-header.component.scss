@@ -4,7 +4,9 @@
   display: flex;
   justify-content: space-between;
   padding-top: 8px;
-  padding-bottom: 8px;
+  padding-bottom: 0px;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
 .d2-dashboard__current-dashboard-title-container {
@@ -14,7 +16,18 @@
 
 .d2-dashboard__current-dashboard-title {
   margin: 0 16px 0 0 !important;
-  font-weight: 600 !important;
+  // font-weight: 600 !important;
+
+  color: #000000;
+  cursor: default;
+  font-size: 21px;
+  font-weight: 500;
+  min-width: 50px;
+  top: 7px;
+  opacity: 0.9;
+  font-weight: bold;
+
+  font-family: Roboto, sans-serif !important;
 }
 
 .d2-dashboard__print-label {
