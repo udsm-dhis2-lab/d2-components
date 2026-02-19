@@ -1,37 +1,253 @@
+// .d2-dashboard__sub-menu-container {
+//   display: flex;
+//   align-items: center;
+//   padding: 8px;
+//   width: 100%;
+//   overflow: auto;
+//   & > * {
+//     flex: 0 0 auto;
+//   }
+// }
+
+// .d2-dashboard__sub-menu-item {
+//   font-size: 10px;
+//   background-color: #f1f9f9;
+//   padding: 8px 16px;
+//   border-radius: 16px;
+//   cursor: pointer;
+//   margin-left: 8px;
+//   max-width: 150px;
+//   white-space: nowrap;
+//   display: inline-block;
+//   overflow: hidden;
+//   text-overflow: ellipsis;
+//   &:hover {
+//     background-color: #00695c;
+//     color: #fff;
+//   }
+// }
+
+// .d2-dashboard__sub-menu-item:first-child {
+//   margin-left: 0;
+// }
+
+// .d2-dashboard__sub-menu-item-selected {
+//   background-color: #00695c;
+//   color: #fff;
+// }
+
+// .d2-dashboard__sub-menu-container {
+//   display: flex;
+//   flex-wrap: wrap;              // ✅ allows next-row rendering
+//   align-items: flex-start;
+//   gap: 10px;                    // ✅ modern spacing instead of margin-left hacks
+//   padding: 8px;
+//   width: 100%;
+//   overflow: visible;            // ✅ no forced horizontal scrolling
+// }
+
+// // ✅ “Chip / pill button” style
+// .d2-dashboard__sub-menu-item {
+//   appearance: none;
+//   border: 1px solid rgba(0, 0, 0, 0.08);
+//   background-color: #f1f9f9;
+//   border-radius: 999px;
+
+//   padding: 8px 14px;
+
+//   // ✅ global-standard readable UI typography for menus/chips
+//   font-size: 13px;              // (12–14 is typical; 13 is a great baseline)
+//   line-height: 18px;
+//   font-weight: 500;
+//   letter-spacing: 0.1px;
+
+//   cursor: pointer;
+//   text-align: left;
+
+//   // ✅ show full text (no ellipsis)
+//   max-width: none;
+//   white-space: normal;          // allow wrapping inside the chip
+//   overflow: visible;
+//   text-overflow: unset;
+
+//   // Optional: keep long words from breaking layout
+//   word-break: break-word;
+
+//   transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, transform 150ms ease;
+//   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+
+//   &:hover {
+//     background-color: #00695c;
+//     border-color: #00695c;
+//     color: #fff;
+//     transform: translateY(-1px);
+//   }
+
+//   &:focus-visible {
+//     outline: 3px solid rgba(0, 105, 92, 0.25);
+//     outline-offset: 2px;
+//   }
+// }
+
+// .d2-dashboard__sub-menu-item-selected {
+//   background-color: #00695c;
+//   border-color: #00695c;
+//   color: #fff;
+// }
+
+// // ✅ Zigzag feel (staggered vertically) that continues as items grow
+// .d2-dashboard__sub-menu-item:nth-child(odd) {
+//   transform: translateY(0px);
+// }
+// .d2-dashboard__sub-menu-item:nth-child(even) {
+//   transform: translateY(3px);
+// }
+
+// // Keep selected stable (optional)
+// .d2-dashboard__sub-menu-item-selected {
+//   transform: translateY(0px) !important;
+// }
+
 .d2-dashboard__sub-menu-container {
   display: flex;
-  align-items: center;
-  padding: 8px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 10px;
+
   width: 100%;
-  overflow: auto;
-  & > * {
-    flex: 0 0 auto;
-  }
+  padding: 10px 10px;
+
+  // ✅ makes the area feel like a component
+  background: rgba(241, 249, 249, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 0px;
+
+  // subtle depth
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.03);
 }
 
 .d2-dashboard__sub-menu-item {
-  font-size: 10px;
-  background-color: #f1f9f9;
-  padding: 8px 16px;
-  border-radius: 16px;
+  appearance: none;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+  border-radius: 999px;
+
+  // ✅ consistent sizing
+  min-height: 34px;
+  padding: 8px 14px;
+
+  // ✅ typography: clean and readable
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600; // slightly stronger for menus
+  letter-spacing: 0.1px;
+
   cursor: pointer;
-  margin-left: 8px;
-  max-width: 150px;
-  white-space: nowrap;
-  display: inline-block;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  text-align: left;
+
+  // ✅ show full text
+  white-space: normal;
+  word-break: break-word;
+  overflow: visible;
+
+  // ✅ more polished animation
+  transition: transform 150ms ease, background-color 150ms ease,
+    color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+
+  // base “chip depth”
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06), 0 6px 14px rgba(0, 0, 0, 0.04);
+
   &:hover {
-    background-color: #00695c;
-    color: #fff;
+    background-color: rgba(0, 105, 92, 0.08);
+    border-color: rgba(0, 105, 92, 0.35);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0px) scale(0.985); // ✅ press feedback
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05), 0 4px 10px rgba(0, 0, 0, 0.03);
+  }
+
+  &:focus-visible {
+    outline: 3px solid rgba(0, 105, 92, 0.22);
+    outline-offset: 2px;
   }
 }
 
-.d2-dashboard__sub-menu-item:first-child {
-  margin-left: 0;
-}
+// .d2-dashboard__sub-menu-item-selected {
+//   background-color: #00695c;
+//   color: #fff;
+//   border-color: rgba(0, 105, 92, 0.9);
+
+//   // ✅ selected feels “active/current”
+//   box-shadow:
+//     0 2px 0 rgba(0, 0, 0, 0.06),
+//     0 10px 22px rgba(0, 105, 92, 0.20);
+
+//   transform: translateY(-1px);
+// }
 
 .d2-dashboard__sub-menu-item-selected {
-  background-color: #00695c;
-  color: #fff;
+  background: linear-gradient(135deg, #00695c 0%, #00796b 100%);
+  color: #ffffff;
+  border-color: #00695c;
+
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.06), 0 12px 26px rgba(0, 105, 92, 0.25);
+
+  transform: translateY(-1px);
+
+  // smooth animation
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+/* 🔥 PREMIUM SELECTED HOVER FIX */
+.d2-dashboard__sub-menu-item-selected:hover {
+  background: linear-gradient(135deg, #00574b 0%, #00695c 100%);
+
+  color: #ffffff; // force strong contrast
+  border-color: #00574b;
+
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.08), 0 16px 32px rgba(0, 105, 92, 0.35);
+
+  transform: translateY(-2px);
+}
+
+/* prevent base hover style from overriding selected */
+.d2-dashboard__sub-menu-item-selected:hover {
+  background-color: unset;
+}
+
+.d2-dashboard__sub-menu-item-selected::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.15),
+    rgba(255, 255, 255, 0)
+  );
+  pointer-events: none;
+}
+
+// ✅ Zigzag (still consistent across wrap)
+.d2-dashboard__sub-menu-item:nth-child(even) {
+  margin-top: 3px;
+}
+.d2-dashboard__sub-menu-item:nth-child(odd) {
+  margin-top: 0px;
+}
+
+// ✅ Responsive polish: slightly tighter chips on small screens
+@media (max-width: 600px) {
+  .d2-dashboard__sub-menu-container {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .d2-dashboard__sub-menu-item {
+    min-height: 32px;
+    padding: 7px 12px;
+    font-size: 12.5px;
+  }
 }
