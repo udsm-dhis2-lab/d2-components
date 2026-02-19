@@ -1,5 +1,6 @@
 .d2-dashboard__current-dashboard-container {
-  padding: 8px 16px 8px 16px;
+  padding: 0px 0px 0px 0px;
+  background-color: #F4F6F8 !important;
 }
 
 .d2-dashboard__current-dashboard-items {
@@ -8,7 +9,7 @@
 .d2-dashboard__dashboard-selection-summary {
   display: flex;
   justify-content: center;
-  padding-bottom: 8px;
+  padding-bottom: 4px;
 }
 
 .d2-dashboard__selection-description {

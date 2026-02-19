@@ -27,6 +27,10 @@ export class VisualizationConfiguration {
     this.layout = VisualizationLayout.getLayout(this.dataSelections);
   }
 
+  get relativePeriodDate(): string {
+    return new Date().toISOString();
+  }
+
   get renderId(): string {
     return this.config?.id;
   }
