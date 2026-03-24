@@ -81,6 +81,17 @@ export class FormComponentsComponent {
     },
   ];
 
+  contract = new ProgramEntryFormConfig({
+    program: 'zyBObUsin0Q',
+    programStage: 'HmW9AEBtQnj',
+    hideRegistrationUnit: true,
+    formType: 'EVENT',
+    displayType: 'FLAT',
+    autoComplete: true,
+    autoAssignedValues: [],
+    formFieldExtensions: [],
+  });
+
   customOrgUnitRoots: CustomOrgUnitConfig[] = [
     {
       field: 'fQQ6z8JqoyP',

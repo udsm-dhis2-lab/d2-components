@@ -70,6 +70,7 @@ export class ProgramEntryFormFieldUtil {
       (programStages || []).map((programStage) => {
         const dataElements = (programStage.programStageDataElements || []).map(
           (stageDataElement) => {
+            
             return {
               ...stageDataElement.dataElement,
               sortOrder: stageDataElement.sortOrder,
@@ -407,6 +408,8 @@ export class ProgramEntryFormFieldUtil {
           ),
           metaType: field.metaType as FormFieldMetaType,
           stepId: (field as { stepId: string }).stepId,
+          allowFutureDate: (field as { allowFutureDate: boolean })
+            .allowFutureDate,
           extension,
         });
       })

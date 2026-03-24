@@ -708,7 +708,10 @@ import * as ReactDOM from 'react-dom/client';
 import { filter, take } from 'rxjs';
 import { ReactWrapperModule } from '../../react-wrapper/react-wrapper.component';
 import { useFieldValidation } from '../hooks';
-import { CoordinatePickerField, CoordinatePickerGeoConfig } from './coordinate-field-component';
+import {
+  CoordinatePickerField,
+  CoordinatePickerGeoConfig,
+} from './coordinate-field-component';
 import { FileUploadField } from './file-upload-field.component';
 import { InternationalPhoneField } from './phone-number-field.component';
 import { OrgUnitFormField } from './org-unit-form-field.component';
@@ -820,6 +823,112 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
     return String(
       option?.value ?? option?.id ?? option?.code ?? option?.label ?? ''
     );
+  }
+
+  formatValueForHtmlInputFromDhis(
+    rawValue: string | null | undefined,
+    isDateTimeField: boolean
+  ): string {
+    if (rawValue == null) return '';
+
+    const trimmed = String(rawValue).trim();
+    if (!trimmed) return '';
+
+    const pad = (n: number) => String(n).padStart(2, '0');
+
+    if (!isDateTimeField) {
+      // Already in HTML date format
+      if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+        return trimmed;
+      }
+
+      // ISO-like datetime -> preserve calendar date portion directly
+      const datePartMatch = trimmed.match(/^(\d{4}-\d{2}-\d{2})[T\s]/);
+      if (datePartMatch) {
+        return datePartMatch[1];
+      }
+
+      // Fallback parse only if needed
+      const date = new Date(trimmed);
+      if (Number.isNaN(date.getTime())) {
+        return '';
+      }
+
+      return (
+        `${date.getFullYear()}-` +
+        `${pad(date.getMonth() + 1)}-` +
+        `${pad(date.getDate())}`
+      );
+    }
+
+    // Already in HTML datetime-local format
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(trimmed)) {
+      return trimmed;
+    }
+
+    // ISO-like datetime with optional seconds/timezone -> keep YYYY-MM-DDTHH:mm only
+    const dateTimeMatch = trimmed.match(
+      /^(\d{4}-\d{2}-\d{2})[T\s](\d{2}):(\d{2})/
+    );
+    if (dateTimeMatch) {
+      return `${dateTimeMatch[1]}T${dateTimeMatch[2]}:${dateTimeMatch[3]}`;
+    }
+
+    const parsedDate = new Date(trimmed);
+    if (Number.isNaN(parsedDate.getTime())) {
+      return '';
+    }
+
+    const year = parsedDate.getFullYear();
+    const month = pad(parsedDate.getMonth() + 1);
+    const day = pad(parsedDate.getDate());
+    const hours = pad(parsedDate.getHours());
+    const minutes = pad(parsedDate.getMinutes());
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+
+  pickEarlierDateLimit(
+    metadataMax?: string,
+    systemMax?: string
+  ): string | undefined {
+    if (!metadataMax && !systemMax) return undefined;
+    if (!metadataMax) return systemMax;
+    if (!systemMax) return metadataMax;
+
+    return metadataMax < systemMax ? metadataMax : systemMax;
+  }
+
+  getNowForHtmlDateInput(isDateTimeField: boolean): string {
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+
+    const datePart =
+      `${now.getFullYear()}-` +
+      `${pad(now.getMonth() + 1)}-` +
+      `${pad(now.getDate())}`;
+
+    if (!isDateTimeField) {
+      return datePart;
+    }
+
+    const timePart = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    return `${datePart}T${timePart}`;
+  }
+
+  resolveHtmlMax(field: any, isDateTimeField: boolean): string | undefined {
+    // When future dates are allowed, do not limit picker selection at all
+    if (field.allowFutureDate === true) {
+      return undefined;
+    }
+
+    const metadataMax = field.max
+      ? this.formatValueForHtmlInputFromDhis(String(field.max), isDateTimeField)
+      : undefined;
+
+    const systemMax = this.getNowForHtmlDateInput(isDateTimeField);
+
+    return this.pickEarlierDateLimit(metadataMax, systemMax);
   }
 
   #getInputField() {
@@ -1050,7 +1159,6 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
 
       // UI renderer
       const formFieldContent = () => {
-
         const f = this.field();
 
         switch (f.controlType) {
@@ -1119,12 +1227,10 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
                     </li>
                     <li>
                       Click <strong>“Use Selected Location”</strong> to save the
-                      coordinates. 
+                      coordinates.
                     </li>
                   </ul>
                 </NoticeBox>
-
-                
 
                 <CoordinatePickerField
                   error={hasError}
@@ -1273,29 +1379,39 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
           case 'date':
           case 'date-time': {
             const isDateTimeField = f.type === 'date-time';
-            const inputType: any = isDateTimeField ? 'datetime-local' : 'date';
+            const inputType: 'date' | 'datetime-local' = isDateTimeField
+              ? 'datetime-local'
+              : 'date';
 
-            const htmlValue = this.formatValueForHtmlInputFromDhis(
-              value,
-              isDateTimeField
-            );
+            const allowFutureDate = f.allowFutureDate === true;
 
-            const htmlMin = f.min
-              ? this.formatValueForHtmlInputFromDhis(
+            const htmlValue =
+              value != null && String(value).trim() !== ''
+                ? this.formatValueForHtmlInputFromDhis(
+                  String(value),
+                  isDateTimeField
+                )
+                : '';
+
+            const htmlMin =
+              f.min != null && String(f.min).trim() !== ''
+                ? this.formatValueForHtmlInputFromDhis(
                   String(f.min),
                   isDateTimeField
                 )
-              : undefined;
+                : undefined;
 
-            const metadataMax = f.max
-              ? this.formatValueForHtmlInputFromDhis(
-                  String(f.max),
-                  isDateTimeField
+            const htmlMax = allowFutureDate
+              ? undefined
+              : f.max
+                ? this.pickEarlierDateLimit(
+                  this.formatValueForHtmlInputFromDhis(
+                    String(f.max),
+                    isDateTimeField
+                  ),
+                  this.getNowForHtmlDateInput(isDateTimeField)
                 )
-              : undefined;
-
-            const systemMax = this.getNowForHtmlDateInput(isDateTimeField);
-            const htmlMax = this.pickEarlierDateLimit(metadataMax, systemMax);
+                : this.getNowForHtmlDateInput(isDateTimeField);
 
             return (
               <InputField
@@ -1315,8 +1431,9 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
                   const normalized = this.normalizeDateValueFromHtmlInput(
                     newValue,
                     isDateTimeField,
-                    true
+                    allowFutureDate
                   );
+
                   onValueChange(normalized);
                 }}
                 onBlur={() => checkValueUniqueness()}
@@ -1427,94 +1544,23 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
     );
   }
 
-  formatValueForHtmlInputFromDhis(
-    rawValue: string | null | undefined,
-    isDateTimeField: boolean
-  ): string {
-    if (!rawValue) return '';
-
-    const trimmed = rawValue.trim();
-    if (!trimmed) return '';
-
-    const pad = (n: number) => String(n).padStart(2, '0');
-
-    if (!isDateTimeField) {
-      if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
-        return trimmed;
-      }
-
-      const date = new Date(trimmed);
-      if (Number.isNaN(date.getTime())) {
-        return '';
-      }
-
-      return (
-        `${date.getFullYear()}-` +
-        `${pad(date.getMonth() + 1)}-` +
-        `${pad(date.getDate())}`
-      );
-    }
-
-    const parsedDate = new Date(trimmed);
-    if (Number.isNaN(parsedDate.getTime())) {
-      return '';
-    }
-
-    const year = parsedDate.getFullYear();
-    const month = pad(parsedDate.getMonth() + 1);
-    const day = pad(parsedDate.getDate());
-    const hours = pad(parsedDate.getHours());
-    const minutes = pad(parsedDate.getMinutes());
-
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  }
-
-  getNowForHtmlDateInput(isDateTimeField: boolean): string {
-    const now = new Date();
-    const pad = (n: number) => String(n).padStart(2, '0');
-
-    const datePart =
-      `${now.getFullYear()}-` +
-      `${pad(now.getMonth() + 1)}-` +
-      `${pad(now.getDate())}`;
-
-    if (!isDateTimeField) {
-      return datePart;
-    }
-
-    const timePart = `${pad(now.getHours())}:` + `${pad(now.getMinutes())}`;
-
-    return `${datePart}T${timePart}`;
-  }
-
-  pickEarlierDateLimit(
-    metadataMax?: string,
-    systemMax?: string
-  ): string | undefined {
-    if (!metadataMax && !systemMax) return undefined;
-    if (!metadataMax) return systemMax;
-    if (!systemMax) return metadataMax;
-
-    return metadataMax < systemMax ? metadataMax : systemMax;
-  }
-
   /**
-   * Normalizes value from the HTML input into DHIS storage format.
-   *
-   * For date:
-   *   - Input: "YYYY-MM-DD"
-   *   - Output: "YYYY-MM-DD"
-   *
-   * For datetime:
-   *   - Input: "YYYY-MM-DDTHH:mm" (local)
-   *   - Output: ISO string in UTC: "YYYY-MM-DDTHH:mm:ss.sssZ"
-   *
-   * If disallowFuture = true, any value beyond "now" is clamped to now.
-   */
+ * Normalizes value from the HTML input into DHIS storage format.
+ *
+ * For date:
+ *   - Input: "YYYY-MM-DD"
+ *   - Output: "YYYY-MM-DD"
+ *
+ * For datetime:
+ *   - Input: "YYYY-MM-DDTHH:mm" (local)
+ *   - Output: ISO string in UTC: "YYYY-MM-DDTHH:mm:ss.sssZ"
+ *
+ * If allowFutureDate = false, any value beyond "now" is clamped to now.
+ */
   normalizeDateValueFromHtmlInput(
     inputValue: string | null | undefined,
     isDateTimeField: boolean,
-    disallowFuture: boolean
+    allowFutureDate: boolean
   ): string | null {
     const trimmed = (inputValue ?? '').trim();
     if (!trimmed) return null;
@@ -1524,8 +1570,9 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
         return null;
       }
 
-      if (disallowFuture) {
+      if (!allowFutureDate) {
         const todayStr = this.getNowForHtmlDateInput(false);
+
         if (trimmed > todayStr) {
           return todayStr;
         }
@@ -1546,13 +1593,10 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
       return null;
     }
 
-    if (disallowFuture) {
+    if (!allowFutureDate) {
       const now = new Date();
       if (localDate.getTime() > now.getTime()) {
-        // Option A: clamp to now
         return now.toISOString();
-        // Option B: reject:
-        // return null;
       }
     }
 
