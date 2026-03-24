@@ -95,6 +95,7 @@ export class FormFieldGroup implements IFormFieldGroup {
           ),
           metaType: fieldMetaData['metaType'] as FormFieldMetaType,
           stepId: fieldMetaData['stepId'] as string,
+          allowFutureDate: fieldMetaData['allowFutureDate'] as boolean,
           extension,
         });
       })

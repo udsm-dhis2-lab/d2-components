@@ -81,6 +81,7 @@ export class FormMetadataSection implements IFormMetadataSection {
             unknown
           >[]) || []
         ).map((stageDataElement) => {
+
           return {
             ...((stageDataElement['dataElement'] as Record<string, unknown>) ||
               {}),
