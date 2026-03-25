@@ -12,6 +12,7 @@
   @case ('FLAT') {
     <ng-dhis2-ui-flat-form
       [programEntryFormConfig]="config()"
+      [optionCascadeConfigs]="config().optionCascadeConfigs || []"
       [collapsibleSections]="collapsibleSections()"
       [programEntryFormMetaData]="metaData()!"
       [name]="metaData()!.name"
@@ -20,6 +21,7 @@
       [rules]="metaData()!.rules"
       [fields]="metaData()!.formFields"
       [customOrgUnitRoots]="customOrgUnitRoots()"
+      [coordinatePickerGeoConfig]="config().coordinatePickerGeoConfig"
       (formUpdate)="onFormUpdate($event)"
       (formValidityUpdate)="onValidityUpdate($event)"
     />

@@ -629,29 +629,53 @@ export const OrgUnitFormField = (props: Props) => {
       }
     };
 
-    Promise.allSettled(matchingConfigs.map(fetchOrgUnitsForConfig))
-      .then((settledResults) => {
+    // Promise.allSettled(matchingConfigs.map(fetchOrgUnitsForConfig))
+    //   .then((settledResults) => {
+    //     if (isCancelled) return;
+
+    //     const allOrgUnits = settledResults
+    //       .filter(
+    //         (result): result is PromiseFulfilledResult<OrgUnit[]> =>
+    //           result.status === 'fulfilled'
+    //       )
+    //       .flatMap((result) => result.value);
+
+    //     setConfiguredRootInfo(allOrgUnits);
+    //     setConfiguredRootsLoading(false);
+    //   })
+    //   .catch((unexpectedError) => {
+    //     if (isCancelled) return;
+
+    //     console.warn(
+    //       `[OrgUnitFormField] Unexpected error while resolving custom roots:`,
+    //       unexpectedError
+    //     );
+    //     setConfiguredRootsLoading(false);
+    //   });
+
+    Promise.allSettled(matchingConfigs.map(fetchOrgUnitsForConfig)).then(
+      async (settledResults) => {
         if (isCancelled) return;
 
         const allOrgUnits = settledResults
           .filter(
-            (result): result is PromiseFulfilledResult<OrgUnit[]> =>
-              result.status === 'fulfilled'
+            (r): r is PromiseFulfilledResult<OrgUnit[]> =>
+              r.status === 'fulfilled'
           )
-          .flatMap((result) => result.value);
+          .flatMap((r) => r.value);
+
+        // ✅ collect root paths from cache using matchingConfigs
+        const rootPaths = matchingConfigs
+          .map((cfg) => ORGUNIT_ROOT_CACHE.get(cfg.orgUnit)?.rootOrgUnit?.path)
+          .filter((p): p is string => !!p);
+
+        // ✅ de-dup
+        setCustomRootPaths(Array.from(new Set(rootPaths)));
 
         setConfiguredRootInfo(allOrgUnits);
         setConfiguredRootsLoading(false);
-      })
-      .catch((unexpectedError) => {
-        if (isCancelled) return;
-
-        console.warn(
-          `[OrgUnitFormField] Unexpected error while resolving custom roots:`,
-          unexpectedError
-        );
-        setConfiguredRootsLoading(false);
-      });
+      }
+    );
 
     return () => {
       isCancelled = true;
@@ -693,6 +717,7 @@ export const OrgUnitFormField = (props: Props) => {
     initiallyExpanded
   );
   const [showOrgUnitTree, setShowOrgUnitTree] = useState<boolean>(!selected);
+  const [customRootPaths, setCustomRootPaths] = useState<string[]>([]);
 
   useEffect(() => {
     setLoading(true);
@@ -755,12 +780,44 @@ export const OrgUnitFormField = (props: Props) => {
     }
   };
 
+  // const handleOrgUnitSearch = async (query: string) => {
+  //   setSearchLoading(true);
+  //   try {
+  //     const searchResponse = await d2.httpInstance.get(
+  //       `organisationUnits.json?fields=id,displayName,path,publicAccess,access,lastUpdated,children[id,displayName,publicAccess,access,path,children::isNotEmpty]&paging=true&query=${query}&withinUserSearchHierarchy=true&pageSize=15`
+  //     );
+  //     setSearchData((searchResponse.data || {})['organisationUnits']);
+  //     setSearchLoading(false);
+  //   } catch (e) {
+  //     setSearchLoading(false);
+  //   }
+  // };
+
   const handleOrgUnitSearch = async (query: string) => {
     setSearchLoading(true);
+
     try {
-      const searchResponse = await d2.httpInstance.get(
-        `organisationUnits.json?fields=id,displayName,path,publicAccess,access,lastUpdated,children[id,displayName,publicAccess,access,path,children::isNotEmpty]&paging=true&query=${query}&withinUserSearchHierarchy=true&pageSize=15`
-      );
+      const baseFields = 'id,displayName,path,level,ancestors[displayName]';
+
+      // ✅ If custom roots are active and we have root paths, search inside them
+      const shouldUseCustomScope =
+        useCustomRoots && customRootPaths && customRootPaths.length > 0;
+
+      const filters = shouldUseCustomScope
+        ? customRootPaths
+            .map((p) => `filter=path:like:${encodeURIComponent(p + '/')}`)
+            .join('&')
+        : 'withinUserSearchHierarchy=true';
+
+      const url =
+        'organisationUnits.json' +
+        `?paging=true&pageSize=15` +
+        `&fields=${encodeURIComponent(baseFields)}` +
+        `&query=${encodeURIComponent(query)}` +
+        `&${filters}`;
+
+      const searchResponse = await d2.httpInstance.get(url);
+
       setSearchData((searchResponse.data || {})['organisationUnits']);
       setSearchLoading(false);
     } catch (e) {
@@ -784,9 +841,7 @@ export const OrgUnitFormField = (props: Props) => {
     return searchText?.length ? !searchLoading : !loading;
   }, [searchText, searchLoading, loading]);
 
-
   const renderOrgUnitTree = () => {
-
     if (searchText && searchText?.length > 0) {
       if (searchLoading) {
         return (
@@ -836,7 +891,6 @@ export const OrgUnitFormField = (props: Props) => {
   };
 
   return (
-
     config && (
       <Provider
         config={config}

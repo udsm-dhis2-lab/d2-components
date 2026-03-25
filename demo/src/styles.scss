@@ -5,25 +5,30 @@
 //   max-width: 60vw;
 // }
 
-@import "../../node_modules//leaflet/dist/leaflet.css";
+@import '../../node_modules//leaflet/dist/leaflet.css';
 
 // .coordinate-modal .dhis2-ui-modal__paper {
 //   width: 80vw !important;
 //   max-width: 80vw !important;
 // }
 
+html,
+body,
+* {
+  font-family: Roboto, sans-serif !important;
+}
+
 /* WIDEN THE MODAL */
-.coordinate-modal[data-test="dhis2-uicore-modal"] {
-    width: 80vw !important;
-    max-width: 80vw !important;
-    height: auto !important;
-    max-height: 80vh !important;
+.coordinate-modal[data-test='dhis2-uicore-modal'] {
+  width: 80vw !important;
+  max-width: 80vw !important;
+  height: auto !important;
+  max-height: 80vh !important;
 }
 
 /* WIDEN THE INNER CARD */
-.coordinate-modal [data-test="dhis2-uicore-card"] {
-    width: 80vw !important;
-    max-width: 80vw !important;
-    height: auto !important;
+.coordinate-modal [data-test='dhis2-uicore-card'] {
+  width: 80vw !important;
+  max-width: 80vw !important;
+  height: auto !important;
 }
-

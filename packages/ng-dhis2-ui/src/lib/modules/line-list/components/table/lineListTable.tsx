@@ -45,6 +45,7 @@ export const LineListTable = ({
   setPager,
   getTextColorFromBackGround,
   actionOptions,
+  rowActionFilterConfig,
   actionOptionOrientation,
   actionSelected,
   selectable,
@@ -88,6 +89,7 @@ export const LineListTable = ({
         columns={columns}
         getTextColorFromBackGround={getTextColorFromBackGround}
         actionOptions={actionOptions}
+        rowActionFilterConfig={rowActionFilterConfig}
         actionOptionOrientation={actionOptionOrientation}
         actionSelected={actionSelected}
         selectedRows={selectedRows}

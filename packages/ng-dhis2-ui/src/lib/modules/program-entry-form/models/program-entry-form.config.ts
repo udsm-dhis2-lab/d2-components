@@ -3,6 +3,8 @@
 // license that can be found in the LICENSE file.
 
 import { FormFieldExtension } from '../../form';
+import { CoordinatePickerGeoConfig } from '../../form/components/coordinate-field-component';
+import { OptionsPathCascadeConfig } from '../../form/models/field-cascade.types';
 
 export type AutoAssignedValues = { field: string; value: string };
 
@@ -16,6 +18,7 @@ export interface IProgramEntryFormConfig {
   hideGeometryField?: boolean;
   hideTrackedEntityTypeAttributes?: boolean;
   disableRegistrationUnit?: boolean;
+  disableGeometryField?: boolean;
   disableEnrollmentDate?: boolean;
   disabledIncidentDate?: boolean;
   excludeProgramStages?: boolean;
@@ -34,6 +37,8 @@ export interface IProgramEntryFormConfig {
   autoComplete?: boolean;
   formFieldExtensions?: FormFieldExtension[];
   updateTeiOrgUnit?: boolean;
+  optionCascadeConfigs?: OptionsPathCascadeConfig[];
+  coordinatePickerGeoConfig?: CoordinatePickerGeoConfig;
 }
 export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   program!: string;
@@ -42,7 +47,9 @@ export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   formType!: 'TRACKER' | 'EVENT';
   hideRegistrationUnit?: boolean;
   hideEnrollmentDate?: boolean;
+  hideIncidentDate?: boolean;
   hideGeometryField?: boolean;
+  disableGeometryField?: boolean;
   hideTrackedEntityTypeAttributes?: boolean;
   disableRegistrationUnit?: boolean;
   disableEnrollmentDate?: boolean;
@@ -63,6 +70,8 @@ export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   autoComplete?: boolean;
   formFieldExtensions?: FormFieldExtension[];
   updateTeiOrgUnit = false;
+  optionCascadeConfigs?: OptionsPathCascadeConfig[];
+  coordinatePickerGeoConfig?: CoordinatePickerGeoConfig;
 
   constructor(config: IProgramEntryFormConfig) {
     Object.assign(this, config);

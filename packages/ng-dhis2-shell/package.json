@@ -1,6 +1,6 @@
 {
   "name": "@iapps/ng-dhis2-shell",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "scripts": {
     "build": "tsc -p tsconfig.schematics.json",
     "postbuild": "copyfiles schematics/collection.json ../../dist/packages/ng-dhis2-shell/"
