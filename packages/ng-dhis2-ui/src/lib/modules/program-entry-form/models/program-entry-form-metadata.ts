@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import { D2Window, Program, ProgramRule } from '@iapps/d2-web-sdk';
+import { D2Window, Pager, Program, ProgramRule } from '@iapps/d2-web-sdk';
 import { ProgramEntryFormConfig } from './program-entry-form.config';
 import { IProgramEntryFormSection } from './program-entry-form-section.model';
 import { IFormField } from '../../form/interfaces/form-field.interface';
@@ -220,6 +220,7 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
               'id',
               'programRuleActionType',
               'data',
+              'programRule',
               'displayContent',
               'content',
             ])
@@ -261,6 +262,7 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
               'ToOne'
             )
         )
+        .paginate(new Pager({ paging: false }))
         .get(),
     ]);
 

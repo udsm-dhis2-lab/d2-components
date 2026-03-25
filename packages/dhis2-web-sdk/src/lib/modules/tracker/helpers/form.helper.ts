@@ -1,10 +1,25 @@
+type GeoJsonPointLike = {
+    type: 'Point';
+    coordinates: [number, number] | [string, string] | Array<number | string>;
+};
+
+function isGeoJsonPointLike(candidate: unknown): candidate is GeoJsonPointLike {
+    return (
+        !!candidate &&
+        typeof candidate === 'object' &&
+        (candidate as any).type === 'Point' &&
+        Array.isArray((candidate as any).coordinates)
+    );
+}
+
 /**
  * Parses a coordinate value into a [longitude, latitude] pair of strings.
  *
- * Supported string inputs:
- *  - "[39.319364,-6.069623]"   // JSON-style
+ * Supported inputs:
+ *  - "[39.319364,-6.069623]"   // JSON-style string
  *  - "39.319364,-6.069623"     // comma-separated
  *  - "39.319364 -6.069623"     // space-separated
+ *  - { type: "Point", coordinates: [39.192299, -6.164641] } // GeoJSON Point
  *
  * Returns:
  *  - ["39.319364", "-6.069623"] when valid (lon, lat as strings)
@@ -14,53 +29,64 @@
  *  - Follows GeoJSON convention: [longitude, latitude]
  *  - Valid ranges: lon ∈ [-180, 180], lat ∈ [-90, 90]
  */
-export function parseCoordinates(value?: string | null): string[] | null {
-    if (!value) return null;
+export function parseCoordinates(input?: unknown | null): string[] | null {
+    if (input == null) return null;
 
-    const trimmed = value.trim();
-    if (!trimmed) return null;
+    const normalizeLonLatPair = (
+        coordinateParts: Array<string | number>
+    ): string[] | null => {
+        if (!coordinateParts || coordinateParts.length !== 2) return null;
 
-    const validateAndNormalizePair = (parts: string[]): string[] | null => {
-        if (parts.length !== 2) return null;
+        const longitudeText = String(coordinateParts[0]).trim();
+        const latitudeText = String(coordinateParts[1]).trim();
 
-        const lonText = parts[0].trim();
-        const latText = parts[1].trim();
+        if (!longitudeText || !latitudeText) return null;
 
-        if (!lonText || !latText) return null;
+        const longitude = Number(longitudeText);
+        const latitude = Number(latitudeText);
 
-        const lonNum = Number(lonText);
-        const latNum = Number(latText);
+        if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) return null;
 
-        if (!Number.isFinite(lonNum) || !Number.isFinite(latNum)) {
-            return null;
-        }
+        const isLongitudeValid = longitude >= -180 && longitude <= 180;
+        const isLatitudeValid = latitude >= -90 && latitude <= 90;
 
-        const isLonValid = lonNum >= -180 && lonNum <= 180;
-        const isLatValid = latNum >= -90 && latNum <= 90;
+        if (!isLongitudeValid || !isLatitudeValid) return null;
 
-        if (!isLonValid || !isLatValid) {
-            return null;
-        }
-
-        return [lonText, latText];
+        return [longitudeText, latitudeText];
     };
 
-    if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
-        const inner = trimmed.slice(1, -1);
-        const parts = inner.split(',');
-        const result = validateAndNormalizePair(parts);
-        if (result) return result;
+    // GeoJSON Point support
+    if (isGeoJsonPointLike(input)) {
+        const geoJsonCoordinates = input.coordinates;
+        return normalizeLonLatPair(geoJsonCoordinates);
     }
 
-    if (trimmed.includes(',')) {
-        const parts = trimmed.split(',');
-        const result = validateAndNormalizePair(parts);
-        if (result) return result;
+    // String-based input handling
+    if (typeof input !== 'string') return null;
+
+    const trimmedInput = input.trim();
+    if (!trimmedInput) return null;
+
+    // "[lon,lat]" format
+    if (trimmedInput.startsWith('[') && trimmedInput.endsWith(']')) {
+        const bracketContent = trimmedInput.slice(1, -1);
+        const commaSeparatedValues = bracketContent
+            .split(',')
+            .map((value) => value.trim());
+
+        return normalizeLonLatPair(commaSeparatedValues);
     }
 
-    const spaceParts = trimmed.split(/\s+/);
-    const result = validateAndNormalizePair(spaceParts);
-    if (result) return result;
+    // "lon,lat" format
+    if (trimmedInput.includes(',')) {
+        const commaSeparatedValues = trimmedInput
+            .split(',')
+            .map((value) => value.trim());
 
-    return null;
+        return normalizeLonLatPair(commaSeparatedValues);
+    }
+
+    // "lon lat" format
+    const spaceSeparatedValues = trimmedInput.split(/\s+/);
+    return normalizeLonLatPair(spaceSeparatedValues);
 }

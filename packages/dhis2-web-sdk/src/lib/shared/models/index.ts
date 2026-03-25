@@ -22,3 +22,4 @@ export * from './data-url-generator.model';
 export * from './data-order-criteria.model';
 export * from './index-db-config.model';
 export * from './index-db-query-schema.model';
+export * from './linelist-row-action-filter-config.model';

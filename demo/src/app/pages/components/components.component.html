@@ -1,4 +1,18 @@
- <app-selection-filters-ui
+   <main class="line-list-container p-2">
+    <ng-dhis2-ui-line-list
+      [programId]="malariaCaseNotificationProgramId"
+      [orgUnit]="currentUserOrgUnitId ? currentUserOrgUnitId : ''"
+      ouMode="DESCENDANTS"
+      [showFilters]="true"
+      [dataQueryFilters]="dataQueryFilters"
+      [lineListRowActionFilterConfig]="lineListRowActionFilterConfig"
+      actionOptionOrientation="BUTTON"
+      [actionOptions]="visibleActionOptions"
+      (actionSelected)="onActionSelected($event)"
+    ></ng-dhis2-ui-line-list>
+  </main>
+ 
+ <!-- <app-selection-filters-ui
   [startDate]="'2024-03-01'"
   [orgUnitFieldTitle]="'Report Organisation Unit Selection'"
   [endDate]="'2025-02-28'"
@@ -18,7 +32,7 @@
     { label: 'Delete', destructive: true }
   ]"
   [ouMode]="'DESCENDANTS'"
-></ng-dhis2-ui-line-list>
+></ng-dhis2-ui-line-list> -->
 
 <!-- <h5>Header Bar component</h5> -->
 <!-- <ng-dhis2-ui-header-bar></ng-dhis2-ui-header-bar>
@@ -46,12 +60,12 @@
   (confirm)="onSelectPeriods($event)"
 ></ng-dhis2-ui-period-selector-modal> -->
 
-<h5>Organisation unit selector component</h5>
+<!-- <h5>Organisation unit selector component</h5>
 <ng-dhis2-ui-org-unit-selector
   [selectedOrgUnits]="selectedOrgUnits"
   [orgUnitSelectionConfig]="orgUnitSelectionConfig"
   (selectOrgUnits)="onSelectOrgUnits($event)"
-></ng-dhis2-ui-org-unit-selector>
+></ng-dhis2-ui-org-unit-selector> -->
 <!-- 
 <ng-dhis2-ui-org-unit-selector-modal
   [selectedOrgUnits]="selectedOrgUnits"
@@ -326,13 +340,13 @@
   class="w-full"
 /> -->
 
- <ng-dhis2-ui-program-entry-form
+ <!-- <ng-dhis2-ui-program-entry-form
       [event]="'Q6a515VSBSH'"
       [enrollment]="'oWmjB3QXKPp'"
       [config]="formConfig"
-    />
+    /> -->
 
-<div class="p-4">
+<!-- <div class="p-4">
   <ng-dhis2-ui-line-list
     [programId]="'bWW1WxiP9lY'"
     [orgUnit]="'m0frOspS7JY'"
@@ -343,7 +357,7 @@
     [ouMode]="'DESCENDANTS'"
     [showFilters]="true"
     (actionSelected)="onActionSelected($event)"
-  ></ng-dhis2-ui-line-list>
+  ></ng-dhis2-ui-line-list> -->
 <!-- 
   <div class="p-3">
     <ng-dhis2-ui-breadcrumb
@@ -362,4 +376,4 @@
     />
   </div> -->
   <!--</div> -->
-</div>
+<!-- </div> -->

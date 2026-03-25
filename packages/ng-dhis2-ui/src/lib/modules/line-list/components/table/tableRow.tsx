@@ -8,6 +8,7 @@ export const TableRow = ({
   columns,
   getTextColorFromBackGround,
   actionOptions,
+  rowActionFilterConfig,
   actionOptionOrientation,
   actionSelected,
   isChecked,
@@ -33,6 +34,7 @@ export const TableRow = ({
               {actionOptions && showActionButtons && (
                 <DataTableActions
                   actionOptions={actionOptions}
+                  rowActionFilterConfig={rowActionFilterConfig}
                   data={row}
                   actionOptionOrientation={actionOptionOrientation}
                   onClick={(option) => {

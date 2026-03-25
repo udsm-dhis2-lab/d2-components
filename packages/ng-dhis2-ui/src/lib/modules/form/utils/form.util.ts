@@ -144,6 +144,7 @@ export class FormUtil {
         min: field.min,
         max: field.max,
         maxLength: field.maxLength,
+        allowFutureDate: field.allowFutureDate,
       });
     });
   }
