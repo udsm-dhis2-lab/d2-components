@@ -47,7 +47,7 @@ export class D2Web {
       instance.setConfig(config);
 
       let axiosInstance = axios.create(
-        config.httpClientConfig as AxiosDefaults
+        config.httpClientConfig as AxiosDefaults,
       );
 
       /**
@@ -64,11 +64,11 @@ export class D2Web {
       });
 
       const indexDb = new D2IndexDb(
-        newWebConfig.indexDBConfig as ID2IndexDbConfig
+        newWebConfig.indexDBConfig as ID2IndexDbConfig,
       );
 
       axiosInstance = axios.create(
-        newWebConfig.httpClientConfig as AxiosDefaults
+        newWebConfig.httpClientConfig as AxiosDefaults,
       );
 
       instance.setHttpInstance(axiosInstance, indexDb);
@@ -122,7 +122,7 @@ export class D2Web {
       }
     } catch (e) {
       throw new Error(
-        'Current user information could not be found or determined'
+        'Current user information could not be found or determined',
       );
     }
   }
