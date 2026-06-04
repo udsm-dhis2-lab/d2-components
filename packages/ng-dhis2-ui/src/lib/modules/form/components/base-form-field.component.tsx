@@ -1388,30 +1388,30 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
             const htmlValue =
               value != null && String(value).trim() !== ''
                 ? this.formatValueForHtmlInputFromDhis(
-                  String(value),
-                  isDateTimeField
-                )
+                    String(value),
+                    isDateTimeField
+                  )
                 : '';
 
             const htmlMin =
               f.min != null && String(f.min).trim() !== ''
                 ? this.formatValueForHtmlInputFromDhis(
-                  String(f.min),
-                  isDateTimeField
-                )
+                    String(f.min),
+                    isDateTimeField
+                  )
                 : undefined;
 
             const htmlMax = allowFutureDate
               ? undefined
               : f.max
-                ? this.pickEarlierDateLimit(
+              ? this.pickEarlierDateLimit(
                   this.formatValueForHtmlInputFromDhis(
                     String(f.max),
                     isDateTimeField
                   ),
                   this.getNowForHtmlDateInput(isDateTimeField)
                 )
-                : this.getNowForHtmlDateInput(isDateTimeField);
+              : this.getNowForHtmlDateInput(isDateTimeField);
 
             return (
               <InputField
@@ -1545,18 +1545,18 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
   }
 
   /**
- * Normalizes value from the HTML input into DHIS storage format.
- *
- * For date:
- *   - Input: "YYYY-MM-DD"
- *   - Output: "YYYY-MM-DD"
- *
- * For datetime:
- *   - Input: "YYYY-MM-DDTHH:mm" (local)
- *   - Output: ISO string in UTC: "YYYY-MM-DDTHH:mm:ss.sssZ"
- *
- * If allowFutureDate = false, any value beyond "now" is clamped to now.
- */
+   * Normalizes value from the HTML input into DHIS storage format.
+   *
+   * For date:
+   *   - Input: "YYYY-MM-DD"
+   *   - Output: "YYYY-MM-DD"
+   *
+   * For datetime:
+   *   - Input: "YYYY-MM-DDTHH:mm" (local)
+   *   - Output: ISO string in UTC: "YYYY-MM-DDTHH:mm:ss.sssZ"
+   *
+   * If allowFutureDate = false, any value beyond "now" is clamped to now.
+   */
   normalizeDateValueFromHtmlInput(
     inputValue: string | null | undefined,
     isDateTimeField: boolean,
@@ -1587,21 +1587,47 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
       return null;
     }
 
-    // Interpret as LOCAL time
-    const localDate = new Date(trimmed);
-    if (Number.isNaN(localDate.getTime())) {
+    // Interpret selected datetime as EAT, not UTC/GMT
+    const eatDateTimeValue = `${trimmed}:00.000+03:00`;
+
+    const eatDate = new Date(eatDateTimeValue);
+
+    if (Number.isNaN(eatDate.getTime())) {
       return null;
     }
 
     if (!allowFutureDate) {
       const now = new Date();
-      if (localDate.getTime() > now.getTime()) {
-        return now.toISOString();
+
+      if (eatDate.getTime() > now.getTime()) {
+        return this.getNowInEatIsoString();
       }
     }
 
-    // Store as UTC ISO string with millis, e.g. "2025-11-26T21:01:00.000Z"
-    return localDate.toISOString();
+    return eatDateTimeValue;
+  }
+
+  private getNowInEatIsoString(): string {
+    const formatter = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Africa/Dar_es_Salaam',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hourCycle: 'h23',
+    });
+
+    const parts = formatter.formatToParts(new Date()).reduce((acc, part) => {
+      if (part.type !== 'literal') {
+        acc[part.type] = part.value;
+      }
+
+      return acc;
+    }, {} as Record<string, string>);
+
+    return `${parts['year']}-${parts['month']}-${parts['day']}T${parts['hour']}:${parts['minute']}:${parts['second']}.000+03:00`;
   }
 
   async searchForDuplicates(value: string) {
