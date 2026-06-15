@@ -91,6 +91,7 @@ export class LineListTableComponent extends ReactWrapperModule implements OnChan
   @Input() showEnrollmentDates = true;
   @Input() showDownloadButton = false;
   @Input() searcheableDataElements: string[] = [];
+  @Input() customDisplayInReportsIds?: string[];
   private reactStateUpdaters: any = null;
 
   setReactStateUpdaters = (updaters: any) => {
@@ -437,7 +438,8 @@ export class LineListTableComponent extends ReactWrapperModule implements OnChan
                 this.programId,
                 pager,
                 metaData,
-                this.searcheableDataElements
+                this.searcheableDataElements,
+                this.customDisplayInReportsIds
               );
 
             setFilteredColumns((prev) =>
