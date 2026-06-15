@@ -17,7 +17,8 @@ export const getTrackedEntityTableData = (
   programId: string,
   pager: any,
   metaData: Program,
-  searcheableDataElements: string[]
+  searcheableDataElements: string[],
+  customDisplayInReportsIds?: string[]
 ): {
   columns: ColumnDefinition[];
   data: TableRow[];
@@ -41,11 +42,16 @@ export const getTrackedEntityTableData = (
       key: trackedEntityAttribute.id,
     }));
 
+  const shouldIncludeDataElement = (psde: any): boolean =>
+  customDisplayInReportsIds !== undefined
+    ? customDisplayInReportsIds.includes(psde.dataElement.id)
+    : psde.displayInReports;
+
   const tableSearcheableDataElements = metaData
     .programStages!.sort((a, b) => a.sortOrder - b.sortOrder)
     .flatMap((stage) =>
       stage
-        .programStageDataElements!.filter((psde) => psde.displayInReports)
+        .programStageDataElements!.filter(shouldIncludeDataElement)
         .sort((a, b) => a.sortOrder - b.sortOrder)
         .map((psde) => ({
           label:
@@ -62,7 +68,7 @@ export const getTrackedEntityTableData = (
     .programStages!.sort((a, b) => a.sortOrder - b.sortOrder)
     .flatMap((stage) =>
       stage
-        .programStageDataElements!.filter((psde) => psde.displayInReports)
+        .programStageDataElements!.filter(shouldIncludeDataElement)
         .sort((a, b) => a.sortOrder - b.sortOrder)
         .map((psde) => ({
           label:
@@ -71,16 +77,29 @@ export const getTrackedEntityTableData = (
         }))
     );
 
-  const dataElementOptions = metaData.displayInListDataElements.map(
-    (element) => ({
-      id: element.id,
-      options: element.optionSet?.options.map((opt) => ({
-        name: opt.name,
-        code: opt.code,
-        color: opt.style?.color,
-      })),
-    })
-  );
+  // const dataElementOptions = metaData.displayInListDataElements.map(
+  //   (element) => ({
+  //     id: element.id,
+  //     options: element.optionSet?.options.map((opt) => ({
+  //       name: opt.name,
+  //       code: opt.code,
+  //       color: opt.style?.color,
+  //     })),
+  //   })
+  // );
+  const dataElementOptions = (metaData.programStages ?? [])
+  .flatMap((stage) => stage.programStageDataElements ?? [])
+  .filter(
+    (psde) => psde.dataElement && shouldIncludeDataElement(psde)
+  )
+  .map(({ dataElement }) => ({
+    id: dataElement.id,
+    options: dataElement.optionSet?.options?.map((option) => ({
+      name: option.name,
+      code: option.code,
+      color: option.style?.color,
+    })) ?? [],
+  }));
 
   const tableColumns = [
     {
