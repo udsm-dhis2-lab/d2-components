@@ -385,6 +385,7 @@ export class ProgramEntryFormSectionUtil {
         iTrackedEntityFormFieldBase.valueType!,
         hasOptions
       ),
+      allowFutureDate: programTrackedEntityAttribute.allowFutureDate === true,
       extension: fieldExtension,
       generated: !!tea.generated,
       unique: !!tea.unique,
