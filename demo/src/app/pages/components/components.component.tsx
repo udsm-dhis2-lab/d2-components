@@ -50,45 +50,44 @@ export class ComponentsComponent implements OnInit {
   ];
   triggerRefetch = false;
 
-  pconfig = new ProgramEntryFormConfig({
+  pcofig = new ProgramEntryFormConfig({
     program: 'A3olldDSHQg',
     programStage: 'NtZXBym2KfD',
     hideRegistrationUnit: true,
     formType: 'EVENT',
     displayType: 'FLAT',
     autoComplete: true,
-    autoAssignedValues: [
-      {
-        field: 'orgUnit',
-        value: 'aaaaaaaaaaaaaaaaaa',
-      },
-    ],
+    // autoAssignedValues: [
+    //   {
+    //     field: 'orgUnit',
+    //     value: 'aaaaaaaaaaaaaaaaaa',
+    //   },
+    // ],
   });
 
   formConfig = new ProgramEntryFormConfig({
-    program: 'Gy65kx8gQv6',
-    programStage: 'edx4DaMDAyo',
-    hideRegistrationUnit: true,
-    formType: 'EVENT',
+    program: 't1pTvYbv08Z',
+    // programStage: 'edx4DaMDAyo',
+    formType: 'TRACKER',
     displayType: 'FLAT',
     autoComplete: true,
-    autoAssignedValues: [
-      {
-        field: 'orgUnit',
-        value: 'xSIt9MfMKiM',
-      },
-      {
-        field: 'occurredAt',
-        value: format(new Date(), 'yyyy-MM-dd'),
-      },
-    ],
-    formFieldExtensions: [
-      {
-        id: 'seUJl7AEZtS',
-        accept: ['.pdf'],
-        sizeLimit: 2 * 1024 * 1024,
-      },
-    ],
+    // autoAssignedValues: [
+    //   {
+    //     field: 'orgUnit',
+    //     value: 'xSIt9MfMKiM',
+    //   },
+    //   {
+    //     field: 'occurredAt',
+    //     value: format(new Date(), 'yyyy-MM-dd'),
+    //   },
+    // ],
+    // formFieldExtensions: [
+    //   {
+    //     id: 'seUJl7AEZtS',
+    //     accept: ['.pdf'],
+    //     sizeLimit: 2 * 1024 * 1024,
+    //   },
+    // ],
   });
 
   completedTrainingFilter = [
