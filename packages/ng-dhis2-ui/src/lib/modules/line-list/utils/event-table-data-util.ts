@@ -62,6 +62,9 @@ export const getEvents = (
   const dataElementsData: TableRow[] = events.map((event: any, idx: number) => {
     const row: TableRow = {
       event: { value: event.event },
+        responseData: {
+         value: event,
+       },
       index: {
         value: (pager.page - 1) * pager.pageSize + idx + 1,
       },
