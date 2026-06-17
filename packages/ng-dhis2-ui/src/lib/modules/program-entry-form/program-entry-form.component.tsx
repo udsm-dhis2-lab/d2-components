@@ -48,6 +48,7 @@ export class ProgramEntryFormModule {
   event = input<string>();
   enrollment = input<string>();
   orgUnit = input<string>();
+  codeGeneratorOrgUnit = input<string>();
   customOrgUnitRoots = input<CustomOrgUnitConfig[]>();
   formMetaData = input<IFormMetadata>();
   collapsibleSections = input<boolean>(false);
@@ -434,13 +435,39 @@ export class ProgramEntryFormModule {
     }
   }
 
+  async #setReservedValuesForCodeGeneration(
+  instance: TrackedEntityInstance
+): Promise<TrackedEntityInstance> {
+  const orgUnitForCodeGeneration =
+    this.codeGeneratorOrgUnit() || this.orgUnit();
+
+  const reservedValueQuery = this.d2.trackerModule.trackedEntity.setProgram(
+    this.config().program
+  );
+
+  if (orgUnitForCodeGeneration) {
+    reservedValueQuery.setOrgUnit(orgUnitForCodeGeneration);
+  }
+
+  const reservedValues = await reservedValueQuery.generateReservedValues(
+    instance
+  );
+
+  reservedValues.forEach((reserved) => {
+    instance.setAttributeValue(reserved.ownerUid, reserved.value);
+  });
+
+  return instance;
+}
+
   async #getTrackerInstance(): Promise<TrackedEntityInstance> {
     this.instanceQuery = this.d2.trackerModule.trackedEntity
       .setProgram(this.config().program)
       .setOrgUnit(this.orgUnit() as string);
 
     if (!this.trackedEntity()) {
-      return await this.instanceQuery.create();
+       const instance = await this.instanceQuery.create();
+       return await this.#setReservedValuesForCodeGeneration(instance);
     }
 
     const instanceResult = (
@@ -450,12 +477,16 @@ export class ProgramEntryFormModule {
     ).data as TrackedEntityInstance;
 
     if (!instanceResult) {
-      return await this.instanceQuery.create();
+      const instance = await this.instanceQuery.create();
+      return await this.#setReservedValuesForCodeGeneration(instance);
     }
 
-    const instance = await this.instanceQuery
-      .setInstanceFields(this.metaData()?.program as Program)
-      .setReservedValues();
+    this.instanceQuery
+      .setInstanceFields(this.metaData()?.program as Program);
+
+     const instance = await this.#setReservedValuesForCodeGeneration(
+    this.instanceQuery.instance
+  );
 
     if (this.orgUnit()) {
       instance.setOrgUnit(this.orgUnit() as string);
