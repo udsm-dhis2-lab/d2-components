@@ -1,0 +1,41 @@
+:root {
+  --ifm-color-primary: #11605e;
+  --ifm-color-primary-dark: #0f5654;
+  --ifm-color-primary-darker: #0e514f;
+  --ifm-color-primary-darkest: #0b4341;
+  --ifm-color-primary-light: #136a68;
+  --ifm-color-primary-lighter: #146f6d;
+  --ifm-color-primary-lightest: #177d7a;
+  --ifm-font-family-base: Inter, system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', sans-serif;
+}
+
+.hero {
+  background: #0e3f48;
+  color: #fff;
+}
+
+.hero__subtitle {
+  color: #d7eceb;
+}
+
+.button.button--secondary {
+  color: #0e3f48;
+}
+
+.package-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.package-card {
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.package-card h3 {
+  margin-top: 0;
+}
