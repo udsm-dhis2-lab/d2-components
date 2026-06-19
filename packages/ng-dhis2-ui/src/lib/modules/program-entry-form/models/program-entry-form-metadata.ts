@@ -241,6 +241,14 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
               'ToOne'
             )
             .with(
+              this.d2.programModule.programSection.select(['id', 'code' ,'name']),
+              'ToOne'
+            )
+            .with(
+              this.d2.programModule.programStageSection.select(['id', 'code' , 'name']),
+              'ToOne'
+            )
+            .with(
               this.d2.optionSetModule.optionGroup
                 .select(['id'])
                 .with(
@@ -445,14 +453,17 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
   }
 
   toJson(): IProgramEntryFormMetaData {
+    const sections = this.sections;
+    const programStageSections = this.programStageSections;
+
     return {
       id: this.program?.id,
       name: this.program?.name,
       description: this.program?.description,
       program: this.program,
       formFields: this.formFields,
-      sections: this.sections,
-      programStageSections: this.programStageSections,
+      sections,
+      programStageSections,
       rules: this.rules,
     };
   }
