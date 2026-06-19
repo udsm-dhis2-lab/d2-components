@@ -1,9 +1,27 @@
+@let entryFormConfig = programEntryFormConfig();
+@let collapsibleSectionConfig = collapsibleSections();
+@let optionCascadeConfigMap = optionCascadeConfigs();
+@let entryFormMetaData = programEntryFormMetaData();
+@let entryFormFields = fields();
+@let formDataValues = dataValues();
+@let dataEntityId = dataId();
+@let customOrgUnitRootIds = customOrgUnitRoots();
+@let programRuleActionList = ruleActions();
+@let activeProgram = program();
+@let entryFormCoordinatePickerGeoConfig = coordinatePickerGeoConfig();
+
 <ng-dhis2-ui-form
-  [fields]="fields()"
+  [programEntryFormConfig]="entryFormConfig"
+  [collapsibleSections]="collapsibleSectionConfig"
+  [optionCascadeConfigs]="optionCascadeConfigMap"
+  [programEntryFormMetaData]="entryFormMetaData"
+  [fields]="entryFormFields"
   [form]="formGroup"
-  [dataEntities]="dataValues()"
-  [dataId]="dataId()"
-  [customOrgUnitRoots]="customOrgUnitRoots()"
-  [programRuleActions]="ruleActions()"
+  [dataEntities]="formDataValues"
+  [dataId]="dataEntityId"
+  [customOrgUnitRoots]="customOrgUnitRootIds"
+  [coordinatePickerGeoConfig]="entryFormCoordinatePickerGeoConfig"
+  [programRuleActions]="programRuleActionList"
+  [program]="activeProgram"
   (formUpdate)="onFormUpdate()"
 />

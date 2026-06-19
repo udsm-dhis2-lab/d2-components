@@ -3,6 +3,7 @@ import {
   EventEmitter,
   inject,
   Input,
+  OnChanges,
   Output,
   SimpleChanges,
 } from '@angular/core';
@@ -15,6 +16,7 @@ import {
   DHIS2Event,
   EnrollmentStatus,
   EventStatus,
+  LineListRowActionFilterConfig,
   OuMode,
   Pager,
   Program,
@@ -50,7 +52,7 @@ import { firstValueFrom } from 'rxjs';
   styleUrls: ['./line-list.component.scss'],
   standalone: false,
 })
-export class LineListTableComponent extends ReactWrapperModule {
+export class LineListTableComponent extends ReactWrapperModule implements OnChanges {
   @Input() triggerToken!: string;
   @Input() programId!: string;
   @Input() orgUnit!: string;
@@ -62,6 +64,8 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() startDate?: string;
   @Input() endDate?: string;
   @Input() dataQueryFilters?: DataQueryFilter[] = [];
+  @Input() lineListRowActionFilterConfig?: LineListRowActionFilterConfig;
+  @Input() hydrateForActionFiltering = true;
   @Input() ouMode?: string;
   @Input() isButtonLoading = false;
   @Input() buttonFilter!: string;
@@ -87,6 +91,8 @@ export class LineListTableComponent extends ReactWrapperModule {
   @Input() showEnrollmentDates = true;
   @Input() showDownloadButton = false;
   @Input() searcheableDataElements: string[] = [];
+  @Input() columnNameSource: 'NAME' | 'FORM_NAME' = 'NAME';
+  @Input() customDisplayInReportsIds?: string[];
   private reactStateUpdaters: any = null;
 
   setReactStateUpdaters = (updaters: any) => {
@@ -171,6 +177,12 @@ export class LineListTableComponent extends ReactWrapperModule {
     const [tempDataQueryFiltersState, setTempDataQueryFiltersState] = useState<
       DataQueryFilter[]
     >(this.dataQueryFilters as DataQueryFilter[]);
+
+    const [rowActionFilterConfig, setRowActionFilterConfig] =
+      useState<LineListRowActionFilterConfig>(
+        this.lineListRowActionFilterConfig as LineListRowActionFilterConfig
+      );
+
     const [startDateState, setStartDateState] = useState<string | undefined>(
       this.startDate
     );
@@ -305,7 +317,8 @@ export class LineListTableComponent extends ReactWrapperModule {
               { data: eventsResponse },
               this.programStageId as string,
               pager,
-              metaData
+              metaData,
+              this.columnNameSource
             );
 
             // const filterableColumnIdsSet = new Set(
@@ -427,7 +440,9 @@ export class LineListTableComponent extends ReactWrapperModule {
                 this.programId,
                 pager,
                 metaData,
-                this.searcheableDataElements
+                this.searcheableDataElements,
+                this.customDisplayInReportsIds,
+                this.columnNameSource
               );
 
             setFilteredColumns((prev) =>
@@ -818,6 +833,7 @@ export class LineListTableComponent extends ReactWrapperModule {
               setPager: setPager,
               getTextColorFromBackGround: getTextColorFromBackGround,
               actionOptions: this.actionOptions,
+              rowActionFilterConfig: this.lineListRowActionFilterConfig,
               actionOptionOrientation: this.actionOptionOrientation,
               actionSelected: this.actionSelected,
               selectable: selectable,

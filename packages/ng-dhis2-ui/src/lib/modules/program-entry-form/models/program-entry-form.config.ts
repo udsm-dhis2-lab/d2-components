@@ -3,6 +3,8 @@
 // license that can be found in the LICENSE file.
 
 import { FormFieldExtension } from '../../form';
+import { CoordinatePickerGeoConfig } from '../../form/components/coordinate-field-component';
+import { OptionsPathCascadeConfig } from '../../form/models/field-cascade.types';
 
 export type AutoAssignedValues = { field: string; value: string };
 
@@ -13,12 +15,16 @@ export interface IProgramEntryFormConfig {
   formType: 'TRACKER' | 'EVENT';
   hideRegistrationUnit?: boolean;
   hideEnrollmentDate?: boolean;
+  hideGeometryField?: boolean;
   hideTrackedEntityTypeAttributes?: boolean;
   disableRegistrationUnit?: boolean;
+  disableGeometryField?: boolean;
   disableEnrollmentDate?: boolean;
   disabledIncidentDate?: boolean;
   excludeProgramStages?: boolean;
   excludeInheritedAttributes?: boolean;
+  disableEventDate?: boolean;
+  hideEventDate?: boolean;
   includedProgramStages?: string[];
   submitButtonLabel?: string;
   cancelButtonLabel?: string;
@@ -31,6 +37,8 @@ export interface IProgramEntryFormConfig {
   autoComplete?: boolean;
   formFieldExtensions?: FormFieldExtension[];
   updateTeiOrgUnit?: boolean;
+  optionCascadeConfigs?: OptionsPathCascadeConfig[];
+  coordinatePickerGeoConfig?: CoordinatePickerGeoConfig;
 }
 export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   program!: string;
@@ -39,10 +47,15 @@ export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   formType!: 'TRACKER' | 'EVENT';
   hideRegistrationUnit?: boolean;
   hideEnrollmentDate?: boolean;
+  hideIncidentDate?: boolean;
+  hideGeometryField?: boolean;
+  disableGeometryField?: boolean;
   hideTrackedEntityTypeAttributes?: boolean;
   disableRegistrationUnit?: boolean;
   disableEnrollmentDate?: boolean;
   disabledIncidentDate?: boolean;
+  disableEventDate?: boolean;
+  hideEventDate?: boolean;
   excludeProgramStages?: boolean;
   excludeInheritedAttributes?: boolean;
   includedProgramStages?: string[];
@@ -56,7 +69,9 @@ export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   hideCustomAssignedFields?: boolean;
   autoComplete?: boolean;
   formFieldExtensions?: FormFieldExtension[];
-  updateTeiOrgUnit: boolean = false;
+  updateTeiOrgUnit = false;
+  optionCascadeConfigs?: OptionsPathCascadeConfig[];
+  coordinatePickerGeoConfig?: CoordinatePickerGeoConfig;
 
   constructor(config: IProgramEntryFormConfig) {
     Object.assign(this, config);

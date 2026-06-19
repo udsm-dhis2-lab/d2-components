@@ -19,6 +19,8 @@ import { Subject, takeUntil } from 'rxjs';
 import { IFormField } from '../../interfaces';
 import { FieldConfig, IMetadataRuleAction } from '../../models';
 import { CustomOrgUnitConfig } from '../../models/org-unit.model';
+import { OptionsPathCascadeConfig, OptionsPathCascadeConfigMap } from '../../models/field-cascade.types';
+import { CoordinatePickerGeoConfig } from '../../components/coordinate-field-component';
 
 @Component({
   selector: 'ng-dhis2-ui-form-field',
@@ -38,6 +40,14 @@ export class FormFieldComponent implements OnInit, OnChanges, OnDestroy {
   maxDate = input(new Date());
   dataId = input<string>();
   customOrgUnitRoots = input<CustomOrgUnitConfig[]>();
+  //TODO: FIND BETTER WAY TO PASS PROGRAM TO FIELDS i.e field extensions
+  program = input<string>()
+  optionCascadeConfigs = input<OptionsPathCascadeConfig[]>([]);
+  optionCascadeConfigMap = input<OptionsPathCascadeConfigMap>(
+    {} as OptionsPathCascadeConfigMap
+  );
+  coordinatePickerGeoConfig = input<CoordinatePickerGeoConfig>();
+  fieldControlKeyById = input<Record<string, string>>({});
   color = 'primary';
   @Output() fieldUpdate: EventEmitter<FormGroup> =
     new EventEmitter<FormGroup>();

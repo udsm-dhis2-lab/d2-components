@@ -1,7 +1,10 @@
-<form [formGroup]="form()" class="{{ configuration().directionClassName }}">
-  <!-- form name -->
+<!-- <form [formGroup]="form()" class="{{ configuration().directionClassName }}">
   <div class="form-name">
     <h2>{{ configuration().formName }}</h2>
+  </div>
+
+  <div>
+    {{ formMetaData().sections }}
   </div>
   <div
     *ngFor="let field of sanitizedFields"
@@ -15,10 +18,1041 @@
       [dataEntities]="dataEntities()"
       [dataId]="dataId()"
       [customOrgUnitRoots]="customOrgUnitRoots()"
+      [optionCascadeConfigMap]="optionCascadeConfigMap()"
+      [program]="program()"
       [programRuleActions]="programRuleActions()"
       [isCheckBoxButton]="shouldRenderAsCheckBoxesButton()"
       (fieldUpdate)="onFieldUpdate($event, field)"
       (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
     />
   </div>
+</form> -->
+
+<!-- <form [formGroup]="form()" class="form {{ configuration().directionClassName }}">
+  <div class="form__header">
+    <h2 class="form__title">{{ configuration().formName }}</h2>
+  </div>
+
+  @if (programEntryFormMetaData(); as meta) {
+
+    @if (meta.programStageSections?.length) {
+      @for (section of meta.programStageSections; track section?.id ?? $index) {
+        <section class="form__section">
+          @if (section?.name) {
+            <div class="form__field-group-name">
+              {{ section.name }}
+            </div>
+          }
+
+          <div class="form__section-content">
+            @if (section.formFields?.length) {
+              @for (field of section.formFields; track field?.id ?? $index) {
+                <div class="form__field form-field-{{ configuration().direction }}">
+                  <ng-dhis2-ui-form-field
+                    [field]="field"
+                    [fieldConfig]="configuration().fieldConfig"
+                    [form]="form()"
+                    [fieldClass]="fieldClass()"
+                    [dataEntities]="dataEntities()"
+                    [dataId]="dataId()"
+                    [customOrgUnitRoots]="customOrgUnitRoots()"
+                    [optionCascadeConfigMap]="optionCascadeConfigMap()"
+                    [programRuleActions]="programRuleActions()"
+                    [isCheckBoxButton]="shouldRenderAsCheckBoxesButton()"
+                    (fieldUpdate)="onFieldUpdate($event, field)"
+                    (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+                  />
+                </div>
+              } @empty {
+                <div class="form__empty">No fields available for this section.</div>
+              }
+            } @else {
+              <div class="form__empty">No fields available for this section.</div>
+            }
+          </div>
+        </section>
+      } @empty {
+        @for (field of sanitizedFields;  track field?.id ?? $index) {
+          <div class="form__field form-field-{{ configuration().direction }}">
+            <ng-dhis2-ui-form-field
+              [field]="field"
+              [fieldConfig]="configuration().fieldConfig"
+              [form]="form()"
+              [fieldClass]="fieldClass()"
+              [dataEntities]="dataEntities()"
+              [dataId]="dataId()"
+              [customOrgUnitRoots]="customOrgUnitRoots()"
+              [optionCascadeConfigMap]="optionCascadeConfigMap()"
+              [programRuleActions]="programRuleActions()"
+              [isCheckBoxButton]="shouldRenderAsCheckBoxesButton()"
+              (fieldUpdate)="onFieldUpdate($event, field)"
+              (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+            />
+          </div>
+        } @empty {
+          <div class="form__empty">No fields to display.</div>
+        }
+      }
+    } @else {
+      @for (field of sanitizedFields;  track field?.id ?? $index) {
+        <div class="form__field form-field-{{ configuration().direction }}">
+          <ng-dhis2-ui-form-field
+            [field]="field"
+            [fieldConfig]="configuration().fieldConfig"
+            [form]="form()"
+            [fieldClass]="fieldClass()"
+            [dataEntities]="dataEntities()"
+            [dataId]="dataId()"
+            [customOrgUnitRoots]="customOrgUnitRoots()"
+            [optionCascadeConfigMap]="optionCascadeConfigMap()
+            [programRuleActions]="programRuleActions()"
+            [isCheckBoxButton]="shouldRenderAsCheckBoxesButton()"
+            (fieldUpdate)="onFieldUpdate($event, field)"
+            (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+          />
+        </div>
+      } @empty {
+        <div class="form__empty">No fields to display.</div>
+      }
+    }
+
+  } @else {
+    <div class="form__empty">No metadata available</div>
+    @for (field of sanitizedFields;  track field?.id ?? $index) {
+      <div class="form__field form-field-{{ configuration().direction }}">
+        <ng-dhis2-ui-form-field
+          [field]="field"
+          [fieldConfig]="configuration().fieldConfig"
+          [form]="form()"
+          [fieldClass]="fieldClass()"
+          [dataEntities]="dataEntities()"
+          [dataId]="dataId()"
+          [customOrgUnitRoots]="customOrgUnitRoots()"
+          [optionCascadeConfigMap]="optionCascadeConfigMap()"
+          [programRuleActions]="programRuleActions()"
+          [isCheckBoxButton]="shouldRenderAsCheckBoxesButton()"
+          (fieldUpdate)="onFieldUpdate($event, field)"
+          (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+        />
+      </div>
+    } @empty {
+      <div class="form__empty">No fields to display.</div>
+    }
+  }
+</form> -->
+
+<!-- @if (programEntryFormConfig() && programEntryFormConfig()!.formType === 'EVENT') {
+  <form [formGroup]="form()" class="form {{ configuration().directionClassName }}">
+    <div class="form__header">
+      <h2 class="form__title">{{ configuration().formName }}</h2>
+    </div>
+
+    @if (programEntryFormMetaData(); as meta) {
+      @if (meta.programStageSections?.length) {
+        @for (section of meta.programStageSections; track section?.id ?? $index) {
+          <section class="form__section">
+            @if (section?.name) {
+              @if (collapsibleSections()) {
+                <button
+                  type="button"
+                  class="form__section-toggle"
+                  (click)="openSection(section, $index)"
+                  [attr.aria-expanded]="isSectionOpen(section, $index)"
+                >
+                  <span class="form__section-title">{{ section.name }}</span>
+                  <span
+                    class="form__chevron"
+                    [class.form__chevron--open]="isSectionOpen(section, $index)"
+                  ></span>
+                </button>
+              } @else {
+                <div class="form__field-group-name">
+                  {{ section.name }}
+                </div>
+              }
+            }
+
+            @if (!collapsibleSections() || isSectionOpen(section, $index)) {
+              <div class="form__section-content">
+                @if (section.formFields?.length) {
+                  @for (field of section.formFields; track field?.id ?? $index) {
+                    <div class="form__field form-field-{{ configuration().direction }}">
+                      <ng-dhis2-ui-form-field
+                        [field]="field"
+                        [fieldConfig]="configuration().fieldConfig"
+                        [form]="form()"
+                        [fieldClass]="fieldClass()"
+                        [dataEntities]="dataEntities()"
+                        [dataId]="dataId()"
+                        [customOrgUnitRoots]="customOrgUnitRoots()"
+                        [optionCascadeConfigMap]="optionCascadeConfigMap()"
+                        [programRuleActions]="programRuleActions()"
+                        [isCheckBoxButton]="shouldRenderAsCheckBoxesButton()"
+                        (fieldUpdate)="onFieldUpdate($event, field)"
+                        (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+                      />
+                    </div>
+                  } @empty {
+                    <div class="form__empty">No fields available for this section.</div>
+                  }
+                } @else {
+                  <div class="form__empty">No fields available for this section.</div>
+                }
+              </div>
+            }
+          </section>
+        } @empty {
+          @for (field of sanitizedFields; track field?.id ?? $index) {
+            <div class="form__field form-field-{{ configuration().direction }}">
+              <ng-dhis2-ui-form-field
+                [field]="field"
+                [fieldConfig]="configuration().fieldConfig"
+                [form]="form()"
+                [fieldClass]="fieldClass()"
+                [dataEntities]="dataEntities()"
+                [dataId]="dataId()"
+                [customOrgUnitRoots]="customOrgUnitRoots()"
+                [optionCascadeConfigMap]="optionCascadeConfigMap()"
+                [programRuleActions]="programRuleActions()"
+                [isCheckBoxButton]="shouldRenderAsCheckBoxesButton()"
+                (fieldUpdate)="onFieldUpdate($event, field)"
+                (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+              />
+            </div>
+          } @empty {
+            <div class="form__empty">No fields to display.</div>
+          }
+        }
+      } @else {
+        @for (field of sanitizedFields; track field?.id ?? $index) {
+          <div class="form__field form-field-{{ configuration().direction }}">
+            <ng-dhis2-ui-form-field
+              [field]="field"
+              [fieldConfig]="configuration().fieldConfig"
+              [form]="form()"
+              [fieldClass]="fieldClass()"
+              [dataEntities]="dataEntities()"
+              [dataId]="dataId()"
+              [customOrgUnitRoots]="customOrgUnitRoots()"
+              [optionCascadeConfigMap]="optionCascadeConfigMap()"
+              [programRuleActions]="programRuleActions()"
+              [isCheckBoxButton]="shouldRenderAsCheckBoxesButton()"
+              (fieldUpdate)="onFieldUpdate($event, field)"
+              (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+            />
+          </div>
+        } @empty {
+          <div class="form__empty">No fields to display.</div>
+        }
+      }
+
+    } @else {
+      <div class="form__empty">No metadata available</div>
+      @for (field of sanitizedFields; track field?.id ?? $index) {
+        <div class="form__field form-field-{{ configuration().direction }}">
+          <ng-dhis2-ui-form-field
+            [field]="field"
+            [fieldConfig]="configuration().fieldConfig"
+            [form]="form()"
+            [fieldClass]="fieldClass()"
+            [dataEntities]="dataEntities()"
+            [dataId]="dataId()"
+            [customOrgUnitRoots]="customOrgUnitRoots()"
+            [optionCascadeConfigMap]="optionCascadeConfigMap()"
+            [programRuleActions]="programRuleActions()"
+            [isCheckBoxButton]="shouldRenderAsCheckBoxesButton()"
+            (fieldUpdate)="onFieldUpdate($event, field)"
+            (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+          />
+        </div>
+      } @empty {
+        <div class="form__empty">No fields to display.</div>
+      }
+    }
+  </form>
+} @else if (programEntryFormConfig() && programEntryFormConfig()!.formType === 'TRACKER') {
+  <form [formGroup]="form()" class="form {{ configuration().directionClassName }}">
+    <div class="form__header">
+      <h2 class="form__title">{{ configuration().formName }}</h2>
+    </div>
+
+    @if (programEntryFormMetaData(); as meta) {
+      @if (meta.sections?.length) {
+        @for (section of meta.sections; track section?.id ?? $index) {
+          <section class="form__section">
+            @if (section?.name) {
+              @if (collapsibleSections()) {
+                <button
+                  type="button"
+                  class="form__section-toggle"
+                  (click)="openSection(section, $index)"
+                  [attr.aria-expanded]="isSectionOpen(section, $index)"
+                >
+                  <span class="form__section-title">{{ section.name }}</span>
+                  <span
+                    class="form__chevron"
+                    [class.form__chevron--open]="isSectionOpen(section, $index)"
+                  ></span>
+                </button>
+              } @else {
+                <div class="form__field-group-name">
+                  {{ section.name }}
+                </div>
+              }
+            }
+           
+            @if (!collapsibleSections() || isSectionOpen(section, $index)) {
+              <div class="form__section-content">
+                
+                @if (section.formFields?.length) {
+                  
+                  @for (field of section.formFields; track field?.id ?? $index) {
+                    <div>
+                    </div>
+                    <div class="form__field form-field-{{ configuration().direction }}">
+                      <ng-dhis2-ui-form-field
+                        [field]="field"
+                        [fieldConfig]="configuration().fieldConfig"
+                        [form]="form()"
+                        [fieldClass]="fieldClass()"
+                        [dataEntities]="dataEntities()"
+                        [dataId]="dataId()"
+                        [customOrgUnitRoots]="customOrgUnitRoots()"
+                        [optionCascadeConfigMap]="optionCascadeConfigMap()"
+                        [programRuleActions]="programRuleActions()"
+                        [isCheckBoxButton]="shouldRenderAsCheckBoxesButton()"
+                        (fieldUpdate)="onFieldUpdate($event, field)"
+                        (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+                      />
+                    </div>
+                  } @empty {
+                    <div class="form__empty">No fields available for this section.</div>
+                  }
+                } @else {
+                  <div class="form__empty">No fields available for this section.</div>
+                }
+              </div>
+            }
+          </section>
+        } @empty {
+          @for (field of sanitizedFields; track field?.id ?? $index) {
+            <div class="form__field form-field-{{ configuration().direction }}">
+              <ng-dhis2-ui-form-field
+                [field]="field"
+                [fieldConfig]="configuration().fieldConfig"
+                [form]="form()"
+                [fieldClass]="fieldClass()"
+                [dataEntities]="dataEntities()"
+                [dataId]="dataId()"
+                [customOrgUnitRoots]="customOrgUnitRoots()"
+                [optionCascadeConfigMap]="optionCascadeConfigMap()"
+                [programRuleActions]="programRuleActions()"
+                [isCheckBoxButton]="shouldRenderAsCheckBoxesButton()"
+                (fieldUpdate)="onFieldUpdate($event, field)"
+                (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+              />
+            </div>
+          } @empty {
+            <div class="form__empty">No fields to display.</div>
+          }
+        }
+      } @else {
+        @for (field of sanitizedFields; track field?.id ?? $index) {
+          <div class="form__field form-field-{{ configuration().direction }}">
+            <ng-dhis2-ui-form-field
+              [field]="field"
+              [fieldConfig]="configuration().fieldConfig"
+              [form]="form()"
+              [fieldClass]="fieldClass()"
+              [dataEntities]="dataEntities()"
+              [dataId]="dataId()"
+              [customOrgUnitRoots]="customOrgUnitRoots()"
+              [optionCascadeConfigMap]="optionCascadeConfigMap()"
+              [programRuleActions]="programRuleActions()"
+              [isCheckBoxButton]="shouldRenderAsCheckBoxesButton()"
+              (fieldUpdate)="onFieldUpdate($event, field)"
+              (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+            />
+          </div>
+        } @empty {
+          <div class="form__empty">No fields to display.</div>
+        }
+      }
+
+    } @else {
+      <div class="form__empty">No metadata available</div>
+      @for (field of sanitizedFields; track field?.id ?? $index) {
+        <div class="form__field form-field-{{ configuration().direction }}">
+          <ng-dhis2-ui-form-field
+            [field]="field"
+            [fieldConfig]="configuration().fieldConfig"
+            [form]="form()"
+            [fieldClass]="fieldClass()"
+            [dataEntities]="dataEntities()"
+            [dataId]="dataId()"
+            [customOrgUnitRoots]="customOrgUnitRoots()"
+            [optionCascadeConfigMap]="optionCascadeConfigMap()"
+            [programRuleActions]="programRuleActions()"
+            [isCheckBoxButton]="shouldRenderAsCheckBoxesButton()"
+            (fieldUpdate)="onFieldUpdate($event, field)"
+            (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+          />
+        </div>
+      } @empty {
+        <div class="form__empty">No fields to display.</div>
+      }
+    }
+  </form>
+} @else {
+  <form [formGroup]="form()" class="{{ configuration().directionClassName }}">
+    <div class="form-name">
+      <h2>{{ configuration().formName }}</h2>
+    </div>
+
+    <div>
+      {{ formMetaData().sections }}
+    </div>
+    <div
+      *ngFor="let field of sanitizedFields"
+      class="form-field-{{ configuration().direction }}"
+    >
+      <ng-dhis2-ui-form-field
+        [field]="field"
+        [fieldConfig]="configuration().fieldConfig"
+        [form]="form()"
+        [fieldClass]="fieldClass()"
+        [dataEntities]="dataEntities()"
+        [dataId]="dataId()"
+        [customOrgUnitRoots]="customOrgUnitRoots()"
+        [optionCascadeConfigMap]="optionCascadeConfigMap()"
+        [programRuleActions]="programRuleActions()"
+        [isCheckBoxButton]="shouldRenderAsCheckBoxesButton()"
+        (fieldUpdate)="onFieldUpdate($event, field)"
+        (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+      />
+    </div>
+  </form>
+} -->
+<!-- 
+@if (programEntryFormConfig() && programEntryFormConfig()!.formType === 'EVENT')
+{
+<form
+  [formGroup]="form()"
+  class="form {{ configuration().directionClassName }}"
+>
+  <div class="form__header">
+    <h2 class="form__title">{{ configuration().formName }}</h2>
+  </div>
+
+  @if (programEntryFormMetaData(); as meta) { @if
+  (meta?.programStageSections?.length) { @for (section of
+  meta?.programStageSections; track section?.id ?? $index) { @let sectionId =
+  'section-' + (section?.id ?? $index); @let descId = sectionId + '-desc'; @let
+  desc = section?.description; @let hasDesc = !!desc;
+
+  <section class="form__section" [attr.data-section-id]="sectionId">
+    @if (section?.name) { @if (collapsibleSections()) {
+    <button
+      type="button"
+      class="form__section-toggle"
+      (click)="openSection(section, $index)"
+      [attr.aria-expanded]="isSectionOpen(section, $index)"
+      [attr.aria-controls]="sectionId"
+      [attr.aria-describedby]="
+        hasDesc && isSectionOpen(section, $index) ? descId : null
+      "
+    >
+      <span class="form__section-title">{{ section.name }}</span>
+      <span
+        class="form__chevron"
+        [class.form__chevron--open]="isSectionOpen(section, $index)"
+      ></span>
+    </button>
+    } @else {
+    <div class="form__field-group-name">{{ section.name }} - {{ descId }}</div>
+    @if (hasDesc) {
+    <p class="form__section-description" [id]="descId">
+      {{ desc }}
+    </p>
+    } } } @if (!collapsibleSections() || isSectionOpen(section, $index)) { @if
+    (collapsibleSections() && hasDesc) {
+    <p class="form__section-description" [id]="descId">
+      {{ desc }}
+    </p>
+    }
+
+    <div class="form__section-content" [id]="sectionId">
+      @if (section.formFields?.length) { @for (field of
+      getVisibleSectionFields(section); track field?.id ?? $index) {
+      <div class="form__field form-field-{{ configuration().direction }}">
+                
+        <ng-dhis2-ui-form-field
+          [field]="field"
+          [fieldConfig]="configuration().fieldConfig"
+          [form]="form()"
+          [fieldClass]="fieldClass()"
+          [dataEntities]="dataEntities()"
+          [dataId]="dataId()"
+          [customOrgUnitRoots]="customOrgUnitRoots()"
+          [optionCascadeConfigMap]="optionCascadeConfigMap()"
+          [optionCascadeConfigs]="optionCascadeConfigs()"
+          [programRuleActions]="programRuleActions()"
+          [isCheckBoxButton]="shouldRenderAsCheckBoxesButton()"
+          (fieldUpdate)="onFieldUpdate($event, field)"
+          (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+        />
+      </div>
+      } @empty {
+      <div class="form__empty">No fields available for this section.</div>
+      } } @else {
+      <div class="form__empty">No fields available for this section.</div>
+      }
+    </div>
+    }
+  </section>
+  } @empty { @for (field of sanitizedFields; track field?.id ?? $index) {
+  <div class="form__field form-field-{{ configuration().direction }}">
+    <ng-dhis2-ui-form-field
+      [field]="field"
+      [fieldConfig]="configuration().fieldConfig"
+      [form]="form()"
+      [fieldClass]="fieldClass()"
+      [dataEntities]="dataEntities()"
+      [dataId]="dataId()"
+      [customOrgUnitRoots]="customOrgUnitRoots()"
+      [optionCascadeConfigMap]="optionCascadeConfigMap()"
+      [programRuleActions]="programRuleActions()"
+      [isCheckBoxButton]="shouldRenderAsCheckBoxesButton()"
+      (fieldUpdate)="onFieldUpdate($event, field)"
+      (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+    />
+  </div>
+  } @empty {
+  <div class="form__empty">No fields to display.</div>
+  } } } @else { @for (field of sanitizedFields; track field?.id ?? $index) {
+  <div class="form__field form-field-{{ configuration().direction }}">
+    <ng-dhis2-ui-form-field
+      [field]="field"
+      [fieldConfig]="configuration().fieldConfig"
+      [form]="form()"
+      [fieldClass]="fieldClass()"
+      [dataEntities]="dataEntities()"
+      [dataId]="dataId()"
+      [customOrgUnitRoots]="customOrgUnitRoots()"
+      [optionCascadeConfigMap]="optionCascadeConfigMap()"
+      [programRuleActions]="programRuleActions()"
+      [isCheckBoxButton]="shouldRenderAsCheckBoxesButton()"
+      (fieldUpdate)="onFieldUpdate($event, field)"
+      (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+    />
+  </div>
+  } @empty {
+  <div class="form__empty">No fields to display.</div>
+  } } } @else {
+  <div class="form__empty">No metadata available</div>
+  @for (field of sanitizedFields; track field?.id ?? $index) {
+  <div class="form__field form-field-{{ configuration().direction }}">
+    <ng-dhis2-ui-form-field
+      [field]="field"
+      [fieldConfig]="configuration().fieldConfig"
+      [form]="form()"
+      [fieldClass]="fieldClass()"
+      [dataEntities]="dataEntities()"
+      [dataId]="dataId()"
+      [customOrgUnitRoots]="customOrgUnitRoots()"
+      [optionCascadeConfigMap]="optionCascadeConfigMap()"
+      [programRuleActions]="programRuleActions()"
+      [isCheckBoxButton]="shouldRenderAsCheckBoxesButton()"
+      (fieldUpdate)="onFieldUpdate($event, field)"
+      (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+    />
+  </div>
+  } @empty {
+  <div class="form__empty">No fields to display.</div>
+  } }
 </form>
+} @else if (programEntryFormConfig() && programEntryFormConfig()!.formType ===
+'TRACKER') {
+<form
+  [formGroup]="form()"
+  class="form {{ configuration().directionClassName }}"
+>
+  <div class="form__header">
+    <h2 class="form__title">{{ configuration().formName }}</h2>
+  </div>
+
+  @if (programEntryFormMetaData(); as meta) { @if (meta?.sections?.length) {
+  @for (section of meta?.sections; track section?.id ?? $index) { @let sectionId
+  = 'section-' + (section?.id ?? $index); @let descId = sectionId + '-desc';
+  @let desc = section?.description; @let hasDesc = !!desc;
+
+  <section class="form__section" [attr.data-section-id]="sectionId">
+    @if (section?.name) { @if (collapsibleSections()) {
+    <button
+      type="button"
+      class="form__section-toggle"
+      (click)="openSection(section, $index)"
+      [attr.aria-expanded]="isSectionOpen(section, $index)"
+      [attr.aria-controls]="sectionId"
+      [attr.aria-describedby]="
+        hasDesc && isSectionOpen(section, $index) ? descId : null
+      "
+    >
+      <span class="form__section-title">{{ section.name }}</span>
+      <span
+        class="form__chevron"
+        [class.form__chevron--open]="isSectionOpen(section, $index)"
+      ></span>
+    </button>
+    } @else {
+    <div class="form__field-group-name">
+      {{ section.name }}
+    </div>
+    @if (hasDesc) {
+    <p class="form__section-description" [id]="descId">
+      {{ desc }}
+    </p>
+    } } } @if (!collapsibleSections() || isSectionOpen(section, $index)) { @if
+    (collapsibleSections() && hasDesc) {
+    <p class="form__section-description" [id]="descId">
+      {{ desc }}
+    </p>
+    }
+    <div class="form__section-content" [id]="sectionId">
+      @if (section.formFields?.length) { @for (field of
+      getVisibleSectionFields(section); track field?.id ?? $index) {
+      <div class="form__field form-field-{{ configuration().direction }}">
+        <ng-dhis2-ui-form-field
+          [field]="field"
+          [fieldConfig]="configuration().fieldConfig"
+          [form]="form()"
+          [fieldClass]="fieldClass()"
+          [dataEntities]="dataEntities()"
+          [dataId]="dataId()"
+          [customOrgUnitRoots]="customOrgUnitRoots()"
+          [optionCascadeConfigMap]="optionCascadeConfigMap()"
+          [programRuleActions]="programRuleActions()"
+          [isCheckBoxButton]="shouldRenderAsCheckBoxesButton()"
+          (fieldUpdate)="onFieldUpdate($event, field)"
+          (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+        />
+      </div>
+      } @empty {
+      <div class="form__empty">No fields available for this section.</div>
+      } } @else {
+      <div class="form__empty">No fields available for this section.</div>
+      }
+    </div>
+    }
+  </section>
+  } @empty { @for (field of sanitizedFields; track field?.id ?? $index) {
+  <div class="form__field form-field-{{ configuration().direction }}">
+    <ng-dhis2-ui-form-field
+      [field]="field"
+      [fieldConfig]="configuration().fieldConfig"
+      [form]="form()"
+      [fieldClass]="fieldClass()"
+      [dataEntities]="dataEntities()"
+      [dataId]="dataId()"
+      [customOrgUnitRoots]="customOrgUnitRoots()"
+      [optionCascadeConfigMap]="optionCascadeConfigMap()"
+      [programRuleActions]="programRuleActions()"
+      [isCheckBoxButton]="shouldRenderAsCheckBoxesButton()"
+      (fieldUpdate)="onFieldUpdate($event, field)"
+      (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+    />
+  </div>
+  } @empty {
+  <div class="form__empty">No fields to display.</div>
+  } } } @else { @for (field of sanitizedFields; track field?.id ?? $index) {
+  <div class="form__field form-field-{{ configuration().direction }}">
+
+    <ng-dhis2-ui-form-field
+      [field]="field"
+      [fieldConfig]="configuration().fieldConfig"
+      [form]="form()"
+      [fieldClass]="fieldClass()"
+      [dataEntities]="dataEntities()"
+      [dataId]="dataId()"
+      [customOrgUnitRoots]="customOrgUnitRoots()"
+      [optionCascadeConfigMap]="optionCascadeConfigMap()"
+      [programRuleActions]="programRuleActions()"
+      [isCheckBoxButton]="shouldRenderAsCheckBoxesButton()"
+      (fieldUpdate)="onFieldUpdate($event, field)"
+      (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+    />
+  </div>
+  } @empty {
+  <div class="form__empty">No fields to display.</div>
+  } } } @else {
+  <div class="form__empty">No metadata available</div>
+  @for (field of sanitizedFields; track field?.id ?? $index) {
+  <div class="form__field form-field-{{ configuration().direction }}">
+    <ng-dhis2-ui-form-field
+      [field]="field"
+      [fieldConfig]="configuration().fieldConfig"
+      [form]="form()"
+      [fieldClass]="fieldClass()"
+      [dataEntities]="dataEntities()"
+      [dataId]="dataId()"
+      [customOrgUnitRoots]="customOrgUnitRoots()"
+      [optionCascadeConfigMap]="optionCascadeConfigMap()"
+      [programRuleActions]="programRuleActions()"
+      [isCheckBoxButton]="shouldRenderAsCheckBoxesButton()"
+      (fieldUpdate)="onFieldUpdate($event, field)"
+      (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+    />
+  </div>
+  } @empty {
+  <div class="form__empty">No fields to display.</div>
+  } }
+</form>
+} @else {
+<form [formGroup]="form()" [class]="configuration().directionClassName">
+  @if (configuration()?.formName) {
+  <div class="form-name">
+    <h2>{{ configuration()?.formName }}</h2>
+  </div>
+  } @if (sanitizedFields?.length) { @for (field of sanitizedFields; track
+  field?.id ?? $index) {
+  <div class="form-field-{{ configuration().direction }}">
+    <ng-dhis2-ui-form-field
+      [field]="field"
+      [fieldConfig]="configuration().fieldConfig"
+      [form]="form()"
+      [fieldClass]="fieldClass()"
+      [dataEntities]="dataEntities()"
+      [dataId]="dataId()"
+      [customOrgUnitRoots]="customOrgUnitRoots()"
+      [optionCascadeConfigMap]="optionCascadeConfigMap()"
+      [programRuleActions]="programRuleActions()"
+      [isCheckBoxButton]="shouldRenderAsCheckBoxesButton()"
+      (fieldUpdate)="onFieldUpdate($event, field)"
+      (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+    />
+  </div>
+  } } @else {
+  <div class="text-sm text-gray-500">No fields to display.</div>
+  }
+</form>
+} -->
+
+@let entryFormConfig = programEntryFormConfig();
+@let entryFormMeta = programEntryFormMetaData();
+@let uiConfig = configuration();
+@let formGroupValue = form();
+
+@let isSectionsCollapsible = collapsibleSections();
+
+@let dataEntitiesValue = dataEntities();
+@let dataEntityId = dataId();
+@let orgUnitRootIds = customOrgUnitRoots();
+
+@let cascadeConfigMap = optionCascadeConfigMap();
+@let cascadeConfigs = optionCascadeConfigs();
+
+@let ruleActionList = programRuleActions();
+@let renderAsCheckboxButtons = shouldRenderAsCheckBoxesButton();
+
+@let entryFormCoordinatePickerGeoConfig = coordinatePickerGeoConfig();
+@let entryFormFieldControlKeyById = fieldControlKeyById();
+
+@if (entryFormConfig?.formType === 'EVENT') {
+  <form [formGroup]="formGroupValue" class="form {{ uiConfig.directionClassName }}">
+    <div class="form__header">
+      <h2 class="form__title">{{ uiConfig.formName }}</h2>
+    </div>
+
+    @if (entryFormMeta?.programStageSections?.length) {
+      @for (stageSection of entryFormMeta.programStageSections; track stageSection?.id ?? $index) {
+        @if (isSectionVisible(stageSection, 'PROGRAM_STAGE_SECTION')) {
+        @let sectionKey = stageSection?.id ?? $index;
+        @let sectionDomId = 'section-' + sectionKey;
+        @let descriptionDomId = sectionDomId + '-desc';
+        @let sectionDescription = stageSection?.description;
+        @let hasDescription = !!sectionDescription;
+
+        <section class="form__section" [attr.data-section-id]="sectionDomId">
+          @if (stageSection?.name) {
+            @if (isSectionsCollapsible) {
+              @let isOpen = isSectionOpen(stageSection, $index);
+
+              <button
+                type="button"
+                class="form__section-toggle"
+                (click)="openSection(stageSection, $index)"
+                [attr.aria-expanded]="isOpen"
+                [attr.aria-controls]="sectionDomId"
+                [attr.aria-describedby]="hasDescription && isOpen ? descriptionDomId : null"
+              >
+                <span class="form__section-title">{{ stageSection.name }}</span>
+                <span class="form__chevron" [class.form__chevron--open]="isOpen"></span>
+              </button>
+            } @else {
+              <div class="form__field-group-name">{{ stageSection.name }}</div>
+              @if (hasDescription) {
+                <p class="form__section-description" [id]="descriptionDomId">
+                  {{ sectionDescription }}
+                </p>
+              }
+            }
+          }
+
+          @let isOpen = !isSectionsCollapsible || isSectionOpen(stageSection, $index);
+          @if (isOpen) {
+            @if (isSectionsCollapsible && hasDescription) {
+              <p class="form__section-description" [id]="descriptionDomId">
+                {{ sectionDescription }}
+              </p>
+            }
+
+            <div class="form__section-content" [id]="sectionDomId">
+              @if (stageSection?.formFields?.length) {
+                @for (visibleField of getVisibleSectionFields(stageSection); track visibleField?.id ?? $index) {
+                  <div class="form__field form-field-{{ uiConfig.direction }}">
+                    <ng-dhis2-ui-form-field
+                      [field]="visibleField"
+                      [fieldConfig]="uiConfig.fieldConfig"
+                      [form]="formGroupValue"
+                      [fieldClass]="fieldClass()"
+                      [dataEntities]="dataEntitiesValue"
+                      [dataId]="dataEntityId"
+                      [customOrgUnitRoots]="orgUnitRootIds"
+                      [optionCascadeConfigMap]="cascadeConfigMap"
+                      [optionCascadeConfigs]="cascadeConfigs"
+                      [coordinatePickerGeoConfig]="entryFormCoordinatePickerGeoConfig"
+                      [fieldControlKeyById]="entryFormFieldControlKeyById"
+                      [programRuleActions]="ruleActionList"
+                      [isCheckBoxButton]="renderAsCheckboxButtons"
+                      (fieldUpdate)="onFieldUpdate($event, visibleField)"
+                      (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+                    />
+                  </div>
+                } @empty {
+                  <div class="form__empty">No fields available for this section.</div>
+                }
+              } @else {
+                <div class="form__empty">No fields available for this section.</div>
+              }
+            </div>
+          }
+        </section>
+        }
+      } @empty {
+        @for (fallbackField of sanitizedFields; track fallbackField?.id ?? $index) {
+          <div class="form__field form-field-{{ uiConfig.direction }}">
+            <ng-dhis2-ui-form-field
+              [field]="fallbackField"
+              [fieldConfig]="uiConfig.fieldConfig"
+              [form]="formGroupValue"
+              [fieldClass]="fieldClass()"
+              [dataEntities]="dataEntitiesValue"
+              [dataId]="dataEntityId"
+              [customOrgUnitRoots]="orgUnitRootIds"
+              [optionCascadeConfigMap]="cascadeConfigMap"
+              [coordinatePickerGeoConfig]="entryFormCoordinatePickerGeoConfig"
+              [fieldControlKeyById]="entryFormFieldControlKeyById"
+              [programRuleActions]="ruleActionList"
+              [isCheckBoxButton]="renderAsCheckboxButtons"
+              (fieldUpdate)="onFieldUpdate($event, fallbackField)"
+              (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+            />
+          </div>
+        } @empty {
+          <div class="form__empty">No fields to display.</div>
+        }
+      }
+    } @else {
+      @for (fallbackField of sanitizedFields; track fallbackField?.id ?? $index) {
+        <div class="form__field form-field-{{ uiConfig.direction }}">
+          <ng-dhis2-ui-form-field
+            [field]="fallbackField"
+            [fieldConfig]="uiConfig.fieldConfig"
+            [form]="formGroupValue"
+            [fieldClass]="fieldClass()"
+            [dataEntities]="dataEntitiesValue"
+            [dataId]="dataEntityId"
+            [customOrgUnitRoots]="orgUnitRootIds"
+            [optionCascadeConfigMap]="cascadeConfigMap"
+            [coordinatePickerGeoConfig]="entryFormCoordinatePickerGeoConfig"
+            [fieldControlKeyById]="entryFormFieldControlKeyById"
+            [programRuleActions]="ruleActionList"
+            [isCheckBoxButton]="renderAsCheckboxButtons"
+            (fieldUpdate)="onFieldUpdate($event, fallbackField)"
+            (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+          />
+        </div>
+      } @empty {
+        <div class="form__empty">No fields to display.</div>
+      }
+    }
+  </form>
+
+} @else if (entryFormConfig?.formType === 'TRACKER') {
+
+  <form [formGroup]="formGroupValue" class="form {{ uiConfig.directionClassName }}">
+    <div class="form__header">
+      <h2 class="form__title">{{ uiConfig.formName }}</h2>
+    </div>
+
+    @if (entryFormMeta?.sections?.length) {
+      @for (teiSection of entryFormMeta.sections; track teiSection?.id ?? $index) {
+        @if (isSectionVisible(teiSection, 'PROGRAM_SECTION')) {
+        @let sectionKey = teiSection?.id ?? $index;
+        @let sectionDomId = 'section-' + sectionKey;
+        @let descriptionDomId = sectionDomId + '-desc';
+        @let sectionDescription = teiSection?.description;
+        @let hasDescription = !!sectionDescription;
+
+        <section class="form__section" [attr.data-section-id]="sectionDomId">
+          @if (teiSection?.name) {
+            @if (isSectionsCollapsible) {
+              @let isOpen = isSectionOpen(teiSection, $index);
+
+              <button
+                type="button"
+                class="form__section-toggle"
+                (click)="openSection(teiSection, $index)"
+                [attr.aria-expanded]="isOpen"
+                [attr.aria-controls]="sectionDomId"
+                [attr.aria-describedby]="hasDescription && isOpen ? descriptionDomId : null"
+              >
+                <span class="form__section-title">{{ teiSection.name }}</span>
+                <span class="form__chevron" [class.form__chevron--open]="isOpen"></span>
+              </button>
+            } @else {
+              <div class="form__field-group-name">{{ teiSection.name }}</div>
+              @if (hasDescription) {
+                <p class="form__section-description" [id]="descriptionDomId">
+                  {{ sectionDescription }}
+                </p>
+              }
+            }
+          }
+
+          @let isOpen = !isSectionsCollapsible || isSectionOpen(teiSection, $index);
+          @if (isOpen) {
+            @if (isSectionsCollapsible && hasDescription) {
+              <p class="form__section-description" [id]="descriptionDomId">
+                {{ sectionDescription }}
+              </p>
+            }
+
+            <div class="form__section-content" [id]="sectionDomId">
+              @if (teiSection?.formFields?.length) {
+                @for (visibleField of getVisibleSectionFields(teiSection); track visibleField?.id ?? $index) {
+                  <div class="form__field form-field-{{ uiConfig.direction }}">
+                    <ng-dhis2-ui-form-field
+                      [field]="visibleField"
+                      [fieldConfig]="uiConfig.fieldConfig"
+                      [form]="formGroupValue"
+                      [fieldClass]="fieldClass()"
+                      [dataEntities]="dataEntitiesValue"
+                      [dataId]="dataEntityId"
+                      [customOrgUnitRoots]="orgUnitRootIds"
+                      [optionCascadeConfigMap]="cascadeConfigMap"
+                      [coordinatePickerGeoConfig]="entryFormCoordinatePickerGeoConfig"
+                      [fieldControlKeyById]="entryFormFieldControlKeyById"
+                      [programRuleActions]="ruleActionList"
+                      [isCheckBoxButton]="renderAsCheckboxButtons"
+                      (fieldUpdate)="onFieldUpdate($event, visibleField)"
+                      (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+                    />
+                  </div>
+                } @empty {
+                  <div class="form__empty">No fields available for this section.</div>
+                }
+              } @else {
+                <div class="form__empty">No fields available for this section.</div>
+              }
+            </div>
+          }
+        </section>
+        }
+      } @empty {
+        @for (fallbackField of sanitizedFields; track fallbackField?.id ?? $index) {
+          <div class="form__field form-field-{{ uiConfig.direction }}">
+            <ng-dhis2-ui-form-field
+              [field]="fallbackField"
+              [fieldConfig]="uiConfig.fieldConfig"
+              [form]="formGroupValue"
+              [fieldClass]="fieldClass()"
+              [dataEntities]="dataEntitiesValue"
+              [dataId]="dataEntityId"
+              [customOrgUnitRoots]="orgUnitRootIds"
+              [optionCascadeConfigMap]="cascadeConfigMap"
+              [coordinatePickerGeoConfig]="entryFormCoordinatePickerGeoConfig"
+              [fieldControlKeyById]="entryFormFieldControlKeyById"
+              [programRuleActions]="ruleActionList"
+              [isCheckBoxButton]="renderAsCheckboxButtons"
+              (fieldUpdate)="onFieldUpdate($event, fallbackField)"
+              (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+            />
+          </div>
+        } @empty {
+          <div class="form__empty">No fields to display.</div>
+        }
+      }
+    } @else {
+      <div class="form__empty">No metadata available</div>
+      @for (fallbackField of sanitizedFields; track fallbackField?.id ?? $index) {
+        <div class="form__field form-field-{{ uiConfig.direction }}">
+          <ng-dhis2-ui-form-field
+            [field]="fallbackField"
+            [fieldConfig]="uiConfig.fieldConfig"
+            [form]="formGroupValue"
+            [fieldClass]="fieldClass()"
+            [dataEntities]="dataEntitiesValue"
+            [dataId]="dataEntityId"
+            [customOrgUnitRoots]="orgUnitRootIds"
+            [optionCascadeConfigMap]="cascadeConfigMap"
+            [coordinatePickerGeoConfig]="entryFormCoordinatePickerGeoConfig"
+            [fieldControlKeyById]="entryFormFieldControlKeyById"
+            [programRuleActions]="ruleActionList"
+            [isCheckBoxButton]="renderAsCheckboxButtons"
+            (fieldUpdate)="onFieldUpdate($event, fallbackField)"
+            (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+          />
+        </div>
+      } @empty {
+        <div class="form__empty">No fields to display.</div>
+      }
+    }
+  </form>
+
+} @else {
+
+  <form [formGroup]="formGroupValue" [class]="uiConfig.directionClassName">
+    @if (uiConfig?.formName) {
+      <div class="form-name">
+        <h2>{{ uiConfig.formName }}</h2>
+      </div>
+    }
+
+    @if (sanitizedFields?.length) {
+      @for (fallbackField of sanitizedFields; track fallbackField?.id ?? $index) {
+        <div class="form-field-{{ uiConfig.direction }}">
+          <ng-dhis2-ui-form-field
+            [field]="fallbackField"
+            [fieldConfig]="uiConfig.fieldConfig"
+            [form]="formGroupValue"
+            [fieldClass]="fieldClass()"
+            [dataEntities]="dataEntitiesValue"
+            [dataId]="dataEntityId"
+            [customOrgUnitRoots]="orgUnitRootIds"
+            [optionCascadeConfigMap]="cascadeConfigMap"
+            [coordinatePickerGeoConfig]="entryFormCoordinatePickerGeoConfig"
+            [fieldControlKeyById]="entryFormFieldControlKeyById"
+            [programRuleActions]="ruleActionList"
+            [isCheckBoxButton]="renderAsCheckboxButtons"
+            (fieldUpdate)="onFieldUpdate($event, fallbackField)"
+            (runtimeOptionChange)="onRunTimeOptionUpdate($event)"
+          />
+        </div>
+      }
+    } @else {
+      <div class="text-sm text-gray-500">No fields to display.</div>
+    }
+  </form>
+
+}

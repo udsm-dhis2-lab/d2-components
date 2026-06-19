@@ -1,14 +1,27 @@
-<div *ngIf="field()" class="form-field-item">
-  <ng-dhis2-ui-form-field-item
-    [field]="field()"
-    [fieldError]="runtimeError()"
-    [isValueAssigned]="isValueAssigned()"
-    [fieldConfig]="fieldConfig()"
-    [(form)]="form"
-    [dataId]="dataId()"
-    [customOrgUnitRoots]="customOrgUnitRoots()"
-    [value]="value()"
-    (update)="onValueChange()"
-    (immediateUpdate)="onImmediateChange($event)"
-  />
-</div>
+@if (field(); as formField) {
+  @let fieldError = runtimeError();
+  @let isAssigned = isValueAssigned();
+  @let fieldConfigValue = fieldConfig();
+  @let cascadeConfigs = optionCascadeConfigs();
+  @let entryFormCoordinatePickerGeoConfig = coordinatePickerGeoConfig();
+
+  <div class="form-field-item">
+    <ng-dhis2-ui-form-field-item
+      [field]="formField"
+      [fieldError]="fieldError"
+      [isValueAssigned]="isAssigned"
+      [fieldConfig]="fieldConfigValue"
+      [(form)]="form"
+      [dataId]="dataId()"
+      [customOrgUnitRoots]="customOrgUnitRoots()"
+      [optionCascadeConfigs]="cascadeConfigs"
+      [optionCascadeConfigMap]="optionCascadeConfigMap()"
+      [fieldControlKeyById]="fieldControlKeyById()"
+      [coordinatePickerGeoConfig]="entryFormCoordinatePickerGeoConfig"
+      [program]="program()"
+      [value]="value()"
+      (update)="onValueChange()"
+      (immediateUpdate)="onImmediateChange($event)"
+    />
+  </div>
+}

@@ -13,9 +13,10 @@ import {
 import { toObservable } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
-import { IFormField, IFormFieldGroup } from '../../interfaces';
-import { FormField, FormValue } from '../../models';
-import { FormUtil } from '../../utils';
+import type { IFormFieldGroup } from '../../interfaces/form-field-group.interface';
+import { FormValue } from '../../models/form-value.model';
+import { FormUtil } from '../../utils/form.util';
+import type { IFormField } from '../../interfaces/form-field.interface';
 
 @Component({
   selector: 'ng-dhis2-ui-repeatable-form',

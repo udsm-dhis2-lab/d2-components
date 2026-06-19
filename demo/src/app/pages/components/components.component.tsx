@@ -1,9 +1,13 @@
+/* eslint-disable @nx/enforce-module-boundaries */
 import { Component, inject, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
+  CurrentUser,
+  D2Window,
   DataFilterCondition,
   DataQueryFilter,
   DHIS2Event,
+  LineListRowActionFilterConfig,
   ProgramRuleEngine,
   TrackedEntityInstance,
 } from '@iapps/d2-web-sdk';
@@ -19,6 +23,7 @@ import {
   FlyoutMenu,
   IconDownload16,
 } from '@dhis2/ui';
+import { format } from 'date-fns';
 import { NgxDhis2HttpClientService } from '@iapps/ngx-dhis2-http-client';
 import { Period } from '@iapps/period-utilities';
 import { Button, IconView16, ButtonStrip } from '@dhis2/ui';
@@ -33,6 +38,10 @@ import { ProgramEntryFormConfig } from '../../../../../packages/ng-dhis2-ui/src/
   standalone: false,
 })
 export class ComponentsComponent implements OnInit {
+  d2 = (window as unknown as D2Window).d2Web;
+  currentUser: CurrentUser | null = null;
+  currentUserOrgUnitId: string | null = null;
+
   httpClient = inject(NgxDhis2HttpClientService);
   selectedPeriods = [
     { id: 'THIS_MONTH', name: 'This month' },
@@ -41,19 +50,44 @@ export class ComponentsComponent implements OnInit {
   ];
   triggerRefetch = false;
 
-  pconfig = new ProgramEntryFormConfig({
+  pcofig = new ProgramEntryFormConfig({
     program: 'A3olldDSHQg',
     programStage: 'NtZXBym2KfD',
     hideRegistrationUnit: true,
     formType: 'EVENT',
     displayType: 'FLAT',
     autoComplete: true,
-    autoAssignedValues: [
-      {
-        field: 'orgUnit',
-        value: 'aaaaaaaaaaaaaaaaaa',
-      },
-    ],
+    // autoAssignedValues: [
+    //   {
+    //     field: 'orgUnit',
+    //     value: 'aaaaaaaaaaaaaaaaaa',
+    //   },
+    // ],
+  });
+
+  formConfig = new ProgramEntryFormConfig({
+    program: 't1pTvYbv08Z',
+    programStage: 'q2O2QgN4l8O',
+    formType: 'EVENT',
+    displayType: 'FLAT',
+    autoComplete: true,
+    // autoAssignedValues: [
+    //   {
+    //     field: 'orgUnit',
+    //     value: 'xSIt9MfMKiM',
+    //   },
+    //   {
+    //     field: 'occurredAt',
+    //     value: format(new Date(), 'yyyy-MM-dd'),
+    //   },
+    // ],
+    // formFieldExtensions: [
+    //   {
+    //     id: 'seUJl7AEZtS',
+    //     accept: ['.pdf'],
+    //     sizeLimit: 2 * 1024 * 1024,
+    //   },
+    // ],
   });
 
   completedTrainingFilter = [
@@ -78,6 +112,27 @@ export class ComponentsComponent implements OnInit {
       value: `ABC`,
     },
   ];
+
+  lineListRowActionFilterConfig: LineListRowActionFilterConfig = {
+    enabled: true,
+    fallback: 'NO_FILTER',
+    combine: 'APPLY_ALL',
+    rules: [
+      {
+        id: 'hide-verify-if-investigation-exists',
+        description: 'Hide Verify if Case Investigation event already exists',
+        actions: ['Verify', 'Transfer'],
+        effect: 'HIDE',
+        enrollment: { programId: 'GNRIrbL5o0n', mustExist: true },
+        stageEvent: {
+          programId: 'GNRIrbL5o0n',
+          programStageId: 'cIXQE5ZOvjz',
+          mustExist: true,
+        },
+        priority: 1,
+      }
+    ],
+  };
 
   dynamicFilterInputs: DataQueryFilter[] = [
     new DataQueryFilter()
@@ -105,15 +160,15 @@ export class ComponentsComponent implements OnInit {
   }
   isButtonLoading: any;
 
-  actionOptions = [
-    {
-      label: 'View',
-      onClick: (data: any) => {
-        console.log('Viewing data item:', data);
-      },
-    },
-    { label: 'Edit', destructive: true },
-  ];
+  // actionOptions = [
+  //   {
+  //     label: 'View',
+  //     onClick: (data: any) => {
+  //       console.log('Viewing data item:', data);
+  //     },
+  //   },
+  //   { label: 'Edit', destructive: true },
+  // ];
 
   button = () => (
     <Button
@@ -131,7 +186,7 @@ export class ComponentsComponent implements OnInit {
     }, 10000);
   }
 
-  // onActionSelected(emitActionResponse: any) {
+  // onActionSelectedReportFilter(emitActionResponse: any) {
   //   console.log(
   //     'ON ACTION SELECTED::: ',
   //     JSON.stringify(emitActionResponse, null, 4)
@@ -142,14 +197,14 @@ export class ComponentsComponent implements OnInit {
     console.log('BUTTON IS CLICKED HERE');
   }
 
-  onActionSelected(event: {
-    action: string;
-    data: TrackedEntityInstance | DHIS2Event;
-  }) {
-    if (event.action === 'View') {
-      this.onView(event.data);
-    }
-  }
+  // onActionSelected(event: {
+  //   action: string;
+  //   data: TrackedEntityInstance | DHIS2Event;
+  // }) {
+  //   if (event.action === 'View') {
+  //     this.onView(event.data);
+  //   }
+  // }
 
   onRowsSelected(data: TrackedEntityInstance[] | DHIS2Event[]) {
     console.log('this is the data being emitted', data);
@@ -217,7 +272,21 @@ export class ComponentsComponent implements OnInit {
   //   { attribute: 'jI43wrfikTb', operator: 'eq', value: 'true' }
   // ]"
 
-  selectedOrgUnits = [];
+  selectedOrgUnit = {
+    id: 'DzT1EohjekM',
+    path: '/xrku9x3XnV9/DzT1EohjekM',
+    name: 'Regions',
+    type: 'ORGUNIT',
+  };
+
+  selectedOrgUnits = [
+    {
+      id: 'DzT1EohjekM',
+      path: '/xrku9x3XnV9/DzT1EohjekM',
+      name: 'Regions',
+      type: 'ORGUNIT',
+    },
+  ];
   orgUnitSelectionConfig: OrganisationUnitSelectionConfig = {
     hideGroupSelect: false,
     hideLevelSelect: false,
@@ -225,6 +294,7 @@ export class ComponentsComponent implements OnInit {
     allowSingleSelection: true,
     usageType: 'DATA_ENTRY',
     allowCaching: true,
+    rootOrgUnits: ['lgZ6HfZaj3f'],
   };
   onSelectOrgUnits(orgUnits: any) {
     this.selectedOrgUnits = orgUnits;
@@ -419,12 +489,70 @@ export class ComponentsComponent implements OnInit {
     console.log('Delete', row);
   }
 
+  malariaCaseNotificationProgramId = 'GNRIrbL5o0n';
+
+  readonly actionOptions = [
+    {
+      label: 'Verify',
+      requiredAuthorities: [],
+      onClick: (data: TrackedEntityInstance | DHIS2Event) =>
+        this.onActionSelected(data as any),
+    },
+    {
+      label: 'Transfer',
+      requiredAuthorities: [],
+      onClick: (data: TrackedEntityInstance | DHIS2Event) =>
+        this.onActionSelected(data as any),
+    },
+  ];
+
+  get visibleActionOptions() {
+    return this.actionOptions;
+  }
+
+  onActionSelected(event: {
+    action: 'Verify' | string;
+    data: TrackedEntityInstance | DHIS2Event;
+  }): void {
+    switch (event.action) {
+      case 'Verify':
+        // this.investigateCase(event.data as TrackedEntityInstance);
+        break;
+      case 'Transfer':
+        // this.transferCase(event.data as TrackedEntityInstance);
+        break;
+      default:
+        console.warn('Unknown action:', event.action, event.data);
+    }
+  }
+
   ngOnInit() {
-    this.httpClient
-      .get('http://dashboards.json', { isExternalLink: true })
-      .subscribe((res) => {
-        console.log(res);
-      });
+    // this.httpClient
+    //   .get('http://dashboards.json', { isExternalLink: true })
+    //   .subscribe((res) => {
+    //     console.log(res);
+    //   });
+
+    this.currentUser = this.d2.currentUser;
+    const orgUnits: any[] = this.d2.currentUser?.organisationUnits ?? [];
+    const dataViewUnits: any[] =
+      this.d2.currentUser?.dataViewOrganisationUnits ?? [];
+
+    this.currentUserOrgUnitId = orgUnits[0]?.id ?? dataViewUnits[0]?.id ?? null;
+
+    const acceptedCaseStatusFilters: DataQueryFilter = new DataQueryFilter()
+      .setAttribute('vSVoQsGK5Ua')
+      .setCondition(DataFilterCondition.Equal)
+      .setType('TRACKED_ENTITY_ATTRIBUTE')
+      .setValue('Accepted');
+
+    const caseAcceptedByFilters: DataQueryFilter = new DataQueryFilter()
+      .setAttribute('SqHFSXzPGOa')
+      .setCondition(DataFilterCondition.Equal)
+      .setType('TRACKED_ENTITY_ATTRIBUTE')
+      .setValue(this.currentUser?.userCredentials?.username);
+
+    this.dataQueryFilters = [acceptedCaseStatusFilters, caseAcceptedByFilters];
 
     const periodInstance = new Period().setType('Weekly').get();
 

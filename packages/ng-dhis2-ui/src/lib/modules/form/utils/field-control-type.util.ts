@@ -24,7 +24,9 @@ export class FieldControlTypeUtil {
       case FieldType.TRUE_ONLY:
         return 'checkbox';
       case FieldType.NUMBER:
-        return 'textbox';
+        return 'number';
+      case FieldType.PHONE_NUMBER:
+        return 'tel';
       case FieldType.INTEGER_ZERO_OR_POSITIVE:
         return 'textbox';
       case FieldType.ORG_UNIT:
@@ -37,6 +39,8 @@ export class FieldControlTypeUtil {
         return 'image';
       case FieldType.FILE_RESOURCE:
         return 'file';
+      case FieldType.COORDINATE:
+        return 'coordinate'
       default:
         return 'textbox';
     }

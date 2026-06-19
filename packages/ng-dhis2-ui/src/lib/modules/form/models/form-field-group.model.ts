@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 import { camelCase, find } from 'lodash';
-import { FormFieldMetaType, IFormField, IFormFieldGroup } from '../interfaces';
+import type { FormFieldMetaType, IFormField, IFormFieldGroup } from '../interfaces';
 import { FieldUtil, TranslationUtil } from '../utils';
 import { FieldDropdown } from './field-dropdown.model';
 import { FormField } from './form-field.model';
-import { FormFieldExtension } from '../interfaces/form-field-extension.interface';
+import type { FormFieldExtension } from '../interfaces/form-field-extension.interface';
 
 export class FormFieldGroup implements IFormFieldGroup {
   id!: string;
@@ -95,6 +95,7 @@ export class FormFieldGroup implements IFormFieldGroup {
           ),
           metaType: fieldMetaData['metaType'] as FormFieldMetaType,
           stepId: fieldMetaData['stepId'] as string,
+          allowFutureDate: fieldMetaData['allowFutureDate'] as boolean,
           extension,
         });
       })

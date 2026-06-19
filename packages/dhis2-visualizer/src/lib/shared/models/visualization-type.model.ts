@@ -6,6 +6,7 @@ export type ChartType =
   | 'PIE'
   | 'SINGLE_VALUE'
   | 'STACKED_COLUMN'
+  | 'YEAR_OVER_YEAR_LINE'
   | 'STACKED_BAR'
   | 'AREA'
   | 'RADAR'
@@ -19,4 +20,5 @@ export type VisualizationType =
   | 'DICTIONARY'
   | 'CUSTOM'
   | 'MAPBOX'
+  | 'YEAR_OVER_YEAR_LINE'
   | 'TRACKED_ENTITY_LAYER';

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { D2Window } from '@iapps/d2-web-sdk';
 import { catchError, from, map, of, zip } from 'rxjs';
 import { DashboardConfig } from '../models';
@@ -6,7 +6,9 @@ import { DashboardConfigService } from './dashboard-config.service';
 
 @Injectable()
 export class DashboardItemService {
-  constructor(private dashboardConfigService: DashboardConfigService) {}
+  private dashboardConfigService = inject(DashboardConfigService);
+
+  // constructor(private dashboardConfigService: DashboardConfigService) {}
 
   getItem(id: string, type: string, hasExtension = false) {
     switch (type) {
@@ -23,7 +25,7 @@ export class DashboardItemService {
     return zip(
       from(
         d2.httpInstance.get(
-          `visualizations/${id}.json?fields=id,name,title,subtitle,type,axes,hideEmptyColumns,rowSubTotals,cumulativeValues,showDimensionLabels,sortOrder,fontSize,topLimit,percentStackedValues,series,noSpaceBetweenColumns,showHierarchy,hideTitle,skipRounding,showData,hideEmptyRows,displayDensity,regressionType,colTotals,displayFormName,hideEmptyRowItems,aggregationType,hideSubtitle,hideLegend,colSubTotals,rowTotals,digitGroupSeparator,regression,columns[dimension,items[id,name,dimensionItem,dimensionItemType]],filters[dimension,items[id,name,dimensionItem,dimensionItemType]],rows[dimension,items[id,name,dimensionItem,dimensionItemType]],legendSet[id,name,legends[id,name,startValue,endValue,color]]`
+          `visualizations/${id}.json?fields=id,name,title,subtitle,type,axes,hideEmptyColumns,rowSubTotals,cumulativeValues,showDimensionLabels,sortOrder,yearlySeries,fontSize,topLimit,percentStackedValues,series,noSpaceBetweenColumns,showHierarchy,hideTitle,skipRounding,showData,hideEmptyRows,displayDensity,regressionType,colTotals,displayFormName,hideEmptyRowItems,aggregationType,hideSubtitle,hideLegend,colSubTotals,rowTotals,digitGroupSeparator,regression,columns[dimension,items[id,name,dimensionItem,dimensionItemType]],filters[dimension,items[id,name,dimensionItem,dimensionItemType]],rows[dimension,items[id,name,dimensionItem,dimensionItemType]],legendSet[id,name,legends[id,name,startValue,endValue,color]]`
         )
       ).pipe(map((res) => res.data)),
       hasExtension ? this.getVisualizationExtension(id) : of(null)

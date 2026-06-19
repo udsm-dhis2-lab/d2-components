@@ -10,20 +10,29 @@ import {
   TableRow,
   TrackedEntityInstancesResponse,
 } from '../models/line-list.models';
-import { parse, format } from 'date-fns';
+import { parse, format, isValid } from 'date-fns';
 
 export const getTrackedEntityTableData = (
   response: LineListResponse,
   programId: string,
   pager: any,
   metaData: Program,
-  searcheableDataElements: string[]
+  searcheableDataElements: string[],
+  customDisplayInReportsIds?: string[],
+  columnNameSource: 'NAME' | 'FORM_NAME' = 'NAME'
 ): {
   columns: ColumnDefinition[];
   data: TableRow[];
   filteredEntityColumns: ColumnDefinition[];
   orgUnitLabel: string;
 } => {
+  const getColumnLabel = (item?: {
+  name?: string;
+  formName?: string;
+}): string =>
+  columnNameSource === 'FORM_NAME'
+    ? item?.formName || item?.name || 'Default'
+    : item?.name || item?.formName || 'Default';
   const teisRaw = (response.data as TrackedEntityInstancesResponse)
     .trackedEntityInstances;
   const teis: TrackedEntityInstance[] = Array.isArray(teisRaw)
@@ -37,19 +46,23 @@ export const getTrackedEntityTableData = (
   const attributeColumns = metaData.displayInListTrackedEntityAttributes
     .sort((a, b) => a.sortOrder! - b.sortOrder!)
     .map((trackedEntityAttribute) => ({
-      label: trackedEntityAttribute.name ?? trackedEntityAttribute.formName,
+      label: getColumnLabel(trackedEntityAttribute),
       key: trackedEntityAttribute.id,
     }));
 
+const shouldIncludeDataElement = (psde: any): boolean =>
+  customDisplayInReportsIds !== undefined
+    ? customDisplayInReportsIds.includes(psde.dataElement?.id)
+    : psde.displayInReports === true;
+    
   const tableSearcheableDataElements = metaData
     .programStages!.sort((a, b) => a.sortOrder - b.sortOrder)
     .flatMap((stage) =>
       stage
-        .programStageDataElements!.filter((psde) => psde.displayInReports)
+        .programStageDataElements!.filter(shouldIncludeDataElement)
         .sort((a, b) => a.sortOrder - b.sortOrder)
         .map((psde) => ({
-          label:
-            psde.dataElement.name || psde.dataElement.formName || 'default',
+          label: getColumnLabel(psde.dataElement),
           key: psde.dataElement.id,
           valueType: psde.dataElement.valueType,
           options: psde.dataElement.optionSet,
@@ -62,24 +75,37 @@ export const getTrackedEntityTableData = (
     .programStages!.sort((a, b) => a.sortOrder - b.sortOrder)
     .flatMap((stage) =>
       stage
-        .programStageDataElements!.filter((psde) => psde.displayInReports)
+        .programStageDataElements!.filter(shouldIncludeDataElement)
         .sort((a, b) => a.sortOrder - b.sortOrder)
         .map((psde) => ({
-          label:
-            psde.dataElement.name || psde.dataElement.formName || 'default',
+          label: getColumnLabel(psde.dataElement),
           key: psde.dataElement.id,
         }))
     );
 
-  const dataElementOptions = metaData.displayInListDataElements.map(
-    (element) => ({
-      id: element.id,
-      options: element.optionSet?.options.map((opt) => ({
-        name: opt.name,
-        color: opt.style?.color,
-      })),
-    })
-  );
+  // const dataElementOptions = metaData.displayInListDataElements.map(
+  //   (element) => ({
+  //     id: element.id,
+  //     options: element.optionSet?.options.map((opt) => ({
+  //       name: opt.name,
+  //       code: opt.code,
+  //       color: opt.style?.color,
+  //     })),
+  //   })
+  // );
+  const dataElementOptions = (metaData.programStages ?? [])
+  .flatMap((stage) => stage.programStageDataElements ?? [])
+  .filter(
+    (psde) => psde.dataElement && shouldIncludeDataElement(psde)
+  )
+  .map(({ dataElement }) => ({
+    id: dataElement.id,
+    options: dataElement.optionSet?.options?.map((option) => ({
+      name: option.name,
+      code: option.code,
+      color: option.style?.color,
+    })) ?? [],
+  }));
 
   const tableColumns = [
     {
@@ -93,7 +119,8 @@ export const getTrackedEntityTableData = (
   const tableFilters = metaData.searchableTrackedEntityAttributes
     .sort((a, b) => a.sortOrder! - b.sortOrder!)
     .map((attr) => ({
-      label: attr.name,
+      // label: attr.name,
+      label: getColumnLabel(attr),
       key: attr.id,
       valueType: attr.valueType,
       options: attr.optionSet ?? undefined,
@@ -103,12 +130,19 @@ export const getTrackedEntityTableData = (
   const getOptionColor = (option: any): string | undefined =>
     option?.color || option?.style?.color;
 
+//   const formatDate = (value: string): string => {
+//     try {
+//       return format(parse(value, 'yyyy-MM-dd', new Date()), 'dd/MM/yyyy');
+//     } catch {
+//       return value;
+//     }
+//   };
   const formatDate = (value: string): string => {
-    try {
-      return format(parse(value, 'yyyy-MM-dd', new Date()), 'dd/MM/yyyy');
-    } catch {
-      return value;
+    const date = new Date(value);
+    if (isValid(date)) {
+      return format(date, 'dd/MM/yyyy');
     }
+    return value;
   };
 
   const trackedEntityAttributeMap = new Map<string, any>();
@@ -188,11 +222,11 @@ export const getTrackedEntityTableData = (
 
       const dataElementOption = dataElementOptionMap.get(dataElementId);
       const matchedOption = dataElementOption?.options?.find(
-        (opt: any) => opt.name === value
+        (opt: any) => opt.code === value
       );
 
       row[dataElementId] = {
-        value,
+       value: matchedOption?.name || value,
         ...(getOptionColor(matchedOption) && {
           style: getOptionColor(matchedOption),
         }),

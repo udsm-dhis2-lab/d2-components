@@ -35,6 +35,7 @@ export class FormField<T> implements IFormField<T>, FormFieldFunction<T> {
   isDataElement?: boolean;
   isAttribute?: boolean;
   isOrgUnit?: boolean;
+  isGeometryField?: boolean;
   isEnrollmentDate?: boolean;
   event?: string;
   programStage?: string;
@@ -77,6 +78,7 @@ export class FormField<T> implements IFormField<T>, FormFieldFunction<T> {
     this.isDataElement = options.isDataElement;
     this.isAttribute = options.isAttribute;
     this.isOrgUnit = options.isOrgUnit;
+    this.isGeometryField = options.isGeometryField;
     this.isEnrollmentDate = options.isEnrollmentDate;
     this.event = options.event;
     this.programStage = options.programStage;

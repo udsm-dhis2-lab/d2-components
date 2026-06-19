@@ -11,8 +11,18 @@ export const getEvents = (
   response: LineListResponse,
   programStageId: string,
   pager: any,
-  metaData: Program
+  metaData: Program,
+  columnNameSource: 'NAME' | 'FORM_NAME' = 'NAME'
 ): { columns: ColumnDefinition[]; data: TableRow[] } => {
+
+  const getColumnLabel = (item?: {
+  name?: string;
+  formName?: string;
+}): string =>
+  columnNameSource === 'FORM_NAME'
+    ? item?.formName || item?.name || 'Default'
+    : item?.name || item?.formName || 'Default';
+
   const events = (response.data as EventsResponse).events;
   const eventsiiii = response.data;
   const allDataElements = new Set<string>();
@@ -41,7 +51,9 @@ export const getEvents = (
       );
 
       return {
-        label: dataElementMeta?.dataElement.name || dataElementId,
+        label: dataElementMeta
+      ? getColumnLabel(dataElementMeta.dataElement)
+        : dataElementId,
         key: dataElementId,
       };
     }
@@ -50,6 +62,9 @@ export const getEvents = (
   const dataElementsData: TableRow[] = events.map((event: any, idx: number) => {
     const row: TableRow = {
       event: { value: event.event },
+        responseData: {
+         value: event,
+       },
       index: {
         value: (pager.page - 1) * pager.pageSize + idx + 1,
       },

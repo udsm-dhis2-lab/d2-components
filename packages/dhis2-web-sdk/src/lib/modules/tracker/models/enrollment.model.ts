@@ -4,11 +4,13 @@ import { BaseTrackerSDKModel } from './base.model';
 import { DataValue, DataValueUtil } from '../../event/models/data-value.model';
 import { DHIS2Event, IDHIS2Event } from '../../event/models/event.model';
 import { AttributeUtil } from '../utils';
+import { parseCoordinates } from '../helpers/form.helper';
 
 export interface IEnrollment {
   storedBy?: string;
   created?: string;
   orgUnit: string;
+  geometry?: any;
   createdAtClient?: string;
   program: string;
   trackedEntity: string;
@@ -210,6 +212,30 @@ export class Enrollment
     this.geometry = geometry;
   }
 
+  /**
+   * Sets event geometry from a coordinate string input.
+   * Accepts formats like:
+   *  - "[39.319364,-6.069623]"
+   *  - "39.319364,-6.069623"
+   *  - "39.319364 -6.069623"
+   * and stores as GeoJSON Point in this.geometry.
+   */
+  // setGeometry(coordinateValue: any) {
+  //   const parsed = parseCoordinates(coordinateValue);
+  //   if (!parsed) {
+  //     return;
+  //   }
+
+  //   const [lonText, latText] = parsed;
+  //   const longitude = Number(lonText);
+  //   const latitude = Number(latText);
+
+  //   this.geometry = {
+  //     type: 'Point',
+  //     coordinates: [longitude, latitude],
+  //   };
+  // }
+
   getEventsByProgramStage(programStage: string): IDHIS2Event[] {
     return cloneDeep(
       (this.programStageEvents || {})[programStage]?.events || []
@@ -225,6 +251,7 @@ export class Enrollment
       enrollment: this.enrollment,
       enrolledAt: this.enrolledAt,
       occurredAt: this.occurredAt,
+      geometry: this.geometry,
       status: this.status || 'ACTIVE',
       program: this.program,
       orgUnit: this?.orgUnit,

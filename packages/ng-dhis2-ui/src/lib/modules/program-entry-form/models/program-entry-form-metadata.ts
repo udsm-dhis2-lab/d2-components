@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import { D2Window, Program, ProgramRule } from '@iapps/d2-web-sdk';
+import { D2Window, Pager, Program, ProgramRule } from '@iapps/d2-web-sdk';
 import { ProgramEntryFormConfig } from './program-entry-form.config';
-import { IFormField, IMetadataRule, MetadataRule } from '../../form';
 import { IProgramEntryFormSection } from './program-entry-form-section.model';
+import { IFormField } from '../../form/interfaces/form-field.interface';
 import {
-  ProgramEntryFormFieldUtil,
-  ProgramEntryFormSectionUtil,
-} from '../utils';
+  IMetadataRule,
+  MetadataRule,
+} from '../../form/models/form-metadata-rule.model';
+import { ProgramEntryFormFieldUtil } from '../utils/program-entry-form-field.util';
+import { ProgramStageEntryFormSectionUtil } from '../utils/program-stage-entry-form-section.util';
+import { ProgramEntryFormSectionUtil } from '../utils/program-entry-form-section.util';
 
 export interface IProgramEntryFormMetaData {
   id: string;
@@ -18,6 +21,7 @@ export interface IProgramEntryFormMetaData {
   program: Program;
   formFields: IFormField<string>[];
   sections: IProgramEntryFormSection[];
+  programStageSections: IProgramEntryFormSection[];
   rules: IMetadataRule[];
 }
 
@@ -30,9 +34,75 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
   config!: ProgramEntryFormConfig;
   program!: Program;
 
+  private autoAssignedFieldIdSet?: Set<string>;
+
   setConfig(config: ProgramEntryFormConfig): ProgramEntryFormMetaData {
     this.config = config;
     return this;
+  }
+
+  private getFieldIdentifiers(field: IFormField<string>): string[] {
+    const f = field as unknown as {
+      key?: string;
+      code?: string;
+      attribute?: string;
+      trackedEntityAttribute?: string;
+      dataElement?: string;
+    };
+
+    const candidateIds: Array<string | undefined> = [
+      f.key,
+      field.id,
+      f.code,
+      f.attribute,
+      f.trackedEntityAttribute,
+      f.dataElement,
+    ];
+
+    return candidateIds.filter(
+      (value): value is string => typeof value === 'string' && value.length > 0
+    );
+  }
+
+  private getAutoAssignedFieldIdSet(): Set<string> | null {
+    const autoAssigned = this.config?.autoAssignedValues;
+    if (!autoAssigned?.length) {
+      return null;
+    }
+
+    if (!this.autoAssignedFieldIdSet) {
+      this.autoAssignedFieldIdSet = new Set(
+        autoAssigned
+          .map(({ field }) => field)
+          .filter(
+            (value): value is string =>
+              typeof value === 'string' && value.length > 0
+          )
+      );
+    }
+
+    return this.autoAssignedFieldIdSet;
+  }
+
+  private shouldDisableField(field: IFormField<string>): boolean {
+    const fieldIdentifiers = this.getFieldIdentifiers(field);
+    if (!fieldIdentifiers.length) {
+      return false;
+    }
+
+    const autoAssignedIdSet = this.getAutoAssignedFieldIdSet();
+    if (!autoAssignedIdSet) {
+      return false;
+    }
+
+    return fieldIdentifiers.some((id) => autoAssignedIdSet.has(id));
+  }
+
+  private withDisabledFlags(field: IFormField<string>): IFormField<string> {
+    return {
+      ...field,
+      disabled: true,
+    };
   }
 
   getProgramPromise() {
@@ -150,6 +220,7 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
               'id',
               'programRuleActionType',
               'data',
+              'programRule',
               'displayContent',
               'content',
             ])
@@ -167,6 +238,14 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
                 'code',
                 'name',
               ]),
+              'ToOne'
+            )
+            .with(
+              this.d2.programModule.programSection.select(['id', 'code' ,'name']),
+              'ToOne'
+            )
+            .with(
+              this.d2.programModule.programStageSection.select(['id', 'code' , 'name']),
               'ToOne'
             )
             .with(
@@ -191,6 +270,7 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
               'ToOne'
             )
         )
+        .paginate(new Pager({ paging: false }))
         .get(),
     ]);
 
@@ -207,15 +287,156 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
       return [];
     }
 
-    return new ProgramEntryFormFieldUtil(this.program, this.config).fields;
+    const fields = new ProgramEntryFormFieldUtil(this.program, this.config)
+      .fields;
+
+    const autoAssigned = this.config?.autoAssignedValues;
+    if (!autoAssigned?.length) {
+      return fields;
+    }
+
+    return fields.map((field) =>
+      this.shouldDisableField(field) ? this.withDisabledFlags(field) : field
+    );
   }
 
+  // get sections(): IProgramEntryFormSection[] {
+  //   if (!this.program) {
+  //     return [];
+  //   }
+
+  //   const { displayType, formType } = this.config;
+
+  //   if (!this.program || this.config.displayType !== 'FLAT') {
+  //     return [];
+  //   }
+
+  //   if (displayType === 'FLAT' && formType === 'TRACKER') {
+  //     return new ProgramEntryFormSectionUtil(this.program, this.config)
+  //       .programEntryFormSections;
+  //   }
+
+  //   return new ProgramEntryFormSectionUtil(this.program, this.config)
+  //     .programEntryFormSections;
+  // }
+
+  // get programStageSections(): IProgramEntryFormSection[] {
+  //   if (!this.program) {
+  //     return [];
+  //   }
+
+  //   const { displayType, formType } = this.config;
+
+  //   if (displayType === 'FLAT' && formType === 'EVENT') {
+  //     return new ProgramStageEntryFormSectionUtil(this.program, this.config)
+  //       .programStageEntryFormSections;
+  //   }
+
+  //   if (displayType === 'SECTION') {
+  //     return new ProgramStageEntryFormSectionUtil(this.program, this.config)
+  //       .programStageEntryFormSections;
+  //   }
+
+  //   return [];
+  // }
+
   get sections(): IProgramEntryFormSection[] {
-    if (!this.program || this.config.displayType !== 'SECTION') {
+    if (!this.program) {
       return [];
     }
 
-    return new ProgramEntryFormSectionUtil(this.program, this.config).sections;
+    const { displayType } = this.config;
+
+    if (displayType !== 'FLAT') {
+      return [];
+    }
+
+    const baseSections = new ProgramEntryFormSectionUtil(
+      this.program,
+      this.config
+    ).programEntryFormSections;
+
+    const autoAssigned = this.config?.autoAssignedValues;
+    if (!autoAssigned?.length) {
+      return baseSections;
+    }
+
+    return baseSections.map((section) => {
+      const formFields = section.formFields ?? [];
+      if (!formFields.length) {
+        return section;
+      }
+
+      let hasDisabledField = false;
+
+      const updatedFields = formFields.map((field) => {
+        if (this.shouldDisableField(field)) {
+          hasDisabledField = true;
+          return this.withDisabledFlags(field);
+        }
+        return field;
+      });
+
+      if (!hasDisabledField) {
+        return section;
+      }
+
+      return {
+        ...section,
+        formFields: updatedFields,
+      };
+    });
+  }
+
+  get programStageSections(): IProgramEntryFormSection[] {
+    if (!this.program) {
+      return [];
+    }
+
+    const { displayType, formType } = this.config;
+
+    const isFlatEvent = displayType === 'FLAT' && formType === 'EVENT';
+    const isSectionDisplay = displayType === 'SECTION';
+
+    if (!isFlatEvent && !isSectionDisplay) {
+      return [];
+    }
+
+    const baseSections = new ProgramStageEntryFormSectionUtil(
+      this.program,
+      this.config
+    ).programStageEntryFormSections;
+
+    const autoAssigned = this.config?.autoAssignedValues;
+    if (!autoAssigned?.length) {
+      return baseSections;
+    }
+
+    return baseSections.map((section) => {
+      const formFields = section.formFields ?? [];
+      if (!formFields.length) {
+        return section;
+      }
+
+      let hasDisabledField = false;
+
+      const updatedFields = formFields.map((field) => {
+        if (this.shouldDisableField(field)) {
+          hasDisabledField = true;
+          return this.withDisabledFlags(field);
+        }
+        return field;
+      });
+
+      if (!hasDisabledField) {
+        return section;
+      }
+
+      return {
+        ...section,
+        formFields: updatedFields,
+      };
+    });
   }
 
   get rules(): IMetadataRule[] {
@@ -232,13 +453,17 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
   }
 
   toJson(): IProgramEntryFormMetaData {
+    const sections = this.sections;
+    const programStageSections = this.programStageSections;
+
     return {
       id: this.program?.id,
       name: this.program?.name,
       description: this.program?.description,
       program: this.program,
       formFields: this.formFields,
-      sections: this.sections,
+      sections,
+      programStageSections,
       rules: this.rules,
     };
   }
@@ -249,6 +474,23 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
 
       if (program) {
         this.program = program;
+
+        if (
+          this.config?.formFieldExtensions &&
+          this.config.formFieldExtensions.length > 0 &&
+          this.config.formFieldExtensions[0]?.optionsSourceCode
+        ) {
+          const orgUnitResponse = await this.d2.httpInstance.get(
+            `organisationUnits.json?fields=id,name,code&paging=false&filter=organisationUnitGroups.code:eq:${this.config.formFieldExtensions[0].optionsSourceCode}`
+          );
+          const orgUnitsResponse = orgUnitResponse?.data?.['organisationUnits'];
+          const organisationUnits = Array.isArray(orgUnitsResponse)
+            ? orgUnitsResponse
+            : [];
+          this.config.formFieldExtensions[0].organisationUnits =
+            organisationUnits;
+        }
+
         return this.toJson();
       }
 

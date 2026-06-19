@@ -52,8 +52,12 @@ export class FieldUtil {
         return 'org-unit';
       case FieldType.DATE:
         return 'date';
+      case FieldType.DATE_TIME:
+        return 'date-time';
       case FieldType.FILE_RESOURCE:
         return 'file';
+      case FieldType.COORDINATE:
+        return 'coordinate';
       default:
         return 'text';
     }
@@ -75,9 +79,9 @@ export class FieldUtil {
       case FieldType.TRUE_ONLY:
         return 'checkbox';
       case FieldType.NUMBER:
-        return 'textbox';
+        return 'number';
       case FieldType.PHONE_NUMBER:
-        return 'textbox';
+        return 'tel';
       case FieldType.ORG_UNIT:
         return 'org-unit';
       case FieldType.DATE:
@@ -88,6 +92,8 @@ export class FieldUtil {
         return 'image';
       case FieldType.FILE_RESOURCE:
         return 'file';
+      case FieldType.COORDINATE:
+        return 'coordinate';
       default:
         return 'textbox';
     }

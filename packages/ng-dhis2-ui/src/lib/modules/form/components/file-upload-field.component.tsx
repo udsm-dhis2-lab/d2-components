@@ -21,7 +21,12 @@ export const FileUploadField = (props: {
   validationText?: string;
   onChange?: (files: any[]) => void;
   onUploadSuccess?: (fileId: string) => void;
+  onRemoveFile?: () => void;
   extension?: FormFieldExtension;
+  value?: string;
+  metaType?: string;
+  dataId?: string;
+  program?: string;
 }) => {
   const {
     label,
@@ -33,12 +38,18 @@ export const FileUploadField = (props: {
     hasError,
     onChange,
     onUploadSuccess,
-    extension
+    onRemoveFile,
+    extension,
+    value,
+    metaType,
+    dataId,
+    program,
   } = props;
   const d2 = (window as unknown as D2Window)?.d2Web;
   const [file, setFile] = useState<any>(null);
   const [uploading, setUploading] = useState<boolean>();
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [existingFileName, setExistingFileName] = useState<string | null>(null);
 
   const valid = useMemo(() => {
     if (isUndefined(hasError)) {
@@ -72,44 +83,90 @@ export const FileUploadField = (props: {
     }
   };
 
-  return (
-    <FileInputField
-      accept={extension?.accept?.join(',')}
-      buttonLabel="Upload a file"
-      label={label}
-      name={id}
-      required={required}
-      error={!!validationError}
-      validationText={validationError || validationText}
-      onChange={(event: any) => {
-        const fileItem = (event?.files || [])[0];
-        setValidationError(null);
-    
-        if (extension?.sizeLimit && fileItem.size > extension?.sizeLimit) {
-          setValidationError(`File size must not exceed ${extension.sizeLimit / (1024 * 1024)}MB`);
-          setFile(null);
-          return;
+  useEffect(() => {
+    if (value && !file) {
+      (async () => {
+        try {
+          const res = await d2.httpInstance.get(`/fileResources/${value}`);
+          setExistingFileName((res?.data?.['name'] as string) || null);
+        } catch {
+          setExistingFileName(null);
         }
-        setFile(fileItem);
+      })();
+    } else {
+      setExistingFileName(null);
+    }
+  }, [value, file]);
 
-        if (performUpload) {
-          uploadFile(fileItem);
-        } else {
-          onChange!(file);
-        }
-      }}
-    >
-      {file && (
-        <FileListItem
-          cancelText="Cancel"
-          label={file.name}
-          loading={uploading}
-          onRemove={() => {
+  const fileUrl = useMemo(() => {
+    if (!id || !dataId) return '#';
+    if (metaType?.toLowerCase() === 'attribute') {
+      return `/api/tracker/trackedEntities/${dataId}/attributes/${id}/file${
+        program ? `?program=${program}` : ''
+      }`;
+    }
+    return `/api/tracker/events/${dataId}/dataValues/${id}/file`;
+  }, []);
+
+  return (
+    <>
+      <FileInputField
+        accept={extension?.accept?.join(',')}
+        buttonLabel="Upload a file"
+        label={label}
+        name={id}
+        required={required}
+        error={!!validationError}
+        validationText={validationError || validationText}
+        disabled={!!existingFileName}
+        onChange={(event: any) => {
+          const fileItem = (event?.files || [])[0];
+          setValidationError(null);
+
+          if (extension?.sizeLimit && fileItem.size > extension?.sizeLimit) {
+            setValidationError(
+              `File size must not exceed ${
+                extension.sizeLimit / (1024 * 1024)
+              }MB`
+            );
             setFile(null);
-          }}
-          removeText="Remove"
-        />
-      )}
-    </FileInputField>
+            return;
+          }
+          setFile(fileItem);
+
+          if (performUpload) {
+            uploadFile(fileItem);
+          } else {
+            onChange!(file);
+          }
+        }}
+      >
+        {(file || (value && existingFileName)) && (
+          <FileListItem
+            label={
+              file ? (
+                file.name
+              ) : (
+                <a
+                  href={fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ textDecoration: 'underline', color: '#1976d2' }}
+                >
+                  {existingFileName}
+                </a>
+              )
+            }
+            loading={uploading}
+            removeText="Remove"
+            onRemove={() => {
+              setFile(null);
+              setExistingFileName(null);
+              onRemoveFile?.();
+            }}
+          />
+        )}
+      </FileInputField>
+    </>
   );
 };

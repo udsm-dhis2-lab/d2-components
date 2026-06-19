@@ -1,7 +1,9 @@
+/* eslint-disable @angular-eslint/component-selector */
 import {
   ChangeDetectionStrategy,
   Component,
   HostListener,
+  inject,
   Input,
   OnChanges,
   OnInit,
@@ -70,6 +72,7 @@ export class DashboardItemComponent implements OnInit, OnChanges {
       'PIE',
       'STACKED_BAR',
       'STACKED_COLUMN',
+      'YEAR_OVER_YEAR_LINE',
     ].includes(
       this.dashboardItem?.visualization?.type || this.dashboardItem.type
     );
@@ -116,10 +119,10 @@ export class DashboardItemComponent implements OnInit, OnChanges {
     } - ${offsetHeight})`;
   }
 
-  constructor(
-    private dashboardItemService: DashboardItemService,
-    private trackerDashboardService: TrackerDashboardService
-  ) {
+  private dashboardItemService = inject(DashboardItemService);
+  private trackerDashboardService = inject(TrackerDashboardService);
+
+  constructor() {
     this._loading$ = new BehaviorSubject<boolean>(true);
     this.loading$ = this._loading$.asObservable();
   }
