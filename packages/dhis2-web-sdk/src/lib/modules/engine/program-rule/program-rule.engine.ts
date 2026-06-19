@@ -95,7 +95,10 @@ import { dhisD2Functions } from './utils/run-d2-expression.util';
 import { Option } from '../../option-set';
 
 export interface IMetadataRuleAction {
+  id?: string;
   field: string;
+  section?: string;
+  sectionType?: 'PROGRAM_SECTION' | 'PROGRAM_STAGE_SECTION';
   actionType: string;
   assignedData?: string;
   displayedContent?: string;
@@ -175,7 +178,9 @@ export class ProgramRuleEngine {
                   rawCondition: rawCond,
                   preparedCondition: preparedCond,
                   evalOk: evalRes.ok,
-                  evalError: evalRes.ok ? undefined : evalRes.error,
+                  evalError: evalRes.ok
+                    ? undefined
+                    : (evalRes as { ok: false; error: string }).error,
                   triggered,
                 },
               }
@@ -192,7 +197,7 @@ export class ProgramRuleEngine {
       }
     }
 
-    return dedupeByField ? [...byField.values()] : out;
+    return dedupeByField ? [...byField.values(), ...out] : out;
 
     // const resolvedActions = dedupeByField ? [...byField.values()] : out;
 
@@ -231,9 +236,11 @@ export class ProgramRuleEngine {
     expression: string
   ): { ok: true; value: boolean } | { ok: false; error: string } {
     const res = this.safeEvalAny(expression);
-    return res.ok
-      ? { ok: true, value: !!res.value }
-      : { ok: false, error: res.error };
+    if (res.ok) {
+      return { ok: true, value: !!res.value };
+    }
+
+    return { ok: false, error: (res as { ok: false; error: string }).error };
   }
 
   private safeEvalAny(

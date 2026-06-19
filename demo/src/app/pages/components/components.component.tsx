@@ -67,8 +67,8 @@ export class ComponentsComponent implements OnInit {
 
   formConfig = new ProgramEntryFormConfig({
     program: 't1pTvYbv08Z',
-    // programStage: 'edx4DaMDAyo',
-    formType: 'TRACKER',
+    programStage: 'q2O2QgN4l8O',
+    formType: 'EVENT',
     displayType: 'FLAT',
     autoComplete: true,
     // autoAssignedValues: [

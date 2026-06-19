@@ -1145,6 +1145,8 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
       });
 
       const onValueChange = (newValue: unknown) => {
+       const currentField = this.field();
+
         this.ngZone.run(() => {
           const ctrl = this.#getCurrentFieldControl(fg);
           ctrl?.setValue(newValue);
@@ -1152,8 +1154,15 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
           this.update.emit({ form: fg, value: newValue });
         });
 
-        const s = newValue == null ? '' : String(newValue);
-        setValue(s);
+          setValue(
+    currentField.controlType === 'checkbox'
+      ? newValue
+        ? 'true'
+        : ''
+      : newValue == null
+      ? ''
+      : String(newValue)
+  );
         setTouched(true);
       };
 

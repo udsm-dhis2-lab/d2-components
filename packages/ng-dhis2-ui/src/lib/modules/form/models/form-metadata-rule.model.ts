@@ -159,7 +159,10 @@ export type ProgramRuleActionType =
   | string;
 
 export interface IMetadataRuleAction {
+  id?: string;
   field: string;
+  section?: string;
+  sectionType?: 'PROGRAM_SECTION' | 'PROGRAM_STAGE_SECTION';
   actionType: ProgramRuleActionType;
   assignedData?: string;
   displayedContent?: string;
@@ -223,7 +226,7 @@ export class MetadataRuleAction
       (this.ruleAction?.dataElement?.id as string) ||
       (this.ruleAction?.trackedEntityAttribute?.id as string);
 
-    if (!fieldId) {
+    if (!fieldId && !this.isSectionAction) {
       console.warn(
         `ProgramRuleAction is missing both dataElement.id and trackedEntityAttribute.id (action id: ${
           this.ruleAction?.id ?? 'unknown'
@@ -232,6 +235,33 @@ export class MetadataRuleAction
     }
 
     return fieldId;
+  }
+
+  get section(): string | undefined {
+    const action = this.ruleAction as ProgramRuleAction & {
+      programSection?: { id?: string };
+      programStageSection?: { id?: string };
+    };
+
+    return action.programSection?.id || action.programStageSection?.id;
+  }
+
+  get sectionType(): 'PROGRAM_SECTION' | 'PROGRAM_STAGE_SECTION' | undefined {
+    const action = this.ruleAction as ProgramRuleAction & {
+      programSection?: { id?: string };
+      programStageSection?: { id?: string };
+    };
+
+    if (action.programSection?.id) return 'PROGRAM_SECTION';
+    if (action.programStageSection?.id) return 'PROGRAM_STAGE_SECTION';
+
+    return undefined;
+  }
+
+  get isSectionAction(): boolean {
+    return (
+      this.actionType === 'HIDESECTION' || this.actionType === 'SHOWSECTION'
+    );
   }
 
   get programRule(): { id: string } {
@@ -261,7 +291,10 @@ export class MetadataRuleAction
 
   toJson(): IMetadataRuleAction {
     return {
+      id: this.ruleAction?.id,
       field: this.field,
+      section: this.section,
+      sectionType: this.sectionType,
       actionType: this.actionType,
       assignedData: this.assignedData,
       displayedContent: this.displayedContent,
