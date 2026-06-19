@@ -10,6 +10,8 @@ import {
 } from '../../../shared';
 import { TrackedEntityAttribute } from '../models';
 import { OptionGroup, Option } from '../../option-set';
+import { ProgramSection } from './program-section.model';
+import { ProgramStageSection } from './program-stage-section.model';
 
 export type ProgramRuleActionField =
   | IdentifiableField
@@ -18,6 +20,8 @@ export type ProgramRuleActionField =
   | 'displayContent'
   | 'programRuleActionType'
   | 'evaluationTime'
+  | 'programSection'
+  | 'programStageSection'
   | 'dataElement'
   | 'trackedEntityAttribute'
   | 'optionGroup'
@@ -33,6 +37,8 @@ export class ProgramRuleAction extends IdentifiableObject<ProgramRuleAction> {
     'content',
     'data',
     'displayContent',
+    'programSection',
+    'programStageSection',
     'programRuleActionType',
     'evaluationTime',
     'dataElement',
@@ -43,6 +49,8 @@ export class ProgramRuleAction extends IdentifiableObject<ProgramRuleAction> {
   ];
 
   content?: string;
+  programSection?: Partial<ProgramSection>;
+  programStageSection?: Partial<ProgramStageSection>;
   data?: string;
   displayContent?: string;
   programRuleActionType!: string;

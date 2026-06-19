@@ -32,6 +32,8 @@ import {
 import { FieldCascadeUtil } from '../../utils/field-cascade.util';
 import { CoordinatePickerGeoConfig } from '../../components/coordinate-field-component';
 
+//TODO: To move this to shared interface problaly use type from the metadata rule model since they have already been defined
+type SectionRuleTargetType = 'PROGRAM_SECTION' | 'PROGRAM_STAGE_SECTION';
 @Component({
   selector: 'ng-dhis2-ui-form',
   templateUrl: './form.component.html',
@@ -264,6 +266,35 @@ export class FormComponent implements OnChanges, OnDestroy, OnInit {
     if (!this.collapsibleSections()) return true;
     const id = section?.id ?? index;
     return this.openSectionId() === id;
+  }
+
+  //TODO: To move the section visible check to a custom rule implementation for program sections
+  isSectionVisible(
+    section: { id?: string } | null | undefined,
+    expectedSectionType: SectionRuleTargetType
+  ): boolean {
+    const sectionId = section?.id;
+    if (!sectionId) return true;
+
+    if (expectedSectionType === 'PROGRAM_SECTION') {
+      return this.getVisibleSectionFields(section).length > 0;
+    }
+
+    const sectionActions = (this.programRuleActions() || []).filter(
+      (action: IMetadataRuleAction) =>
+        action.section === sectionId &&
+        action.sectionType === expectedSectionType
+    );
+
+    const hasShowSectionAction = sectionActions.some(
+      (action) => action.actionType === 'SHOWSECTION'
+    );
+
+    const hasHideSectionAction = sectionActions.some(
+      (action) => action.actionType === 'HIDESECTION'
+    );
+
+    return hasShowSectionAction || !hasHideSectionAction;
   }
 
   ngOnInit(): void {
