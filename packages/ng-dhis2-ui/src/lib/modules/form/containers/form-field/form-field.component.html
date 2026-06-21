@@ -7,11 +7,12 @@
 
   <div class="form-field-item">
     <ng-dhis2-ui-form-field-item
-      [field]="formField"
+      [field]="getDisplayField(formField)"
       [fieldError]="fieldError"
       [isValueAssigned]="isAssigned"
       [fieldConfig]="fieldConfigValue"
       [(form)]="form"
+      [programRuleOptions]="programRuleOptions()"
       [dataId]="dataId()"
       [customOrgUnitRoots]="customOrgUnitRoots()"
       [optionCascadeConfigs]="cascadeConfigs"

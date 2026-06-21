@@ -734,6 +734,7 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
   field = input.required<IFormField<string>>();
   fieldError = input<string | undefined>();
   fieldConfig = input<FieldConfig>(new FieldConfig());
+  programRuleOptions = input<any[] | undefined>();
   form = model.required<FormGroup>();
 
   // kept for compatibility (even if not used directly here)
@@ -757,6 +758,9 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
   protected readonly value$ = toObservable(this.value);
   protected readonly isValueAssigned$ = toObservable(this.isValueAssigned);
   protected readonly fieldError$ = toObservable(this.fieldError);
+  protected readonly programRuleOptions$ = toObservable(
+    this.programRuleOptions
+  );
 
   readonly label: Signal<string | undefined> = computed(() => {
     const cfg = this.fieldConfig();
@@ -965,6 +969,36 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
       >();
       const [checkingUniqueness, setCheckingUniqueness] =
         useState<boolean>(false);
+
+      useEffect(() => {
+        const sub = this.programRuleOptions$.subscribe((options) => {
+          const cascade = this.#resolveCascadeForCurrentField();
+
+          if (cascade?.kind === 'OPTIONS_PATH') return;
+
+          const nextOptions = options ?? this.field().options ?? [];
+          setFilteredOptions(nextOptions);
+
+          const currentCtrl = this.#getCurrentFieldControl(fg);
+          const currentValue = String(currentCtrl?.value ?? '').trim();
+
+          if (!currentValue) return;
+
+          const stillValid = nextOptions.some((option: any) => {
+            const optionValue = String(
+              option?.value ?? option?.id ?? option?.code ?? option?.key ?? ''
+            );
+            return optionValue === currentValue;
+          });
+
+          if (!stillValid) {
+            currentCtrl?.setValue(null, { emitEvent: true });
+            setValue('');
+          }
+        });
+
+        return () => sub.unsubscribe();
+      }, []);
 
       // Keep refs synced
       useEffect(() => {
