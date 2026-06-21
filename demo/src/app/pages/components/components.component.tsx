@@ -71,11 +71,11 @@ export class ComponentsComponent implements OnInit {
     formType: 'EVENT',
     displayType: 'FLAT',
     autoComplete: true,
-    // autoAssignedValues: [
-    //   {
-    //     field: 'orgUnit',
-    //     value: 'xSIt9MfMKiM',
-    //   },
+    autoAssignedValues: [
+      {
+        field: 'orgUnit',
+        value: 'OKHzQJFk8Ys',
+      },
     //   {
     //     field: 'occurredAt',
     //     value: format(new Date(), 'yyyy-MM-dd'),
@@ -87,7 +87,7 @@ export class ComponentsComponent implements OnInit {
     //     accept: ['.pdf'],
     //     sizeLimit: 2 * 1024 * 1024,
     //   },
-    // ],
+    ],
   });
 
   completedTrainingFilter = [

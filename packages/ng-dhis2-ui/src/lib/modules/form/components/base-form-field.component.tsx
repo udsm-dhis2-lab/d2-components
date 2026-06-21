@@ -972,11 +972,19 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
 
       useEffect(() => {
         const sub = this.programRuleOptions$.subscribe((options) => {
+          if (!options) return;
+          if (
+            field.controlType !== 'dropdown' &&
+            field.controlType !== 'multi-dropdown'
+          ) {
+            return;
+          }
+
           const cascade = this.#resolveCascadeForCurrentField();
 
           if (cascade?.kind === 'OPTIONS_PATH') return;
 
-          const nextOptions = options ?? this.field().options ?? [];
+          const nextOptions = options;
           setFilteredOptions(nextOptions);
 
           const currentCtrl = this.#getCurrentFieldControl(fg);
