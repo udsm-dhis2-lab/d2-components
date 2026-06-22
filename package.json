@@ -65,7 +65,7 @@
     "@docusaurus/core": "^3.10.1",
     "@docusaurus/module-type-aliases": "^3.10.1",
     "@docusaurus/preset-classic": "^3.10.1",
-    "@nx/angular": "21.3.11",
+    "@nx/angular": "23.0.0",
     "@nx/eslint": "21.3.11",
     "@nx/eslint-plugin": "21.3.11",
     "@nx/jest": "21.3.11",
