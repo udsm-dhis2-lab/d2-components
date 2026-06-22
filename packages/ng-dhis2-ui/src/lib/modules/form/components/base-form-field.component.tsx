@@ -1327,6 +1327,7 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
                 required={f.required}
                 disabled={disabled}
                 customOrgUnitRoots={this.customOrgUnitRoots()}
+                orgUnitRoots={f.extension?.orgUnitRoots}
                 onSelectOrgUnit={(selectedOrgUnit: string) =>
                   onValueChange(selectedOrgUnit)
                 }

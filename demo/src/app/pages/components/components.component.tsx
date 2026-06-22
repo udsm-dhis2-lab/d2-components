@@ -50,6 +50,17 @@ export class ComponentsComponent implements OnInit {
   ];
   triggerRefetch = false;
 
+customOrgUnitRoots = [
+  {
+    field: 'wkV3y1YfWtz',
+    orgUnit: 'SuoqM5pXPWG',
+  },
+  {
+    field: 'Q4Yz7Mn26QT',
+    orgUnit: 'SuoqM5pXPWG',
+  },
+];
+
   pcofig = new ProgramEntryFormConfig({
     program: 'A3olldDSHQg',
     programStage: 'NtZXBym2KfD',
@@ -66,9 +77,9 @@ export class ComponentsComponent implements OnInit {
   });
 
   formConfig = new ProgramEntryFormConfig({
-    program: 'TRw2GByncfl',
-    programStage: 'sNrDHjft0cX',
-    formType: 'EVENT',
+    program: 't1pTvYbv08Z',
+    // programStage: 'sNrDHjft0cX',
+    formType: 'TRACKER',
     displayType: 'FLAT',
     autoComplete: true,
     autoAssignedValues: [
@@ -88,6 +99,16 @@ export class ComponentsComponent implements OnInit {
     //     sizeLimit: 2 * 1024 * 1024,
     //   },
     ],
+    formFieldExtensions: [
+  {
+    id: 'wkV3y1YfWtz',
+    orgUnitRoots: ['m0frOspS7JY'],
+  },
+  {
+    id: 'Q4Yz7Mn26QT',
+    orgUnitRoots: ['m0frOspS7JY'],
+  },
+]
   });
 
   completedTrainingFilter = [
