@@ -5,4 +5,5 @@ export interface FormFieldExtension {
   isDataElementUnique?: boolean;
   optionsSourceCode?: string;
   organisationUnits?: any[]
+  orgUnitRoots?: string[];
 }
