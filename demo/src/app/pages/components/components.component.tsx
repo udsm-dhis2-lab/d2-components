@@ -50,16 +50,16 @@ export class ComponentsComponent implements OnInit {
   ];
   triggerRefetch = false;
 
-customOrgUnitRoots = [
-  {
-    field: 'wkV3y1YfWtz',
-    orgUnit: 'SuoqM5pXPWG',
-  },
-  {
-    field: 'Q4Yz7Mn26QT',
-    orgUnit: 'SuoqM5pXPWG',
-  },
-];
+  customOrgUnitRoots = [
+    {
+      field: 'wkV3y1YfWtz',
+      orgUnit: 'SuoqM5pXPWG',
+    },
+    {
+      field: 'Q4Yz7Mn26QT',
+      orgUnit: 'SuoqM5pXPWG',
+    },
+  ];
 
   pcofig = new ProgramEntryFormConfig({
     program: 'A3olldDSHQg',
@@ -76,39 +76,78 @@ customOrgUnitRoots = [
     // ],
   });
 
-  formConfig = new ProgramEntryFormConfig({
+  // formConfig = new ProgramEntryFormConfig({
+  //   program: 't1pTvYbv08Z',
+  //   // programStage: 'sNrDHjft0cX',
+  //   formType: 'TRACKER',
+  //   displayType: 'FLAT',
+  //   autoComplete: true,
+  //   autoAssignedValues: [
+  //     {
+  //       field: 'orgUnit',
+  //       value: 'OKHzQJFk8Ys',
+  //     },
+  //     //   {
+  //     //     field: 'occurredAt',
+  //     //     value: format(new Date(), 'yyyy-MM-dd'),
+  //     //   },
+  //     // ],
+  //     // formFieldExtensions: [
+  //     //   {
+  //     //     id: 'seUJl7AEZtS',
+  //     //     accept: ['.pdf'],
+  //     //     sizeLimit: 2 * 1024 * 1024,
+  //     //   },
+  //   ],
+  //   formFieldExtensions: [
+  //     {
+  //       id: 'wkV3y1YfWtz',
+  //       orgUnitRoots: ['m0frOspS7JY'],
+  //     },
+  //     {
+  //       id: 'Q4Yz7Mn26QT',
+  //       orgUnitRoots: ['m0frOspS7JY'],
+  //     },
+  //   ],
+  // });
+
+    formConfig = new ProgramEntryFormConfig({
     program: 't1pTvYbv08Z',
-    // programStage: 'sNrDHjft0cX',
+    hideRegistrationUnit: false,
     formType: 'TRACKER',
     displayType: 'FLAT',
-    autoComplete: true,
+    formFieldExtensions: [
+      {
+        id: 'wkV3y1YfWtz',
+        orgUnitRoots: ['m0frOspS7JY'],
+      },
+      {
+        id: 'Q4Yz7Mn26QT',
+        orgUnitRoots: ['m0frOspS7JY'],
+      },
+      {
+        id: 'Hi0pfvU8u0h',
+        orgUnitRoots: ['m0frOspS7JY'],
+      },
+      {
+        id: 'EwxvQ1GZj9r',
+        orgUnitRoots: ['m0frOspS7JY'],
+      },
+    ],
     autoAssignedValues: [
       {
-        field: 'orgUnit',
-        value: 'OKHzQJFk8Ys',
+        field: 'BDGKkkb8s9j',
+        value: '0753916529',
       },
-    //   {
-    //     field: 'occurredAt',
-    //     value: format(new Date(), 'yyyy-MM-dd'),
-    //   },
-    // ],
-    // formFieldExtensions: [
-    //   {
-    //     id: 'seUJl7AEZtS',
-    //     accept: ['.pdf'],
-    //     sizeLimit: 2 * 1024 * 1024,
-    //   },
+      {
+        field: 'a7ilGDvYugI',
+        value: 'erick jihn',
+      },
+      {
+        field: 'E3hwZHin4on',
+        value: '2025-03-12',
+      },
     ],
-    formFieldExtensions: [
-  {
-    id: 'wkV3y1YfWtz',
-    orgUnitRoots: ['m0frOspS7JY'],
-  },
-  {
-    id: 'Q4Yz7Mn26QT',
-    orgUnitRoots: ['m0frOspS7JY'],
-  },
-]
   });
 
   completedTrainingFilter = [
@@ -151,7 +190,7 @@ customOrgUnitRoots = [
           mustExist: true,
         },
         priority: 1,
-      }
+      },
     ],
   };
 

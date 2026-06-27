@@ -40,6 +40,7 @@ export const getTrackedEntityTableData = (
     : [teisRaw];
 
   const orgUnitLabel = metaData.orgUnitLabel as string;
+  const incidentDateLabel = metaData.incidentDateLabel as string;
   const orgUnitMap = (response.data as TrackedEntityInstancesResponse)
     .orgUnitsMap;
 
@@ -112,6 +113,14 @@ const shouldIncludeDataElement = (psde: any): boolean =>
       label: orgUnitLabel || 'Registering unit',
       key: 'orgUnit',
     },
+    ...(metaData.displayIncidentDate
+      ? [
+          {
+            label: incidentDateLabel || 'Incident date',
+            key: 'incidentDate',
+          },
+        ]
+      : []),
     ...attributeColumns,
     ...dataElementColumns,
   ];
@@ -238,6 +247,11 @@ const shouldIncludeDataElement = (psde: any): boolean =>
 
     row['orgUnitId'] = { value: orgUnitId || '-' };
     row['orgUnit'] = { value: orgUnitName };
+    row['incidentDate'] = {
+      value: enrollment.incidentDate
+        ? formatDate(enrollment.incidentDate)
+        : '-',
+    };
 
     const teiObject =
       typeof tei.toObject === 'function' ? tei.toObject() : null;
