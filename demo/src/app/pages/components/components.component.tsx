@@ -137,7 +137,7 @@ export class ComponentsComponent implements OnInit {
     autoAssignedValues: [
       {
         field: 'BDGKkkb8s9j',
-        value: '0753916529',
+        value: '+255753916529',
       },
       {
         field: 'a7ilGDvYugI',
