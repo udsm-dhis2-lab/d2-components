@@ -324,8 +324,10 @@ export class FormComponent implements OnChanges, OnDestroy, OnInit {
           if (fieldToRemove) {
             const form = this.form();
             const currentValue = form.get(fieldToRemove.key)?.value;
+            const shouldPreserveValue =
+              fieldToRemove.disabled || fieldToRemove.generated;
 
-            if (currentValue != null) {
+            if (currentValue != null && !shouldPreserveValue) {
               form.get(fieldToRemove.key)?.setValue(null);
               this.onFieldUpdate(form, fieldToRemove);
             }
