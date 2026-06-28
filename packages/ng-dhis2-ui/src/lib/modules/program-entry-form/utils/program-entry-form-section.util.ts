@@ -20,7 +20,10 @@ import { FieldDropdown } from '../../form/models/field-dropdown.model';
 import { camelCase, isUndefined } from 'lodash';
 import { FormField } from '../../form/models/form-field.model';
 import { FieldUtil } from '../../form/utils/field.util';
-import { FormFieldExtension } from '../../form/interfaces/form-field-extension.interface';
+import {
+  CustomFieldConfiguration,
+  FormFieldExtension,
+} from '../../form/interfaces/form-field-extension.interface';
 import { IEntityFormFieldBase } from '../models/form-field-base.model';
 import { ProgramEntryFormFieldUtil } from './program-entry-form-field.util';
 
@@ -44,7 +47,11 @@ export class ProgramEntryFormSectionUtil {
 
   constructor(
     private program: Program,
-    private config: ProgramEntryFormConfig
+    private config: ProgramEntryFormConfig,
+    private customFieldConfigurations: Record<
+      string,
+      CustomFieldConfiguration
+    > = {}
   ) {
     this.fieldUtil = new ProgramEntryFormFieldUtil(program, config);
   }
@@ -345,8 +352,16 @@ export class ProgramEntryFormSectionUtil {
       optionSet: tea.optionSet,
     };
 
+    const customConfiguration =
+      this.customFieldConfigurations?.[iTrackedEntityFormFieldBase.id];
+
+    const fieldWithCustomConfiguration = {
+      ...iTrackedEntityFormFieldBase,
+      ...(customConfiguration || {}),
+    };
+
     const options = FieldDropdown.getDropdownOptions(
-      iTrackedEntityFormFieldBase
+      fieldWithCustomConfiguration
     );
     const hasOptions = (options?.length ?? 0) > 0;
 
@@ -365,28 +380,32 @@ export class ProgramEntryFormSectionUtil {
       return null;
     }
 
+
     return new FormField<string>({
-      id: iTrackedEntityFormFieldBase.id,
-      code: iTrackedEntityFormFieldBase.code,
+      id: fieldWithCustomConfiguration.id,
+      code: fieldWithCustomConfiguration.code,
       label:
-        iTrackedEntityFormFieldBase.formName ||
-        iTrackedEntityFormFieldBase.name,
-      key: iTrackedEntityFormFieldBase.code
-        ? camelCase(iTrackedEntityFormFieldBase.code)
-        : iTrackedEntityFormFieldBase.id,
-      required: iTrackedEntityFormFieldBase.mandatory,
-      type: FieldUtil.getFieldType(iTrackedEntityFormFieldBase.valueType!),
+        fieldWithCustomConfiguration.formName ||
+        fieldWithCustomConfiguration.name,
+      key: fieldWithCustomConfiguration.code
+        ? camelCase(fieldWithCustomConfiguration.code)
+        : fieldWithCustomConfiguration.id,
+      required: fieldWithCustomConfiguration.mandatory,
+      type: FieldUtil.getFieldType(fieldWithCustomConfiguration.valueType!),
       options,
       hasOptions,
       disabled:
-        this.#getDisabledStatus(iTrackedEntityFormFieldBase) || !!tea.generated,
-      order: iTrackedEntityFormFieldBase.sortOrder,
+        this.#getDisabledStatus(iTrackedEntityFormFieldBase) ||
+        !!tea.generated,
+      order: fieldWithCustomConfiguration.sortOrder,
       controlType: FieldUtil.getFieldControlType(
-        iTrackedEntityFormFieldBase.valueType!,
+        fieldWithCustomConfiguration.valueType!,
         hasOptions
       ),
       allowFutureDate: programTrackedEntityAttribute.allowFutureDate === true,
       extension: fieldExtension,
+      fieldOptionsDependsOn:
+        fieldWithCustomConfiguration.fieldOptionsDependsOn,
       generated: !!tea.generated,
       unique: !!tea.unique,
       pattern: tea.pattern,
@@ -419,6 +438,24 @@ export class ProgramEntryFormSectionUtil {
       if (!canonicalField?.id) continue;
 
       fieldsByAttributeId.set(canonicalField.id, canonicalField);
+    }
+
+    for (const [fieldId, field] of fieldsByAttributeId.entries()) {
+      if (!field.fieldOptionsDependsOn) continue;
+
+      const dependentField = fieldsByAttributeId.get(
+        field.fieldOptionsDependsOn
+      );
+      if (!dependentField) continue;
+
+      fieldsByAttributeId.set(
+        fieldId,
+        new FormField<string>({
+          ...field,
+          dependentField,
+          controlType: 'dropdown',
+        })
+      );
     }
 
     return fieldsByAttributeId;

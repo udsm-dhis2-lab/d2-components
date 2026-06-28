@@ -116,24 +116,24 @@ export class ComponentsComponent implements OnInit {
     hideRegistrationUnit: false,
     formType: 'TRACKER',
     displayType: 'FLAT',
-    formFieldExtensions: [
-      {
-        id: 'wkV3y1YfWtz',
-        orgUnitRoots: ['m0frOspS7JY'],
-      },
-      {
-        id: 'Q4Yz7Mn26QT',
-        orgUnitRoots: ['m0frOspS7JY'],
-      },
-      {
-        id: 'Hi0pfvU8u0h',
-        orgUnitRoots: ['m0frOspS7JY'],
-      },
-      {
-        id: 'EwxvQ1GZj9r',
-        orgUnitRoots: ['m0frOspS7JY'],
-      },
-    ],
+    // formFieldExtensions: [
+    //   {
+    //     id: 'wkV3y1YfWtz',
+    //     orgUnitRoots: ['m0frOspS7JY'],
+    //   },
+    //   {
+    //     id: 'Q4Yz7Mn26QT',
+    //     orgUnitRoots: ['m0frOspS7JY'],
+    //   },
+    //   {
+    //     id: 'Hi0pfvU8u0h',
+    //     orgUnitRoots: ['m0frOspS7JY'],
+    //   },
+    //   {
+    //     id: 'EwxvQ1GZj9r',
+    //     orgUnitRoots: ['m0frOspS7JY'],
+    //   },
+    // ],
     autoAssignedValues: [
       {
         field: 'BDGKkkb8s9j',

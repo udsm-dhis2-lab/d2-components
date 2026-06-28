@@ -1091,6 +1091,62 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
       // ----------------------------
       useEffect(() => {
         const cascade = this.#resolveCascadeForCurrentField();
+        const dependentField = field.dependentField;
+
+        if (dependentField) {
+          const parentCtrl = this.#getControl(
+            fg,
+            dependentField.key || dependentField.id
+          );
+
+          if (!parentCtrl) {
+            setFilteredOptions([]);
+            setDisabled(baseDisabled);
+            return undefined;
+          }
+
+          const parentOptions =
+            dependentField.options?.length > 0
+              ? dependentField.options
+              : dependentField.optionSet?.options ?? [];
+
+          const applyDependentOptions = (parentValue: any) => {
+            const parentOption = parentOptions.find((option: any) => {
+              const optionValue = option?.value ?? option?.code ?? option?.key;
+              return optionValue === parentValue;
+            });
+
+            const nextOptions = parentOption?.options ?? [];
+            const childCtrl = this.#getCurrentFieldControl(fg);
+            const currentChildValue = String(childCtrl?.value ?? '').trim();
+
+            if (currentChildValue) {
+              const stillValid = nextOptions.some((option: any) => {
+                const optionValue = String(
+                  option?.value ?? option?.code ?? option?.key ?? ''
+                );
+                return optionValue === currentChildValue;
+              });
+
+              if (!stillValid) {
+                childCtrl?.setValue(null, { emitEvent: true });
+                setValue('');
+              }
+            }
+
+            setFilteredOptions(nextOptions);
+            setDisabled(baseDisabled || !parentValue);
+
+          };
+
+          applyDependentOptions(parentCtrl.value);
+
+          const sub = parentCtrl.valueChanges.subscribe((value) =>
+            applyDependentOptions(value)
+          );
+
+          return () => sub.unsubscribe();
+        }
 
         if (!cascade || cascade.kind !== 'OPTIONS_PATH') {
           setFilteredOptions(field.options ?? []);
