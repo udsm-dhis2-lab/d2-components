@@ -512,6 +512,7 @@ export class LineListTableComponent
       triggerTokenState,
     ]);
 
+    //TODO: ADD DOWNLOADING SUPPORT USING ANALYTICS
     const handleDownload = async (format: 'CSV' | 'XLSX') => {
       try {
         setDownloadLoading(true);
