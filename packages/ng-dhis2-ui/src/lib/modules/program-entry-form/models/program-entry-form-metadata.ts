@@ -13,7 +13,7 @@ import {
 import { ProgramEntryFormFieldUtil } from '../utils/program-entry-form-field.util';
 import { ProgramStageEntryFormSectionUtil } from '../utils/program-stage-entry-form-section.util';
 import { ProgramEntryFormSectionUtil } from '../utils/program-entry-form-section.util';
-import { CustomFieldConfiguration } from '../../form/interfaces/form-field-extension.interface';
+import { CustomFieldConfiguration } from '../../form/interfaces/custom-field-configuration.interface';
 
 export interface IProgramEntryFormMetaData {
   id: string;

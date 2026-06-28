@@ -7,11 +7,3 @@ export interface FormFieldExtension {
   organisationUnits?: any[];
   orgUnitRoots?: string[];
 }
-
-export interface CustomFieldConfiguration {
-  id: string;
-  fieldOptionsDependsOn?: string;
-  optionSet?: {
-    options: any[];
-  };
-}
