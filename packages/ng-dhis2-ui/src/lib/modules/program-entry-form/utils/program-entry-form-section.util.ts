@@ -20,10 +20,8 @@ import { FieldDropdown } from '../../form/models/field-dropdown.model';
 import { camelCase, isUndefined } from 'lodash';
 import { FormField } from '../../form/models/form-field.model';
 import { FieldUtil } from '../../form/utils/field.util';
-import {
-  CustomFieldConfiguration,
-  FormFieldExtension,
-} from '../../form/interfaces/form-field-extension.interface';
+import { FormFieldExtension } from '../../form/interfaces/form-field-extension.interface';
+import { CustomFieldConfiguration } from '../../form/interfaces/custom-field-configuration.interface';
 import { IEntityFormFieldBase } from '../models/form-field-base.model';
 import { ProgramEntryFormFieldUtil } from './program-entry-form-field.util';
 
