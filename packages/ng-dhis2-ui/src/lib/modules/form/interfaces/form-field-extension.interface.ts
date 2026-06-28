@@ -4,6 +4,14 @@ export interface FormFieldExtension {
   sizeLimit?: number;
   isDataElementUnique?: boolean;
   optionsSourceCode?: string;
-  organisationUnits?: any[]
+  organisationUnits?: any[];
   orgUnitRoots?: string[];
+}
+
+export interface CustomFieldConfiguration {
+  id: string;
+  fieldOptionsDependsOn?: string;
+  optionSet?: {
+    options: any[];
+  };
 }

@@ -6,12 +6,19 @@ export class FieldDropdown implements IFieldDropdown {
   value!: string;
   label!: string;
   order?: number | undefined;
+  options?: FieldDropdown[];
 
   constructor(params: IFieldDropdown) {
-    this.key = params.key;
-    this.value = params.value;
-    this.label = params.label;
-    this.order = params.order;
+    const rawParams = params as any;
+
+    this.key = params.key ?? rawParams.id ?? rawParams.code ?? rawParams.name;
+    this.value = params.value ?? rawParams.code ?? rawParams.name;
+    this.label =
+      params.label ?? rawParams.name ?? rawParams.displayName ?? rawParams.code;
+    this.order = params.order ?? rawParams.sortOrder;
+    this.options = params.options?.map(
+      (option: IFieldDropdown) => new FieldDropdown(option)
+    );
   }
 
   toJson(): IFieldDropdown {
@@ -20,6 +27,7 @@ export class FieldDropdown implements IFieldDropdown {
       value: this.value,
       label: this.label,
       order: this.order,
+      options: this.options?.map((option) => option.toJson()),
     };
   }
 
@@ -62,10 +70,11 @@ export class FieldDropdown implements IFieldDropdown {
       (field?.optionSet?.options || []).map(
         (option: { id: any; code: any; name: any; sortOrder: any }) => {
           return new FieldDropdown({
-            key: option.id,
-            value: option.code,
-            label: option.name,
+            key: option.id ?? option.code ?? option.name,
+            value: option.code ?? (option as any).value ?? option.name,
+            label: option.name ?? (option as any).label ?? option.code,
             order: option.sortOrder,
+            options: (option as any).options,
           });
         }
       ),
