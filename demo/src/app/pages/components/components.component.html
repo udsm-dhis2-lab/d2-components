@@ -287,11 +287,6 @@
 </div> -->
 <!-- [teiEnrollmentList]="{onApprovalClick: onApprove}" -->
 
-<!-- [dataQueryFilters]="[new DataQueryFilter()
-.setAttribute('tgGvHgQgtQ0')
-.setCondition(DataFilterCondition.Equal)
-.setValue(this.batchNumber),]" -->
-
 <div>
   <!-- <ng-dhis2-ui-line-list
     [programId]="'tOhKbXMiJ1J'"
@@ -381,9 +376,10 @@
       [programId]="'t1pTvYbv08Z'"
       [orgUnit]="'SuoqM5pXPWG'"
       [ouMode]="'DESCENDANTS'"
+      [dataQueryFilters]="filters"
+       [showDownloadButton]="true"
       [showFilters]="true"
       [actionOptionOrientation]="'LINK'"
-      [customDisplayInReportsIds]="['lg6YB4SKK8M']"
       [columnNameSource]="'FORM_NAME'"
     ></ng-dhis2-ui-line-list>
 

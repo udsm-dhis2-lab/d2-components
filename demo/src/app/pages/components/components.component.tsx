@@ -111,7 +111,7 @@ export class ComponentsComponent implements OnInit {
   //   ],
   // });
 
-    formConfig = new ProgramEntryFormConfig({
+  formConfig = new ProgramEntryFormConfig({
     program: 't1pTvYbv08Z',
     hideRegistrationUnit: false,
     formType: 'TRACKER',
@@ -151,6 +151,15 @@ export class ComponentsComponent implements OnInit {
   });
 
   completedTrainingFilter = [
+    new DataQueryFilter()
+      .setAttribute('pWu4cEoJapG')
+      .setProgramStage('a8N7x23LmXp')
+      .setCondition(DataFilterCondition.Equal)
+      .setType('DATA_ELEMENT')
+      .setValue('Yes'),
+  ];
+
+  REVIEWFILTER = [
     new DataQueryFilter()
       .setAttribute('pWu4cEoJapG')
       .setProgramStage('a8N7x23LmXp')
@@ -213,6 +222,15 @@ export class ComponentsComponent implements OnInit {
     // .setValue('Rejected')
     // .setType('DATA_ELEMENT')
     // .setProgramStage('NtZXBym2KfD'),
+  ];
+
+  filters: DataQueryFilter[] = [
+    new DataQueryFilter()
+      .setAttribute('o5K07ZkNF7J')
+      .setCondition(DataFilterCondition.In)
+      .setValue(['Yes', 'No'])
+      .setType('DATA_ELEMENT')
+      .setProgramStage('q2O2QgN4l8O'),
   ];
 
   setValue() {
@@ -278,7 +296,7 @@ export class ComponentsComponent implements OnInit {
 
   formValuePayload: any;
 
-  filters = [
+  eventFilters = [
     {
       programStage: 'AFdwWJ6LpRT',
       dataElement: 'WCuw3RqR2pX',
