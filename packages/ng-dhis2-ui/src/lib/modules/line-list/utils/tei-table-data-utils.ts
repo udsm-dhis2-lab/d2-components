@@ -11,6 +11,7 @@ import {
   TrackedEntityInstancesResponse,
 } from '../models/line-list.models';
 import { parse, format, isValid } from 'date-fns';
+import { formatMultiTextOptionValue } from './multi-text-option.util';
 
 export const getTrackedEntityTableData = (
   response: LineListResponse,
@@ -27,12 +28,12 @@ export const getTrackedEntityTableData = (
   orgUnitLabel: string;
 } => {
   const getColumnLabel = (item?: {
-  name?: string;
-  formName?: string;
-}): string =>
-  columnNameSource === 'FORM_NAME'
-    ? item?.formName || item?.name || 'Default'
-    : item?.name || item?.formName || 'Default';
+    name?: string;
+    formName?: string;
+  }): string =>
+    columnNameSource === 'FORM_NAME'
+      ? item?.formName || item?.name || 'Default'
+      : item?.name || item?.formName || 'Default';
   const teisRaw = (response.data as TrackedEntityInstancesResponse)
     .trackedEntityInstances;
   const teis: TrackedEntityInstance[] = Array.isArray(teisRaw)
@@ -51,11 +52,11 @@ export const getTrackedEntityTableData = (
       key: trackedEntityAttribute.id,
     }));
 
-const shouldIncludeDataElement = (psde: any): boolean =>
-  customDisplayInReportsIds !== undefined
-    ? customDisplayInReportsIds.includes(psde.dataElement?.id)
-    : psde.displayInReports === true;
-    
+  const shouldIncludeDataElement = (psde: any): boolean =>
+    customDisplayInReportsIds !== undefined
+      ? customDisplayInReportsIds.includes(psde.dataElement?.id)
+      : psde.displayInReports === true;
+
   const tableSearcheableDataElements = metaData
     .programStages!.sort((a, b) => a.sortOrder - b.sortOrder)
     .flatMap((stage) =>
@@ -95,18 +96,18 @@ const shouldIncludeDataElement = (psde: any): boolean =>
   //   })
   // );
   const dataElementOptions = (metaData.programStages ?? [])
-  .flatMap((stage) => stage.programStageDataElements ?? [])
-  .filter(
-    (psde) => psde.dataElement && shouldIncludeDataElement(psde)
-  )
-  .map(({ dataElement }) => ({
-    id: dataElement.id,
-    options: dataElement.optionSet?.options?.map((option) => ({
-      name: option.name,
-      code: option.code,
-      color: option.style?.color,
-    })) ?? [],
-  }));
+    .flatMap((stage) => stage.programStageDataElements ?? [])
+    .filter((psde) => psde.dataElement && shouldIncludeDataElement(psde))
+    .map(({ dataElement }) => ({
+      id: dataElement.id,
+      valueType: dataElement.valueType,
+      options:
+        dataElement.optionSet?.options?.map((option) => ({
+          name: option.name,
+          code: option.code,
+          color: option.style?.color,
+        })) ?? [],
+    }));
 
   const tableColumns = [
     {
@@ -139,13 +140,13 @@ const shouldIncludeDataElement = (psde: any): boolean =>
   const getOptionColor = (option: any): string | undefined =>
     option?.color || option?.style?.color;
 
-//   const formatDate = (value: string): string => {
-//     try {
-//       return format(parse(value, 'yyyy-MM-dd', new Date()), 'dd/MM/yyyy');
-//     } catch {
-//       return value;
-//     }
-//   };
+  //   const formatDate = (value: string): string => {
+  //     try {
+  //       return format(parse(value, 'yyyy-MM-dd', new Date()), 'dd/MM/yyyy');
+  //     } catch {
+  //       return value;
+  //     }
+  //   };
   const formatDate = (value: string): string => {
     const date = new Date(value);
     if (isValid(date)) {
@@ -207,15 +208,25 @@ const shouldIncludeDataElement = (psde: any): boolean =>
         attributeMeta?.optionSetValue &&
         attributeMeta?.optionSet?.options
       ) {
-        const matchedOption = attributeMeta.optionSet.options.find(
-          (opt: any) => opt.code === value
-        );
-        row[attributeId] = {
-          value: matchedOption?.name || value,
-          ...(getOptionColor(matchedOption) && {
-            style: getOptionColor(matchedOption),
-          }),
-        };
+        if (valueType === 'MULTI_TEXT') {
+          row[attributeId] = {
+            value: formatMultiTextOptionValue(
+              value,
+              attributeMeta.optionSet.options
+            ),
+          };
+        } else {
+          const matchedOption = attributeMeta.optionSet.options.find(
+            (opt: any) => opt.code === value
+          );
+
+          row[attributeId] = {
+            value: matchedOption?.name || value,
+            ...(getOptionColor(matchedOption) && {
+              style: getOptionColor(matchedOption),
+            }),
+          };
+        }
       } else {
         row[attributeId] = { value };
       }
@@ -230,16 +241,22 @@ const shouldIncludeDataElement = (psde: any): boolean =>
       if (!dataElementId || value == null) return;
 
       const dataElementOption = dataElementOptionMap.get(dataElementId);
-      const matchedOption = dataElementOption?.options?.find(
-        (opt: any) => opt.code === value
-      );
+      if (dataElementOption?.valueType === 'MULTI_TEXT') {
+        row[dataElementId] = {
+          value: formatMultiTextOptionValue(value, dataElementOption.options),
+        };
+      } else {
+        const matchedOption = dataElementOption?.options?.find(
+          (opt: any) => opt.code === value
+        );
 
-      row[dataElementId] = {
-       value: matchedOption?.name || value,
-        ...(getOptionColor(matchedOption) && {
-          style: getOptionColor(matchedOption),
-        }),
-      };
+        row[dataElementId] = {
+          value: matchedOption?.name || value,
+          ...(getOptionColor(matchedOption) && {
+            style: getOptionColor(matchedOption),
+          }),
+        };
+      }
     });
 
     const orgUnitId = enrollment.orgUnit;

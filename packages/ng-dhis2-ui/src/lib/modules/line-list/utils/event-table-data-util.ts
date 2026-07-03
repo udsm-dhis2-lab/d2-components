@@ -6,6 +6,7 @@ import {
   TableRow,
   EventsResponse,
 } from '../models/line-list.models';
+import { formatMultiTextOptionValue } from './multi-text-option.util';
 
 export const getEvents = (
   response: LineListResponse,
@@ -14,17 +15,15 @@ export const getEvents = (
   metaData: Program,
   columnNameSource: 'NAME' | 'FORM_NAME' = 'NAME'
 ): { columns: ColumnDefinition[]; data: TableRow[] } => {
-
   const getColumnLabel = (item?: {
-  name?: string;
-  formName?: string;
-}): string =>
-  columnNameSource === 'FORM_NAME'
-    ? item?.formName || item?.name || 'Default'
-    : item?.name || item?.formName || 'Default';
+    name?: string;
+    formName?: string;
+  }): string =>
+    columnNameSource === 'FORM_NAME'
+      ? item?.formName || item?.name || 'Default'
+      : item?.name || item?.formName || 'Default';
 
   const events = (response.data as EventsResponse).events;
-  const eventsiiii = response.data;
   const allDataElements = new Set<string>();
 
   events.forEach((event: any) => {
@@ -52,8 +51,8 @@ export const getEvents = (
 
       return {
         label: dataElementMeta
-      ? getColumnLabel(dataElementMeta.dataElement)
-        : dataElementId,
+          ? getColumnLabel(dataElementMeta.dataElement)
+          : dataElementId,
         key: dataElementId,
       };
     }
@@ -62,9 +61,9 @@ export const getEvents = (
   const dataElementsData: TableRow[] = events.map((event: any, idx: number) => {
     const row: TableRow = {
       event: { value: event.event },
-        responseData: {
-         value: event,
-       },
+      responseData: {
+        value: event,
+      },
       index: {
         value: (pager.page - 1) * pager.pageSize + idx + 1,
       },
@@ -81,13 +80,20 @@ export const getEvents = (
 
       if (dataElementMeta?.dataElement.optionSet) {
         const optionSet = dataElementMeta.dataElement.optionSet;
-        const matchingOption = optionSet.options.find(
-          (option: any) => option.code === dv.value
-        );
 
-        row[dv.dataElement] = matchingOption
-          ? { value: matchingOption.name }
-          : { value: dv.value };
+        if (dataElementMeta.dataElement.valueType === 'MULTI_TEXT') {
+          row[dv.dataElement] = {
+            value: formatMultiTextOptionValue(dv.value, optionSet.options),
+          };
+        } else {
+          const matchingOption = optionSet.options.find(
+            (option: any) => option.code === dv.value
+          );
+
+          row[dv.dataElement] = matchingOption
+            ? { value: matchingOption.name }
+            : { value: dv.value };
+        }
       } else {
         row[dv.dataElement] = { value: dv.value };
       }
@@ -95,7 +101,6 @@ export const getEvents = (
 
     return row;
   });
-
 
   return { columns: entityColumns, data: dataElementsData };
 };
