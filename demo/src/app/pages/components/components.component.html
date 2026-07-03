@@ -1,18 +1,18 @@
-   <main class="line-list-container p-2">
-    <ng-dhis2-ui-line-list
-      [programId]="malariaCaseNotificationProgramId"
-      [orgUnit]="currentUserOrgUnitId ? currentUserOrgUnitId : ''"
-      ouMode="DESCENDANTS"
-      [showFilters]="true"
-      [dataQueryFilters]="dataQueryFilters"
-      [lineListRowActionFilterConfig]="lineListRowActionFilterConfig"
-      actionOptionOrientation="BUTTON"
-      [actionOptions]="visibleActionOptions"
-      (actionSelected)="onActionSelected($event)"
-    ></ng-dhis2-ui-line-list>
-  </main>
- 
- <!-- <app-selection-filters-ui
+<main class="line-list-container p-2">
+  <ng-dhis2-ui-line-list
+    [programId]="malariaCaseNotificationProgramId"
+    [orgUnit]="currentUserOrgUnitId ? currentUserOrgUnitId : ''"
+    ouMode="DESCENDANTS"
+    [showFilters]="true"
+    [dataQueryFilters]="dataQueryFilters"
+    [lineListRowActionFilterConfig]="lineListRowActionFilterConfig"
+    actionOptionOrientation="BUTTON"
+    [actionOptions]="visibleActionOptions"
+    (actionSelected)="onActionSelected($event)"
+  ></ng-dhis2-ui-line-list>
+</main>
+
+<!-- <app-selection-filters-ui
   [startDate]="'2024-03-01'"
   [orgUnitFieldTitle]="'Report Organisation Unit Selection'"
   [endDate]="'2025-02-28'"
@@ -21,7 +21,6 @@
   [program]="'ABC1'"
   [organisationUnit]="'EFG'"
 ></app-selection-filters-ui>
-
 
 <ng-dhis2-ui-line-list
   [programId]="'zyBObUsin0Q'"
@@ -335,7 +334,7 @@
   class="w-full"
 /> -->
 
- <!-- <ng-dhis2-ui-program-entry-form
+<!-- <ng-dhis2-ui-program-entry-form
       [event]="'Q6a515VSBSH'"
       [enrollment]="'oWmjB3QXKPp'"
       [config]="formConfig"
@@ -370,19 +369,21 @@
       (selectBreadcrumb)="onSelectBreadcrumb($event)"
     />
   </div> -->
-  <!--</div> -->
+<!--</div> -->
 <!-- </div> -->
-   <ng-dhis2-ui-line-list
-      [programId]="'t1pTvYbv08Z'"
-      [orgUnit]="'SuoqM5pXPWG'"
-      [ouMode]="'DESCENDANTS'"
-      [dataQueryFilters]="filters"
-       [showDownloadButton]="true"
-      [showFilters]="true"
-      [actionOptionOrientation]="'LINK'"
-      [columnNameSource]="'FORM_NAME'"
-    ></ng-dhis2-ui-line-list>
 
-  <ng-dhis2-ui-program-entry-form
-    [config]="formConfig"
-  />
+<ng-dhis2-ui-line-list
+  [programId]="'t1pTvYbv08Z'"
+  [orgUnit]="'SuoqM5pXPWG'"
+  [ouMode]="'DESCENDANTS'"
+  [dataQueryFilters]="filters"
+  [showDownloadButton]="true"
+  [showFilters]="true"
+  [actionOptionOrientation]="'LINK'"
+  [columnNameSource]="'FORM_NAME'"
+></ng-dhis2-ui-line-list>
+
+<ng-dhis2-ui-program-entry-form
+  [trackedEntity]="'JyiVCDIXk8p'"
+  [config]="formConfig"
+/>
