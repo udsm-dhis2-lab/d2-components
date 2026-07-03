@@ -112,7 +112,7 @@ export class ComponentsComponent implements OnInit {
   // });
 
   formConfig = new ProgramEntryFormConfig({
-    program: 't1pTvYbv08Z',
+    program: 'odOJ9NQ4Jf7',
     hideRegistrationUnit: false,
     formType: 'TRACKER',
     displayType: 'FLAT',
@@ -134,20 +134,20 @@ export class ComponentsComponent implements OnInit {
     //     orgUnitRoots: ['m0frOspS7JY'],
     //   },
     // ],
-    autoAssignedValues: [
-      {
-        field: 'BDGKkkb8s9j',
-        value: '+255753916529',
-      },
-      {
-        field: 'a7ilGDvYugI',
-        value: 'erick jihn',
-      },
-      {
-        field: 'E3hwZHin4on',
-        value: '2025-03-12',
-      },
-    ],
+    // autoAssignedValues: [
+    //   {
+    //     field: 'BDGKkkb8s9j',
+    //     value: '+255753916529',
+    //   },
+    //   {
+    //     field: 'a7ilGDvYugI',
+    //     value: 'erick jihn',
+    //   },
+    //   {
+    //     field: 'E3hwZHin4on',
+    //     value: '2025-03-12',
+    //   },
+    // ],
   });
 
   completedTrainingFilter = [
