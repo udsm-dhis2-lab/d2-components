@@ -17,6 +17,7 @@ import {
   TableRow,
   TrackedEntityInstancesResponse,
 } from '../models/line-list.models';
+import { LineListColumnMetadataDisplayModeValue } from '../models/line-list-column-metadata-display-mode.model';
 import { getEvents } from './event-table-data-util';
 import { getTrackedEntityTableData } from './tei-table-data-utils';
 
@@ -39,6 +40,7 @@ interface LineListDownloadRowsConfig {
   searcheableDataElements: string[];
   customDisplayInReportsIds?: string[];
   columnNameSource: 'NAME' | 'FORM_NAME';
+  columnMetadataDisplayMode?: LineListColumnMetadataDisplayModeValue;
   fetchOrgUnits: (orgUnitIds: string[]) => Observable<Map<string, string>>;
 }
 
@@ -70,6 +72,7 @@ export const fetchLineListDownloadRows = async ({
   searcheableDataElements,
   customDisplayInReportsIds,
   columnNameSource,
+  columnMetadataDisplayMode,
   fetchOrgUnits,
 }: LineListDownloadRowsConfig): Promise<{
   columns: ColumnDefinition[];
@@ -88,11 +91,14 @@ export const fetchLineListDownloadRows = async ({
   if (programStageId || isEvent) {
     const eventQuery = d2.eventModule.event
       .setEndDate(resolvedEndDate)
-      .setStartDate(startDate as string)
       .setProgram(programId)
       .setOrgUnit(orgUnit)
       .setOuMode(ouMode as OuMode)
       .setPagination(downloadPager);
+
+    if (startDate) {
+      eventQuery.setStartDate(startDate);
+    }
 
     if (programStageId) {
       eventQuery.setProgramStage(programStageId);
@@ -116,7 +122,8 @@ export const fetchLineListDownloadRows = async ({
       programStageId || '',
       eventsResponse.pager,
       metaData,
-      columnNameSource
+      columnNameSource,
+      columnMetadataDisplayMode
     );
 
     return {
@@ -131,7 +138,6 @@ export const fetchLineListDownloadRows = async ({
   if (isTracker) {
     const trackerQuery = d2.trackerModule.trackedEntity
       .setEndDate(resolvedEndDate)
-      .setStartDate(startDate as string)
       .setProgram(programId)
       .setOrgUnit(orgUnit)
       .setOuMode(ouMode as OuMode)
@@ -141,6 +147,10 @@ export const fetchLineListDownloadRows = async ({
       .setOrderCriterias([
         new DataOrderCriteria().setField('createdAt').setOrder('desc'),
       ]);
+
+    if (startDate) {
+      trackerQuery.setStartDate(startDate);
+    }
 
     if (eventStatus?.status && eventStatus?.programStage) {
       trackerQuery.setEventStatus(eventStatus.status, eventStatus.programStage);
@@ -187,7 +197,8 @@ export const fetchLineListDownloadRows = async ({
       metaData,
       searcheableDataElements,
       customDisplayInReportsIds,
-      columnNameSource
+      columnNameSource,
+      columnMetadataDisplayMode
     );
 
     return {

@@ -116,6 +116,17 @@ export class ComponentsComponent implements OnInit {
     hideRegistrationUnit: false,
     formType: 'TRACKER',
     displayType: 'FLAT',
+    hideEnrollmentDate: true,
+  // autoAssignedValues: [
+  //   // {
+  //   //   field: 'enrollmentDate',
+  //   //   value: '2026-07-03',
+  //   // },
+  //   // {
+  //   //   field: 'incidentDate',
+  //   //   value: '2026-07-03',
+  //   // },
+  // ],
     // formFieldExtensions: [
     //   {
     //     id: 'wkV3y1YfWtz',
