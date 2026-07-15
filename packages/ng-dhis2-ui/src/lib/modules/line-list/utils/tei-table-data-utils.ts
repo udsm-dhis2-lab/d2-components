@@ -10,6 +10,10 @@ import {
   TableRow,
   TrackedEntityInstancesResponse,
 } from '../models/line-list.models';
+import {
+  LineListColumnMetadataDisplayMode,
+  LineListColumnMetadataDisplayModeValue,
+} from '../models/line-list-column-metadata-display-mode.model';
 import { parse, format, isValid } from 'date-fns';
 import { formatMultiTextOptionValue } from './multi-text-option.util';
 
@@ -20,7 +24,8 @@ export const getTrackedEntityTableData = (
   metaData: Program,
   searcheableDataElements: string[],
   customDisplayInReportsIds?: string[],
-  columnNameSource: 'NAME' | 'FORM_NAME' = 'NAME'
+  columnNameSource: 'NAME' | 'FORM_NAME' = 'NAME',
+  columnMetadataDisplayMode?: LineListColumnMetadataDisplayModeValue
 ): {
   columns: ColumnDefinition[];
   data: TableRow[];
@@ -34,6 +39,14 @@ export const getTrackedEntityTableData = (
     columnNameSource === 'FORM_NAME'
       ? item?.formName || item?.name || 'Default'
       : item?.name || item?.formName || 'Default';
+  const shouldShowAllAttributes =
+    columnMetadataDisplayMode ===
+      LineListColumnMetadataDisplayMode.ALL_ATTRIBUTES ||
+    columnMetadataDisplayMode ===
+      LineListColumnMetadataDisplayMode.ALL_ATTRIBUTES_AND_DATA_ELEMENTS;
+  const shouldShowAllDataElements =
+    columnMetadataDisplayMode ===
+    LineListColumnMetadataDisplayMode.ALL_ATTRIBUTES_AND_DATA_ELEMENTS;
   const teisRaw = (response.data as TrackedEntityInstancesResponse)
     .trackedEntityInstances;
   const teis: TrackedEntityInstance[] = Array.isArray(teisRaw)
@@ -45,17 +58,26 @@ export const getTrackedEntityTableData = (
   const orgUnitMap = (response.data as TrackedEntityInstancesResponse)
     .orgUnitsMap;
 
-  const attributeColumns = metaData.displayInListTrackedEntityAttributes
+  const attributeColumns = (
+    shouldShowAllAttributes
+      ? metaData.trackedEntityAttributes
+      : metaData.displayInListTrackedEntityAttributes
+  )
     .sort((a, b) => a.sortOrder! - b.sortOrder!)
     .map((trackedEntityAttribute) => ({
       label: getColumnLabel(trackedEntityAttribute),
       key: trackedEntityAttribute.id,
     }));
 
-  const shouldIncludeDataElement = (psde: any): boolean =>
-    customDisplayInReportsIds !== undefined
+  const shouldIncludeDataElement = (psde: any): boolean => {
+    if (shouldShowAllDataElements) {
+      return true;
+    }
+
+    return customDisplayInReportsIds !== undefined
       ? customDisplayInReportsIds.includes(psde.dataElement?.id)
       : psde.displayInReports === true;
+  };
 
   const tableSearcheableDataElements = metaData
     .programStages!.sort((a, b) => a.sortOrder - b.sortOrder)

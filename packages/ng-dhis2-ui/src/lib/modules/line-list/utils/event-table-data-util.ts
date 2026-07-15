@@ -6,6 +6,10 @@ import {
   TableRow,
   EventsResponse,
 } from '../models/line-list.models';
+import {
+  LineListColumnMetadataDisplayMode,
+  LineListColumnMetadataDisplayModeValue,
+} from '../models/line-list-column-metadata-display-mode.model';
 import { formatMultiTextOptionValue } from './multi-text-option.util';
 
 export const getEvents = (
@@ -13,7 +17,8 @@ export const getEvents = (
   programStageId: string,
   pager: any,
   metaData: Program,
-  columnNameSource: 'NAME' | 'FORM_NAME' = 'NAME'
+  columnNameSource: 'NAME' | 'FORM_NAME' = 'NAME',
+  columnMetadataDisplayMode?: LineListColumnMetadataDisplayModeValue
 ): { columns: ColumnDefinition[]; data: TableRow[] } => {
   const getColumnLabel = (item?: {
     name?: string;
@@ -23,12 +28,10 @@ export const getEvents = (
       ? item?.formName || item?.name || 'Default'
       : item?.name || item?.formName || 'Default';
 
-  const events = (response.data as EventsResponse).events;
-  const allDataElements = new Set<string>();
-
-  events.forEach((event: any) => {
-    event.dataValues.forEach((dv: any) => allDataElements.add(dv.dataElement));
-  });
+  const eventsRaw = (response.data as EventsResponse).events;
+  const events = Array.isArray(eventsRaw)
+    ? eventsRaw
+    : [eventsRaw].filter(Boolean);
 
   let stageFromMetaData;
   if (programStageId) {
@@ -43,20 +46,24 @@ export const getEvents = (
     throw new Error(`Program stage with ID ${programStageId} not found`);
   }
 
-  const entityColumns = Array.from(allDataElements).map(
-    (dataElementId: string) => {
-      const dataElementMeta = stageFromMetaData.programStageDataElements!.find(
-        (psde: any) => psde.dataElement.id === dataElementId
-      );
+  const shouldShowAllDataElements =
+    columnMetadataDisplayMode ===
+    LineListColumnMetadataDisplayMode.ALL_ATTRIBUTES_AND_DATA_ELEMENTS;
 
-      return {
-        label: dataElementMeta
-          ? getColumnLabel(dataElementMeta.dataElement)
-          : dataElementId,
-        key: dataElementId,
-      };
-    }
+  const dataElementMetaList = stageFromMetaData
+    .programStageDataElements!.filter((psde: any) =>
+      shouldShowAllDataElements ? true : psde.displayInReports === true
+    )
+    .sort((a: any, b: any) => a.sortOrder - b.sortOrder);
+
+  const displayedDataElementIds = new Set(
+    dataElementMetaList.map((psde: any) => psde.dataElement.id)
   );
+
+  const entityColumns = dataElementMetaList.map((psde: any) => ({
+    label: getColumnLabel(psde.dataElement),
+    key: psde.dataElement.id,
+  }));
 
   const dataElementsData: TableRow[] = events.map((event: any, idx: number) => {
     const row: TableRow = {
@@ -69,11 +76,15 @@ export const getEvents = (
       },
     };
 
-    allDataElements.forEach((dataElementId: string) => {
+    displayedDataElementIds.forEach((dataElementId: string) => {
       row[dataElementId] = { value: '' };
     });
 
-    event.dataValues.forEach((dv: any) => {
+    (event.dataValues || []).forEach((dv: any) => {
+      if (!displayedDataElementIds.has(dv.dataElement)) {
+        return;
+      }
+
       const dataElementMeta = stageFromMetaData.programStageDataElements!.find(
         (psde: any) => psde.dataElement.id === dv.dataElement
       );

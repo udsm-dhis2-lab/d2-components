@@ -4,3 +4,4 @@
 export * from './action-option-orientation.model';
 export * from './dropdown-menu.model';
 export * from './line-list-action-option.model';
+export * from './line-list-column-metadata-display-mode.model';

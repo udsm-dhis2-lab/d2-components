@@ -30,6 +30,7 @@ import { FilterToolbar } from '../components/table/filterToolbar';
 import { LineListTable } from '../components/table/lineListTable';
 import { ActionOptionOrientation, LineListActionOption } from '../models';
 import { AttributeFilter } from '../models/attribute-filter.model';
+import { LineListColumnMetadataDisplayModeValue } from '../models/line-list-column-metadata-display-mode.model';
 import {
   ColumnDefinition,
   EventsResponse,
@@ -100,6 +101,7 @@ export class LineListTableComponent
   @Input() searcheableDataElements: string[] = [];
   @Input() columnNameSource: 'NAME' | 'FORM_NAME' = 'NAME';
   @Input() customDisplayInReportsIds?: string[];
+  @Input() columnMetadataDisplayMode?: LineListColumnMetadataDisplayModeValue;
   private reactStateUpdaters: any = null;
 
   setReactStateUpdaters = (updaters: any) => {
@@ -326,7 +328,8 @@ export class LineListTableComponent
               this.programStageId as string,
               pager,
               metaData,
-              this.columnNameSource
+              this.columnNameSource,
+              this.columnMetadataDisplayMode
             );
 
             // const filterableColumnIdsSet = new Set(
@@ -450,7 +453,8 @@ export class LineListTableComponent
                 metaData,
                 this.searcheableDataElements,
                 this.customDisplayInReportsIds,
-                this.columnNameSource
+                this.columnNameSource,
+                this.columnMetadataDisplayMode
               );
 
             setFilteredColumns((prev) =>
@@ -532,6 +536,7 @@ export class LineListTableComponent
           searcheableDataElements: this.searcheableDataElements,
           customDisplayInReportsIds: this.customDisplayInReportsIds,
           columnNameSource: this.columnNameSource,
+          columnMetadataDisplayMode: this.columnMetadataDisplayMode,
           fetchOrgUnits: (orgUnitIds) =>
             this.lineListService.fetchOrgUnits(orgUnitIds),
         });
