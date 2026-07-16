@@ -480,7 +480,11 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
       const response = await this.d2.httpInstance.get(
         'dataStore/field-extensions?fields=id,fieldOptionsDependsOn,optionSet&paging=false'
       );
-     const entries = response?.data?.['entries'];
+      const responseData = response?.data;
+
+      const entries = Array.isArray(responseData)
+        ? responseData
+        : responseData?.['entries'];
 
       if (!Array.isArray(entries)) {
         return {};
