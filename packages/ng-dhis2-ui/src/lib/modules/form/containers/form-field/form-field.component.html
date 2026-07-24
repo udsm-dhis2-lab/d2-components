@@ -13,6 +13,7 @@
       [fieldConfig]="fieldConfigValue"
       [(form)]="form"
       [programRuleOptions]="programRuleOptions()"
+      [runtimeOptions]="runtimeOptions"
       [dataId]="dataId()"
       [customOrgUnitRoots]="customOrgUnitRoots()"
       [optionCascadeConfigs]="cascadeConfigs"
@@ -23,6 +24,7 @@
       [value]="value()"
       (update)="onValueChange()"
       (immediateUpdate)="onImmediateChange($event)"
+      (runtimeOptionsChange)="onRuntimeOptionsChange($event)"
     />
   </div>
 }

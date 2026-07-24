@@ -249,6 +249,13 @@ export class FormFieldComponent implements OnInit, OnChanges, OnDestroy {
     this.immediateFieldUpdate.emit({ value: event?.value || '' });
   }
 
+  onRuntimeOptionsChange(event: {
+    field: IFormField<string>;
+    options: any[];
+  }) {
+    this.runtimeOptionChange.emit(event);
+  }
+
   onFieldUpdate(e?: any, isDate?: boolean, isDateTime?: boolean): void {
     if (e && e.value) {
       const dateValue = new Date(e.value);
@@ -320,5 +327,6 @@ export class FormFieldComponent implements OnInit, OnChanges, OnDestroy {
 
   onUpdateRuntimeOptions(options: any[]) {
     this._runtimeOptions = [...options];
+    this.runtimeOptions = [...options];
   }
 }
