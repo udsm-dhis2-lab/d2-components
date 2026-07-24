@@ -735,6 +735,7 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
   fieldError = input<string | undefined>();
   fieldConfig = input<FieldConfig>(new FieldConfig());
   programRuleOptions = input<any[] | undefined>();
+  runtimeOptions = input<any[] | undefined>();
   form = model.required<FormGroup>();
 
   // kept for compatibility (even if not used directly here)
@@ -761,6 +762,7 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
   protected readonly programRuleOptions$ = toObservable(
     this.programRuleOptions
   );
+  protected readonly runtimeOptions$ = toObservable(this.runtimeOptions);
 
   readonly label: Signal<string | undefined> = computed(() => {
     const cfg = this.fieldConfig();
@@ -779,6 +781,10 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
   @Output() immediateUpdate = new EventEmitter<{
     form: FormGroup;
     value: any;
+  }>();
+  @Output() runtimeOptionsChange = new EventEmitter<{
+    field: IFormField<string>;
+    options: any[];
   }>();
 
   override async ngAfterViewInit() {
@@ -1008,6 +1014,33 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
         return () => sub.unsubscribe();
       }, []);
 
+      useEffect(() => {
+        const sub = this.runtimeOptions$.subscribe((options) => {
+          if (!options) return;
+
+          setFilteredOptions(options);
+
+          const currentCtrl = this.#getCurrentFieldControl(fg);
+          const currentValue = String(currentCtrl?.value ?? '').trim();
+
+          if (!currentValue) return;
+
+          const stillValid = options.some((option: any) => {
+            const optionValue = String(
+              option?.value ?? option?.code ?? option?.key ?? option?.id ?? ''
+            );
+            return optionValue === currentValue;
+          });
+
+          if (!stillValid) {
+            currentCtrl?.setValue(null, { emitEvent: true });
+            setValue('');
+          }
+        });
+
+        return () => sub.unsubscribe();
+      }, []);
+
       // Keep refs synced
       useEffect(() => {
         valueRef.current = value;
@@ -1135,6 +1168,12 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
             }
 
             setFilteredOptions(nextOptions);
+            this.ngZone.run(() => {
+              this.runtimeOptionsChange.emit({
+                field,
+                options: nextOptions,
+              });
+            });
             setDisabled(baseDisabled || !parentValue);
 
           };
@@ -1243,24 +1282,33 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
       });
 
       const onValueChange = (newValue: unknown) => {
-       const currentField = this.field();
+        const currentField = this.field();
 
         this.ngZone.run(() => {
           const ctrl = this.#getCurrentFieldControl(fg);
           ctrl?.setValue(newValue);
 
           this.update.emit({ form: fg, value: newValue });
+          if (
+            currentField.controlType === 'dropdown' ||
+            currentField.controlType === 'multi-dropdown'
+          ) {
+            this.runtimeOptionsChange.emit({
+              field: currentField,
+              options: filteredOptions ?? [],
+            });
+          }
         });
 
-          setValue(
-    currentField.controlType === 'checkbox'
-      ? newValue
-        ? 'true'
-        : ''
-      : newValue == null
-      ? ''
-      : String(newValue)
-  );
+        setValue(
+          currentField.controlType === 'checkbox'
+            ? newValue
+              ? 'true'
+              : ''
+            : newValue == null
+            ? ''
+            : String(newValue)
+        );
         setTouched(true);
       };
 

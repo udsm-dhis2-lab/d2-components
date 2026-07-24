@@ -366,6 +366,12 @@ export class FormComponent implements OnChanges, OnDestroy, OnInit {
     return this.form().invalid;
   }
 
+  private getOptionValue(option: any): string {
+    return String(
+      option?.value ?? option?.code ?? option?.key ?? option?.id ?? ''
+    );
+  }
+
   onRunTimeOptionUpdate(result: any) {
     if (this.fieldComponents) {
       const fieldToUpdate = this.fieldComponents.find(
@@ -373,9 +379,14 @@ export class FormComponent implements OnChanges, OnDestroy, OnInit {
           fieldComponent?.field()?.dependentField?.id === result?.field?.id
       );
 
+      const selectedValue = String(
+        this.form()?.value[result?.field?.id] ??
+          this.form()?.value[result?.field?.key] ??
+          ''
+      );
+
       const parentOption = result?.options.find(
-        (option: { code: any }) =>
-          option.code === this.form()?.value[result?.field?.id]
+        (option: any) => this.getOptionValue(option) === selectedValue
       );
 
       fieldToUpdate?.onUpdateRuntimeOptions(parentOption?.options || []);

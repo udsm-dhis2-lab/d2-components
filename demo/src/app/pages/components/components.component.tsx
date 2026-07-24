@@ -112,7 +112,7 @@ export class ComponentsComponent implements OnInit {
   // });
 
   formConfig = new ProgramEntryFormConfig({
-    program: 'odOJ9NQ4Jf7',
+    program: 'TRw2GByncfl',
     hideRegistrationUnit: false,
     formType: 'TRACKER',
     displayType: 'FLAT',
