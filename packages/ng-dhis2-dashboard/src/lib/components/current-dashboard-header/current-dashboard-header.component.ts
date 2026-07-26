@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import {
   ChangeDetectionStrategy,
   Component,
@@ -17,11 +17,10 @@ import { DashboardSelectionFiltersComponent } from '../../modules/dashboard-sele
 
 @Component({
     imports: [
-        CommonModule,
-        MatIconModule,
-        NgxPrintModule,
-        DashboardSelectionFiltersComponent,
-    ],
+    MatIconModule,
+    NgxPrintModule,
+    DashboardSelectionFiltersComponent
+],
     selector: 'd2-current-dashboard-header',
     templateUrl: './current-dashboard-header.component.html',
     styleUrls: ['./current-dashboard-header.component.scss'],

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, EventEmitter, Input, NgZone, Output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -21,7 +21,7 @@ import { ReactWrapperModule } from '@iapps/ng-dhis2-ui';
 import React, { useState } from 'react';
 
 @Component({
-    imports: [CommonModule, ReactWrapperModule, MatTooltipModule, MatIconModule],
+    imports: [ReactWrapperModule, MatTooltipModule, MatIconModule],
     selector: 'd2-dashboard-item-header',
     templateUrl: './dashboard-item-header.component.html',
     styleUrls: ['./dashboard-item-header.component.scss']

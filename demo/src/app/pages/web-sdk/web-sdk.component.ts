@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component } from '@angular/core';
 import {
   AttributeFieldDecorator,
@@ -57,7 +57,7 @@ class Applicant extends TrackedEntityInstance {
 @Component({
   selector: 'app-web-sdk',
   templateUrl: './web-sdk.component.html',
-  imports: [CommonModule],
+  imports: [],
 })
 export class WebSdkComponent {
   d2 = d2Web;
