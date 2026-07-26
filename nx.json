@@ -101,5 +101,6 @@
       "preVersionCommand": "yarn nx run-many -t build"
     }
   },
-  "useLegacyCache": true
+  "useLegacyCache": true,
+  "analytics": true
 }
