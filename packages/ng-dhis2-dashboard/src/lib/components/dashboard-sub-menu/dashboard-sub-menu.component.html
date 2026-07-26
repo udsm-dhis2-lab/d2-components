@@ -1,29 +1,30 @@
 <!-- <div class="d2-dashboard__sub-menu-container">
-  <div
-    *ngFor="let dashboardSubMenu of dashboardSubMenus"
+<div
+  *ngFor="let dashboardSubMenu of dashboardSubMenus"
     [ngClass]="{
       'd2-dashboard__sub-menu-item': true,
       'd2-dashboard__sub-menu-item-selected':
         dashboardSubMenu.id === curentDashboardSubMenu?.id
     }"
-    [matTooltip]="dashboardSubMenu.name"
-    (click)="onSetCurrentDashboardSubMenu($event, dashboardSubMenu)"
+  [matTooltip]="dashboardSubMenu.name"
+  (click)="onSetCurrentDashboardSubMenu($event, dashboardSubMenu)"
   >
-    {{ dashboardSubMenu.name }}
-  </div>
+  {{ dashboardSubMenu.name }}
+</div>
 </div> -->
 
 <div class="d2-dashboard__sub-menu-container" role="list">
-  <button
-    type="button"
-    role="listitem"
-    *ngFor="let dashboardSubMenu of dashboardSubMenus; trackBy: trackById"
-    class="d2-dashboard__sub-menu-item"
-    [class.d2-dashboard__sub-menu-item-selected]="dashboardSubMenu.id === curentDashboardSubMenu?.id"
-    [matTooltip]="dashboardSubMenu.name"
-    [attr.aria-current]="dashboardSubMenu.id === curentDashboardSubMenu?.id ? 'page' : null"
-    (click)="onSetCurrentDashboardSubMenu($event, dashboardSubMenu)"
-  >
-    {{ dashboardSubMenu.name }}
-  </button>
+  @for (dashboardSubMenu of dashboardSubMenus; track trackById($index, dashboardSubMenu)) {
+    <button
+      type="button"
+      role="listitem"
+      class="d2-dashboard__sub-menu-item"
+      [class.d2-dashboard__sub-menu-item-selected]="dashboardSubMenu.id === curentDashboardSubMenu?.id"
+      [matTooltip]="dashboardSubMenu.name"
+      [attr.aria-current]="dashboardSubMenu.id === curentDashboardSubMenu?.id ? 'page' : null"
+      (click)="onSetCurrentDashboardSubMenu($event, dashboardSubMenu)"
+      >
+      {{ dashboardSubMenu.name }}
+    </button>
+  }
 </div>

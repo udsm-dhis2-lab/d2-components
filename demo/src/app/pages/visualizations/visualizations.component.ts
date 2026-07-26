@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component } from '@angular/core';
 import { D2Visualizer, MapLayerConfiguration } from '@iapps/d2-visualizer';
 
@@ -61,7 +61,7 @@ const legendSet = {
 @Component({
   selector: 'app-visualizations',
   templateUrl: './visualizations.component.html',
-  imports: [CommonModule],
+  imports: [],
 })
 export class VisualizationsComponent {
   async ngOnInit() {

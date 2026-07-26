@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @angular-eslint/no-empty-lifecycle-method */
 /* eslint-disable @angular-eslint/use-lifecycle-interface */
-import { CommonModule } from '@angular/common';
+
 import { Component } from '@angular/core';
 import {
   D2Window,
@@ -55,11 +55,10 @@ const SHEHIA_KEYWORDS = [
   templateUrl: './form-components.component.html',
   imports: [
     D2FormModule,
-    CommonModule,
     TrackerFormModule,
     EventFormModule,
-    ProgramEntryFormModule,
-  ],
+    ProgramEntryFormModule
+],
 })
 export class FormComponentsComponent {
   d2 = (window as unknown as D2Window).d2Web;
