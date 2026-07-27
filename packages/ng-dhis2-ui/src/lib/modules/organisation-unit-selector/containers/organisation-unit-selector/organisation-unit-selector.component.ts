@@ -72,7 +72,7 @@ export class OrganisationUnitSelectorComponent extends ReactWrapperModule {
             orgUnitLevelPromise: this.getOrgUnitLevels(),
             roots: rootOrgUnits,
           }),
-        });
+        } as any);
 
       this.render();
     }

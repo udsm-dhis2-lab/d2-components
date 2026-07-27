@@ -198,7 +198,7 @@ export class SelectionFiltersComponent
               )
             )
           ),
-        })
+        } as any)
       : React.createElement(CircularLoader, { small: true });
   };
 

@@ -126,7 +126,7 @@ export class OrganisationUnitSelectorModalComponent extends ReactWrapperModule {
               )
             )
           ),
-        });
+        } as any);
       };
 
       this.render();

@@ -1,6 +1,5 @@
 import { EntityState, EntityAdapter, createEntityAdapter } from '@ngrx/entity';
-import { createFeatureSelector, MemoizedSelector } from '@ngrx/store';
-import { Dictionary } from '@ngrx/entity/src/models';
+import { createFeatureSelector } from '@ngrx/store';
 import {
   DictionaryActions,
   DictionaryActionTypes
