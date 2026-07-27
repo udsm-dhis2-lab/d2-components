@@ -1,6 +1,7 @@
 import {
   provideHttpClient,
   withInterceptorsFromDi,
+  withXhr
 } from '@angular/common/http';
 import {
   ModuleWithProviders,
@@ -21,7 +22,7 @@ export function initializeDb(indexDbServiceConfig: IndexDbServiceConfig) {
 // @dynamic
 @NgModule({
   imports: [],
-  providers: [provideHttpClient(withInterceptorsFromDi())],
+  providers: [provideHttpClient(withXhr(), withInterceptorsFromDi())],
 })
 export class NgxDhis2HttpClientModule {
   static forRoot(

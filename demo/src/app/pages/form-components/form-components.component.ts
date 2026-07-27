@@ -3,7 +3,7 @@
 /* eslint-disable @angular-eslint/no-empty-lifecycle-method */
 /* eslint-disable @angular-eslint/use-lifecycle-interface */
 
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
   D2Window,
   DHIS2Event,
@@ -53,6 +53,7 @@ const SHEHIA_KEYWORDS = [
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'app-form-components',
   templateUrl: './form-components.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     D2FormModule,
     TrackerFormModule,

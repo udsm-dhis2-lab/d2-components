@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import * as _ from 'lodash';
 import { Observable, pipe } from 'rxjs';
 import { IndicatorGroupsState } from '../../store/state/indicators.state';
@@ -16,6 +16,7 @@ import { DictionaryState } from '../../store/reducers/dictionary.reducer';
     selector: 'app-indicators-list',
     templateUrl: './indicators-list.component.html',
     styleUrls: ['./indicators-list.component.css'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class IndicatorsListComponent implements OnInit {

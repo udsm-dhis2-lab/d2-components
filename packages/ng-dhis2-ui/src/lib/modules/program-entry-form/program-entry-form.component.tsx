@@ -8,6 +8,7 @@ import {
   NgZone,
   Output,
   signal,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import {
   AutoAssignedValues,
@@ -39,6 +40,7 @@ import { IFormMetadata } from '../form/interfaces/form-metadata.interface';
   templateUrl: './program-entry-form.component.html',
   styleUrls: ['./program-entry-form.component.scss'],
 
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [D2FormModule, ReactWrapperModule],
 })
 // eslint-disable-next-line @angular-eslint/component-class-suffix

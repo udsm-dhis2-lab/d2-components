@@ -1,5 +1,5 @@
 /* eslint-disable @nx/enforce-module-boundaries */
-import { Component, inject, OnInit, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
   CurrentUser,
@@ -35,6 +35,7 @@ import { ProgramEntryFormConfig } from '../../../../../packages/ng-dhis2-ui/src/
 @Component({
   selector: 'ng-dhis2-ui-app-componenent',
   templateUrl: './components.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class ComponentsComponent implements OnInit {

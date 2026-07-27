@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 import { find } from 'lodash';
 import { DIMENSION_LABELS } from '../../constants/selection-dimension-label.constant';
 import { VisualizationDataSelection } from '../../models';
@@ -10,6 +10,7 @@ import { SummarizeSelectionPipe } from '../../pipes/summarize-selection.pipe';
     imports: [SummarizeSelectionPipe],
     selector: 'd2-dashboard-selection-summary',
     templateUrl: './dashboard-selection-summary.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrls: ['./dashboard-selection-summary.component.scss']
 })
 export class DashboardSelectionSummaryComponent {

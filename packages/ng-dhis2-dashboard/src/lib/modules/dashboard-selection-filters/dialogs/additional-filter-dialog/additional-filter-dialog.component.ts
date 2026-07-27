@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,
@@ -15,6 +15,7 @@ import { DashboardSelectionFilterService } from '../../services/dashboard-select
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'd2-additional-filter-dialog',
   templateUrl: './additional-filter-dialog.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./additional-filter-dialog.component.css'],
 })
 export class AdditionalFilterDialogComponent implements OnInit {
