@@ -8,6 +8,7 @@ import {
   inject,
   input,
   signal,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { FormGroup } from '@angular/forms';
@@ -25,6 +26,7 @@ import type { IFormFieldGroup } from '../../interfaces/form-field-group.interfac
   selector: 'ng-dhis2-ui-section-form',
   templateUrl: './section-form.component.html',
   styleUrls: ['./section-form.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class SectionFormComponent implements OnInit {

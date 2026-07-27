@@ -8,7 +8,7 @@
         [fullScreen]="fullScreen"
         [isChart]="isChart"
         [visualizationType]="currrentVisualizationType"
-        [visualizationTitle]="visualizer?.config?.title"
+        [visualizationTitle]="$safeNavigationMigration(visualizer?.config?.title)"
         [disableVisualizationChange]="disableVisualizationChange"
         (download)="onDownload($event)"
         (fullscreenChange)="onFullScreenAction()"

@@ -1,0 +1,42 @@
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+import baseConfig from '../../eslint.config.mjs';
+import nx from '@nx/eslint-plugin';
+import jsoncEslintParser from 'jsonc-eslint-parser';
+
+export default [
+  ...baseConfig,
+  ...nx.configs['flat/angular'],
+  {
+    files: ['**/*.ts'],
+    rules: {
+      '@angular-eslint/directive-selector': [
+        'error',
+        {
+          type: 'attribute',
+          prefix: 'ngDhis2Ui',
+          style: 'camelCase',
+        },
+      ],
+      '@angular-eslint/component-selector': [
+        'error',
+        {
+          type: 'element',
+          prefix: 'ng-dhis2-ui',
+          style: 'kebab-case',
+        },
+      ],
+      '@angular-eslint/prefer-standalone': 'off',
+    },
+  },
+  ...nx.configs['flat/angular-template'],
+  {
+    files: ['**/*.json'],
+    rules: {
+      '@nx/dependency-checks': 'error',
+    },
+    languageOptions: {
+      parser: jsoncEslintParser,
+    },
+  },
+];

@@ -1,10 +1,11 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import * as _ from 'lodash';
 
 @Component({
     selector: 'app-indicator-properties',
     templateUrl: './indicator-properties.component.html',
     styleUrls: ['./indicator-properties.component.css'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class IndicatorPropertiesComponent implements OnInit {

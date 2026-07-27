@@ -6,6 +6,7 @@ import {
   Output,
   signal,
   WritableSignal,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { FormUtil } from '../../utils';
@@ -15,6 +16,7 @@ import { DateField, FieldConfig } from '../../../form-field/models';
   selector: 'ng-dhis2-ui-date-range-field',
   templateUrl: './date-range-field.component.html',
   styleUrls: ['./date-range-field.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class DateRangeFieldComponent implements OnInit {

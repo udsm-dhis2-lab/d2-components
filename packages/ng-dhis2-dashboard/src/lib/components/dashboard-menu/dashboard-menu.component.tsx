@@ -6,6 +6,7 @@ import {
   HostListener,
   Input,
   Output,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { DashboardMenuObject } from '../../models';
 import React, { useState } from 'react';
@@ -23,6 +24,7 @@ import { MatDividerModule } from '@angular/material/divider';
 ],
   selector: 'd2-dashboard-menu',
   templateUrl: './dashboard-menu.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./dashboard-menu.component.scss'],
 })
 export class DashboardMenuComponent implements AfterViewInit {

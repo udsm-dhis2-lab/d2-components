@@ -6,6 +6,7 @@ import {
   OnChanges,
   Output,
   SimpleChanges,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { CircularLoader, colors, DropdownButton, MenuItem } from '@dhis2/ui';
 import {
@@ -55,6 +56,7 @@ import { firstValueFrom } from 'rxjs';
   selector: 'ng-dhis2-ui-line-list',
   template: '<ng-content></ng-content>',
   styleUrls: ['./line-list.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class LineListTableComponent

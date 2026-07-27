@@ -1,4 +1,4 @@
-import { Component, ElementRef, inject } from '@angular/core';
+import { Component, ElementRef, inject, ChangeDetectionStrategy } from '@angular/core';
 import { DataProvider } from '@dhis2/app-runtime';
 import { D2Window } from '@iapps/d2-web-sdk';
 import React from 'react';
@@ -11,6 +11,7 @@ import { HeaderBar } from './utils/header-bar';
 @Component({
   selector: 'ng-dhis2-ui-header-bar',
   template: `<ng-container></ng-container>`,
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class HeaderBarComponent extends ReactWrapperModule {

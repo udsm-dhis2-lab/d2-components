@@ -1,5 +1,5 @@
 
-import { Component, EventEmitter, Input, NgZone, Output } from '@angular/core';
+import { Component, EventEmitter, Input, NgZone, Output, ChangeDetectionStrategy } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
@@ -24,6 +24,7 @@ import React, { useState } from 'react';
     imports: [ReactWrapperModule, MatTooltipModule, MatIconModule],
     selector: 'd2-dashboard-item-header',
     templateUrl: './dashboard-item-header.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrls: ['./dashboard-item-header.component.scss']
 })
 export class DashboardItemHeaderComponent {

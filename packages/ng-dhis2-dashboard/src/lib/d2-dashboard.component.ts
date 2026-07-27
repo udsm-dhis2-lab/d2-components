@@ -1,5 +1,5 @@
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { DashboardMenuComponent } from './components/dashboard-menu/dashboard-menu.component';
 import { DashboardMenuObject } from './models';
@@ -10,6 +10,7 @@ import { DashboardMenuService } from './services';
     selector: 'd2-dashboard',
     imports: [RouterModule, DashboardMenuComponent],
     templateUrl: './d2-dashboard.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrls: ['./d2-dashboard.component.scss']
 })
 export class D2DashboardComponent implements OnInit {

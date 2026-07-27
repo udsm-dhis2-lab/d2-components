@@ -9,6 +9,7 @@ import {
   OnInit,
   Output,
   signal,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
@@ -22,6 +23,7 @@ import type { IFormField } from '../../interfaces/form-field.interface';
   selector: 'ng-dhis2-ui-repeatable-form',
   templateUrl: './repeatable-form.component.html',
   styleUrls: ['./repeatable-form.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class RepeatableFormComponent implements OnInit {

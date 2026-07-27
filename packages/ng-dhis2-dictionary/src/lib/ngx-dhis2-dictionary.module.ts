@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { EffectsModule } from '@ngrx/effects';
@@ -45,5 +45,5 @@ import { DictionaryHeaderComponent } from './components/dictionary-header/dictio
         StoreModule.forFeature('allIndicators', allIndicatorsRedcuer),
         StoreModule.forFeature('indicatorGroups', indicatorGroupsReducer),
         EffectsModule.forFeature([DictionaryEffects]),
-        EffectsModule.forFeature([IndicatorsEffects])], providers: [DatePipe, IndicatorsService, provideHttpClient(withInterceptorsFromDi())] })
+        EffectsModule.forFeature([IndicatorsEffects])], providers: [DatePipe, IndicatorsService, provideHttpClient(withXhr(), withInterceptorsFromDi())] })
 export class NgxDhis2DictionaryModule {}

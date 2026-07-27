@@ -12,6 +12,7 @@ import {
   effect,
   input,
   signal,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { head } from 'lodash';
@@ -38,6 +39,7 @@ type SectionRuleTargetType = 'PROGRAM_SECTION' | 'PROGRAM_STAGE_SECTION';
   selector: 'ng-dhis2-ui-form',
   templateUrl: './form.component.html',
   styleUrls: ['./form.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class FormComponent implements OnChanges, OnDestroy, OnInit {

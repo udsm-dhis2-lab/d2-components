@@ -1,7 +1,7 @@
 @if (dashboard) {
   <div class="d2-dashboard__current-dashboard-header">
     <div class="d2-dashboard__current-dashboard-title-container">
-      <h3 class="d2-dashboard__current-dashboard-title" [id]="dashboard?.id">
+      <h3 class="d2-dashboard__current-dashboard-title" [id]="$safeNavigationMigration(dashboard?.id)">
         {{ dashboard?.name }}
       </h3>
       <div class="d2-dashboard__dashboard-filters d-print-none">
