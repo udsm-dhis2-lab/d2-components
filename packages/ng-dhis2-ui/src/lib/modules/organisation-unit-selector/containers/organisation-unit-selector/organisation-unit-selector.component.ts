@@ -5,6 +5,7 @@ import {
   Input,
   NgZone,
   Output,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { Provider } from '@dhis2/app-runtime';
 import { D2Window } from '@iapps/d2-web-sdk';
@@ -25,6 +26,7 @@ type OrganisationUnitSelectionEvent = {
 @Component({
   selector: 'ng-dhis2-ui-org-unit-selector',
   template: '<ng-container><ng-container>',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class OrganisationUnitSelectorComponent extends ReactWrapperModule {
@@ -72,7 +74,7 @@ export class OrganisationUnitSelectorComponent extends ReactWrapperModule {
             orgUnitLevelPromise: this.getOrgUnitLevels(),
             roots: rootOrgUnits,
           }),
-        });
+        } as any);
 
       this.render();
     }

@@ -32,7 +32,11 @@
       "@iapps/period-utilities": [
         "packages/dhis2-period-utilities/src/index.ts"
       ]
-    }
+    },
+    "strict": false,
+    "noUncheckedSideEffectImports": false,
+    "types": ["*"],
+    "ignoreDeprecations": "6.0"
   },
   "exclude": ["node_modules", "tmp"]
 }

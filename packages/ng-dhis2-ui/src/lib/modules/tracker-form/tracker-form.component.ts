@@ -1,4 +1,4 @@
-import { Component, Input, input, OnInit } from '@angular/core';
+import { Component, Input, input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import {
   BaseTrackerQuery,
   D2Window,
@@ -9,6 +9,7 @@ import { FormFieldExtension, FormMetaData, IFormMetadata } from '../form';
 @Component({
   selector: 'ng-dhis2-ui-tracker-form',
   templateUrl: './tracker-form.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class TrackerFormComponent implements OnInit {

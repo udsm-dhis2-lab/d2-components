@@ -1,4 +1,4 @@
-import { Component, input, OnInit } from '@angular/core';
+import { Component, input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { BaseFormWrapperComponent } from '../../shared/components/base-form-wrapper.component';
 import { FormUtil } from '../../utils/form.util';
@@ -8,6 +8,7 @@ import { CoordinatePickerGeoConfig } from '../../components/coordinate-field-com
 @Component({
   selector: 'ng-dhis2-ui-flat-form',
   templateUrl: './flat-form.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class FlatFormComponent

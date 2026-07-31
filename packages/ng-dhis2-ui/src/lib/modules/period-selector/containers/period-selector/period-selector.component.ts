@@ -5,6 +5,7 @@ import {
   Input,
   NgZone,
   Output,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { DataProvider } from '@dhis2/app-runtime';
 import { D2Window } from '@iapps/d2-web-sdk';
@@ -39,6 +40,7 @@ type PeriodSelectionEvent = {
       }
     `,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class PeriodSelectorComponent extends ReactWrapperModule {

@@ -4,7 +4,7 @@
 
 import { MapGeometry } from './geometry.model';
 import { GeoJSONType } from './geo-json-type.model';
-import { Geometry } from '@turf/turf';
+import { Geometry } from 'geojson';
 
 export interface GeoJSONObject {
   type: GeoJSONType;
@@ -14,7 +14,7 @@ export interface GeoJSONObject {
 
 export class GeoJSON implements GeoJSONObject {
   type!: GeoJSONType;
-  geometry!: MapGeometry;
+  geometry!: any;
   properties!: Record<string, unknown>;
 
   setType(type: GeoJSONType): GeoJSON {

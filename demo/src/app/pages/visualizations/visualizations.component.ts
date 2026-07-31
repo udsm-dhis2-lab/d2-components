@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { D2Visualizer, MapLayerConfiguration } from '@iapps/d2-visualizer';
 
 const legendSet = {
@@ -61,7 +61,8 @@ const legendSet = {
 @Component({
   selector: 'app-visualizations',
   templateUrl: './visualizations.component.html',
-  imports: [CommonModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  imports: [],
 })
 export class VisualizationsComponent {
   async ngOnInit() {

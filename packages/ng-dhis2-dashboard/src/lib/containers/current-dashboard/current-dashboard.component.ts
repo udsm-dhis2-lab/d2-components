@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 
 import { CommonModule } from '@angular/common';
@@ -36,6 +36,7 @@ import { getDashboardSelectionById } from '../../store/selectors/dashboard-selec
     ],
     selector: 'd2-current-dashboard',
     templateUrl: './current-dashboard.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrls: ['./current-dashboard.component.scss']
 })
 export class CurrentDashboardComponent implements OnInit {

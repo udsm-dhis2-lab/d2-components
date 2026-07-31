@@ -18,7 +18,11 @@
     "sourceMap": true,
     "strictNullChecks": true,
     "target": "es6",
-    "types": ["node"]
+    "types": ["node"],
+    "strict": false,
+    "noUncheckedSideEffectImports": false,
+    "esModuleInterop": false,
+    "ignoreDeprecations": "6.0"
   },
   "include": ["schematics/**/*"],
   "exclude": ["schematics/*/files/**/*"]
