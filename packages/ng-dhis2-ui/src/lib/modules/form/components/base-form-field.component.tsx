@@ -1016,6 +1016,7 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
 
       useEffect(() => {
         const sub = this.runtimeOptions$.subscribe((options) => {
+          if (!this.field().dependentField) return;
           if (!options) return;
 
           setFilteredOptions(options);
@@ -1290,8 +1291,9 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
 
           this.update.emit({ form: fg, value: newValue });
           if (
-            currentField.controlType === 'dropdown' ||
-            currentField.controlType === 'multi-dropdown'
+            currentField.dependentField &&
+            (currentField.controlType === 'dropdown' ||
+              currentField.controlType === 'multi-dropdown')
           ) {
             this.runtimeOptionsChange.emit({
               field: currentField,
