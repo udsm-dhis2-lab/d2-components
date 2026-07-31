@@ -1,6 +1,7 @@
 <main class="line-list-container p-2">
   <ng-dhis2-ui-line-list
     [programId]="malariaCaseNotificationProgramId"
+    [allowRowsSelection]="true"
     [orgUnit]="currentUserOrgUnitId ? currentUserOrgUnitId : ''"
     ouMode="DESCENDANTS"
     [showFilters]="true"
@@ -375,9 +376,11 @@
 <ng-dhis2-ui-line-list
   [programId]="'t1pTvYbv08Z'"
   [orgUnit]="'m0frOspS7JY'"
+  [allowRowsSelection]="true"
   [ouMode]="'DESCENDANTS'"
   [showDownloadButton]="true"
   [showFilters]="true"
+  (rowsSelected)="onRowsSelected($event)"
 ></ng-dhis2-ui-line-list>
 
 <ng-dhis2-ui-program-entry-form

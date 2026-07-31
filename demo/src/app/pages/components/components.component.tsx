@@ -41,6 +41,7 @@ export class ComponentsComponent implements OnInit {
   d2 = (window as unknown as D2Window).d2Web;
   currentUser: CurrentUser | null = null;
   currentUserOrgUnitId: string | null = null;
+  selectedRows: any[] = [];
 
   httpClient = inject(NgxDhis2HttpClientService);
   selectedPeriods = [
@@ -111,55 +112,77 @@ export class ComponentsComponent implements OnInit {
   //   ],
   // });
 
-  formConfig = new ProgramEntryFormConfig({
-    program: 'TRw2GByncfl',
-    hideRegistrationUnit: false,
+   formConfig = new ProgramEntryFormConfig({
+    program: 'C5zzHxNmigX',
+    // hideRegistrationUnit: true,
     formType: 'TRACKER',
     displayType: 'FLAT',
-    hideEnrollmentDate: true,
-  // autoAssignedValues: [
-  //   // {
-  //   //   field: 'enrollmentDate',
-  //   //   value: '2026-07-03',
-  //   // },
-  //   // {
-  //   //   field: 'incidentDate',
-  //   //   value: '2026-07-03',
-  //   // },
-  // ],
-    // formFieldExtensions: [
-    //   {
-    //     id: 'wkV3y1YfWtz',
-    //     orgUnitRoots: ['m0frOspS7JY'],
-    //   },
-    //   {
-    //     id: 'Q4Yz7Mn26QT',
-    //     orgUnitRoots: ['m0frOspS7JY'],
-    //   },
-    //   {
-    //     id: 'Hi0pfvU8u0h',
-    //     orgUnitRoots: ['m0frOspS7JY'],
-    //   },
-    //   {
-    //     id: 'EwxvQ1GZj9r',
-    //     orgUnitRoots: ['m0frOspS7JY'],
-    //   },
-    // ],
-    // autoAssignedValues: [
-    //   {
-    //     field: 'BDGKkkb8s9j',
-    //     value: '+255753916529',
-    //   },
-    //   {
-    //     field: 'a7ilGDvYugI',
-    //     value: 'erick jihn',
-    //   },
-    //   {
-    //     field: 'E3hwZHin4on',
-    //     value: '2025-03-12',
-    //   },
-    // ],
+    autoComplete: true,
+    autoAssignedValues: [
+      {
+        field: 'orgUnit',
+        value: 'Dr80ve0pgWe',
+      },
+      {
+        field: 'wkalhYT9xfO',
+        value: 'aaaaaaaaaaaaaaaaaa',
+      },
+       {
+        field: 'aaoPWiXfox3',
+        value: 'aaaaaaaaaaaaaaaaaa',
+      },
+    ],
   });
+
+  // formConfig = new ProgramEntryFormConfig({
+  //   program: 'TRw2GByncfl',
+  //   hideRegistrationUnit: false,
+  //   formType: 'TRACKER',
+  //   displayType: 'FLAT',
+  //   hideEnrollmentDate: true,
+  // // autoAssignedValues: [
+  // //   // {
+  // //   //   field: 'enrollmentDate',
+  // //   //   value: '2026-07-03',
+  // //   // },
+  // //   // {
+  // //   //   field: 'incidentDate',
+  // //   //   value: '2026-07-03',
+  // //   // },
+  // // ],
+  //   // formFieldExtensions: [
+  //   //   {
+  //   //     id: 'wkV3y1YfWtz',
+  //   //     orgUnitRoots: ['m0frOspS7JY'],
+  //   //   },
+  //   //   {
+  //   //     id: 'Q4Yz7Mn26QT',
+  //   //     orgUnitRoots: ['m0frOspS7JY'],
+  //   //   },
+  //   //   {
+  //   //     id: 'Hi0pfvU8u0h',
+  //   //     orgUnitRoots: ['m0frOspS7JY'],
+  //   //   },
+  //   //   {
+  //   //     id: 'EwxvQ1GZj9r',
+  //   //     orgUnitRoots: ['m0frOspS7JY'],
+  //   //   },
+  //   // ],
+  //   // autoAssignedValues: [
+  //   //   {
+  //   //     field: 'BDGKkkb8s9j',
+  //   //     value: '+255753916529',
+  //   //   },
+  //   //   {
+  //   //     field: 'a7ilGDvYugI',
+  //   //     value: 'erick jihn',
+  //   //   },
+  //   //   {
+  //   //     field: 'E3hwZHin4on',
+  //   //     value: '2025-03-12',
+  //   //   },
+  //   // ],
+  // });
 
   completedTrainingFilter = [
     new DataQueryFilter()
@@ -1230,18 +1253,24 @@ class DateField {
       : [];
   }
 
-  pconfig = new ProgramEntryFormConfig({
-    program: 'A3olldDSHQg',
-    programStage: 'NtZXBym2KfD',
-    hideRegistrationUnit: true,
-    formType: 'EVENT',
+  formConfig = new ProgramEntryFormConfig({
+    program: 'C5zzHxNmigX',
+    // hideRegistrationUnit: true,
+    formType: 'TRACKER',
     displayType: 'FLAT',
     autoComplete: true,
     autoAssignedValues: [
       {
         field: 'orgUnit',
+        value: 'Dr80ve0pgWe',
+      },
+      {
+        field: 'wkalhYT9xfO',
         value: 'aaaaaaaaaaaaaaaaaa',
-        // value: this.applicant()?.orgUnit,
+      },
+       {
+        field: 'aaoPWiXfox3',
+        value: 'aaaaaaaaaaaaaaaaaa',
       },
     ],
   });
