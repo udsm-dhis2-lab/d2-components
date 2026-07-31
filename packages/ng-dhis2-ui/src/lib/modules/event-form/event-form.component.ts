@@ -1,10 +1,11 @@
-import { Component, input, OnInit } from '@angular/core';
+import { Component, input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { BaseEventQuery, D2Window, DHIS2Event } from '@iapps/d2-web-sdk';
 import { FormMetaData, IFormMetadata } from '../form';
 
 @Component({
   selector: 'ng-dhis2-ui-event-form',
   templateUrl: './event-form.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class EventFormComponent implements OnInit {

@@ -260,6 +260,7 @@ export const OrgUnitFormField = (props: Props) => {
     config && (
       <Provider
         config={config}
+        userInfo={d2.currentUser as any}
         plugin={false}
         parentAlertsAdd={undefined}
         showAlertsInPlugin={false}

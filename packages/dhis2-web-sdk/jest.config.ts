@@ -1,5 +1,5 @@
 /* eslint-disable */
-export default {
+module.exports = {
   displayName: 'd2-web-sdk',
   preset: '../../jest.preset.js',
   testEnvironment: 'node',

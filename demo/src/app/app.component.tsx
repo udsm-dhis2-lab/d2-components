@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Menu, MenuItem } from '@dhis2/ui';
 import React from 'react';
@@ -8,6 +8,7 @@ import { Fn } from '@iapps/function-analytics';
   selector: 'ng-dhis2-ui-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class AppComponent {

@@ -11,6 +11,7 @@ import {
   effect,
   input,
   signal,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { find } from 'lodash';
@@ -26,6 +27,7 @@ import { CoordinatePickerGeoConfig } from '../../components/coordinate-field-com
   selector: 'ng-dhis2-ui-form-field',
   templateUrl: './form-field.component.html',
   styleUrls: ['./form-field.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class FormFieldComponent implements OnInit, OnChanges, OnDestroy {

@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import { Geometry, GeometryTypes, Position } from '@turf/turf';
+import { Geometry, Position } from 'geojson';
 import { MapGeometryUtil } from '../utils';
 
-export class MapGeometry implements Geometry {
+export type GeometryTypes = 'Point' | 'LineString' | 'Polygon' | 'MultiPoint' | 'MultiLineString' | 'MultiPolygon' | 'GeometryCollection';
+
+export class MapGeometry {
   coordinates!: Position | Position[] | Position[][] | Position[][][];
   type!: string;
 
@@ -29,8 +31,8 @@ export class MapGeometry implements Geometry {
 
   toObject(): Geometry {
     return {
-      type: this.type,
-      coordinates: this.coordinates,
+      type: this.type as any,
+      coordinates: this.coordinates as any,
     };
   }
 }
