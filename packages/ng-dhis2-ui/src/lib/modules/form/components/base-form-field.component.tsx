@@ -734,6 +734,8 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
   field = input.required<IFormField<string>>();
   fieldError = input<string | undefined>();
   fieldConfig = input<FieldConfig>(new FieldConfig());
+  programRuleOptions = input<any[] | undefined>();
+  runtimeOptions = input<any[] | undefined>();
   form = model.required<FormGroup>();
 
   // kept for compatibility (even if not used directly here)
@@ -757,6 +759,10 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
   protected readonly value$ = toObservable(this.value);
   protected readonly isValueAssigned$ = toObservable(this.isValueAssigned);
   protected readonly fieldError$ = toObservable(this.fieldError);
+  protected readonly programRuleOptions$ = toObservable(
+    this.programRuleOptions
+  );
+  protected readonly runtimeOptions$ = toObservable(this.runtimeOptions);
 
   readonly label: Signal<string | undefined> = computed(() => {
     const cfg = this.fieldConfig();
@@ -775,6 +781,10 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
   @Output() immediateUpdate = new EventEmitter<{
     form: FormGroup;
     value: any;
+  }>();
+  @Output() runtimeOptionsChange = new EventEmitter<{
+    field: IFormField<string>;
+    options: any[];
   }>();
 
   override async ngAfterViewInit() {
@@ -966,6 +976,72 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
       const [checkingUniqueness, setCheckingUniqueness] =
         useState<boolean>(false);
 
+      useEffect(() => {
+        const sub = this.programRuleOptions$.subscribe((options) => {
+          if (!options) return;
+          if (
+            field.controlType !== 'dropdown' &&
+            field.controlType !== 'multi-dropdown'
+          ) {
+            return;
+          }
+
+          const cascade = this.#resolveCascadeForCurrentField();
+
+          if (cascade?.kind === 'OPTIONS_PATH') return;
+
+          const nextOptions = options;
+          setFilteredOptions(nextOptions);
+
+          const currentCtrl = this.#getCurrentFieldControl(fg);
+          const currentValue = String(currentCtrl?.value ?? '').trim();
+
+          if (!currentValue) return;
+
+          const stillValid = nextOptions.some((option: any) => {
+            const optionValue = String(
+              option?.value ?? option?.id ?? option?.code ?? option?.key ?? ''
+            );
+            return optionValue === currentValue;
+          });
+
+          if (!stillValid) {
+            currentCtrl?.setValue(null, { emitEvent: true });
+            setValue('');
+          }
+        });
+
+        return () => sub.unsubscribe();
+      }, []);
+
+      useEffect(() => {
+        const sub = this.runtimeOptions$.subscribe((options) => {
+          if (!this.field().dependentField) return;
+          if (!options) return;
+
+          setFilteredOptions(options);
+
+          const currentCtrl = this.#getCurrentFieldControl(fg);
+          const currentValue = String(currentCtrl?.value ?? '').trim();
+
+          if (!currentValue) return;
+
+          const stillValid = options.some((option: any) => {
+            const optionValue = String(
+              option?.value ?? option?.code ?? option?.key ?? option?.id ?? ''
+            );
+            return optionValue === currentValue;
+          });
+
+          if (!stillValid) {
+            currentCtrl?.setValue(null, { emitEvent: true });
+            setValue('');
+          }
+        });
+
+        return () => sub.unsubscribe();
+      }, []);
+
       // Keep refs synced
       useEffect(() => {
         valueRef.current = value;
@@ -1049,6 +1125,68 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
       // ----------------------------
       useEffect(() => {
         const cascade = this.#resolveCascadeForCurrentField();
+        const dependentField = field.dependentField;
+
+        if (dependentField) {
+          const parentCtrl = this.#getControl(
+            fg,
+            dependentField.key || dependentField.id
+          );
+
+          if (!parentCtrl) {
+            setFilteredOptions([]);
+            setDisabled(baseDisabled);
+            return undefined;
+          }
+
+          const parentOptions =
+            dependentField.options?.length > 0
+              ? dependentField.options
+              : dependentField.optionSet?.options ?? [];
+
+          const applyDependentOptions = (parentValue: any) => {
+            const parentOption = parentOptions.find((option: any) => {
+              const optionValue = option?.value ?? option?.code ?? option?.key;
+              return optionValue === parentValue;
+            });
+
+            const nextOptions = parentOption?.options ?? [];
+            const childCtrl = this.#getCurrentFieldControl(fg);
+            const currentChildValue = String(childCtrl?.value ?? '').trim();
+
+            if (currentChildValue) {
+              const stillValid = nextOptions.some((option: any) => {
+                const optionValue = String(
+                  option?.value ?? option?.code ?? option?.key ?? ''
+                );
+                return optionValue === currentChildValue;
+              });
+
+              if (!stillValid) {
+                childCtrl?.setValue(null, { emitEvent: true });
+                setValue('');
+              }
+            }
+
+            setFilteredOptions(nextOptions);
+            this.ngZone.run(() => {
+              this.runtimeOptionsChange.emit({
+                field,
+                options: nextOptions,
+              });
+            });
+            setDisabled(baseDisabled || !parentValue);
+
+          };
+
+          applyDependentOptions(parentCtrl.value);
+
+          const sub = parentCtrl.valueChanges.subscribe((value) =>
+            applyDependentOptions(value)
+          );
+
+          return () => sub.unsubscribe();
+        }
 
         if (!cascade || cascade.kind !== 'OPTIONS_PATH') {
           setFilteredOptions(field.options ?? []);
@@ -1145,15 +1283,34 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
       });
 
       const onValueChange = (newValue: unknown) => {
+        const currentField = this.field();
+
         this.ngZone.run(() => {
           const ctrl = this.#getCurrentFieldControl(fg);
           ctrl?.setValue(newValue);
 
           this.update.emit({ form: fg, value: newValue });
+          if (
+            currentField.dependentField &&
+            (currentField.controlType === 'dropdown' ||
+              currentField.controlType === 'multi-dropdown')
+          ) {
+            this.runtimeOptionsChange.emit({
+              field: currentField,
+              options: filteredOptions ?? [],
+            });
+          }
         });
 
-        const s = newValue == null ? '' : String(newValue);
-        setValue(s);
+        setValue(
+          currentField.controlType === 'checkbox'
+            ? newValue
+              ? 'true'
+              : ''
+            : newValue == null
+            ? ''
+            : String(newValue)
+        );
         setTouched(true);
       };
 
@@ -1276,6 +1433,7 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
                 required={f.required}
                 disabled={disabled}
                 customOrgUnitRoots={this.customOrgUnitRoots()}
+                orgUnitRoots={f.extension?.orgUnitRoots}
                 onSelectOrgUnit={(selectedOrgUnit: string) =>
                   onValueChange(selectedOrgUnit)
                 }
@@ -1388,30 +1546,30 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
             const htmlValue =
               value != null && String(value).trim() !== ''
                 ? this.formatValueForHtmlInputFromDhis(
-                  String(value),
-                  isDateTimeField
-                )
+                    String(value),
+                    isDateTimeField
+                  )
                 : '';
 
             const htmlMin =
               f.min != null && String(f.min).trim() !== ''
                 ? this.formatValueForHtmlInputFromDhis(
-                  String(f.min),
-                  isDateTimeField
-                )
+                    String(f.min),
+                    isDateTimeField
+                  )
                 : undefined;
 
             const htmlMax = allowFutureDate
               ? undefined
               : f.max
-                ? this.pickEarlierDateLimit(
+              ? this.pickEarlierDateLimit(
                   this.formatValueForHtmlInputFromDhis(
                     String(f.max),
                     isDateTimeField
                   ),
                   this.getNowForHtmlDateInput(isDateTimeField)
                 )
-                : this.getNowForHtmlDateInput(isDateTimeField);
+              : this.getNowForHtmlDateInput(isDateTimeField);
 
             return (
               <InputField
@@ -1545,18 +1703,18 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
   }
 
   /**
- * Normalizes value from the HTML input into DHIS storage format.
- *
- * For date:
- *   - Input: "YYYY-MM-DD"
- *   - Output: "YYYY-MM-DD"
- *
- * For datetime:
- *   - Input: "YYYY-MM-DDTHH:mm" (local)
- *   - Output: ISO string in UTC: "YYYY-MM-DDTHH:mm:ss.sssZ"
- *
- * If allowFutureDate = false, any value beyond "now" is clamped to now.
- */
+   * Normalizes value from the HTML input into DHIS storage format.
+   *
+   * For date:
+   *   - Input: "YYYY-MM-DD"
+   *   - Output: "YYYY-MM-DD"
+   *
+   * For datetime:
+   *   - Input: "YYYY-MM-DDTHH:mm" (local)
+   *   - Output: ISO string in UTC: "YYYY-MM-DDTHH:mm:ss.sssZ"
+   *
+   * If allowFutureDate = false, any value beyond "now" is clamped to now.
+   */
   normalizeDateValueFromHtmlInput(
     inputValue: string | null | undefined,
     isDateTimeField: boolean,
@@ -1587,21 +1745,47 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
       return null;
     }
 
-    // Interpret as LOCAL time
-    const localDate = new Date(trimmed);
-    if (Number.isNaN(localDate.getTime())) {
+    // Interpret selected datetime as EAT, not UTC/GMT
+    const eatDateTimeValue = `${trimmed}:00.000+03:00`;
+
+    const eatDate = new Date(eatDateTimeValue);
+
+    if (Number.isNaN(eatDate.getTime())) {
       return null;
     }
 
     if (!allowFutureDate) {
       const now = new Date();
-      if (localDate.getTime() > now.getTime()) {
-        return now.toISOString();
+
+      if (eatDate.getTime() > now.getTime()) {
+        return this.getNowInEatIsoString();
       }
     }
 
-    // Store as UTC ISO string with millis, e.g. "2025-11-26T21:01:00.000Z"
-    return localDate.toISOString();
+    return eatDateTimeValue;
+  }
+
+  private getNowInEatIsoString(): string {
+    const formatter = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Africa/Dar_es_Salaam',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hourCycle: 'h23',
+    });
+
+    const parts = formatter.formatToParts(new Date()).reduce((acc, part) => {
+      if (part.type !== 'literal') {
+        acc[part.type] = part.value;
+      }
+
+      return acc;
+    }, {} as Record<string, string>);
+
+    return `${parts['year']}-${parts['month']}-${parts['day']}T${parts['hour']}:${parts['minute']}:${parts['second']}.000+03:00`;
   }
 
   async searchForDuplicates(value: string) {

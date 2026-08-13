@@ -7,4 +7,5 @@ export interface IFieldDropdown {
   label: string;
   order?: number;
   code?: string;
+  options?: IFieldDropdown[];
 }

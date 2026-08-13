@@ -6,6 +6,7 @@ import {
   Output,
   OnChanges,
   SimpleChanges,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import {
   CircularLoader,
@@ -31,6 +32,7 @@ import {
   selector: 'app-data-table-ui',
   standalone: false,
   template: '<ng-content></ng-content>',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./data-table-ui.component.scss'],
 })
 export class DataTableUIComponent

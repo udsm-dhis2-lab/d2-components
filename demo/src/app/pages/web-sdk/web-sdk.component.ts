@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
   AttributeFieldDecorator,
   D2Web,
@@ -57,7 +57,8 @@ class Applicant extends TrackedEntityInstance {
 @Component({
   selector: 'app-web-sdk',
   templateUrl: './web-sdk.component.html',
-  imports: [CommonModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  imports: [],
 })
 export class WebSdkComponent {
   d2 = d2Web;

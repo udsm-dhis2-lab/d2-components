@@ -13,6 +13,7 @@ import {
 import { ProgramEntryFormFieldUtil } from '../utils/program-entry-form-field.util';
 import { ProgramStageEntryFormSectionUtil } from '../utils/program-stage-entry-form-section.util';
 import { ProgramEntryFormSectionUtil } from '../utils/program-entry-form-section.util';
+import { CustomFieldConfiguration } from '../../form/interfaces/custom-field-configuration.interface';
 
 export interface IProgramEntryFormMetaData {
   id: string;
@@ -23,6 +24,7 @@ export interface IProgramEntryFormMetaData {
   sections: IProgramEntryFormSection[];
   programStageSections: IProgramEntryFormSection[];
   rules: IMetadataRule[];
+  customFieldConfigurations?: Record<string, CustomFieldConfiguration>;
 }
 
 export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
@@ -33,6 +35,7 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
   d2 = (window as unknown as D2Window)?.d2Web;
   config!: ProgramEntryFormConfig;
   program!: Program;
+  customFieldConfigurations: Record<string, CustomFieldConfiguration> = {};
 
   private autoAssignedFieldIdSet?: Set<string>;
 
@@ -241,6 +244,14 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
               'ToOne'
             )
             .with(
+              this.d2.programModule.programSection.select(['id', 'code' ,'name']),
+              'ToOne'
+            )
+            .with(
+              this.d2.programModule.programStageSection.select(['id', 'code' , 'name']),
+              'ToOne'
+            )
+            .with(
               this.d2.optionSetModule.optionGroup
                 .select(['id'])
                 .with(
@@ -345,7 +356,8 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
 
     const baseSections = new ProgramEntryFormSectionUtil(
       this.program,
-      this.config
+      this.config,
+      this.customFieldConfigurations
     ).programEntryFormSections;
 
     const autoAssigned = this.config?.autoAssignedValues;
@@ -445,16 +457,58 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
   }
 
   toJson(): IProgramEntryFormMetaData {
+    const sections = this.sections;
+    const programStageSections = this.programStageSections;
+
     return {
       id: this.program?.id,
       name: this.program?.name,
       description: this.program?.description,
       program: this.program,
       formFields: this.formFields,
-      sections: this.sections,
-      programStageSections: this.programStageSections,
+      sections,
+      programStageSections,
       rules: this.rules,
+      customFieldConfigurations: this.customFieldConfigurations,
     };
+  }
+
+  async #getCustomFieldConfigurations(): Promise<
+    Record<string, CustomFieldConfiguration>
+  > {
+    try {
+      const response = await this.d2.httpInstance.get(
+        'dataStore/field-extensions?fields=id,fieldOptionsDependsOn,optionSet&paging=false'
+      );
+      const responseData = response?.data;
+
+      const entries = Array.isArray(responseData)
+        ? responseData
+        : responseData?.['entries'];
+
+      if (!Array.isArray(entries)) {
+        return {};
+      }
+
+      return entries.reduce(
+        (
+          fieldConfigurations: Record<string, CustomFieldConfiguration>,
+          fieldConfiguration: CustomFieldConfiguration
+        ) => {
+          if (!fieldConfiguration?.id) {
+            return fieldConfigurations;
+          }
+
+          return {
+            ...fieldConfigurations,
+            [fieldConfiguration.id]: fieldConfiguration,
+          };
+        },
+        {}
+      );
+    } catch {
+      return {};
+    }
   }
 
   async get() {
@@ -463,6 +517,8 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
 
       if (program) {
         this.program = program;
+        this.customFieldConfigurations =
+          await this.#getCustomFieldConfigurations();
 
         if (
           this.config?.formFieldExtensions &&

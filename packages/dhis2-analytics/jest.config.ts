@@ -1,5 +1,5 @@
 /* eslint-disable */
-export default {
+module.exports = {
   displayName: 'dhis2-analytics',
   preset: '../../jest.preset.js',
   testEnvironment: 'node',

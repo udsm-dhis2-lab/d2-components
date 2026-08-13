@@ -28,6 +28,8 @@ node_modules
 /.sass-cache
 /connect.lock
 /coverage
+/docs/.docusaurus
+/docs/build
 /libpeerconnection.log
 npm-debug.log
 yarn-error.log
@@ -46,3 +48,8 @@ proxy-config.json
 
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
+
+.claude/worktrees
+.nx/polygraph
+.nx/self-healing
+.nx/migrate-runs

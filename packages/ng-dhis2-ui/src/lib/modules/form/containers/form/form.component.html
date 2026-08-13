@@ -765,10 +765,11 @@
 
     @if (entryFormMeta?.programStageSections?.length) {
       @for (stageSection of entryFormMeta.programStageSections; track stageSection?.id ?? $index) {
+        @if (isSectionVisible(stageSection, 'PROGRAM_STAGE_SECTION')) {
         @let sectionKey = stageSection?.id ?? $index;
         @let sectionDomId = 'section-' + sectionKey;
         @let descriptionDomId = sectionDomId + '-desc';
-        @let sectionDescription = stageSection?.description;
+        @let sectionDescription = $safeNavigationMigration(stageSection?.description);
         @let hasDescription = !!sectionDescription;
 
         <section class="form__section" [attr.data-section-id]="sectionDomId">
@@ -836,6 +837,7 @@
             </div>
           }
         </section>
+        }
       } @empty {
         @for (fallbackField of sanitizedFields; track fallbackField?.id ?? $index) {
           <div class="form__field form-field-{{ uiConfig.direction }}">
@@ -895,10 +897,11 @@
 
     @if (entryFormMeta?.sections?.length) {
       @for (teiSection of entryFormMeta.sections; track teiSection?.id ?? $index) {
+        @if (isSectionVisible(teiSection, 'PROGRAM_SECTION')) {
         @let sectionKey = teiSection?.id ?? $index;
         @let sectionDomId = 'section-' + sectionKey;
         @let descriptionDomId = sectionDomId + '-desc';
-        @let sectionDescription = teiSection?.description;
+        @let sectionDescription = $safeNavigationMigration(teiSection?.description);
         @let hasDescription = !!sectionDescription;
 
         <section class="form__section" [attr.data-section-id]="sectionDomId">
@@ -965,6 +968,7 @@
             </div>
           }
         </section>
+        }
       } @empty {
         @for (fallbackField of sanitizedFields; track fallbackField?.id ?? $index) {
           <div class="form__field form-field-{{ uiConfig.direction }}">
@@ -1052,4 +1056,3 @@
   </form>
 
 }
-

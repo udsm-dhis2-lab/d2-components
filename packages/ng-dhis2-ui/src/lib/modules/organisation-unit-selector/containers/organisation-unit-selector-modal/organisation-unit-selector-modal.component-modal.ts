@@ -4,6 +4,7 @@ import {
   EventEmitter,
   Input,
   Output,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { Provider } from '@dhis2/app-runtime';
 import {
@@ -39,6 +40,7 @@ type OrganisationUnitSelectionEvent = {
       }
     `,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class OrganisationUnitSelectorModalComponent extends ReactWrapperModule {
@@ -126,7 +128,7 @@ export class OrganisationUnitSelectorModalComponent extends ReactWrapperModule {
               )
             )
           ),
-        });
+        } as any);
       };
 
       this.render();
