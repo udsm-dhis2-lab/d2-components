@@ -87,6 +87,7 @@ export class FormField<T> implements IFormField<T>, FormFieldFunction<T> {
     this.trackedEntityType = options.trackedEntityType;
     this.hasOptions = options.hasOptions;
     this.dependentField = options.dependentField;
+    this.fieldOptionsDependsOn = options.fieldOptionsDependsOn;
     this.displayInList = options.displayInList;
     this.displayInReports = options.displayInReports;
     this.searchable = options.searchable;

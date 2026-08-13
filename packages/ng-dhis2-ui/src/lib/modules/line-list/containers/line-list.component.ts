@@ -6,6 +6,7 @@ import {
   OnChanges,
   Output,
   SimpleChanges,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { CircularLoader, colors, DropdownButton, MenuItem } from '@dhis2/ui';
 import {
@@ -30,6 +31,7 @@ import { FilterToolbar } from '../components/table/filterToolbar';
 import { LineListTable } from '../components/table/lineListTable';
 import { ActionOptionOrientation, LineListActionOption } from '../models';
 import { AttributeFilter } from '../models/attribute-filter.model';
+import { LineListColumnMetadataDisplayModeValue } from '../models/line-list-column-metadata-display-mode.model';
 import {
   ColumnDefinition,
   EventsResponse,
@@ -42,7 +44,11 @@ import {
   getTrackedEntityTableData,
 } from '../utils/tei-table-data-utils';
 import { getEvents } from '../utils/event-table-data-util';
-import * as XLSX from 'xlsx';
+import {
+  downloadLineListCsv,
+  downloadLineListExcel,
+} from '../utils/line-list-download.util';
+import { fetchLineListDownloadRows } from '../utils/line-list-download-data.util';
 import { addDays, format } from 'date-fns';
 import { firstValueFrom } from 'rxjs';
 
@@ -50,9 +56,13 @@ import { firstValueFrom } from 'rxjs';
   selector: 'ng-dhis2-ui-line-list',
   template: '<ng-content></ng-content>',
   styleUrls: ['./line-list.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
-export class LineListTableComponent extends ReactWrapperModule implements OnChanges {
+export class LineListTableComponent
+  extends ReactWrapperModule
+  implements OnChanges
+{
   @Input() triggerToken!: string;
   @Input() programId!: string;
   @Input() orgUnit!: string;
@@ -91,6 +101,9 @@ export class LineListTableComponent extends ReactWrapperModule implements OnChan
   @Input() showEnrollmentDates = true;
   @Input() showDownloadButton = false;
   @Input() searcheableDataElements: string[] = [];
+  @Input() columnNameSource: 'NAME' | 'FORM_NAME' = 'NAME';
+  @Input() customDisplayInReportsIds?: string[];
+  @Input() columnMetadataDisplayMode?: LineListColumnMetadataDisplayModeValue;
   private reactStateUpdaters: any = null;
 
   setReactStateUpdaters = (updaters: any) => {
@@ -194,6 +207,7 @@ export class LineListTableComponent extends ReactWrapperModule implements OnChan
       string | undefined
     >(this.endDate);
     const [loading, setLoading] = useState<boolean>(false);
+    const [downloadLoading, setDownloadLoading] = useState<boolean>(false);
     const [filteredColumns, setFilteredColumns] =
       useState<ColumnDefinition[]>();
     const [inputValues, setInputValues] = useState<Record<string, string>>({});
@@ -315,7 +329,9 @@ export class LineListTableComponent extends ReactWrapperModule implements OnChan
               { data: eventsResponse },
               this.programStageId as string,
               pager,
-              metaData
+              metaData,
+              this.columnNameSource,
+              this.columnMetadataDisplayMode
             );
 
             // const filterableColumnIdsSet = new Set(
@@ -437,7 +453,10 @@ export class LineListTableComponent extends ReactWrapperModule implements OnChan
                 this.programId,
                 pager,
                 metaData,
-                this.searcheableDataElements
+                this.searcheableDataElements,
+                this.customDisplayInReportsIds,
+                this.columnNameSource,
+                this.columnMetadataDisplayMode
               );
 
             setFilteredColumns((prev) =>
@@ -499,54 +518,43 @@ export class LineListTableComponent extends ReactWrapperModule implements OnChan
       triggerTokenState,
     ]);
 
-    const handleExcelDownload = () => {
-      const filteredColumns = columns.filter((col) => col.label !== 'Actions');
-      const header = filteredColumns.map((col) => col.label);
-      const rows = data.map((row) =>
-        filteredColumns.map((col) => {
-          const cell = row[col.key];
-          if (cell === null || cell === undefined) return '';
-          return typeof cell === 'object' && 'value' in cell
-            ? cell.value
-            : cell;
-        })
-      );
-      const worksheetData = [header, ...rows];
+    //TODO: ADD DOWNLOADING SUPPORT USING ANALYTICS
+    const handleDownload = async (format: 'CSV' | 'XLSX') => {
+      try {
+        setDownloadLoading(true);
+        const { columns, data } = await fetchLineListDownloadRows({
+          d2,
+          metaData,
+          programId: programIdState,
+          programStageId: programStageIdState,
+          orgUnit: orgUnitState,
+          ouMode: this.ouMode,
+          startDate: startDateState,
+          endDate: endDateState,
+          dataQueryFilters: dataQueryFiltersState,
+          enrollmentStatus: this.enrollmentStatus,
+          eventStatus: this.eventStatus,
+          filterableColumnIds: this.filterableColumnIds,
+          searcheableDataElements: this.searcheableDataElements,
+          customDisplayInReportsIds: this.customDisplayInReportsIds,
+          columnNameSource: this.columnNameSource,
+          columnMetadataDisplayMode: this.columnMetadataDisplayMode,
+          fetchOrgUnits: (orgUnitIds) =>
+            this.lineListService.fetchOrgUnits(orgUnitIds),
+        });
 
-      const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'LineListData');
-      XLSX.writeFile(workbook, 'records.xlsx');
-    };
-
-    const handleCsvDownload = () => {
-      const safeValue = (value: any) => {
-        if (value === null || value === undefined) return '';
-        if (typeof value === 'object') {
-          if ('value' in value) {
-            return value.value;
-          }
-          return JSON.stringify(value);
+        if (format === 'CSV') {
+          downloadLineListCsv(columns, data);
+          return;
         }
-        return value;
-      };
 
-      const filteredColumns = columns.filter((col) => col.label !== 'Actions');
-      const header = filteredColumns.map((col) => `"${col.label}"`).join(',');
-      const csvData = data.map((row) =>
-        filteredColumns.map((col) => `"${safeValue(row[col.key])}"`).join(',')
-      );
-      const csvContent = [header, ...csvData].join('\n');
-
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'records.csv');
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+        downloadLineListExcel(columns, data);
+      } catch (error) {
+        console.error('Failed to download line list data:', error);
+        setError('Could not download records. Please try again.');
+      } finally {
+        setDownloadLoading(false);
+      }
     };
 
     const handleInputChange = (key: string, value: string, type: string) => {
@@ -707,7 +715,7 @@ export class LineListTableComponent extends ReactWrapperModule implements OnChan
 
     return React.createElement(
       'div',
-      null,
+      { className: 'line-list-root' },
       loading
         ? React.createElement(
             'div',
@@ -737,32 +745,36 @@ export class LineListTableComponent extends ReactWrapperModule implements OnChan
               React.createElement(
                 'div',
                 {
+                  className: 'line-list-download-toolbar',
                   style: {
                     paddingBottom: '1rem',
-                    display: 'flex',
-                    justifyContent: 'flex-end',
                   },
                 },
                 React.createElement(
                   DropdownButton,
                   {
                     name: 'Download',
+                    disabled: downloadLoading,
                     component: React.createElement(
                       'span',
                       null,
                       ' ',
                       React.createElement(MenuItem, {
-                        label: 'Download Csv',
-                        onClick: handleCsvDownload,
+                        label: 'CSV',
+                        disabled: downloadLoading,
+                        onClick: () => handleDownload('CSV'),
                       }),
                       React.createElement(MenuItem, {
-                        label: 'Download Excel',
-                        onClick: handleExcelDownload,
+                        label: 'Excel',
+                        disabled: downloadLoading,
+                        onClick: () => handleDownload('XLSX'),
                       })
                     ),
                     value: 'Download',
                   },
-                  'Download'
+                  downloadLoading
+                    ? React.createElement(CircularLoader, { small: true })
+                    : 'Download'
                 )
               ),
             orgUnitModalVisible &&
@@ -821,21 +833,25 @@ export class LineListTableComponent extends ReactWrapperModule implements OnChan
                 setPrevSelectedOrgUnit: setPrevSelectedOrgUnit,
                 //  filteredFilters: filteredFilters
               }),
-            React.createElement(LineListTable, {
-              columns: columns,
-              data: data,
-              pager: pager,
-              setPager: setPager,
-              getTextColorFromBackGround: getTextColorFromBackGround,
-              actionOptions: this.actionOptions,
-              rowActionFilterConfig: this.lineListRowActionFilterConfig,
-              actionOptionOrientation: this.actionOptionOrientation,
-              actionSelected: this.actionSelected,
-              selectable: selectable,
-              rowsSelected: this.rowsSelected,
-              showActionButtons: showActionButtons,
-              error: error,
-            })
+            React.createElement(
+              'div',
+              { className: 'line-list-table-scroll' },
+              React.createElement(LineListTable, {
+                columns: columns,
+                data: data,
+                pager: pager,
+                setPager: setPager,
+                getTextColorFromBackGround: getTextColorFromBackGround,
+                actionOptions: this.actionOptions,
+                rowActionFilterConfig: this.lineListRowActionFilterConfig,
+                actionOptionOrientation: this.actionOptionOrientation,
+                actionSelected: this.actionSelected,
+                selectable: selectable,
+                rowsSelected: this.rowsSelected,
+                showActionButtons: showActionButtons,
+                error: error,
+              })
+            )
           )
     );
   };

@@ -12,6 +12,7 @@ import {
   effect,
   input,
   signal,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { head } from 'lodash';
@@ -32,10 +33,13 @@ import {
 import { FieldCascadeUtil } from '../../utils/field-cascade.util';
 import { CoordinatePickerGeoConfig } from '../../components/coordinate-field-component';
 
+//TODO: To move this to shared interface problaly use type from the metadata rule model since they have already been defined
+type SectionRuleTargetType = 'PROGRAM_SECTION' | 'PROGRAM_STAGE_SECTION';
 @Component({
   selector: 'ng-dhis2-ui-form',
   templateUrl: './form.component.html',
   styleUrls: ['./form.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class FormComponent implements OnChanges, OnDestroy, OnInit {
@@ -266,6 +270,35 @@ export class FormComponent implements OnChanges, OnDestroy, OnInit {
     return this.openSectionId() === id;
   }
 
+  //TODO: To move the section visible check to a custom rule implementation for program sections
+  isSectionVisible(
+    section: { id?: string } | null | undefined,
+    expectedSectionType: SectionRuleTargetType
+  ): boolean {
+    const sectionId = section?.id;
+    if (!sectionId) return true;
+
+    if (expectedSectionType === 'PROGRAM_SECTION') {
+      return this.getVisibleSectionFields(section).length > 0;
+    }
+
+    const sectionActions = (this.programRuleActions() || []).filter(
+      (action: IMetadataRuleAction) =>
+        action.section === sectionId &&
+        action.sectionType === expectedSectionType
+    );
+
+    const hasShowSectionAction = sectionActions.some(
+      (action) => action.actionType === 'SHOWSECTION'
+    );
+
+    const hasHideSectionAction = sectionActions.some(
+      (action) => action.actionType === 'HIDESECTION'
+    );
+
+    return hasShowSectionAction || !hasHideSectionAction;
+  }
+
   ngOnInit(): void {
     this.values = this.form().getRawValue();
     // TODO: This is uneccesary emit at this stage of execution, since nothing has changes at initiation and potentially break some of implementation that depends formUpdate, which also is triggered when there is actual change in the form apart form initial values that came with it
@@ -293,8 +326,10 @@ export class FormComponent implements OnChanges, OnDestroy, OnInit {
           if (fieldToRemove) {
             const form = this.form();
             const currentValue = form.get(fieldToRemove.key)?.value;
+            const shouldPreserveValue =
+              fieldToRemove.disabled || fieldToRemove.generated;
 
-            if (currentValue != null) {
+            if (currentValue != null && !shouldPreserveValue) {
               form.get(fieldToRemove.key)?.setValue(null);
               this.onFieldUpdate(form, fieldToRemove);
             }
@@ -333,6 +368,12 @@ export class FormComponent implements OnChanges, OnDestroy, OnInit {
     return this.form().invalid;
   }
 
+  private getOptionValue(option: any): string {
+    return String(
+      option?.value ?? option?.code ?? option?.key ?? option?.id ?? ''
+    );
+  }
+
   onRunTimeOptionUpdate(result: any) {
     if (this.fieldComponents) {
       const fieldToUpdate = this.fieldComponents.find(
@@ -340,9 +381,14 @@ export class FormComponent implements OnChanges, OnDestroy, OnInit {
           fieldComponent?.field()?.dependentField?.id === result?.field?.id
       );
 
+      const selectedValue = String(
+        this.form()?.value[result?.field?.id] ??
+          this.form()?.value[result?.field?.key] ??
+          ''
+      );
+
       const parentOption = result?.options.find(
-        (option: { code: any }) =>
-          option.code === this.form()?.value[result?.field?.id]
+        (option: any) => this.getOptionValue(option) === selectedValue
       );
 
       fieldToUpdate?.onUpdateRuntimeOptions(parentOption?.options || []);

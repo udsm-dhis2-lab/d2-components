@@ -11,6 +11,7 @@ import {
   effect,
   input,
   signal,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { find } from 'lodash';
@@ -26,6 +27,7 @@ import { CoordinatePickerGeoConfig } from '../../components/coordinate-field-com
   selector: 'ng-dhis2-ui-form-field',
   templateUrl: './form-field.component.html',
   styleUrls: ['./form-field.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class FormFieldComponent implements OnInit, OnChanges, OnDestroy {
@@ -59,6 +61,7 @@ export class FormFieldComponent implements OnInit, OnChanges, OnDestroy {
 
   value = signal<any>('');
   runtimeError = signal<string | undefined>(undefined);
+  programRuleOptions = signal<any[] | undefined>(undefined);
 
   private _runtimeOptions: any[] = [];
   runtimeOptions: any = [];
@@ -110,6 +113,7 @@ export class FormFieldComponent implements OnInit, OnChanges, OnDestroy {
 
     let runtimeError;
     let isValueAssigned = false;
+    let hasProgramRuleOptions = false;
     fieldRuleActions.forEach((ruleAction) => {
       switch (ruleAction.actionType) {
         case 'ASSIGN': {
@@ -139,11 +143,21 @@ export class FormFieldComponent implements OnInit, OnChanges, OnDestroy {
           break;
         }
 
+        case 'SHOWOPTIONGROUP': {
+          hasProgramRuleOptions = true;
+          this.programRuleOptions.set(
+            this.getProgramRuleOptions(ruleAction.options || [])
+          );
+          break;
+        }
+
         default:
           break;
       }
     });
-
+    if (!hasProgramRuleOptions) {
+      this.programRuleOptions.set(undefined);
+    }
     this.runtimeError.set(runtimeError);
     this.isValueAssigned.set(isValueAssigned);
   }
@@ -237,6 +251,13 @@ export class FormFieldComponent implements OnInit, OnChanges, OnDestroy {
     this.immediateFieldUpdate.emit({ value: event?.value || '' });
   }
 
+  onRuntimeOptionsChange(event: {
+    field: IFormField<string>;
+    options: any[];
+  }) {
+    this.runtimeOptionChange.emit(event);
+  }
+
   onFieldUpdate(e?: any, isDate?: boolean, isDateTime?: boolean): void {
     if (e && e.value) {
       const dateValue = new Date(e.value);
@@ -278,7 +299,36 @@ export class FormFieldComponent implements OnInit, OnChanges, OnDestroy {
     this.fieldUpdate.emit(this.form);
   }
 
+  getDisplayField(field: IFormField<string>): IFormField<string> {
+    const options = this.programRuleOptions();
+    return options ? { ...field, options } : field;
+  }
+
+  private getProgramRuleOptions(ruleOptions: any[]): any[] {
+    const ruleOptionIds = new Set(
+      (ruleOptions || [])
+        .map((option) => option?.id ?? option?.key)
+        .filter(Boolean)
+    );
+    const fieldOptions = this.field().options || [];
+
+    if (ruleOptionIds.size === 0) return [];
+
+    const optionsFromField = fieldOptions.filter((option: any) =>
+      ruleOptionIds.has(option?.key ?? option?.id)
+    );
+
+    if (optionsFromField.length > 0) {
+      return optionsFromField;
+    }
+
+    return [...ruleOptions].sort(
+      (a, b) => (a?.sortOrder ?? a?.order ?? 0) - (b?.sortOrder ?? b?.order ?? 0)
+    );
+  }
+
   onUpdateRuntimeOptions(options: any[]) {
     this._runtimeOptions = [...options];
+    this.runtimeOptions = [...options];
   }
 }

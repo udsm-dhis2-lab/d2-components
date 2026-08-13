@@ -1,6 +1,7 @@
 import {
   provideHttpClient,
   withInterceptorsFromDi,
+  withXhr
 } from '@angular/common/http';
 import {
   ModuleWithProviders,
@@ -29,7 +30,7 @@ function initializeShell(config: AppShellConfig): () => Promise<void> {
   declarations: [NgDhis2ShellComponent],
   exports: [NgDhis2ShellComponent],
   imports: [],
-  providers: [provideHttpClient(withInterceptorsFromDi())],
+  providers: [provideHttpClient(withXhr(), withInterceptorsFromDi())],
 })
 export class AppShellModule {
   static forRoot(config: AppShellConfig): ModuleWithProviders<AppShellModule> {

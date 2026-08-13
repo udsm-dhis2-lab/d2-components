@@ -10,20 +10,43 @@ import {
   TableRow,
   TrackedEntityInstancesResponse,
 } from '../models/line-list.models';
+import {
+  LineListColumnMetadataDisplayMode,
+  LineListColumnMetadataDisplayModeValue,
+} from '../models/line-list-column-metadata-display-mode.model';
 import { parse, format, isValid } from 'date-fns';
+import { formatMultiTextOptionValue } from './multi-text-option.util';
 
 export const getTrackedEntityTableData = (
   response: LineListResponse,
   programId: string,
   pager: any,
   metaData: Program,
-  searcheableDataElements: string[]
+  searcheableDataElements: string[],
+  customDisplayInReportsIds?: string[],
+  columnNameSource: 'NAME' | 'FORM_NAME' = 'NAME',
+  columnMetadataDisplayMode?: LineListColumnMetadataDisplayModeValue
 ): {
   columns: ColumnDefinition[];
   data: TableRow[];
   filteredEntityColumns: ColumnDefinition[];
   orgUnitLabel: string;
 } => {
+  const getColumnLabel = (item?: {
+    name?: string;
+    formName?: string;
+  }): string =>
+    columnNameSource === 'FORM_NAME'
+      ? item?.formName || item?.name || 'Default'
+      : item?.name || item?.formName || 'Default';
+  const shouldShowAllAttributes =
+    columnMetadataDisplayMode ===
+      LineListColumnMetadataDisplayMode.ALL_ATTRIBUTES ||
+    columnMetadataDisplayMode ===
+      LineListColumnMetadataDisplayMode.ALL_ATTRIBUTES_AND_DATA_ELEMENTS;
+  const shouldShowAllDataElements =
+    columnMetadataDisplayMode ===
+    LineListColumnMetadataDisplayMode.ALL_ATTRIBUTES_AND_DATA_ELEMENTS;
   const teisRaw = (response.data as TrackedEntityInstancesResponse)
     .trackedEntityInstances;
   const teis: TrackedEntityInstance[] = Array.isArray(teisRaw)
@@ -31,25 +54,39 @@ export const getTrackedEntityTableData = (
     : [teisRaw];
 
   const orgUnitLabel = metaData.orgUnitLabel as string;
+  const incidentDateLabel = metaData.incidentDateLabel as string;
   const orgUnitMap = (response.data as TrackedEntityInstancesResponse)
     .orgUnitsMap;
 
-  const attributeColumns = metaData.displayInListTrackedEntityAttributes
+  const attributeColumns = (
+    shouldShowAllAttributes
+      ? metaData.trackedEntityAttributes
+      : metaData.displayInListTrackedEntityAttributes
+  )
     .sort((a, b) => a.sortOrder! - b.sortOrder!)
     .map((trackedEntityAttribute) => ({
-      label: trackedEntityAttribute.name ?? trackedEntityAttribute.formName,
+      label: getColumnLabel(trackedEntityAttribute),
       key: trackedEntityAttribute.id,
     }));
+
+  const shouldIncludeDataElement = (psde: any): boolean => {
+    if (shouldShowAllDataElements) {
+      return true;
+    }
+
+    return customDisplayInReportsIds !== undefined
+      ? customDisplayInReportsIds.includes(psde.dataElement?.id)
+      : psde.displayInReports === true;
+  };
 
   const tableSearcheableDataElements = metaData
     .programStages!.sort((a, b) => a.sortOrder - b.sortOrder)
     .flatMap((stage) =>
       stage
-        .programStageDataElements!.filter((psde) => psde.displayInReports)
+        .programStageDataElements!.filter(shouldIncludeDataElement)
         .sort((a, b) => a.sortOrder - b.sortOrder)
         .map((psde) => ({
-          label:
-            psde.dataElement.name || psde.dataElement.formName || 'default',
+          label: getColumnLabel(psde.dataElement),
           key: psde.dataElement.id,
           valueType: psde.dataElement.valueType,
           options: psde.dataElement.optionSet,
@@ -62,31 +99,51 @@ export const getTrackedEntityTableData = (
     .programStages!.sort((a, b) => a.sortOrder - b.sortOrder)
     .flatMap((stage) =>
       stage
-        .programStageDataElements!.filter((psde) => psde.displayInReports)
+        .programStageDataElements!.filter(shouldIncludeDataElement)
         .sort((a, b) => a.sortOrder - b.sortOrder)
         .map((psde) => ({
-          label:
-            psde.dataElement.name || psde.dataElement.formName || 'default',
+          label: getColumnLabel(psde.dataElement),
           key: psde.dataElement.id,
         }))
     );
 
-  const dataElementOptions = metaData.displayInListDataElements.map(
-    (element) => ({
-      id: element.id,
-      options: element.optionSet?.options.map((opt) => ({
-        name: opt.name,
-        code: opt.code,
-        color: opt.style?.color,
-      })),
-    })
-  );
+  // const dataElementOptions = metaData.displayInListDataElements.map(
+  //   (element) => ({
+  //     id: element.id,
+  //     options: element.optionSet?.options.map((opt) => ({
+  //       name: opt.name,
+  //       code: opt.code,
+  //       color: opt.style?.color,
+  //     })),
+  //   })
+  // );
+  const dataElementOptions = (metaData.programStages ?? [])
+    .flatMap((stage) => stage.programStageDataElements ?? [])
+    .filter((psde) => psde.dataElement && shouldIncludeDataElement(psde))
+    .map(({ dataElement }) => ({
+      id: dataElement.id,
+      valueType: dataElement.valueType,
+      options:
+        dataElement.optionSet?.options?.map((option) => ({
+          name: option.name,
+          code: option.code,
+          color: option.style?.color,
+        })) ?? [],
+    }));
 
   const tableColumns = [
     {
       label: orgUnitLabel || 'Registering unit',
       key: 'orgUnit',
     },
+    ...(metaData.displayIncidentDate
+      ? [
+          {
+            label: incidentDateLabel || 'Incident date',
+            key: 'incidentDate',
+          },
+        ]
+      : []),
     ...attributeColumns,
     ...dataElementColumns,
   ];
@@ -94,7 +151,8 @@ export const getTrackedEntityTableData = (
   const tableFilters = metaData.searchableTrackedEntityAttributes
     .sort((a, b) => a.sortOrder! - b.sortOrder!)
     .map((attr) => ({
-      label: attr.name,
+      // label: attr.name,
+      label: getColumnLabel(attr),
       key: attr.id,
       valueType: attr.valueType,
       options: attr.optionSet ?? undefined,
@@ -104,13 +162,13 @@ export const getTrackedEntityTableData = (
   const getOptionColor = (option: any): string | undefined =>
     option?.color || option?.style?.color;
 
-//   const formatDate = (value: string): string => {
-//     try {
-//       return format(parse(value, 'yyyy-MM-dd', new Date()), 'dd/MM/yyyy');
-//     } catch {
-//       return value;
-//     }
-//   };
+  //   const formatDate = (value: string): string => {
+  //     try {
+  //       return format(parse(value, 'yyyy-MM-dd', new Date()), 'dd/MM/yyyy');
+  //     } catch {
+  //       return value;
+  //     }
+  //   };
   const formatDate = (value: string): string => {
     const date = new Date(value);
     if (isValid(date)) {
@@ -172,15 +230,25 @@ export const getTrackedEntityTableData = (
         attributeMeta?.optionSetValue &&
         attributeMeta?.optionSet?.options
       ) {
-        const matchedOption = attributeMeta.optionSet.options.find(
-          (opt: any) => opt.code === value
-        );
-        row[attributeId] = {
-          value: matchedOption?.name || value,
-          ...(getOptionColor(matchedOption) && {
-            style: getOptionColor(matchedOption),
-          }),
-        };
+        if (valueType === 'MULTI_TEXT') {
+          row[attributeId] = {
+            value: formatMultiTextOptionValue(
+              value,
+              attributeMeta.optionSet.options
+            ),
+          };
+        } else {
+          const matchedOption = attributeMeta.optionSet.options.find(
+            (opt: any) => opt.code === value
+          );
+
+          row[attributeId] = {
+            value: matchedOption?.name || value,
+            ...(getOptionColor(matchedOption) && {
+              style: getOptionColor(matchedOption),
+            }),
+          };
+        }
       } else {
         row[attributeId] = { value };
       }
@@ -195,16 +263,22 @@ export const getTrackedEntityTableData = (
       if (!dataElementId || value == null) return;
 
       const dataElementOption = dataElementOptionMap.get(dataElementId);
-      const matchedOption = dataElementOption?.options?.find(
-        (opt: any) => opt.code === value
-      );
+      if (dataElementOption?.valueType === 'MULTI_TEXT') {
+        row[dataElementId] = {
+          value: formatMultiTextOptionValue(value, dataElementOption.options),
+        };
+      } else {
+        const matchedOption = dataElementOption?.options?.find(
+          (opt: any) => opt.code === value
+        );
 
-      row[dataElementId] = {
-       value: matchedOption?.name || value,
-        ...(getOptionColor(matchedOption) && {
-          style: getOptionColor(matchedOption),
-        }),
-      };
+        row[dataElementId] = {
+          value: matchedOption?.name || value,
+          ...(getOptionColor(matchedOption) && {
+            style: getOptionColor(matchedOption),
+          }),
+        };
+      }
     });
 
     const orgUnitId = enrollment.orgUnit;
@@ -212,6 +286,11 @@ export const getTrackedEntityTableData = (
 
     row['orgUnitId'] = { value: orgUnitId || '-' };
     row['orgUnit'] = { value: orgUnitName };
+    row['incidentDate'] = {
+      value: enrollment.incidentDate
+        ? formatDate(enrollment.incidentDate)
+        : '-',
+    };
 
     const teiObject =
       typeof tei.toObject === 'function' ? tei.toObject() : null;

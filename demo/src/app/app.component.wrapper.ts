@@ -3,13 +3,14 @@
 // license that can be found in the LICENSE file.
 
 import { ComponentPortal } from '@angular/cdk/portal';
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { AppComponent } from './app.component';
 import { NgDhis2ShellWrapper } from '@iapps/ng-dhis2-shell';
 
 @Component({
   selector: 'app-root',
   template: '<ng-dhis2-shell (shellHasLoaded)="onReady()"></ng-dhis2-shell>',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 // eslint-disable-next-line @angular-eslint/component-class-suffix

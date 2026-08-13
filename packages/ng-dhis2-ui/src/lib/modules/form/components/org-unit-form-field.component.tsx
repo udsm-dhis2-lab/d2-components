@@ -110,6 +110,7 @@ type Props = {
   maxTreeHeight?: number;
   disabled?: boolean;
   customOrgUnitRoots?: CustomOrgUnitConfig[];
+  orgUnitRoots?: string[];
   previousOrgUnitId?: string;
 };
 
@@ -464,6 +465,7 @@ export const OrgUnitFormField = (props: Props) => {
     key,
     field,
     customOrgUnitRoots,
+    orgUnitRoots,
   } = props;
   const d2 = (window as unknown as D2Window)?.d2Web;
   const classes = useDynamicStyles(orgUnitFieldStyles);
@@ -845,11 +847,15 @@ export const OrgUnitFormField = (props: Props) => {
       }
       return configuredRootInfo;
     }
+    if (orgUnitRoots?.length) {
+      return orgUnitRoots.map((id) => ({ id })) as OrgUnit[];
+    }
     return d2.currentUser?.organisationUnits || [];
   }, [
     useCustomRoots,
     configuredRootsLoading,
     configuredRootInfo,
+    orgUnitRoots,
     d2.currentUser,
   ]);
 
@@ -1018,6 +1024,7 @@ export const OrgUnitFormField = (props: Props) => {
     config && (
       <Provider
         config={config}
+        userInfo={d2.currentUser as any}
         plugin={false}
         parentAlertsAdd={undefined}
         showAlertsInPlugin={false}

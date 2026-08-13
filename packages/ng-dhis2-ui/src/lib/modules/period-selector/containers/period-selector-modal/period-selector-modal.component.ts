@@ -4,6 +4,7 @@ import {
   EventEmitter,
   Input,
   Output,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { DataProvider } from '@dhis2/app-runtime';
 import {
@@ -46,6 +47,7 @@ type PeriodSelectionEvent = {
       }
     `,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class PeriodSelectorModalComponent extends ReactWrapperModule {

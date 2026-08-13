@@ -68,6 +68,10 @@ export class FieldUtil {
     hasOptions: boolean
   ): FieldControlType {
     if (hasOptions) {
+      if (valueType === FieldType.MULTI_TEXT) {
+        return 'multi-dropdown';
+      }
+
       return 'dropdown';
     }
 

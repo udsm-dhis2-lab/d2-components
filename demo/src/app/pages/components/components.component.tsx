@@ -1,5 +1,5 @@
 /* eslint-disable @nx/enforce-module-boundaries */
-import { Component, inject, OnInit, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
   CurrentUser,
@@ -35,12 +35,14 @@ import { ProgramEntryFormConfig } from '../../../../../packages/ng-dhis2-ui/src/
 @Component({
   selector: 'ng-dhis2-ui-app-componenent',
   templateUrl: './components.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class ComponentsComponent implements OnInit {
   d2 = (window as unknown as D2Window).d2Web;
   currentUser: CurrentUser | null = null;
   currentUserOrgUnitId: string | null = null;
+  selectedRows: any[] = [];
 
   httpClient = inject(NgxDhis2HttpClientService);
   selectedPeriods = [
@@ -50,48 +52,149 @@ export class ComponentsComponent implements OnInit {
   ];
   triggerRefetch = false;
 
-  pconfig = new ProgramEntryFormConfig({
+  customOrgUnitRoots = [
+    {
+      field: 'wkV3y1YfWtz',
+      orgUnit: 'SuoqM5pXPWG',
+    },
+    {
+      field: 'Q4Yz7Mn26QT',
+      orgUnit: 'SuoqM5pXPWG',
+    },
+  ];
+
+  pcofig = new ProgramEntryFormConfig({
     program: 'A3olldDSHQg',
     programStage: 'NtZXBym2KfD',
     hideRegistrationUnit: true,
     formType: 'EVENT',
     displayType: 'FLAT',
     autoComplete: true,
-    autoAssignedValues: [
-      {
-        field: 'orgUnit',
-        value: 'aaaaaaaaaaaaaaaaaa',
-      },
-    ],
+    // autoAssignedValues: [
+    //   {
+    //     field: 'orgUnit',
+    //     value: 'aaaaaaaaaaaaaaaaaa',
+    //   },
+    // ],
   });
 
-  formConfig = new ProgramEntryFormConfig({
-    program: 'Gy65kx8gQv6',
-    programStage: 'edx4DaMDAyo',
-    hideRegistrationUnit: true,
-    formType: 'EVENT',
+  // formConfig = new ProgramEntryFormConfig({
+  //   program: 't1pTvYbv08Z',
+  //   // programStage: 'sNrDHjft0cX',
+  //   formType: 'TRACKER',
+  //   displayType: 'FLAT',
+  //   autoComplete: true,
+  //   autoAssignedValues: [
+  //     {
+  //       field: 'orgUnit',
+  //       value: 'OKHzQJFk8Ys',
+  //     },
+  //     //   {
+  //     //     field: 'occurredAt',
+  //     //     value: format(new Date(), 'yyyy-MM-dd'),
+  //     //   },
+  //     // ],
+  //     // formFieldExtensions: [
+  //     //   {
+  //     //     id: 'seUJl7AEZtS',
+  //     //     accept: ['.pdf'],
+  //     //     sizeLimit: 2 * 1024 * 1024,
+  //     //   },
+  //   ],
+  //   formFieldExtensions: [
+  //     {
+  //       id: 'wkV3y1YfWtz',
+  //       orgUnitRoots: ['m0frOspS7JY'],
+  //     },
+  //     {
+  //       id: 'Q4Yz7Mn26QT',
+  //       orgUnitRoots: ['m0frOspS7JY'],
+  //     },
+  //   ],
+  // });
+
+   formConfig = new ProgramEntryFormConfig({
+    program: 'C5zzHxNmigX',
+    // hideRegistrationUnit: true,
+    formType: 'TRACKER',
     displayType: 'FLAT',
     autoComplete: true,
     autoAssignedValues: [
       {
         field: 'orgUnit',
-        value: 'xSIt9MfMKiM',
+        value: 'Dr80ve0pgWe',
       },
       {
-        field: 'occurredAt',
-        value: format(new Date(), 'yyyy-MM-dd'),
+        field: 'wkalhYT9xfO',
+        value: 'aaaaaaaaaaaaaaaaaa',
       },
-    ],
-    formFieldExtensions: [
-      {
-        id: 'seUJl7AEZtS',
-        accept: ['.pdf'],
-        sizeLimit: 2 * 1024 * 1024,
+       {
+        field: 'aaoPWiXfox3',
+        value: 'aaaaaaaaaaaaaaaaaa',
       },
     ],
   });
 
+  // formConfig = new ProgramEntryFormConfig({
+  //   program: 'TRw2GByncfl',
+  //   hideRegistrationUnit: false,
+  //   formType: 'TRACKER',
+  //   displayType: 'FLAT',
+  //   hideEnrollmentDate: true,
+  // // autoAssignedValues: [
+  // //   // {
+  // //   //   field: 'enrollmentDate',
+  // //   //   value: '2026-07-03',
+  // //   // },
+  // //   // {
+  // //   //   field: 'incidentDate',
+  // //   //   value: '2026-07-03',
+  // //   // },
+  // // ],
+  //   // formFieldExtensions: [
+  //   //   {
+  //   //     id: 'wkV3y1YfWtz',
+  //   //     orgUnitRoots: ['m0frOspS7JY'],
+  //   //   },
+  //   //   {
+  //   //     id: 'Q4Yz7Mn26QT',
+  //   //     orgUnitRoots: ['m0frOspS7JY'],
+  //   //   },
+  //   //   {
+  //   //     id: 'Hi0pfvU8u0h',
+  //   //     orgUnitRoots: ['m0frOspS7JY'],
+  //   //   },
+  //   //   {
+  //   //     id: 'EwxvQ1GZj9r',
+  //   //     orgUnitRoots: ['m0frOspS7JY'],
+  //   //   },
+  //   // ],
+  //   // autoAssignedValues: [
+  //   //   {
+  //   //     field: 'BDGKkkb8s9j',
+  //   //     value: '+255753916529',
+  //   //   },
+  //   //   {
+  //   //     field: 'a7ilGDvYugI',
+  //   //     value: 'erick jihn',
+  //   //   },
+  //   //   {
+  //   //     field: 'E3hwZHin4on',
+  //   //     value: '2025-03-12',
+  //   //   },
+  //   // ],
+  // });
+
   completedTrainingFilter = [
+    new DataQueryFilter()
+      .setAttribute('pWu4cEoJapG')
+      .setProgramStage('a8N7x23LmXp')
+      .setCondition(DataFilterCondition.Equal)
+      .setType('DATA_ELEMENT')
+      .setValue('Yes'),
+  ];
+
+  REVIEWFILTER = [
     new DataQueryFilter()
       .setAttribute('pWu4cEoJapG')
       .setProgramStage('a8N7x23LmXp')
@@ -131,7 +234,7 @@ export class ComponentsComponent implements OnInit {
           mustExist: true,
         },
         priority: 1,
-      }
+      },
     ],
   };
 
@@ -154,6 +257,15 @@ export class ComponentsComponent implements OnInit {
     // .setValue('Rejected')
     // .setType('DATA_ELEMENT')
     // .setProgramStage('NtZXBym2KfD'),
+  ];
+
+  filters: DataQueryFilter[] = [
+    new DataQueryFilter()
+      .setAttribute('o5K07ZkNF7J')
+      .setCondition(DataFilterCondition.In)
+      .setValue(['Yes', 'No'])
+      .setType('DATA_ELEMENT')
+      .setProgramStage('q2O2QgN4l8O'),
   ];
 
   setValue() {
@@ -219,7 +331,7 @@ export class ComponentsComponent implements OnInit {
 
   formValuePayload: any;
 
-  filters = [
+  eventFilters = [
     {
       programStage: 'AFdwWJ6LpRT',
       dataElement: 'WCuw3RqR2pX',
@@ -1142,18 +1254,24 @@ class DateField {
       : [];
   }
 
-  pconfig = new ProgramEntryFormConfig({
-    program: 'A3olldDSHQg',
-    programStage: 'NtZXBym2KfD',
-    hideRegistrationUnit: true,
-    formType: 'EVENT',
+  formConfig = new ProgramEntryFormConfig({
+    program: 'C5zzHxNmigX',
+    // hideRegistrationUnit: true,
+    formType: 'TRACKER',
     displayType: 'FLAT',
     autoComplete: true,
     autoAssignedValues: [
       {
         field: 'orgUnit',
+        value: 'Dr80ve0pgWe',
+      },
+      {
+        field: 'wkalhYT9xfO',
         value: 'aaaaaaaaaaaaaaaaaa',
-        // value: this.applicant()?.orgUnit,
+      },
+       {
+        field: 'aaoPWiXfox3',
+        value: 'aaaaaaaaaaaaaaaaaa',
       },
     ],
   });

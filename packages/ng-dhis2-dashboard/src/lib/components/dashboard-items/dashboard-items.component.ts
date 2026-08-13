@@ -5,11 +5,11 @@ import {
   ktdTrackById,
 } from '@katoid/angular-grid-layout';
 import { DashboardItemObject, VisualizationDataSelection } from '../../models';
-import { CommonModule } from '@angular/common';
+
 import { DashboardItemComponent } from '../dashboard-item/dashboard-item.component';
 
 @Component({
-    imports: [CommonModule, DashboardItemComponent, KtdGridModule],
+    imports: [DashboardItemComponent, KtdGridModule],
     selector: 'd2-dashboard-items',
     templateUrl: './dashboard-items.component.html',
     styleUrls: ['./dashboard-items.component.scss'],

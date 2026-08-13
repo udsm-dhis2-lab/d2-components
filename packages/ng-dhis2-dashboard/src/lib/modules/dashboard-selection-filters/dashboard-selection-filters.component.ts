@@ -7,6 +7,7 @@ import {
   ViewChild,
   WritableSignal,
   signal,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { MatDialog } from '@angular/material/dialog';
@@ -49,6 +50,7 @@ import { DashboardSelectionFilterService } from './services/dashboard-selection-
   providers: [DashboardSelectionFilterService],
   selector: 'd2-dashboard-selection-filters',
   templateUrl: './dashboard-selection-filters.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./dashboard-selection-filters.component.scss'],
 })
 export class DashboardSelectionFiltersComponent {

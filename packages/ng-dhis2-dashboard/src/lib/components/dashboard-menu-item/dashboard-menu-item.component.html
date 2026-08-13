@@ -1,11 +1,12 @@
-<div
-  *ngIf="dashboardMenuItem"
-  [id]="dashboardMenuItem.id"
+@if (dashboardMenuItem) {
+  <div
+    [id]="dashboardMenuItem.id"
   [ngClass]="{
     'd2-dashboard__menu-item': true,
     'd2-dashboard__menu-item-active': isCurrentDashboard
   }"
-  (click)="onSetDashboard($event)"
->
-  {{ dashboardMenuItem.name }}
-</div>
+    (click)="onSetDashboard($event)"
+    >
+    {{ dashboardMenuItem.name }}
+  </div>
+}

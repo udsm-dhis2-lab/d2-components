@@ -8,6 +8,7 @@ import {
   NgZone,
   Output,
   signal,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import React, { useEffect, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
@@ -41,6 +42,7 @@ import OrgUnitDimension from '../../../organisation-unit-selector/components/Org
   selector: 'app-selection-filters-ui',
   template: '<ng-content></ng-content>',
   styleUrls: ['./selection-filters-ui.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class SelectionFiltersComponent
@@ -198,7 +200,7 @@ export class SelectionFiltersComponent
               )
             )
           ),
-        })
+        } as any)
       : React.createElement(CircularLoader, { small: true });
   };
 
