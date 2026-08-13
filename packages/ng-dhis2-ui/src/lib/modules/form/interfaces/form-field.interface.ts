@@ -9,6 +9,7 @@ export interface IFormField<T> {
   key: string;
   referenceKey?: string;
   label: string;
+  description?: string;
   required: boolean;
   order?: number;
   controlType: FieldControlType;

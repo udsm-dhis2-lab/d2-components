@@ -18,6 +18,7 @@ export class FormField<T> implements IFormField<T>, FormFieldFunction<T> {
   key: string;
   referenceKey?: string;
   label: string;
+  description?: string;
   required: boolean;
   order?: number;
   controlType: FieldControlType;
@@ -62,6 +63,7 @@ export class FormField<T> implements IFormField<T>, FormFieldFunction<T> {
     this.id = options.id || '';
     this.code = options.code || '';
     this.label = options.label || '';
+    this.description = options.description;
     this.required = !!options.required;
     this.order = options.order === undefined ? 1 : options.order;
     this.controlType = options.controlType as FieldControlType;
