@@ -695,6 +695,8 @@ import {
   TextAreaField,
   Transfer,
   NoticeBox,
+  IconInfo16,
+  Button,
 } from '@dhis2/ui';
 import {
   D2Window,
@@ -724,6 +726,9 @@ import {
   OptionsPathCascadeConfigMap,
 } from '../models/field-cascade.types';
 import { FieldCascadeUtil } from '../utils/field-cascade.util';
+import { Legend } from '@dhis2/ui';
+import { FieldSet } from '@dhis2/ui';
+import { FormFieldLabel } from './form-field-label';
 
 @Directive()
 export class BaseFormFieldComponent extends ReactWrapperModule {
@@ -1176,7 +1181,6 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
               });
             });
             setDisabled(baseDisabled || !parentValue);
-
           };
 
           applyDependentOptions(parentCtrl.value);
@@ -1315,6 +1319,48 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
       };
 
       // UI renderer
+
+      const formFieldLabel = (props: {
+        field: IFormField<string>;
+        fieldConfig: FieldConfig;
+      }) => {
+        const { field, fieldConfig } = props;
+
+        if (fieldConfig?.hideLabel) {
+          return null;
+        }
+
+        const [backgroundColor, setBackgroundColor] = useState('transparent');
+        return (
+          <div
+            style={{
+              display: 'flex',
+              alignContent: 'center',
+              gap: '12px',
+            }}
+          >
+            <Legend required={this.field().required}>{this.label()}</Legend>
+            <div
+              style={{
+                cursor: 'pointer',
+                backgroundColor,
+                display: 'flex',
+                alignItems: 'center',
+                padding: 1,
+                borderRadius: 2,
+                marginBottom: 2,
+              }}
+              onMouseEnter={() => setBackgroundColor(colors.grey200)}
+              onMouseLeave={() => setBackgroundColor('transparent')}
+              onClick={() => {
+                console.log('Clicked here');
+              }}
+            >
+              <IconInfo16 />
+            </div>
+          </div>
+        );
+      };
       const formFieldContent = () => {
         const f = this.field();
 
@@ -1408,20 +1454,25 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
 
           case 'textarea':
             return (
-              <TextAreaField
-                error={hasError}
-                validationText={validationError}
-                inputWidth={this.fieldConfig()?.inputWidth}
-                required={f.required}
-                name={f.id}
-                disabled={disabled}
-                label={this.label()}
-                rows={5}
-                placeholder={this.placeholder()}
-                value={value}
-                onChange={(event: any) => onValueChange(event.value)}
-                onBlur={() => checkValueUniqueness()}
-              />
+              <FieldSet>
+                <FormFieldLabel
+                  field={this.field()}
+                  fieldConfig={this.fieldConfig()}
+                />
+                <TextAreaField
+                  error={hasError}
+                  validationText={validationError}
+                  inputWidth={this.fieldConfig()?.inputWidth}
+                  required={f.required}
+                  name={f.id}
+                  disabled={disabled}
+                  rows={5}
+                  placeholder={this.placeholder()}
+                  value={value}
+                  onChange={(event: any) => onValueChange(event.value)}
+                  onBlur={() => checkValueUniqueness()}
+                />
+              </FieldSet>
             );
 
           case 'org-unit':
@@ -1477,61 +1528,71 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
 
           case 'dropdown':
             return (
-              <SingleSelectField
-                filterable={(filteredOptions || []).length > 5}
-                clearable
-                error={hasError}
-                validationText={validationError}
-                inputWidth={this.fieldConfig()?.inputWidth}
-                disabled={disabled}
-                required={f.required}
-                className="select"
-                label={this.label()}
-                selected={value}
-                onChange={(event: any) => onValueChange(event.selected)}
-                onBlur={() => checkValueUniqueness()}
-              >
-                {(filteredOptions || []).map((option: any) => (
-                  <SingleSelectOption
-                    key={this.#getOptionKey(option)}
-                    label={option.label ?? option.name ?? option.displayName}
-                    value={option.value ?? option.id}
-                  />
-                ))}
-              </SingleSelectField>
+              <FieldSet>
+                <FormFieldLabel
+                  field={this.field()}
+                  fieldConfig={this.fieldConfig()}
+                />
+                <SingleSelectField
+                  filterable={(filteredOptions || []).length > 5}
+                  clearable
+                  error={hasError}
+                  validationText={validationError}
+                  inputWidth={this.fieldConfig()?.inputWidth}
+                  disabled={disabled}
+                  required={f.required}
+                  className="select"
+                  selected={value}
+                  onChange={(event: any) => onValueChange(event.selected)}
+                  onBlur={() => checkValueUniqueness()}
+                >
+                  {(filteredOptions || []).map((option: any) => (
+                    <SingleSelectOption
+                      key={this.#getOptionKey(option)}
+                      label={option.label ?? option.name ?? option.displayName}
+                      value={option.value ?? option.id}
+                    />
+                  ))}
+                </SingleSelectField>
+              </FieldSet>
             );
 
           case 'multi-dropdown':
             return (
-              <MultiSelectField
-                clearText="Clear"
-                clearable
-                empty="No data found"
-                filterable={(filteredOptions || []).length > 5}
-                filterPlaceholder="Type to filter options"
-                error={hasError}
-                validationText={validationError}
-                inputWidth={this.fieldConfig()?.inputWidth}
-                disabled={disabled}
-                label={this.label()}
-                required={f.required}
-                loadingText="Loading options"
-                noMatchText="No options found"
-                onChange={(event: { selected: string[] }) => {
-                  const selectedValue = (event.selected || []).join(',');
-                  onValueChange(selectedValue);
-                }}
-                onBlur={() => checkValueUniqueness()}
-                selected={arrayValue}
-              >
-                {(filteredOptions || []).map((option: any) => (
-                  <MultiSelectOption
-                    key={this.#getOptionKey(option)}
-                    label={option.label ?? option.name ?? option.displayName}
-                    value={option.value ?? option.id}
-                  />
-                ))}
-              </MultiSelectField>
+              <FieldSet>
+                <FormFieldLabel
+                  field={this.field()}
+                  fieldConfig={this.fieldConfig()}
+                />
+                <MultiSelectField
+                  clearText="Clear"
+                  clearable
+                  empty="No data found"
+                  filterable={(filteredOptions || []).length > 5}
+                  filterPlaceholder="Type to filter options"
+                  error={hasError}
+                  validationText={validationError}
+                  inputWidth={this.fieldConfig()?.inputWidth}
+                  disabled={disabled}
+                  required={f.required}
+                  loadingText="Loading options"
+                  noMatchText="No options found"
+                  onChange={(event: { selected: string[] }) => {
+                    const selectedValue = (event.selected || []).join(',');
+                    onValueChange(selectedValue);
+                  }}
+                  onBlur={() => checkValueUniqueness()}
+                  selected={arrayValue}
+                >
+                  {(filteredOptions || []).map((option: any) => (
+                    <MultiSelectOption
+                      key={this.#getOptionKey(option)}
+                      label={option.label ?? option.name ?? option.displayName}
+                      value={option.value ?? option.id}
+                    />
+                  ))}
+                </MultiSelectField>
+              </FieldSet>
             );
 
           case 'date':
@@ -1572,30 +1633,35 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
               : this.getNowForHtmlDateInput(isDateTimeField);
 
             return (
-              <InputField
-                error={hasError}
-                validationText={validationError}
-                type={inputType}
-                inputWidth={inputWidth}
-                required={f.required}
-                name={f.id}
-                label={this.label()}
-                min={htmlMin}
-                max={htmlMax}
-                placeholder={this.placeholder()}
-                value={htmlValue}
-                readOnly={disabled}
-                onChange={({ value: newValue }: { value: string }) => {
-                  const normalized = this.normalizeDateValueFromHtmlInput(
-                    newValue,
-                    isDateTimeField,
-                    allowFutureDate
-                  );
+              <FieldSet>
+                <FormFieldLabel
+                  field={this.field()}
+                  fieldConfig={this.fieldConfig()}
+                />
+                <InputField
+                  error={hasError}
+                  validationText={validationError}
+                  type={inputType}
+                  inputWidth={inputWidth}
+                  required={f.required}
+                  name={f.id}
+                  min={htmlMin}
+                  max={htmlMax}
+                  placeholder={this.placeholder()}
+                  value={htmlValue}
+                  readOnly={disabled}
+                  onChange={({ value: newValue }: { value: string }) => {
+                    const normalized = this.normalizeDateValueFromHtmlInput(
+                      newValue,
+                      isDateTimeField,
+                      allowFutureDate
+                    );
 
-                  onValueChange(normalized);
-                }}
-                onBlur={() => checkValueUniqueness()}
-              />
+                    onValueChange(normalized);
+                  }}
+                  onBlur={() => checkValueUniqueness()}
+                />
+              </FieldSet>
             );
           }
 
@@ -1621,22 +1687,25 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
 
           default:
             return (
-              <InputField
-                error={hasError}
-                validationText={validationError}
-                type={f.type as any}
-                inputWidth={inputWidth}
-                required={f.required}
-                name={f.id}
-                label={this.label()}
-                min={f.min?.toString()}
-                max={f.max?.toString()}
-                placeholder={this.placeholder()}
-                value={value}
-                readOnly={disabled}
-                onChange={(event: any) => onValueChange(event.value)}
-                onBlur={() => checkValueUniqueness()}
-              />
+              <FieldSet>
+                <Legend required>Choose an option</Legend>
+                <InputField
+                  error={hasError}
+                  validationText={validationError}
+                  type={f.type as any}
+                  inputWidth={inputWidth}
+                  required={f.required}
+                  name={f.id}
+                  label={this.label()}
+                  min={f.min?.toString()}
+                  max={f.max?.toString()}
+                  placeholder={this.placeholder()}
+                  value={value}
+                  readOnly={disabled}
+                  onChange={(event: any) => onValueChange(event.value)}
+                  onBlur={() => checkValueUniqueness()}
+                />
+              </FieldSet>
             );
         }
       };
