@@ -546,7 +546,7 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
           'ToOne'
         )
       )
-      .get();
+      .get({ useIndexDb: true });
   }
 
   #fetchProgramRules(d2: D2Web): Promise<D2Response<ProgramRule>> {
@@ -590,6 +590,6 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
             'ToOne'
           )
       )
-      .get();
+      .get({ useIndexDb: true });
   }
 }

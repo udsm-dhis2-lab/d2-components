@@ -4,12 +4,10 @@
 
 import { AxiosInstance } from 'axios';
 import { isArray, isPlainObject } from 'lodash';
-import { IndexDBParams } from '../interfaces';
-import { IndexDbUtil } from '../utils';
 import { D2HttpRequestConfig } from './d2-http-request-config.model';
 import { D2HttpResponse } from './http-response.model';
-import { D2IndexDb } from './index-db.model';
 import { IndexDbQuerySchema } from './index-db-query-schema.model';
+import { D2IndexDb } from './index-db.model';
 
 export class D2HttpClient {
   #axiosInstance!: AxiosInstance;

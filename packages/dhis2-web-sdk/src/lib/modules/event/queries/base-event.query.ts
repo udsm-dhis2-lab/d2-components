@@ -341,7 +341,8 @@ export class BaseEventQuery<T extends DHIS2Event> {
               'ToOne'
             )
           )
-          .get(),
+
+          .get({ useIndexDb: true }),
         d2.programModule.programRule
           .where({
             attribute: 'program.id' as any,
@@ -386,7 +387,12 @@ export class BaseEventQuery<T extends DHIS2Event> {
                 'ToOne'
               )
           )
-          .get(),
+          .paginate(
+            new Pager({
+              paging: false,
+            })
+          )
+          .get({ useIndexDb: true }),
       ]);
 
       const [programResponse, programRuleResponse] = metaDataResponse;

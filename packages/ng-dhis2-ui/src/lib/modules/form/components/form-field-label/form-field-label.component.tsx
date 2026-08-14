@@ -12,7 +12,7 @@ export const FormFieldLabel = (props: {
   const { field, fieldConfig } = props;
 
   if (fieldConfig?.hideLabel) {
-    return null;
+    return <></>;
   }
 
   const [backgroundColor, setBackgroundColor] = useState('transparent');
@@ -40,6 +40,7 @@ export const FormFieldLabel = (props: {
               alignItems: 'center',
               padding: 1,
               borderRadius: 2,
+              marginBottom: 2,
             }}
             onMouseEnter={() => setBackgroundColor(colors.grey200)}
             onMouseLeave={() => setBackgroundColor('transparent')}

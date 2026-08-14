@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
   EventEmitter,
@@ -7,19 +8,9 @@ import {
   NgZone,
   Output,
   signal,
-  ChangeDetectionStrategy,
 } from '@angular/core';
-import {
-  AutoAssignedValues,
-  IProgramEntryFormMetaData,
-  ProgramEntryFormConfig,
-  ProgramEntryFormMetaData,
-} from './models';
-import { CircularLoader, ButtonStrip, Button } from '@dhis2/ui';
-import React, { useEffect, useState } from 'react';
-import { ReactWrapperModule } from '../react-wrapper/react-wrapper.component';
-import { firstValueFrom, Observable, of } from 'rxjs';
 import { toObservable } from '@angular/core/rxjs-interop';
+import { Button, ButtonStrip, CircularLoader } from '@dhis2/ui';
 import {
   BaseEventQuery,
   BaseTrackerQuery,
@@ -30,9 +21,18 @@ import {
   Program,
   TrackedEntityInstance,
 } from '@iapps/d2-web-sdk';
-import { CustomOrgUnitConfig } from '../form/models/org-unit.model';
+import React, { useEffect, useState } from 'react';
+import { firstValueFrom, Observable, of } from 'rxjs';
 import { D2FormModule } from '../form/form.module';
 import { IFormMetadata } from '../form/interfaces/form-metadata.interface';
+import { CustomOrgUnitConfig } from '../form/models/org-unit.model';
+import { ReactWrapperModule } from '../react-wrapper/react-wrapper.component';
+import {
+  AutoAssignedValues,
+  IProgramEntryFormMetaData,
+  ProgramEntryFormConfig,
+  ProgramEntryFormMetaData,
+} from './models';
 
 @Component({
   selector: 'ng-dhis2-ui-program-entry-form',

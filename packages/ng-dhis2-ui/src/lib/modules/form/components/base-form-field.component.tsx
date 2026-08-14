@@ -1688,7 +1688,10 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
           default:
             return (
               <FieldSet>
-                <Legend required>Choose an option</Legend>
+                <FormFieldLabel
+                  field={this.field()}
+                  fieldConfig={this.fieldConfig()}
+                />
                 <InputField
                   error={hasError}
                   validationText={validationError}
@@ -1696,7 +1699,6 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
                   inputWidth={inputWidth}
                   required={f.required}
                   name={f.id}
-                  label={this.label()}
                   min={f.min?.toString()}
                   max={f.max?.toString()}
                   placeholder={this.placeholder()}
