@@ -63,6 +63,7 @@ const SHEHIA_KEYWORDS = [
 })
 export class FormComponentsComponent {
   d2 = (window as unknown as D2Window).d2Web;
+  orgUnit!: string;
   formConfig = [
     {
       id: 'l2VG173t0Vc',
@@ -82,10 +83,12 @@ export class FormComponentsComponent {
   ];
 
   contract = new ProgramEntryFormConfig({
-    program: 'zyBObUsin0Q',
-    programStage: 'HmW9AEBtQnj',
+    program: 'V7tJxLT7lWz',
+    programStage: 'v8s75lQLs4p',
     hideRegistrationUnit: true,
     fieldDescriptionLabel: 'Means of verification',
+    hideEnrollmentDate: true,
+    excludeProgramStages: true,
     formType: 'EVENT',
     displayType: 'FLAT',
     autoComplete: true,
@@ -650,6 +653,9 @@ export class FormComponentsComponent {
   }
 
   async ngOnInit() {
+    this.orgUnit = (
+      window as unknown as D2Window
+    )?.d2Web?.currentUser?.organisationUnits?.[0]?.id;
     // const result = await this.d2.trackerModule.trackedEntity
     //   .setProgram('lw9fZTamYec')
     //   .setTrackedEntity('i9h2cFraNvL')
