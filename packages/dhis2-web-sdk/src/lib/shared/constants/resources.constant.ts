@@ -41,7 +41,7 @@ export const D2_RESOURCES = {
   },
   programRule: {
     name: 'programRules',
-    indexDbIndices: 'id,code,name',
+    indexDbIndices: 'id,code,name,program.id',
   },
   dataSet: {
     name: 'dataSets',

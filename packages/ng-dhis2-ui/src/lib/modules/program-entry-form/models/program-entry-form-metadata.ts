@@ -201,7 +201,7 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
       programQuery.with(programStageQuery);
     }
 
-    return programQuery.get();
+    return programQuery.get({ useIndexDb: true });
   }
 
   async #getProgramMetaData(): Promise<Program | null> {
@@ -287,7 +287,7 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
             )
         )
         .paginate(new Pager({ paging: false }))
-        .get(),
+        .get({ useIndexDb: true }),
     ]);
 
     const [programResponse, programRuleResponse] = metaDataResponse;
@@ -539,7 +539,8 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
           this.config.formFieldExtensions[0]?.optionsSourceCode
         ) {
           const orgUnitResponse = await this.d2.httpInstance.get(
-            `organisationUnits.json?fields=id,name,code&paging=false&filter=organisationUnitGroups.code:eq:${this.config.formFieldExtensions[0].optionsSourceCode}`
+            `organisationUnits.json?fields=id,name,code&paging=false&filter=organisationUnitGroups.code:eq:${this.config.formFieldExtensions[0].optionsSourceCode}`,
+            { useIndexDb: true }
           );
           const orgUnitsResponse = orgUnitResponse?.data?.['organisationUnits'];
           const organisationUnits = Array.isArray(orgUnitsResponse)

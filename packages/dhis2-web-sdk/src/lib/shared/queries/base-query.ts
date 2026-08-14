@@ -5,6 +5,7 @@
 import {
   BaseIdentifiable,
   D2HttpClient,
+  D2HttpRequestConfig,
   D2Response,
   IBaseIdentifiable,
   JunctionOperator,
@@ -94,8 +95,8 @@ export class BaseQuery<T extends BaseIdentifiable, U> {
     return DhisUrlGenerator.generate<U>(this.query());
   }
 
-  async get(): Promise<D2Response<T>> {
-    const response = await this.httpClient.get(this.dhisUrl());
+  async get(httpConfig?: D2HttpRequestConfig): Promise<D2Response<T>> {
+    const response = await this.httpClient.get(this.dhisUrl(), httpConfig);
     return new D2Response<T>(response, this.identifiable);
   }
 }
