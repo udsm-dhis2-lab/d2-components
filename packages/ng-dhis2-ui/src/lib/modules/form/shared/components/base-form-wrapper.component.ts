@@ -16,10 +16,13 @@ import {
 } from '@angular/core';
 import { ProgramRuleEngine } from '@iapps/d2-web-sdk';
 import { CustomOrgUnitConfig } from '../../models/org-unit.model';
-import { IFormMetadata } from '../../interfaces/form-metadata.interface'
+import { IFormMetadata } from '../../interfaces/form-metadata.interface';
 import { IProgramEntryFormMetaData } from '../../../program-entry-form/models/program-entry-form-metadata';
 import { IFormField } from '../../interfaces/form-field.interface';
-import { IMetadataRule, IMetadataRuleAction } from '../../models/form-metadata-rule.model';
+import {
+  IMetadataRule,
+  IMetadataRuleAction,
+} from '../../models/form-metadata-rule.model';
 import { CoordinatePickerGeoConfig } from '../../components/coordinate-field-component';
 
 @Directive()
@@ -35,9 +38,8 @@ export class BaseFormWrapperComponent implements OnDestroy {
   formMetaData = input<IFormMetadata>();
   programEntryFormMetaData = input<IProgramEntryFormMetaData>();
   programStage = input<string>();
- //TODO: FIND BETTER WAY TO PASS PROGRAM TO FIELDS i.e field extensions
+  //TODO: FIND BETTER WAY TO PASS PROGRAM TO FIELDS i.e field extensions
   program = input<string>();
-
 
   ruleActions = signal<IMetadataRuleAction[]>([]);
   isFormValid = signal<boolean>(true);

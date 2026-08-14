@@ -11,7 +11,7 @@ import {
   effect,
   input,
   signal,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { find } from 'lodash';
@@ -20,7 +20,10 @@ import { Subject, takeUntil } from 'rxjs';
 import { IFormField } from '../../interfaces';
 import { FieldConfig, IMetadataRuleAction } from '../../models';
 import { CustomOrgUnitConfig } from '../../models/org-unit.model';
-import { OptionsPathCascadeConfig, OptionsPathCascadeConfigMap } from '../../models/field-cascade.types';
+import {
+  OptionsPathCascadeConfig,
+  OptionsPathCascadeConfigMap,
+} from '../../models/field-cascade.types';
 import { CoordinatePickerGeoConfig } from '../../components/coordinate-field-component';
 
 @Component({
@@ -43,7 +46,7 @@ export class FormFieldComponent implements OnInit, OnChanges, OnDestroy {
   dataId = input<string>();
   customOrgUnitRoots = input<CustomOrgUnitConfig[]>();
   //TODO: FIND BETTER WAY TO PASS PROGRAM TO FIELDS i.e field extensions
-  program = input<string>()
+  program = input<string>();
   optionCascadeConfigs = input<OptionsPathCascadeConfig[]>([]);
   optionCascadeConfigMap = input<OptionsPathCascadeConfigMap>(
     {} as OptionsPathCascadeConfigMap
@@ -251,10 +254,7 @@ export class FormFieldComponent implements OnInit, OnChanges, OnDestroy {
     this.immediateFieldUpdate.emit({ value: event?.value || '' });
   }
 
-  onRuntimeOptionsChange(event: {
-    field: IFormField<string>;
-    options: any[];
-  }) {
+  onRuntimeOptionsChange(event: { field: IFormField<string>; options: any[] }) {
     this.runtimeOptionChange.emit(event);
   }
 
@@ -323,7 +323,8 @@ export class FormFieldComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     return [...ruleOptions].sort(
-      (a, b) => (a?.sortOrder ?? a?.order ?? 0) - (b?.sortOrder ?? b?.order ?? 0)
+      (a, b) =>
+        (a?.sortOrder ?? a?.order ?? 0) - (b?.sortOrder ?? b?.order ?? 0)
     );
   }
 

@@ -11,6 +11,7 @@ export type IdentifiableField =
   | 'created'
   | 'name'
   | 'displayName'
+  | 'description'
   | 'shortName'
   | 'code'
   | 'attributeValues';
@@ -21,6 +22,7 @@ export const IDENTIFIABLE_FIELDS: IdentifiableField[] = [
   'created',
   'name',
   'displayName',
+  'description',
   'shortName',
   'code',
   'attributeValues',
@@ -46,6 +48,7 @@ export class IdentifiableObject<
   created!: string;
   name!: string;
   displayName!: string;
+  description?: string;
   shortName!: string;
   code?: string;
   attributeValues?: any[];

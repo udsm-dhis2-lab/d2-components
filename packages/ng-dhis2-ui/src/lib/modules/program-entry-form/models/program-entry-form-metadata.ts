@@ -116,6 +116,7 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
         'id',
         'code',
         'name',
+        'description',
         'captureCoordinates',
         'featureType',
         'enrollmentDateLabel',
@@ -232,6 +233,7 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
                 'id',
                 'code',
                 'name',
+                'description',
               ]),
               'ToOne'
             )
@@ -240,15 +242,26 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
                 'id',
                 'code',
                 'name',
+                'description',
               ]),
               'ToOne'
             )
             .with(
-              this.d2.programModule.programSection.select(['id', 'code' ,'name']),
+              this.d2.programModule.programSection.select([
+                'id',
+                'code',
+                'name',
+                'description',
+              ]),
               'ToOne'
             )
             .with(
-              this.d2.programModule.programStageSection.select(['id', 'code' , 'name']),
+              this.d2.programModule.programStageSection.select([
+                'id',
+                'code',
+                'name',
+                'description',
+              ]),
               'ToOne'
             )
             .with(

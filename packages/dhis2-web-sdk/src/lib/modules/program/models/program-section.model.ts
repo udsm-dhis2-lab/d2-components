@@ -28,7 +28,6 @@ export class ProgramSection extends IdentifiableObject<ProgramSection> {
   ];
   formName?: string;
   sortOrder!: number;
-  description!: string;
   renderType?: string;
   trackedEntityAttributes?: TrackedEntityAttribute[];
 
