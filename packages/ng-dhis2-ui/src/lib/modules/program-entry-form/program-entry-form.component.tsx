@@ -156,31 +156,6 @@ export class ProgramEntryFormModule {
     };
   });
 
-  // async ngOnInit() {
-  //   this.loading.set(true);
-  //   try {
-  //     // Loading metadata
-  //     const metaData = await new ProgramEntryFormMetaData()
-  //       .setConfig(this.config())
-  //       .get();
-  //     this.metaData.set(metaData);
-
-  //     // Load initial instance information
-  //     const instance = await this.#getInstance();
-  //     this.instance.set(instance);
-
-  //     if (this.config().autoAssignedValues) {
-  //       this.#updateInstanceWithAutoAssignedValues(
-  //         this.config().autoAssignedValues || []
-  //       );
-  //     }
-
-  //     this.loading.set(false);
-  //   } catch (err) {
-  //     this.loading.set(false);
-  //   }
-  // }
-
   async ngOnInit() {
     this.loading.set(true);
 
@@ -462,13 +437,17 @@ export class ProgramEntryFormModule {
   }
 
   async #getTrackerInstance(): Promise<TrackedEntityInstance> {
-    this.instanceQuery = this.d2.trackerModule.trackedEntity
-      .setProgram(this.config().program)
-      .setOrgUnit(this.orgUnit() as string);
+    const d2 = (window as unknown as D2Window).d2Web;
+    this.instanceQuery = d2?.trackerModule?.trackedEntity
+      ?.setProgram(this.config().program)
+      ?.setOrgUnit(this.orgUnit() as string);
+
+    if (!this.instanceQuery) {
+      throw new Error('Could not initialize tracker query');
+    }
 
     if (!this.trackedEntity()) {
-      const instance = await this.instanceQuery.create();
-      return await this.#setReservedValuesForCodeGeneration(instance);
+      return await this.instanceQuery.create();
     }
 
     const instanceResult = (
@@ -478,15 +457,12 @@ export class ProgramEntryFormModule {
     ).data as TrackedEntityInstance;
 
     if (!instanceResult) {
-      const instance = await this.instanceQuery.create();
-      return await this.#setReservedValuesForCodeGeneration(instance);
+      return await this.instanceQuery.create();
     }
 
     this.instanceQuery.setInstanceFields(this.metaData()?.program as Program);
 
-    const instance = await this.#setReservedValuesForCodeGeneration(
-      this.instanceQuery.instance
-    );
+    const instance = await this.instanceQuery.setReservedValues();
 
     if (this.orgUnit()) {
       instance.setOrgUnit(this.orgUnit() as string);
