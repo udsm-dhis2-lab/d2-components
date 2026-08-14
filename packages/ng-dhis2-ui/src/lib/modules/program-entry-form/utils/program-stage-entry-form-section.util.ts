@@ -48,7 +48,7 @@ export class ProgramStageEntryFormSectionUtil {
         new ProgramStageEntryFormSection({
           id: `${programStage.id}_basic_information`,
           name: 'Basic Information',
-          description: '',
+          description: programStage.description ?? '',
           formFields: basicDetailsFields,
           orientation: 'VERTICAL',
         })
@@ -191,6 +191,7 @@ export class ProgramStageEntryFormSectionUtil {
       formName: dataElementDefinition.formName,
       name:
         dataElementDefinition.displayName ?? dataElementDefinition.name ?? '',
+      description: dataElementDefinition.description,
       mandatory: !!programStageDataElement.compulsory,
       valueType: dataElementDefinition.valueType,
       sortOrder: programStageDataElement.sortOrder,

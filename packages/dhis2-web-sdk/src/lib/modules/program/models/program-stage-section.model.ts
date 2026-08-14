@@ -27,7 +27,6 @@ export class ProgramStageSection extends IdentifiableObject<ProgramStageSection>
   ];
   sortOrder!: number;
   renderType: any;
-  description!: string;
   dataElements!: DataElement[];
 
   constructor(programStageSection: Partial<ProgramStageSection>) {

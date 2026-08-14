@@ -71,7 +71,6 @@ export class Program extends IdentifiableObject<Program> {
 
   programType!: string;
   displayIncidentDate?: boolean;
-  description?: string;
   withoutRegistration?: boolean;
   ignoreOverdueEvents!: boolean;
   captureCoordinates?: boolean;

@@ -70,7 +70,6 @@ export class ProgramEntryFormFieldUtil {
       (programStages || []).map((programStage) => {
         const dataElements = (programStage.programStageDataElements || []).map(
           (stageDataElement) => {
-            
             return {
               ...stageDataElement.dataElement,
               sortOrder: stageDataElement.sortOrder,
@@ -93,6 +92,7 @@ export class ProgramEntryFormFieldUtil {
             formName: eventDateName,
             name: eventDateName,
             shortName: eventDateName,
+            description: eventDateName,
             displayName: eventDateName,
             sortOrder: 1,
             mandatory: true,
@@ -395,6 +395,7 @@ export class ProgramEntryFormFieldUtil {
           id: field.id,
           code: field.code,
           label: field.formName || field.name,
+          description: field.description,
           key: field.code ? camelCase(field.code) : field.id,
           required: field.mandatory,
           type: FieldUtil.getFieldType(field.valueType),

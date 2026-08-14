@@ -52,7 +52,6 @@ export class ProgramStage extends IdentifiableObject<ProgramStage> {
 
   sortOrder!: number;
   executionDateLabel?: string;
-  description?: string;
   formType!: string;
   blockEntryForm!: boolean;
   hideDueDate!: boolean;

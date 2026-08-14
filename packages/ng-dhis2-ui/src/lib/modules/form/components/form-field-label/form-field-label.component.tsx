@@ -26,6 +26,7 @@ export const FormFieldLabel = (props: {
           display: 'flex',
           alignContent: 'center',
           gap: 12,
+          marginBottom: 4,
         }}
       >
         <Legend required={field.required}>{field.label}</Legend>
@@ -39,7 +40,6 @@ export const FormFieldLabel = (props: {
               alignItems: 'center',
               padding: 1,
               borderRadius: 2,
-              marginBottom: 3,
             }}
             onMouseEnter={() => setBackgroundColor(colors.grey200)}
             onMouseLeave={() => setBackgroundColor('transparent')}
@@ -69,7 +69,7 @@ export const FormFieldLabel = (props: {
                 marginBottom: 4,
               }}
             >
-              Description
+              {fieldConfig?.fieldDescriptionLabel ?? 'Description'}
             </div>
             <small
               style={{

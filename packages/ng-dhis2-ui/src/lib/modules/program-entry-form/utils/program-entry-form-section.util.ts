@@ -344,6 +344,7 @@ export class ProgramEntryFormSectionUtil {
       code: tea.code,
       formName: tea.formName,
       name: tea.displayName ?? tea.name,
+      description: tea.description,
       mandatory: !!programTrackedEntityAttribute.mandatory,
       valueType: tea.valueType,
       sortOrder: programTrackedEntityAttribute.sortOrder,
@@ -378,13 +379,13 @@ export class ProgramEntryFormSectionUtil {
       return null;
     }
 
-
     return new FormField<string>({
       id: fieldWithCustomConfiguration.id,
       code: fieldWithCustomConfiguration.code,
       label:
         fieldWithCustomConfiguration.formName ||
         fieldWithCustomConfiguration.name,
+      description: fieldWithCustomConfiguration.description,
       key: fieldWithCustomConfiguration.code
         ? camelCase(fieldWithCustomConfiguration.code)
         : fieldWithCustomConfiguration.id,
@@ -393,8 +394,7 @@ export class ProgramEntryFormSectionUtil {
       options,
       hasOptions,
       disabled:
-        this.#getDisabledStatus(iTrackedEntityFormFieldBase) ||
-        !!tea.generated,
+        this.#getDisabledStatus(iTrackedEntityFormFieldBase) || !!tea.generated,
       order: fieldWithCustomConfiguration.sortOrder,
       controlType: FieldUtil.getFieldControlType(
         fieldWithCustomConfiguration.valueType!,
@@ -402,8 +402,7 @@ export class ProgramEntryFormSectionUtil {
       ),
       allowFutureDate: programTrackedEntityAttribute.allowFutureDate === true,
       extension: fieldExtension,
-      fieldOptionsDependsOn:
-        fieldWithCustomConfiguration.fieldOptionsDependsOn,
+      fieldOptionsDependsOn: fieldWithCustomConfiguration.fieldOptionsDependsOn,
       generated: !!tea.generated,
       unique: !!tea.unique,
       pattern: tea.pattern,

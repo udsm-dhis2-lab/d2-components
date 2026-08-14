@@ -12,7 +12,7 @@ import {
   effect,
   input,
   signal,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { head } from 'lodash';
@@ -32,6 +32,7 @@ import {
 } from '../../models/field-cascade.types';
 import { FieldCascadeUtil } from '../../utils/field-cascade.util';
 import { CoordinatePickerGeoConfig } from '../../components/coordinate-field-component';
+import { FieldConfig } from '../../models';
 
 //TODO: To move this to shared interface problaly use type from the metadata rule model since they have already been defined
 type SectionRuleTargetType = 'PROGRAM_SECTION' | 'PROGRAM_STAGE_SECTION';
@@ -84,8 +85,14 @@ export class FormComponent implements OnChanges, OnDestroy, OnInit {
 
   configuration = computed(() => {
     if (!this.formConfig()) {
+      const fieldConfig = new FieldConfig({
+        fieldDescriptionLabel:
+          this.programEntryFormConfig()?.fieldDescriptionLabel,
+      });
+
       return new FormConfig({
         direction: this.isFormHorizontal() ? 'horizontal' : 'vertical',
+        fieldConfig,
       });
     }
 
@@ -307,9 +314,6 @@ export class FormComponent implements OnChanges, OnDestroy, OnInit {
       new FormValue(this.form(), this.fields()).isValid
     );
   }
-  // ngOnChanges(changes: SimpleChanges): void {
-  //   this.values = this.form.getRawValue();
-  // }
 
   ngOnChanges(changes: SimpleChanges): void {
     this.values = this.form().getRawValue();

@@ -1,4 +1,9 @@
-import { Component, input, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  input,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { BaseFormWrapperComponent } from '../../shared/components/base-form-wrapper.component';
 import { FormUtil } from '../../utils/form.util';
@@ -18,7 +23,7 @@ export class FlatFormComponent
   formGroup!: FormGroup;
   collapsibleSections = input<boolean>(false);
   programEntryFormConfig = input.required<any>();
-  optionCascadeConfigs = input<OptionsPathCascadeConfig[]>([]);    
+  optionCascadeConfigs = input<OptionsPathCascadeConfig[]>([]);
 
   ngOnInit(): void {
     this.formGroup = FormUtil.getFormGroup(this.fields(), this.dataValues());

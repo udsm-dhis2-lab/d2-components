@@ -58,8 +58,8 @@ const SHEHIA_KEYWORDS = [
     D2FormModule,
     TrackerFormModule,
     EventFormModule,
-    ProgramEntryFormModule
-],
+    ProgramEntryFormModule,
+  ],
 })
 export class FormComponentsComponent {
   d2 = (window as unknown as D2Window).d2Web;
@@ -85,6 +85,7 @@ export class FormComponentsComponent {
     program: 'zyBObUsin0Q',
     programStage: 'HmW9AEBtQnj',
     hideRegistrationUnit: true,
+    fieldDescriptionLabel: 'Means of verification',
     formType: 'EVENT',
     displayType: 'FLAT',
     autoComplete: true,
@@ -666,7 +667,7 @@ export class FormComponentsComponent {
   }
 
   async onSaveComplete(reponse: any) {
-    console.log("RESPONSE::: ", JSON.stringify(reponse));
+    console.log('RESPONSE::: ', JSON.stringify(reponse));
   }
   paymentInformationFormConfig = new ProgramEntryFormConfig({
     program: 'Gy65kx8gQv6',

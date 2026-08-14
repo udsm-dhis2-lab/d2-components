@@ -1,4 +1,3 @@
-
 import {
   Component,
   computed,
@@ -8,7 +7,7 @@ import {
   NgZone,
   Output,
   signal,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import {
   AutoAssignedValues,
@@ -438,29 +437,29 @@ export class ProgramEntryFormModule {
   }
 
   async #setReservedValuesForCodeGeneration(
-  instance: TrackedEntityInstance
-): Promise<TrackedEntityInstance> {
-  const orgUnitForCodeGeneration =
-    this.codeGeneratorOrgUnit() || this.orgUnit();
+    instance: TrackedEntityInstance
+  ): Promise<TrackedEntityInstance> {
+    const orgUnitForCodeGeneration =
+      this.codeGeneratorOrgUnit() || this.orgUnit();
 
-  const reservedValueQuery = this.d2.trackerModule.trackedEntity.setProgram(
-    this.config().program
-  );
+    const reservedValueQuery = this.d2.trackerModule.trackedEntity.setProgram(
+      this.config().program
+    );
 
-  if (orgUnitForCodeGeneration) {
-    reservedValueQuery.setOrgUnit(orgUnitForCodeGeneration);
+    if (orgUnitForCodeGeneration) {
+      reservedValueQuery.setOrgUnit(orgUnitForCodeGeneration);
+    }
+
+    const reservedValues = await reservedValueQuery.generateReservedValues(
+      instance
+    );
+
+    reservedValues.forEach((reserved) => {
+      instance.setAttributeValue(reserved.ownerUid, reserved.value);
+    });
+
+    return instance;
   }
-
-  const reservedValues = await reservedValueQuery.generateReservedValues(
-    instance
-  );
-
-  reservedValues.forEach((reserved) => {
-    instance.setAttributeValue(reserved.ownerUid, reserved.value);
-  });
-
-  return instance;
-}
 
   async #getTrackerInstance(): Promise<TrackedEntityInstance> {
     this.instanceQuery = this.d2.trackerModule.trackedEntity
@@ -468,8 +467,8 @@ export class ProgramEntryFormModule {
       .setOrgUnit(this.orgUnit() as string);
 
     if (!this.trackedEntity()) {
-       const instance = await this.instanceQuery.create();
-       return await this.#setReservedValuesForCodeGeneration(instance);
+      const instance = await this.instanceQuery.create();
+      return await this.#setReservedValuesForCodeGeneration(instance);
     }
 
     const instanceResult = (
@@ -483,12 +482,11 @@ export class ProgramEntryFormModule {
       return await this.#setReservedValuesForCodeGeneration(instance);
     }
 
-    this.instanceQuery
-      .setInstanceFields(this.metaData()?.program as Program);
+    this.instanceQuery.setInstanceFields(this.metaData()?.program as Program);
 
-     const instance = await this.#setReservedValuesForCodeGeneration(
-    this.instanceQuery.instance
-  );
+    const instance = await this.#setReservedValuesForCodeGeneration(
+      this.instanceQuery.instance
+    );
 
     if (this.orgUnit()) {
       instance.setOrgUnit(this.orgUnit() as string);

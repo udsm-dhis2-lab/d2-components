@@ -26,6 +26,7 @@ export interface IProgramEntryFormConfig {
   disableEventDate?: boolean;
   hideEventDate?: boolean;
   includedProgramStages?: string[];
+  fieldDescriptionLabel?: string;
   submitButtonLabel?: string;
   cancelButtonLabel?: string;
   hideActionButtons?: boolean;
@@ -61,6 +62,7 @@ export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   includedProgramStages?: string[];
   submitButtonLabel = 'Submit';
   cancelButtonLabel = 'Cancel';
+  fieldDescriptionLabel = 'Description';
   hideActionButtons?: boolean;
   hideSubmitButton?: boolean;
   hideCancelButton?: boolean;
