@@ -1,6 +1,6 @@
 import { D2Web, D2Window } from '../../d2-web-sdk';
 import { Program, ProgramRule } from '../../modules';
-import { D2Response } from '../models';
+import { D2Response, Pager } from '../models';
 
 export class TrackerMetadataBuilder {
   static async getProgram(
@@ -40,6 +40,7 @@ export class TrackerMetadataBuilder {
         'id',
         'code',
         'name',
+        'description',
         'captureCoordinates',
         'featureType',
         'enrollmentDateLabel',
@@ -122,6 +123,11 @@ export class TrackerMetadataBuilder {
         value: program,
       })
       .with(TrackerMetadataBuilder.getProgramRuleActionQuery(d2))
+      .paginate(
+        new Pager({
+          paging: false,
+        })
+      )
       .get({ useIndexDb: true });
 
     return programQuery;
@@ -142,6 +148,24 @@ export class TrackerMetadataBuilder {
       )
       .with(
         d2.programModule.trackedEntityAttribute.select(['id', 'code', 'name']),
+        'ToOne'
+      )
+      .with(
+        d2.programModule.programSection.select([
+          'id',
+          'code',
+          'name',
+          'description',
+        ]),
+        'ToOne'
+      )
+      .with(
+        d2.programModule.programStageSection.select([
+          'id',
+          'code',
+          'name',
+          'description',
+        ]),
         'ToOne'
       )
       .with(
