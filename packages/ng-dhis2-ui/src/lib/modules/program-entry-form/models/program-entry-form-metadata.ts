@@ -2,24 +2,18 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import {
-  D2Window,
-  Pager,
-  Program,
-  ProgramQuery,
-  ProgramRule,
-} from '@iapps/d2-web-sdk';
-import { ProgramEntryFormConfig } from './program-entry-form.config';
-import { IProgramEntryFormSection } from './program-entry-form-section.model';
+import { D2Window, Pager, Program, ProgramRule } from '@iapps/d2-web-sdk';
+import { CustomFieldConfiguration } from '../../form/interfaces/custom-field-configuration.interface';
 import { IFormField } from '../../form/interfaces/form-field.interface';
 import {
   IMetadataRule,
   MetadataRule,
 } from '../../form/models/form-metadata-rule.model';
 import { ProgramEntryFormFieldUtil } from '../utils/program-entry-form-field.util';
-import { ProgramStageEntryFormSectionUtil } from '../utils/program-stage-entry-form-section.util';
 import { ProgramEntryFormSectionUtil } from '../utils/program-entry-form-section.util';
-import { CustomFieldConfiguration } from '../../form/interfaces/custom-field-configuration.interface';
+import { ProgramStageEntryFormSectionUtil } from '../utils/program-stage-entry-form-section.util';
+import { IProgramEntryFormSection } from './program-entry-form-section.model';
+import { ProgramEntryFormConfig } from './program-entry-form.config';
 
 export interface IProgramEntryFormMetaData {
   id: string;
@@ -208,100 +202,6 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
           'ToOne'
         )
       );
-  }
-
-  async #getProgramMetaData(): Promise<Program | null> {
-    const program = this.config.program;
-
-    if (!this.d2) {
-      return null;
-    }
-
-    const metaDataResponse = await Promise.all([
-      this.getProgramPromise(),
-      this.d2.programModule.programRule
-        .where({
-          attribute: 'program.id' as any,
-          value: program as string,
-        })
-        .with(
-          this.d2.programModule.programRuleAction
-            .select([
-              'id',
-              'programRuleActionType',
-              'data',
-              'programRule',
-              'displayContent',
-              'content',
-            ])
-            .with(
-              this.d2.dataElementModule.dataElement.select([
-                'id',
-                'code',
-                'name',
-                'description',
-              ]),
-              'ToOne'
-            )
-            .with(
-              this.d2.programModule.trackedEntityAttribute.select([
-                'id',
-                'code',
-                'name',
-                'description',
-              ]),
-              'ToOne'
-            )
-            .with(
-              this.d2.programModule.programSection.select([
-                'id',
-                'code',
-                'name',
-                'description',
-              ]),
-              'ToOne'
-            )
-            .with(
-              this.d2.programModule.programStageSection.select([
-                'id',
-                'code',
-                'name',
-                'description',
-              ]),
-              'ToOne'
-            )
-            .with(
-              this.d2.optionSetModule.optionGroup
-                .select(['id'])
-                .with(
-                  this.d2.optionSetModule.option.select([
-                    'id',
-                    'code',
-                    'displayName',
-                  ]),
-                  'ToMany'
-                ),
-              'ToOne'
-            )
-            .with(
-              this.d2.optionSetModule.option.select([
-                'id',
-                'code',
-                'displayName',
-              ]),
-              'ToOne'
-            )
-        )
-        .paginate(new Pager({ paging: false }))
-        .get(),
-    ]);
-
-    const [programResponse, programRuleResponse] = metaDataResponse;
-
-    const metaData = programResponse.data as Program;
-    metaData.programRules = programRuleResponse.data as ProgramRule[];
-
-    return metaData;
   }
 
   get formFields(): IFormField<string>[] {
@@ -533,7 +433,11 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
 
   async get() {
     try {
-      const program = await this.#getProgramMetaData();
+      const program = await (
+        window as unknown as D2Window
+      )?.d2Web?.trackerModule?.trackedEntity
+        ?.setProgram(this.config?.program)
+        ?.getMetaData();
 
       if (program) {
         this.program = program;
