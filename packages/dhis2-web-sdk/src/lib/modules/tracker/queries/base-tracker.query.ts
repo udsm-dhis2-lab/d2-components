@@ -16,6 +16,7 @@ import {
   OuMode,
   Pager,
   ProgramDateType,
+  TrackerMetadataBuilder,
 } from '../../../shared';
 import { BaseEventQuery, DHIS2Event } from '../../event';
 import { Program, ProgramRule } from '../../program';
@@ -456,140 +457,6 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
   async getMetaData(config?: {
     skipProgramRules?: boolean;
   }): Promise<Program | null> {
-    try {
-      const d2 = (window as unknown as D2Window).d2Web;
-      const metaDataResponse = await Promise.all([
-        this.#fetchProgram(d2),
-        !config?.skipProgramRules ? this.#fetchProgramRules(d2) : null,
-      ]);
-
-      const [programResponse, programRuleResponse] = metaDataResponse;
-
-      const metaData = programResponse.data as Program;
-      if (programRuleResponse) {
-        metaData.programRules = programRuleResponse.data as ProgramRule[];
-      }
-
-      return metaData;
-    } catch (error) {
-      return null;
-    }
-  }
-
-  #fetchProgram(d2: D2Web): Promise<D2Response<Program>> {
-    return d2.programModule.program
-      .select([
-        'id',
-        'code',
-        'name',
-        'captureCoordinates',
-        'featureType',
-        'enrollmentDateLabel',
-        'incidentDateLabel',
-        'displayIncidentDate',
-        'onlyEnrollOnce',
-        'orgUnitLabel',
-        'programType',
-        'useFirstStageDuringRegistration',
-        'trackedEntityType',
-      ])
-      .byId(this.program as string)
-      .with(
-        d2.programModule.trackedEntityType
-          .select(['id', 'name'])
-          .with(
-            d2.programModule.trackedEntityTypeAttribute.select([
-              'trackedEntityAttribute',
-            ])
-          ),
-        'ToOne'
-      )
-      .with(
-        d2.programModule.programStage
-          .with(d2.programModule.programStageSection)
-          .with(
-            d2.programModule.programStageDataElement.with(
-              d2.dataElementModule.dataElement.with(
-                d2.optionSetModule.optionSet.with(d2.optionSetModule.option),
-                'ToOne'
-              ),
-              'ToOne'
-            )
-          )
-      )
-      .with(
-        d2.programModule.programSection.with(
-          d2.programModule.trackedEntityAttribute.select(['id'])
-        )
-      )
-      .with(
-        d2.programModule.programRuleVariable
-          .with(
-            d2.dataElementModule.dataElement.select(['id', 'code', 'name']),
-            'ToOne'
-          )
-          .with(
-            d2.programModule.trackedEntityAttribute.select([
-              'id',
-              'code',
-              'name',
-            ]),
-            'ToOne'
-          )
-      )
-      .with(
-        d2.programModule.programTrackedEntityAttribute.with(
-          d2.programModule.trackedEntityAttribute.with(
-            d2.optionSetModule.optionSet.with(d2.optionSetModule.option),
-            'ToOne'
-          ),
-          'ToOne'
-        )
-      )
-      .get({ useIndexDb: true });
-  }
-
-  #fetchProgramRules(d2: D2Web): Promise<D2Response<ProgramRule>> {
-    return d2.programModule.programRule
-      .where({
-        attribute: 'program.id' as any,
-        value: this.program as string,
-      })
-      .with(
-        d2.programModule.programRuleAction
-          .select([
-            'id',
-            'programRuleActionType',
-            'data',
-            'displayContent',
-            'content',
-          ])
-          .with(
-            d2.dataElementModule.dataElement.select(['id', 'code', 'name']),
-            'ToOne'
-          )
-          .with(
-            d2.programModule.trackedEntityAttribute.select([
-              'id',
-              'code',
-              'name',
-            ]),
-            'ToOne'
-          )
-          .with(
-            d2.optionSetModule.optionGroup
-              .select(['id'])
-              .with(
-                d2.optionSetModule.option.select(['id', 'code', 'displayName']),
-                'ToMany'
-              ),
-            'ToOne'
-          )
-          .with(
-            d2.optionSetModule.option.select(['id', 'code', 'displayName']),
-            'ToOne'
-          )
-      )
-      .get({ useIndexDb: true });
+    return TrackerMetadataBuilder.getProgram(this.program!, config);
   }
 }
