@@ -84,12 +84,12 @@ export class FormComponentsComponent {
 
   contract = new ProgramEntryFormConfig({
     program: 'V7tJxLT7lWz',
-    programStage: 'v8s75lQLs4p',
+    // programStage: 'v8s75lQLs4p',
     hideRegistrationUnit: true,
     fieldDescriptionLabel: 'Means of verification',
     hideEnrollmentDate: true,
     excludeProgramStages: true,
-    formType: 'EVENT',
+    formType: 'TRACKER',
     displayType: 'FLAT',
     autoComplete: true,
     autoAssignedValues: [],

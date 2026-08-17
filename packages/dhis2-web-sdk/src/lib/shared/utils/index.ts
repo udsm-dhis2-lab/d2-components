@@ -5,3 +5,4 @@ export * from './query-filter.util';
 export * from './dhis-url-generator.util';
 export * from './generate-uid.util';
 export * from './index-db.util';
+export * from './tracker-metadata-builder.util';

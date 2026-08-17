@@ -2,7 +2,13 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import { D2Window, Pager, Program, ProgramRule } from '@iapps/d2-web-sdk';
+import {
+  D2Window,
+  Pager,
+  Program,
+  ProgramQuery,
+  ProgramRule,
+} from '@iapps/d2-web-sdk';
 import { ProgramEntryFormConfig } from './program-entry-form.config';
 import { IProgramEntryFormSection } from './program-entry-form-section.model';
 import { IFormField } from '../../form/interfaces/form-field.interface';
@@ -140,31 +146,60 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
         'ToOne'
       )
 
-      .with(
-        this.d2.programModule.programRuleVariable
-          .with(
-            this.d2.dataElementModule.dataElement.select([
-              'id',
-              'code',
-              'name',
-            ]),
-            'ToOne'
-          )
-          .with(
-            this.d2.programModule.trackedEntityAttribute.select([
-              'id',
-              'code',
-              'name',
-            ]),
-            'ToOne'
-          )
-      )
+      .with(this.#getProgramRuleVariableQuery())
       .byId(program as string);
 
-    if (!this.config.programStage) {
-      programQuery.with(
-        this.d2.programModule.programTrackedEntityAttribute.with(
-          this.d2.programModule.trackedEntityAttribute.with(
+    // if (!this.config.programStage) {
+    programQuery.with(this.#getProgramTrackedEntityAttributeQuery());
+    // }
+
+    // if (this.config.displayType === 'FLAT') {
+    programQuery.with(this.#getProgramSectionQuery());
+    // }
+
+    programQuery.with(this.#getProgramStageQuery());
+
+    return programQuery.get({ useIndexDb: true });
+  }
+
+  #getProgramRuleVariableQuery() {
+    return this.d2.programModule.programRuleVariable
+      .with(
+        this.d2.dataElementModule.dataElement.select(['id', 'code', 'name']),
+        'ToOne'
+      )
+      .with(
+        this.d2.programModule.trackedEntityAttribute.select([
+          'id',
+          'code',
+          'name',
+        ]),
+        'ToOne'
+      );
+  }
+
+  #getProgramSectionQuery() {
+    return this.d2.programModule.programSection.with(
+      this.d2.programModule.trackedEntityAttribute.select(['id'])
+    );
+  }
+
+  #getProgramTrackedEntityAttributeQuery() {
+    return this.d2.programModule.programTrackedEntityAttribute.with(
+      this.d2.programModule.trackedEntityAttribute.with(
+        this.d2.optionSetModule.optionSet.with(this.d2.optionSetModule.option),
+        'ToOne'
+      ),
+      'ToOne'
+    );
+  }
+
+  #getProgramStageQuery() {
+    return this.d2.programModule.programStage
+      .with(this.d2.programModule.programStageSection)
+      .with(
+        this.d2.programModule.programStageDataElement.with(
+          this.d2.dataElementModule.dataElement.with(
             this.d2.optionSetModule.optionSet.with(
               this.d2.optionSetModule.option
             ),
@@ -173,35 +208,6 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
           'ToOne'
         )
       );
-    }
-
-    if (this.config.displayType === 'FLAT') {
-      programQuery.with(
-        this.d2.programModule.programSection.with(
-          this.d2.programModule.trackedEntityAttribute.select(['id'])
-        )
-      );
-    }
-
-    if (!this.config.excludeProgramStages || this.config.programStage) {
-      const programStageQuery = this.d2.programModule.programStage
-        .with(this.d2.programModule.programStageSection)
-        .with(
-          this.d2.programModule.programStageDataElement.with(
-            this.d2.dataElementModule.dataElement.with(
-              this.d2.optionSetModule.optionSet.with(
-                this.d2.optionSetModule.option
-              ),
-              'ToOne'
-            ),
-            'ToOne'
-          )
-        );
-
-      programQuery.with(programStageQuery);
-    }
-
-    return programQuery.get();
   }
 
   async #getProgramMetaData(): Promise<Program | null> {
@@ -491,7 +497,8 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
   > {
     try {
       const response = await this.d2.httpInstance.get(
-        'dataStore/field-extensions?fields=id,fieldOptionsDependsOn,optionSet&paging=false'
+        'dataStore/field-extensions?fields=id,fieldOptionsDependsOn,optionSet&paging=false',
+        { useIndexDb: true }
       );
       const responseData = response?.data;
 
@@ -530,8 +537,10 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
 
       if (program) {
         this.program = program;
-        this.customFieldConfigurations =
-          await this.#getCustomFieldConfigurations();
+
+        // TODO FIND ANOTHER WAY TO PASS IN CUSTOM FIELD CONFIGURATIONS, AVOID TIGHT COUPLING HERE
+        // this.customFieldConfigurations =
+        //   await this.#getCustomFieldConfigurations();
 
         if (
           this.config?.formFieldExtensions &&

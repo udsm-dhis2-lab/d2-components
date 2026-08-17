@@ -8,20 +8,19 @@ import {
   Program,
   ProgramSection,
   ProgramTrackedEntityAttribute,
-  TrackedEntityAttribute,
 } from '@iapps/d2-web-sdk';
+import { camelCase, isUndefined } from 'lodash';
+import { CustomFieldConfiguration } from '../../form/interfaces/custom-field-configuration.interface';
+import { FormFieldExtension } from '../../form/interfaces/form-field-extension.interface';
+import { IFormField } from '../../form/interfaces/form-field.interface';
+import { FieldDropdown } from '../../form/models/field-dropdown.model';
+import { FormField } from '../../form/models/form-field.model';
+import { FieldUtil } from '../../form/utils/field.util';
 import {
   IProgramEntryFormSection,
   ProgramEntryFormConfig,
   ProgramEntryFormSection,
 } from '../models';
-import { IFormField } from '../../form/interfaces/form-field.interface';
-import { FieldDropdown } from '../../form/models/field-dropdown.model';
-import { camelCase, isUndefined } from 'lodash';
-import { FormField } from '../../form/models/form-field.model';
-import { FieldUtil } from '../../form/utils/field.util';
-import { FormFieldExtension } from '../../form/interfaces/form-field-extension.interface';
-import { CustomFieldConfiguration } from '../../form/interfaces/custom-field-configuration.interface';
 import { IEntityFormFieldBase } from '../models/form-field-base.model';
 import { ProgramEntryFormFieldUtil } from './program-entry-form-field.util';
 
