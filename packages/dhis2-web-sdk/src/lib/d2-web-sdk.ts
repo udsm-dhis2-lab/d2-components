@@ -8,8 +8,10 @@ import {
   CurrentUser,
   D2EngineModule,
   DataElementModule,
+  LegendSetModule,
   Manifest,
   OptionSetModule,
+  ProgramIndicatorModule,
   ProgramModule,
   TrackerModule,
   UserModule,
@@ -176,8 +178,16 @@ export class D2Web {
     return new DataElementModule(this.httpInstance);
   }
 
+  get programIndicatorModule(): ProgramIndicatorModule {
+    return new ProgramIndicatorModule(this.httpInstance);
+  }
+
   get optionSetModule(): OptionSetModule {
     return new OptionSetModule(this.httpInstance);
+  }
+
+  get legendSetModule(): LegendSetModule {
+    return new LegendSetModule(this.httpInstance);
   }
 
   get engineModule(): D2EngineModule {

@@ -7,12 +7,13 @@ export class TrackerMetadataBuilder {
     program: string,
     config?: {
       skipProgramRules?: boolean;
+      skipProgramIndicators?: boolean;
     }
   ): Promise<Program | null> {
     try {
       const d2 = (window as unknown as D2Window).d2Web;
       const metaDataResponse = await Promise.all([
-        TrackerMetadataBuilder.fetchProgram(program, d2),
+        TrackerMetadataBuilder.fetchProgram(program, d2, config),
         !config?.skipProgramRules
           ? TrackerMetadataBuilder.fetchProgramRules(program, d2)
           : null,
@@ -33,9 +34,13 @@ export class TrackerMetadataBuilder {
 
   static fetchProgram(
     program: string,
-    d2: D2Web
+    d2: D2Web,
+    config?: {
+      skipProgramRules?: boolean;
+      skipProgramIndicators?: boolean;
+    }
   ): Promise<D2Response<Program>> {
-    return d2.programModule.program
+    const programQuery = d2.programModule.program
       .select([
         'id',
         'code',
@@ -57,18 +62,61 @@ export class TrackerMetadataBuilder {
       .with(TrackerMetadataBuilder.getProgramStageQuery(d2))
       .with(TrackerMetadataBuilder.getProgramSectionQuery(d2))
       .with(TrackerMetadataBuilder.getProgramRuleVariableQuery(d2))
-      .with(TrackerMetadataBuilder.getProgramTrackedEntityAttribute(d2))
-      .get({ useIndexDb: true });
+      .with(TrackerMetadataBuilder.getProgramTrackedEntityAttribute(d2));
+
+    if (!config?.skipProgramIndicators) {
+      programQuery.with(TrackerMetadataBuilder.getProgramIndicatorQuery(d2));
+    }
+
+    return programQuery.get({ useIndexDb: true });
+  }
+
+  static getProgramIndicatorQuery(d2: D2Web) {
+    return d2.programIndicatorModule.programIndicator
+      .select([
+        'id',
+        'name',
+        'expression',
+        'aggregationType',
+        'analyticsType',
+        'filter',
+        'decimals',
+      ])
+      .with(
+        d2.legendSetModule.legendSet
+          .select(['id', 'code', 'name'])
+          .with(
+            d2.legendSetModule.legend.select([
+              'id',
+              'name',
+              'displayName',
+              'startValue',
+              'endValue',
+              'color',
+            ])
+          )
+      );
   }
 
   static getProgramTrackedEntityAttribute(d2: D2Web) {
-    return d2.programModule.programTrackedEntityAttribute.with(
-      d2.programModule.trackedEntityAttribute.with(
-        d2.optionSetModule.optionSet.with(d2.optionSetModule.option),
+    return d2.programModule.programTrackedEntityAttribute
+      .select([
+        'id',
+        'displayInList',
+        'sortOrder',
+        'mandatory',
+        'renderOptionsAsRadio',
+        'allowFutureDate',
+        'searchable',
+        'attributeValues',
+      ])
+      .with(
+        d2.programModule.trackedEntityAttribute.with(
+          d2.optionSetModule.optionSet.with(d2.optionSetModule.option),
+          'ToOne'
+        ),
         'ToOne'
-      ),
-      'ToOne'
-    );
+      );
   }
 
   static getProgramRuleVariableQuery(d2: D2Web) {
@@ -105,7 +153,7 @@ export class TrackerMetadataBuilder {
 
   static getTrackedEntityTypeQuery(d2: D2Web) {
     return d2.programModule.trackedEntityType
-      .select(['id', 'name'])
+      .select(['id', 'code', 'name'])
       .with(
         d2.programModule.trackedEntityTypeAttribute.select([
           'trackedEntityAttribute',
