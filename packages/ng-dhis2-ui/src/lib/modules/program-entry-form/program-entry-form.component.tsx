@@ -62,6 +62,7 @@ export class ProgramEntryFormModule {
   isFormValid = signal<boolean>(true);
   isFormValid$: Observable<boolean> = toObservable(this.isFormValid);
   instance = signal<TrackedEntityInstance | DHIS2Event | null>(null);
+  trackedEntityInstance = signal<TrackedEntityInstance | null>(null);
   instanceQuery!:
     | BaseTrackerQuery<TrackedEntityInstance>
     | BaseEventQuery<DHIS2Event>;
@@ -97,6 +98,17 @@ export class ProgramEntryFormModule {
       return this.instance()?.trackedEntity;
     }
     return undefined;
+  });
+
+  dataEntities = computed<Record<string, unknown>>(() => {
+    if (!this.instance()) {
+      return {};
+    }
+
+    return {
+      ...(this.trackedEntityInstance() || {}),
+      ...(this.instance() || {}),
+    };
   });
 
   FormActionButtons = computed(() => {
@@ -498,13 +510,20 @@ export class ProgramEntryFormModule {
     return instance;
   }
 
-  #getInstance(): Promise<TrackedEntityInstance | DHIS2Event | null> {
+  async #getInstance(): Promise<TrackedEntityInstance | DHIS2Event | null> {
     switch (this.config().formType) {
       case 'TRACKER':
         return this.#getTrackerInstance();
 
-      case 'EVENT':
+      case 'EVENT': {
+        if (this.trackedEntity()) {
+          const trackedEntityInstance = await this.#getTrackerInstance();
+
+          this.trackedEntityInstance.set(trackedEntityInstance);
+        }
+
         return this.#getEventInstance();
+      }
 
       default:
         return firstValueFrom(of(null));

@@ -70,7 +70,6 @@ export class BaseFormWrapperComponent implements OnDestroy {
   }
 
   protected executeRules() {
-    console.log(this.#updatedDataValues());
     this.ruleActions.set(
       new ProgramRuleEngine()
         .setRules(this.rules())

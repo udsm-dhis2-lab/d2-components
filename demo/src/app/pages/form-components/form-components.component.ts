@@ -85,8 +85,8 @@ export class FormComponentsComponent {
   contract = new ProgramEntryFormConfig({
     program: 'V7tJxLT7lWz',
     // programStage: 's2GSxomEaUw',
-    // programStage: 'v8s75lQLs4p',
-    programStage: 'loSKlJE06FY',
+    programStage: 'v8s75lQLs4p',
+    // programStage: 'loSKlJE06FY',
     hideRegistrationUnit: true,
     fieldDescriptionLabel: 'Means of verification',
     hideEnrollmentDate: true,

@@ -10,21 +10,21 @@
 
   <!-- Flat display -->
   @case ('FLAT') {
-    <ng-dhis2-ui-flat-form
-      [programEntryFormConfig]="config()"
-      [optionCascadeConfigs]="config().optionCascadeConfigs || []"
-      [collapsibleSections]="collapsibleSections()"
-      [programEntryFormMetaData]="metaData()!"
-      [name]="metaData()!.name"
-      [dataValues]="instance() || {}"
-      [dataId]="dataId()"
-      [rules]="metaData()!.rules"
-      [fields]="metaData()!.formFields"
-      [customOrgUnitRoots]="customOrgUnitRoots()"
-      [coordinatePickerGeoConfig]="config().coordinatePickerGeoConfig"
-      (formUpdate)="onFormUpdate($event)"
-      (formValidityUpdate)="onValidityUpdate($event)"
-    />
+  <ng-dhis2-ui-flat-form
+    [programEntryFormConfig]="config()"
+    [optionCascadeConfigs]="config().optionCascadeConfigs || []"
+    [collapsibleSections]="collapsibleSections()"
+    [programEntryFormMetaData]="metaData()!"
+    [name]="metaData()!.name"
+    [dataValues]="dataEntities()"
+    [dataId]="dataId()"
+    [rules]="metaData()!.rules"
+    [fields]="metaData()!.formFields"
+    [customOrgUnitRoots]="customOrgUnitRoots()"
+    [coordinatePickerGeoConfig]="config().coordinatePickerGeoConfig"
+    (formUpdate)="onFormUpdate($event)"
+    (formValidityUpdate)="onValidityUpdate($event)"
+  />
 
   <!-- <ng-dhis2-ui-flat-form
     [name]="metaData()!.name"
