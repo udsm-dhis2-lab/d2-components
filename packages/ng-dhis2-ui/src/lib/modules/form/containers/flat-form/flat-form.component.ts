@@ -27,11 +27,11 @@ export class FlatFormComponent
 
   ngOnInit(): void {
     this.formGroup = FormUtil.getFormGroup(this.fields(), this.dataValues());
-    this.onFormUpdate();
+    this.onFormUpdate(this.dataValues());
   }
 
-  onFormUpdate() {
-    this.updateDataValues(this.formGroup.getRawValue());
+  onFormUpdate(dataValues?: Record<string, unknown>) {
+    this.updateDataValues(dataValues ?? this.formGroup.getRawValue());
     this.updateFormValidity(this.formGroup.valid);
   }
 }
