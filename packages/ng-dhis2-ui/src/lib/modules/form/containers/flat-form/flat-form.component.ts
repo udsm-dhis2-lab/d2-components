@@ -1,14 +1,13 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   input,
   OnInit,
-  ChangeDetectionStrategy,
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
+import { OptionsPathCascadeConfig } from '../../models/field-cascade.types';
 import { BaseFormWrapperComponent } from '../../shared/components/base-form-wrapper.component';
 import { FormUtil } from '../../utils/form.util';
-import { OptionsPathCascadeConfig } from '../../models/field-cascade.types';
-import { CoordinatePickerGeoConfig } from '../../components/coordinate-field-component';
 
 @Component({
   selector: 'ng-dhis2-ui-flat-form',

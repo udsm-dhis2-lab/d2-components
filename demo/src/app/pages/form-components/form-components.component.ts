@@ -92,6 +92,7 @@ export class FormComponentsComponent {
     hideEnrollmentDate: true,
     hideEventDate: true,
     excludeProgramStages: true,
+    disableForm: false,
     formType: 'EVENT',
     displayType: 'FLAT',
     autoComplete: true,

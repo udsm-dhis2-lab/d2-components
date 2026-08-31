@@ -142,7 +142,7 @@ export class ProgramEntryFormModule {
       };
       return (
         <ButtonStrip>
-          {!this.config().hideSubmitButton && (
+          {!(this.config().hideSubmitButton || this.config().disableForm) && (
             <Button
               primary
               disabled={!isValid}

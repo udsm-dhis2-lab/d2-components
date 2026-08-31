@@ -88,6 +88,10 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
   }
 
   private shouldDisableField(field: IFormField<string>): boolean {
+    if (this.config?.disableForm) {
+      return true;
+    }
+
     const fieldIdentifiers = this.getFieldIdentifiers(field);
     if (!fieldIdentifiers.length) {
       return false;
@@ -217,9 +221,11 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
       return fields;
     }
 
-    return fields.map((field) =>
-      this.shouldDisableField(field) ? this.withDisabledFlags(field) : field
-    );
+    return fields.map((field) => {
+      return this.shouldDisableField(field)
+        ? this.withDisabledFlags(field)
+        : field;
+    });
   }
 
   // get sections(): IProgramEntryFormSection[] {
