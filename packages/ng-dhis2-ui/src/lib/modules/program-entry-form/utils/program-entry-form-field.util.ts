@@ -421,7 +421,7 @@ export class ProgramEntryFormFieldUtil {
   }
 
   #getDisabledStatus(field: TrackedEntityAttribute | DataElement): boolean {
-    if (field?.generated) {
+    if (field?.generated || this.config.disableForm) {
       return true;
     }
 

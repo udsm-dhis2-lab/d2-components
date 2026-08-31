@@ -279,6 +279,10 @@ export class ProgramStageEntryFormSectionUtil {
   }
 
   #getDisabledStatus(field: any): boolean {
+    if (this.config?.disableForm) {
+      return true;
+    }
+
     const impl = (this as any)?.['#getDisabledStatus'];
     return typeof impl === 'function' ? impl.call(this, field) : false;
   }

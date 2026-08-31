@@ -21,6 +21,7 @@ export interface IProgramEntryFormConfig {
   disableGeometryField?: boolean;
   disableEnrollmentDate?: boolean;
   disabledIncidentDate?: boolean;
+  disableForm?: boolean;
   excludeProgramStages?: boolean;
   excludeInheritedAttributes?: boolean;
   disableEventDate?: boolean;
@@ -56,6 +57,7 @@ export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   disableEnrollmentDate?: boolean;
   disabledIncidentDate?: boolean;
   disableEventDate?: boolean;
+  disableForm?: boolean;
   hideEventDate?: boolean;
   excludeProgramStages?: boolean;
   excludeInheritedAttributes?: boolean;
