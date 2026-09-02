@@ -82,22 +82,37 @@ export class FormComponentsComponent {
     },
   ];
 
+  // contract = new ProgramEntryFormConfig({
+  //   program: 'V7tJxLT7lWz',
+  //   // programStage: 's2GSxomEaUw',
+  //   programStage: 'v8s75lQLs4p',
+  //   // programStage: 'loSKlJE06FY',
+  //   hideRegistrationUnit: true,
+  //   fieldDescriptionLabel: 'Means of verification',
+  //   hideEnrollmentDate: true,
+  //   hideEventDate: true,
+  //   excludeProgramStages: true,
+  //   disableForm: false,
+  //   formType: 'EVENT',
+  //   displayType: 'FLAT',
+  //   autoComplete: true,
+  //   autoAssignedValues: [],
+  //   formFieldExtensions: [],
+  // });
+
   contract = new ProgramEntryFormConfig({
-    program: 'V7tJxLT7lWz',
-    // programStage: 's2GSxomEaUw',
-    programStage: 'v8s75lQLs4p',
-    // programStage: 'loSKlJE06FY',
-    hideRegistrationUnit: true,
-    fieldDescriptionLabel: 'Means of verification',
-    hideEnrollmentDate: true,
-    hideEventDate: true,
-    excludeProgramStages: true,
-    disableForm: false,
-    formType: 'EVENT',
     displayType: 'FLAT',
+    submitButtonLabel: 'Save',
+    cancelButtonLabel: 'Back to list',
+    fieldDescriptionLabel: 'Means of verification',
+    updateTeiOrgUnit: false,
+    program: 'V7tJxLT7lWz',
+    programStage: 's2GSxomEaUw',
+    formType: 'EVENT',
     autoComplete: true,
-    autoAssignedValues: [],
-    formFieldExtensions: [],
+    hideRegistrationUnit: true,
+    hideEventDate: true,
+    hideSubmitButton: false,
   });
 
   customOrgUnitRoots: CustomOrgUnitConfig[] = [
