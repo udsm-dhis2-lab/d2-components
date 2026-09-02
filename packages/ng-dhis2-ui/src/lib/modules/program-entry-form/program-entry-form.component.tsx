@@ -105,8 +105,18 @@ export class ProgramEntryFormModule {
       return {};
     }
 
+    const trackedEntity = this.trackedEntityInstance();
+
+    const attributeValues = Object.keys(
+      trackedEntity?.attributeEntities ?? {}
+    ).reduce((acc, key) => {
+      acc[key] = trackedEntity?.attributeEntities?.[key]?.value;
+      return acc;
+    }, {} as Record<string, unknown>);
+
     return {
-      ...(this.trackedEntityInstance() || {}),
+      ...attributeValues,
+      ...(trackedEntity?.reportEntities ?? {}),
       ...(this.instance() || {}),
     };
   });
@@ -186,6 +196,7 @@ export class ProgramEntryFormModule {
       this.metaData.set(metaData);
 
       const instance = await this.#getInstance();
+
       if (!instance) {
         console.error(
           'Failed to create or load instance for program entry form'
@@ -254,54 +265,6 @@ export class ProgramEntryFormModule {
 
     return configuredKey;
   }
-
-  // #updateInstanceWithAutoAssignedValues(
-  //   autoAssignedValues: AutoAssignedValues[]
-  // ) {
-  //   const assignedDataValues = autoAssignedValues.reduce(
-  //     (entities, assignedValue) => {
-  //       return {
-  //         ...entities,
-  //         [assignedValue.field]: assignedValue.value,
-  //       };
-  //     },
-  //     {}
-  //   );
-
-  //   this.#updateInstance(assignedDataValues);
-  // }
-
-  // #updateInstanceWithAutoAssignedValues(
-  //   autoAssignedValues: AutoAssignedValues[]
-  // ) {
-  //   const valueCount = autoAssignedValues?.length ?? 0;
-  //   if (valueCount === 0) {
-  //     return;
-  //   }
-
-  //   const metaData = this.metaData();
-  //   const aggregatedValues: Record<string, unknown> = {};
-
-  //   for (let index = 0; index < valueCount; index++) {
-  //     const { field: configuredKey, value } = autoAssignedValues[index];
-
-  //     const semanticKey = metaData
-  //       ? this.#resolveFieldRuntimeId(configuredKey, metaData)
-  //       : configuredKey;
-
-  //     aggregatedValues[semanticKey] = value;
-
-  //     if (configuredKey !== semanticKey) {
-  //       aggregatedValues[configuredKey] = value;
-  //     }
-  //   }
-
-  //   if (Object.keys(aggregatedValues).length === 0) {
-  //     return;
-  //   }
-
-  //   this.#updateInstance(aggregatedValues);
-  // }
 
   #updateInstanceWithAutoAssignedValues(
     autoAssignedValues: AutoAssignedValues[]
@@ -404,7 +367,11 @@ export class ProgramEntryFormModule {
         if (this.config().autoComplete) {
           this.instance()!.complete();
         }
-        return (this.instanceQuery as BaseTrackerQuery<TrackedEntityInstance>)
+        const instanceQuery = this.#getQuery(
+          'TRACKER'
+        ) as BaseTrackerQuery<TrackedEntityInstance>;
+
+        return instanceQuery
           .setData(this.instance() as TrackedEntityInstance)
           .save();
       }
@@ -413,9 +380,11 @@ export class ProgramEntryFormModule {
         if (this.config().autoComplete) {
           this.instance()!.complete();
         }
-        return (this.instanceQuery as BaseEventQuery<DHIS2Event>)
-          .setData(this.instance() as DHIS2Event)
-          .save();
+        const instanceQuery = this.#getQuery(
+          'EVENT'
+        ) as BaseEventQuery<DHIS2Event>;
+
+        return instanceQuery.setData(this.instance() as DHIS2Event).save();
       }
 
       default:
@@ -448,33 +417,51 @@ export class ProgramEntryFormModule {
     return instance;
   }
 
-  async #getTrackerInstance(): Promise<TrackedEntityInstance> {
+  #getQuery(instanceType: 'TRACKER' | 'EVENT') {
     const d2 = (window as unknown as D2Window).d2Web;
-    this.instanceQuery = d2?.trackerModule?.trackedEntity
-      ?.setProgram(this.config().program)
-      ?.setOrgUnit(this.orgUnit() as string);
+    switch (instanceType) {
+      case 'TRACKER':
+        return d2.trackerModule.trackedEntity
+          .setProgram(this.config().program)
+          .setOrgUnit(this.orgUnit() as string);
 
-    if (!this.instanceQuery) {
+      case 'EVENT':
+        return d2.eventModule.event
+          .setProgram(this.config().program)
+          .setProgramStage(this.config().programStage as string)
+          .setEnrollment(this.enrollment() as string)
+          .setTrackedEntity(this.trackedEntity() as string)
+          .setOrgUnit(this.orgUnit() as string);
+
+      default:
+        throw new Error('Invalid form type');
+    }
+  }
+
+  async #getTrackerInstance(): Promise<TrackedEntityInstance> {
+    const instanceQuery = this.#getQuery(
+      'TRACKER'
+    ) as BaseTrackerQuery<TrackedEntityInstance>;
+
+    if (!instanceQuery) {
       throw new Error('Could not initialize tracker query');
     }
 
     if (!this.trackedEntity()) {
-      return await this.instanceQuery.create();
+      return await instanceQuery.create();
     }
 
     const instanceResult = (
-      await this.instanceQuery
-        .setTrackedEntity(this.trackedEntity() as string)
-        .get()
+      await instanceQuery.setTrackedEntity(this.trackedEntity() as string).get()
     ).data as TrackedEntityInstance;
 
     if (!instanceResult) {
-      return await this.instanceQuery.create();
+      return await instanceQuery.create();
     }
 
-    this.instanceQuery.setInstanceFields(this.metaData()?.program as Program);
+    instanceQuery.setInstanceFields(this.metaData()?.program as Program);
 
-    const instance = await this.instanceQuery.setReservedValues();
+    const instance = await instanceQuery.setReservedValues();
 
     if (this.orgUnit()) {
       instance.setOrgUnit(this.orgUnit() as string);
@@ -484,23 +471,18 @@ export class ProgramEntryFormModule {
   }
 
   async #getEventInstance() {
-    this.instanceQuery = this.d2.eventModule.event
-      .setProgram(this.config().program)
-      .setProgramStage(this.config().programStage as string)
-      .setEnrollment(this.enrollment() as string)
-      .setTrackedEntity(this.trackedEntity() as string)
-      .setOrgUnit(this.orgUnit() as string);
+    const instanceQuery = this.#getQuery('EVENT') as BaseEventQuery<DHIS2Event>;
 
     if (!this.event()) {
-      return await this.instanceQuery.create();
+      return await instanceQuery.create();
     }
 
     const instance = (
-      await this.instanceQuery.setEvent(this.event() as string).get()
+      await instanceQuery.setEvent(this.event() as string).get()
     ).data as DHIS2Event;
 
     if (!instance) {
-      return await this.instanceQuery.create();
+      return await instanceQuery.create();
     }
 
     if (this.metaData()?.program) {
