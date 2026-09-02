@@ -105,19 +105,21 @@ export class ProgramEntryFormModule {
       return {};
     }
 
-    const trackedEntity = this.trackedEntityInstance();
+    const attributeDataValues = this.trackedEntityInstance()
+      ? this.#getTrackedEntityDataValues(this.trackedEntityInstance()!)
+      : {};
 
-    const attributeValues = Object.keys(
-      trackedEntity?.attributeEntities ?? {}
-    ).reduce((acc, key) => {
-      acc[key] = trackedEntity?.attributeEntities?.[key]?.value;
-      return acc;
-    }, {} as Record<string, unknown>);
+    // TODO: Consider refactoring this logic to avoid potential issues with nested data values. The current implementation may not handle deeply nested structures correctly, which could lead to unexpected behavior when updating the instance with new data values.
+    const currentInstanceDataValues =
+      this.config().formType === 'TRACKER'
+        ? this.#getTrackedEntityDataValues(
+            this.instance() as TrackedEntityInstance
+          )
+        : this.instance();
 
     return {
-      ...attributeValues,
-      ...(trackedEntity?.reportEntities ?? {}),
-      ...(this.instance() || {}),
+      ...attributeDataValues,
+      ...(currentInstanceDataValues || {}),
     };
   });
 
@@ -177,6 +179,20 @@ export class ProgramEntryFormModule {
       );
     };
   });
+
+  #getTrackedEntityDataValues(trackedEntity: TrackedEntityInstance) {
+    const attributeDataValues = Object.keys(
+      trackedEntity?.attributeEntities ?? {}
+    ).reduce((acc, key) => {
+      acc[key] = trackedEntity?.attributeEntities?.[key]?.value;
+      return acc;
+    }, {} as Record<string, unknown>);
+
+    return {
+      ...attributeDataValues,
+      ...(trackedEntity?.reportEntities ?? {}),
+    };
+  }
 
   async ngOnInit() {
     this.loading.set(true);
@@ -305,26 +321,6 @@ export class ProgramEntryFormModule {
 
     this.#updateInstance(aggregatedValues);
   }
-
-  // #updateInstance(dataValues: Record<string, unknown>) {
-  //   this.instance.update((instance) => {
-  //     instance?.updateDataValues(dataValues, this.config().updateTeiOrgUnit);
-
-  //     return instance;
-  //   });
-  // }
-
-  // #updateInstance(dataValues: Record<string, unknown>) {
-  //   this.instance.update((instance) => {
-  //     if (!instance) {
-  //       return instance;
-  //     }
-
-  //     instance.updateDataValues(dataValues, this.config().updateTeiOrgUnit);
-
-  //     return instance;
-  //   });
-  // }
 
   #updateInstance(dataValues: Record<string, unknown>) {
     if (!dataValues || Object.keys(dataValues).length === 0) {

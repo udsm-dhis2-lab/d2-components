@@ -61,6 +61,10 @@ export class ProgramEntryFormFieldUtil {
   }
 
   get dataElements() {
+    if (this.config.excludeProgramStages) {
+      return [];
+    }
+
     const programStages = this.config.programStage
       ? this.program.programStages?.filter(
           (programStage) => programStage.id === this.config.programStage

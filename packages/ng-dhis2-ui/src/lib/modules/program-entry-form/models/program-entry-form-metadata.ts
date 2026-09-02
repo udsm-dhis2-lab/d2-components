@@ -318,7 +318,7 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
   }
 
   get programStageSections(): IProgramEntryFormSection[] {
-    if (!this.program) {
+    if (!this.program || this.config.excludeProgramStages) {
       return [];
     }
 
