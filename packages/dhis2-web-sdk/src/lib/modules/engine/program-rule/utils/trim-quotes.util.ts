@@ -1,17 +1,14 @@
-// @flow
+export default function trimQuotes(input: string): string {
+  let s = input.trim();
 
-export default function trimQuotes(input: string) {
-  let trimmingComplete = false;
-  let beingTrimmed = input;
-
-  while (!trimmingComplete) {
-    const beforeTrimming = beingTrimmed.trim();
-    beingTrimmed = beingTrimmed.replace(/^'/, '').replace(/'$/, '');
-    beingTrimmed = beingTrimmed.replace(/^"/, '').replace(/"$/, '');
-
-    if (beforeTrimming.length === beingTrimmed.length) {
-      trimmingComplete = true;
+  while (s.length >= 2) {
+    const first = s[0];
+    const last = s[s.length - 1];
+    if ((first === "'" || first === '"') && first === last) {
+      s = s.slice(1, -1).trim();
+    } else {
+      break;
     }
   }
-  return beingTrimmed;
+  return s;
 }
