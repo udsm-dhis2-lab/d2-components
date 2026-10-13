@@ -102,6 +102,7 @@ export class LineListTableComponent
   @Input() showDownloadButton = false;
   @Input() searcheableDataElements: string[] = [];
   @Input() columnNameSource: 'NAME' | 'FORM_NAME' = 'NAME';
+  @Input() orgUnitAndDateColumnsPosition: 'start' | 'end' = 'start';
   @Input() customDisplayInReportsIds?: string[];
   @Input() columnMetadataDisplayMode?: LineListColumnMetadataDisplayModeValue;
   private reactStateUpdaters: any = null;
@@ -456,7 +457,8 @@ export class LineListTableComponent
                 this.searcheableDataElements,
                 this.customDisplayInReportsIds,
                 this.columnNameSource,
-                this.columnMetadataDisplayMode
+                this.columnMetadataDisplayMode,
+                this.orgUnitAndDateColumnsPosition
               );
 
             setFilteredColumns((prev) =>
@@ -789,49 +791,53 @@ export class LineListTableComponent
               }),
             this.showFilters &&
               React.createElement(FilterToolbar, {
-                orgUnitLabel: orgUnitLabel,
-                selectedOrgUnit: selectedOrgUnit,
-                setSelectedOrgUnit: setSelectedOrgUnit,
-                setOrgUnitState: setOrgUnitState,
-                defaultOrgUnit: defaultOrgUnit,
-                setHide: setHide,
-                startDateState: startDateState,
-                setStartDateState: setStartDateState,
-                endDateState: endDateState,
-                setEndDateState: setEndDateState,
-                visibleFilters: visibleFilters,
-                dateStates: dateStates,
-                inputValues: inputValues,
-                setInputValues: setInputValues,
-                handleInputChange: handleInputChange,
-                handleInputChangeForSelectField:
+                orgUnit: {
+                  orgUnitLabel,
+                  selectedOrgUnit,
+                  setSelectedOrgUnit,
+                  setOrgUnitState,
+                  defaultOrgUnit,
+                  setHide,
+                  setTempOrgUnitState,
+                  tempOrgUnitState,
+                  SetOrgUnitModalVisible: setOrgUnitModalVisible,
+                  handleOrgUnitFilter,
+                  prevSelectedOrgUnit,
+                  setPrevSelectedOrgUnit,
+                },
+                dates: {
+                  startDateState,
+                  setStartDateState,
+                  endDateState,
+                  setEndDateState,
+                  setTempStartDateState,
+                  setTempEndDateState,
+                  tempStartDateState,
+                  tempEndDateState,
+                  showEnrollmentDates: this.showEnrollmentDates,
+                  handleStartDateFilter,
+                  handleEndDateFilter,
+                },
+                filters: {
+                  visibleFilters,
+                  dateStates,
+                  inputValues,
+                  setInputValues,
+                  handleInputChange,
                   handleInputChangeForSelectField,
-                handleDateSelect: handleDateSelect,
-                showAllFilters: showAllFilters,
-                setShowAllFilters: setShowAllFilters,
-                setTempStartDateState: setTempStartDateState,
-                setTempEndDateState: setTempEndDateState,
-                setTempOrgUnitState: setTempOrgUnitState,
-                tempStartDateState: tempStartDateState,
-                tempEndDateState: tempEndDateState,
-                tempOrgUnitState: tempOrgUnitState,
-                dataQueryFiltersState: dataQueryFiltersState,
-                setDataQueryFiltersState: setDataQueryFiltersState,
-                SetOrgUnitModalVisible: setOrgUnitModalVisible,
-                showEnrollmentDates: this.showEnrollmentDates,
-                handleAdditionalFilters: handleAdditionalFilters,
-                handleStartDateFilter: handleStartDateFilter,
-                handleEndDateFilter: handleEndDateFilter,
-                handleOrgUnitFilter: handleOrgUnitFilter,
-                setDateStates: setDateStates,
-                prevInputValues: prevInputValues,
-                setPrevInputValues: setPrevInputValues,
-                setTempDataQueryFiltersState: setTempDataQueryFiltersState,
-                prevDateStates: prevDateStates,
-                setPrevDateStates: setPrevDateStates,
-                prevSelectedOrgUnit: prevSelectedOrgUnit,
-                setPrevSelectedOrgUnit: setPrevSelectedOrgUnit,
-                //  filteredFilters: filteredFilters
+                  handleDateSelect,
+                  showAllFilters,
+                  setShowAllFilters,
+                  dataQueryFiltersState,
+                  setDataQueryFiltersState,
+                  handleAdditionalFilters,
+                  setDateStates,
+                  prevInputValues,
+                  setPrevInputValues,
+                  setTempDataQueryFiltersState,
+                  prevDateStates,
+                  setPrevDateStates,
+                },
               }),
             React.createElement(
               'div',

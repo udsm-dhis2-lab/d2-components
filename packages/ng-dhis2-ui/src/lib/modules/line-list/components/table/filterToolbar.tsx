@@ -13,47 +13,53 @@ import React, { useState } from 'react';
 import { parseISO, format, isValid } from 'date-fns';
 
 export const FilterToolbar = ({
-  orgUnitLabel,
-  selectedOrgUnit,
-  setSelectedOrgUnit,
-  setOrgUnitState,
-  defaultOrgUnit,
-  setHide,
-  startDateState,
-  setStartDateState,
-  endDateState,
-  setEndDateState,
-  visibleFilters,
-  dateStates,
-  inputValues,
-  setInputValues,
-  handleInputChange,
-  handleInputChangeForSelectField,
-  handleDateSelect,
-  showAllFilters,
-  setShowAllFilters,
-  setTempStartDateState,
-  setTempEndDateState,
-  setTempOrgUnitState,
-  tempStartDateState,
-  tempEndDateState,
-  tempOrgUnitState,
-  dataQueryFiltersState,
-  setDataQueryFiltersState,
-  SetOrgUnitModalVisible,
-  showEnrollmentDates,
-  handleAdditionalFilters,
-  handleStartDateFilter,
-  handleEndDateFilter,
-  handleOrgUnitFilter,
-  setDateStates,
-  prevInputValues,
-  setPrevInputValues,
-  setTempDataQueryFiltersState,
-  prevDateStates,
-  setPrevDateStates,
-  prevSelectedOrgUnit,
-  setPrevSelectedOrgUnit,
+  orgUnit: {
+    orgUnitLabel,
+    selectedOrgUnit,
+    setSelectedOrgUnit,
+    setOrgUnitState,
+    defaultOrgUnit,
+    setHide,
+    setTempOrgUnitState,
+    tempOrgUnitState,
+    SetOrgUnitModalVisible,
+    handleOrgUnitFilter,
+    prevSelectedOrgUnit,
+    setPrevSelectedOrgUnit,
+  },
+  dates: {
+    startDateState,
+    setStartDateState,
+    endDateState,
+    setEndDateState,
+    setTempStartDateState,
+    setTempEndDateState,
+    tempStartDateState,
+    tempEndDateState,
+    showEnrollmentDates,
+    handleStartDateFilter,
+    handleEndDateFilter,
+  },
+  filters: {
+    visibleFilters,
+    dateStates,
+    inputValues,
+    setInputValues,
+    handleInputChange,
+    handleInputChangeForSelectField,
+    handleDateSelect,
+    showAllFilters,
+    setShowAllFilters,
+    dataQueryFiltersState,
+    setDataQueryFiltersState,
+    handleAdditionalFilters,
+    setDateStates,
+    prevInputValues,
+    setPrevInputValues,
+    setTempDataQueryFiltersState,
+    prevDateStates,
+    setPrevDateStates,
+  },
 }: any) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenOrgUnitDropdown, setIsOpenOrgUnitDropdown] = useState(false);
@@ -634,46 +640,3 @@ export function formatDateForDisplay(
   }
 }
 
-// case 'date':
-//           case 'date-time':
-//             return (
-//               // <InputField
-//               //   error={hasError}
-//               //   validationText={validationError}
-//               //   type={this.field().type as any}
-//               //   inputWidth={inputWidth}
-//               //   required={this.field().required}
-//               //   name={this.field().id}
-//               //   label={this.label()}
-//               //   min={this.field().min?.toString()}
-//               //   max={this.field().max?.toString()}
-//               //   placeholder={this.placeholder()}
-//               //   value={value}
-//               //   readOnly={disabled}
-//               //   onChange={(event: any) => {
-//               //     onValueChange(event.value);
-//               //   }}
-//               //   onBlur={() => {
-//               //     checkValueUniqueness();
-//               //   }}
-//               // />
-//               <CalendarInput
-//                 label={this.label()}
-//                 error={hasError}
-//                 validationText={validationError}
-//                 date={value}
-//                 readOnly={disabled}
-//                 min={this.field().min?.toString()}
-//                 max={this.field().max?.toString()}
-//                 placeholder={this.placeholder()}
-//                 onDateSelect={(selectedDate: any) => {
-//                   onValueChange(selectedDate.calendarDateString);
-//                 }}
-//                 disabled={disabled}
-//                 inputWidth={inputWidth}
-//                 required={this.field().required}
-//                 calendar="gregory"
-//                 locale="en-GB"
-//                 timeZone="Africa/Dar_es_Salaam"
-//               />
-//             );
