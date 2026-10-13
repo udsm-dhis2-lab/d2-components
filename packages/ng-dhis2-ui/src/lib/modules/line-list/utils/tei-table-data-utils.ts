@@ -25,7 +25,8 @@ export const getTrackedEntityTableData = (
   searcheableDataElements: string[],
   customDisplayInReportsIds?: string[],
   columnNameSource: 'NAME' | 'FORM_NAME' = 'NAME',
-  columnMetadataDisplayMode?: LineListColumnMetadataDisplayModeValue
+  columnMetadataDisplayMode?: LineListColumnMetadataDisplayModeValue,
+  orgUnitAndDateColumnsPosition: 'start' | 'end' = 'start'
 ): {
   columns: ColumnDefinition[];
   data: TableRow[];
@@ -131,7 +132,7 @@ export const getTrackedEntityTableData = (
         })) ?? [],
     }));
 
-  const tableColumns = [
+  const orgUnitAndDateColumns = [
     {
       label: orgUnitLabel || 'Registering unit',
       key: 'orgUnit',
@@ -144,9 +145,12 @@ export const getTrackedEntityTableData = (
           },
         ]
       : []),
-    ...attributeColumns,
-    ...dataElementColumns,
   ];
+  const entityColumns = [...attributeColumns, ...dataElementColumns];
+  const tableColumns =
+    orgUnitAndDateColumnsPosition === 'end'
+      ? [...entityColumns, ...orgUnitAndDateColumns]
+      : [...orgUnitAndDateColumns, ...entityColumns];
 
   const tableFilters = metaData.searchableTrackedEntityAttributes
     .sort((a, b) => a.sortOrder! - b.sortOrder!)
