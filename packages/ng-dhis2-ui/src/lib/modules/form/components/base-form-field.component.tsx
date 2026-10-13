@@ -1521,7 +1521,7 @@ export class BaseFormFieldComponent extends ReactWrapperModule {
                 label={this.label()}
                 name={f.id}
                 disabled={disabled}
-                onChange={(event: any) => onValueChange(event.checked)}
+                onChange={(event: any) => onValueChange(event.checked ? true : null)}
                 onBlur={() => checkValueUniqueness()}
               />
             );
