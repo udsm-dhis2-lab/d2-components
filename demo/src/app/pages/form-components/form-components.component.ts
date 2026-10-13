@@ -5,6 +5,8 @@
 
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
+  D2EventResponse,
+  D2TrackerResponse,
   D2Window,
   DHIS2Event,
   OrgUnitField,
@@ -1013,4 +1015,24 @@ export class FormComponentsComponent {
     ],
     formFieldExtensions: [],
   });
+
+  onSaveCompletion(
+    response:
+      | D2TrackerResponse<TrackedEntityInstance>
+      | D2EventResponse<DHIS2Event>
+      | null,
+  ) {
+    console.log('Form save completed', response);
+  }
+
+  aaaaformConfig = new ProgramEntryFormConfig({
+      enableCustomFieldConfigurations: false,
+      program: `t1pTvYbv08Z`,
+      programStage: `q2O2QgN4l8O`,
+      hideRegistrationUnit: false,
+      formType: 'EVENT',
+      displayType: 'FLAT',
+      // autoAssignedValues: [{ field: 'orgUnit', value: 'IzYp0MNy1j1' }],
+    });
+
 }

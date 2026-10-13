@@ -401,11 +401,13 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
   async #getCustomFieldConfigurations(): Promise<
     Record<string, CustomFieldConfiguration>
   > {
+    console.log('Fetching custom field configurations...');
     try {
       const response = await this.d2.httpInstance.get(
         'dataStore/field-extensions?fields=id,fieldOptionsDependsOn,optionSet&paging=false',
         { useIndexDb: true }
       );
+      console.log('Fetching custom field configurations...', response?.data);
       const responseData = response?.data;
 
       const entries = Array.isArray(responseData)
@@ -449,9 +451,9 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
         this.program = program;
 
         // TODO FIND ANOTHER WAY TO PASS IN CUSTOM FIELD CONFIGURATIONS, AVOID TIGHT COUPLING HERE
-        // this.customFieldConfigurations =
-        //   await this.#getCustomFieldConfigurations();
-
+        this.customFieldConfigurations = this.config.enableCustomFieldConfigurations === true
+          ? await this.#getCustomFieldConfigurations()
+          : {};
         if (
           this.config?.formFieldExtensions &&
           this.config.formFieldExtensions.length > 0 &&

@@ -41,6 +41,7 @@ export interface IProgramEntryFormConfig {
   updateTeiOrgUnit?: boolean;
   optionCascadeConfigs?: OptionsPathCascadeConfig[];
   coordinatePickerGeoConfig?: CoordinatePickerGeoConfig;
+  enableCustomFieldConfigurations?: boolean;
 }
 export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   program!: string;
@@ -76,6 +77,7 @@ export class ProgramEntryFormConfig implements IProgramEntryFormConfig {
   updateTeiOrgUnit = false;
   optionCascadeConfigs?: OptionsPathCascadeConfig[];
   coordinatePickerGeoConfig?: CoordinatePickerGeoConfig;
+  enableCustomFieldConfigurations = false;
 
   constructor(config: IProgramEntryFormConfig) {
     Object.assign(this, config);
