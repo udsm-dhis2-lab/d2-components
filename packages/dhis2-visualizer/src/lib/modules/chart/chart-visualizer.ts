@@ -53,11 +53,6 @@ export class ChartVisualizer extends BaseVisualizer implements Visualizer {
     }
 
     const chartObject = drawChart(this._data, this._config as any);
-    console.log('INITIAL CHART OBJECT', chartObject);
-    console.log(
-      'NEW CHART OBJECT',
-      new ChartObject(this._data, this._config as any)
-    );
 
     setTimeout(() => {
       this.dispose();
