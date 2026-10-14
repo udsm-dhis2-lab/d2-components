@@ -5,6 +5,8 @@ module.exports = {
   coverageDirectory: '../../coverage/packages/ng-dhis2-dashboard',
   collectCoverageFrom: [
     'src/lib/components/dashboard-item/dashboard-item.component.ts',
+    'src/lib/components/dashboard-items/dashboard-items.component.ts',
+    'src/lib/components/dashboard-items/viewport-activation.directive.ts',
     'src/lib/models/{dashboard,dashboard-item,dashboard-menu,global-selection}.model.ts',
     'src/lib/utilities/*.util.ts',
     'src/lib/services/{dashboard,dashboard-config,dashboard-item,dashboard-menu,tracker-dashboard}.service.ts',
@@ -23,8 +25,7 @@ module.exports = {
     '^@dhis2/ui$': '<rootDir>/src/testing/mocks/dhis2-ui.mock.ts',
     '^@iapps/d2-visualizer$':
       '<rootDir>/src/testing/mocks/d2-visualizer.mock.ts',
-    '^@iapps/ng-dhis2-ui$':
-      '<rootDir>/src/testing/mocks/ng-dhis2-ui.mock.ts',
+    '^@iapps/ng-dhis2-ui$': '<rootDir>/src/testing/mocks/ng-dhis2-ui.mock.ts',
     '^@iapps/period-utilities$':
       '<rootDir>/src/testing/mocks/period-utilities.mock.ts',
   },

@@ -53,6 +53,12 @@ Expose the dashboard as a lazy-loaded route:
   }
 ```
 
+Dashboard visualization content is viewport-activated. Lightweight grid shells preserve
+layout and scroll extent, while configuration and analytics begin only when an
+item enters the browser viewport or its 200px vertical prefetch margin. Items
+remain active for the displayed dashboard so scrolling back does not refetch.
+Browsers without `IntersectionObserver` retain eager rendering.
+
 Dashboard and submenu navigation use the canonical URL shape
 `<rootUrl>/ng-dashboard-view/<dashboardId>`. Existing public components,
 outputs and service APIs remain compatible.

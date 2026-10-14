@@ -34,6 +34,7 @@
           </div>
         }
         <d2-dashboard-items
+          [dashboardId]="currentDashboard.id"
           [dashboardItems]="currentDashboard?.dashboardItems || []"
           [dataSelections]="params?.globalSelection?.dataSelections || []"
           [dashboardItemsLayout]="currentDashboard?.dashboardItemsLayout || []"

@@ -76,3 +76,41 @@ To profile manually in a non-production DHIS2 environment:
    with the baseline.
 9. Simulate a metadata or analytics failure and confirm the loader settles and
    subsequent selection changes recover.
+
+## Viewport virtualization profiling
+
+Sprint 06 keeps every KTD grid shell mounted but defers its heavy
+`DashboardItemComponent` until the shell intersects the browser viewport plus a
+200px vertical prefetch margin. Activation is retained once per displayed
+dashboard. The browser viewport (`root: null`) is intentional: Intersection
+Observer also accounts for clipping by supported nested scroll containers.
+When the API is unavailable, all items render eagerly for compatibility.
+
+The deterministic three-item benchmark changed initial visualization work from
+three component/configuration requests to zero before intersection and one
+after the first item intersects. For a real dashboard with `N` total and `V`
+visible or prefetched items, initial component, configuration and analytics
+work should therefore be `V` rather than `N`.
+
+Run this checklist against a non-production DHIS2 instance:
+
+1. Select a dashboard spanning at least three viewport heights and record its
+   total item count.
+2. Clear the Network panel, load at the top, and record configuration,
+   analytics and tracker requests before scrolling. Confirm requests belong
+   only to visible or prefetched items.
+3. Record `d2-dashboard-item` and visualizer instance counts after initial
+   rendering, after scrolling to the bottom, and after returning to the top.
+4. Scroll one viewport at a time and confirm each new item activates once,
+   without KTD shell movement or a change in total scroll height.
+5. Scroll back and confirm activated items remain rendered and do not refetch.
+6. Change period, organisation-unit and additional filters. Confirm active
+   items redraw and a subsequently activated hidden item uses the latest
+   selections.
+7. Switch dashboards rapidly while scrolling. Confirm old observers disconnect
+   and no stale item or visualization appears.
+8. Repeat in hosts that scroll the window and in supported nested scroll
+   containers.
+9. Use Performance and Memory tools to compare scripting time, retained nodes
+   and observer count with the pre-Sprint baseline.
+10. With `IntersectionObserver` disabled, confirm all items render eagerly.
