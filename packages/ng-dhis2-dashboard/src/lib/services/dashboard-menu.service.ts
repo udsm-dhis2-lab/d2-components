@@ -1,62 +1,38 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { CurrentUser, D2Window } from '@iapps/d2-web-sdk';
 import { from, map, Observable, of, switchMap, tap, zip } from 'rxjs';
 import { DashboardConfig, DashboardMenu, DashboardMenuObject } from '../models';
 import { userAuthorizedDashboards } from '../utilities/access-control.util';
 import { DashboardConfigService } from './dashboard-config.service';
-
-interface D2DashboardMenuState {
-  loading: boolean;
-  loaded: boolean;
-  loadingError: any | null;
-  selectedDashboardMenuId: string | null;
-  selectedDashboardSubMenuId: string | null;
-  dashboardMenus: DashboardMenuObject[];
-}
-
-const initialState: D2DashboardMenuState = {
-  loading: true,
-  loaded: false,
-  loadingError: null,
-  selectedDashboardMenuId: null,
-  selectedDashboardSubMenuId: null,
-  dashboardMenus: [],
-};
+import { DashboardStateFacade } from '../state';
 
 @Injectable()
 export class DashboardMenuService {
-  #dashboardMenuStore = signal<D2DashboardMenuState>(initialState);
   #router = inject(Router);
-  constructor(private dashboardConfigService: DashboardConfigService) {}
+  constructor(
+    private dashboardConfigService: DashboardConfigService,
+    private dashboardState: DashboardStateFacade
+  ) {}
 
-  loading = computed(() => {
-    return this.#dashboardMenuStore()?.loading;
-  });
+  loading = computed(() => this.dashboardState.loading().menus);
 
-  dashboardMenus = computed(() => {
-    return this.#dashboardMenuStore()?.dashboardMenus;
-  });
+  dashboardMenus = computed(() => [...this.dashboardState.menus()]);
 
-  currentDashboardMenu = computed(() => {
-    return this.dashboardMenus()?.find(
-      (menu) => menu.id === this.#dashboardMenuStore()?.selectedDashboardMenuId
-    );
-  });
+  currentDashboardMenu = this.dashboardState.selectedMenu;
 
-  currentDashboardSubMenu = computed(() => {
-    return this.currentDashboardMenu()?.subMenus?.find(
-      (menu) =>
-        menu.id === this.#dashboardMenuStore()?.selectedDashboardSubMenuId
-    );
-  });
+  currentDashboardSubMenu = this.dashboardState.selectedSubMenu;
 
   loadingError = computed(() => {
-    return this.#dashboardMenuStore()?.loadingError;
+    const error = this.dashboardState.errors().menus;
+    return (
+      error instanceof Error ? error : error ? new Error(String(error)) : null
+    ) as any;
   });
 
   load(): void {
     const config: DashboardConfig = this.dashboardConfigService.getConfig();
+    this.dashboardState.beginMenuLoad();
 
     this.findMenuList(config).subscribe({
       next: (dashboardMenus) => {
@@ -67,15 +43,11 @@ export class DashboardMenuService {
             splitedUrl[splitedUrl.indexOf('ng-dashboard-view') + 1]
           );
 
-        this.#dashboardMenuStore.update((state) => ({
-          ...state,
+        this.dashboardState.setMenus(
           dashboardMenus,
-          selectedDashboardMenuId: selectedDashboardMenu?.id as string,
-          selectedDashboardSubMenuId: selectedDashboardSubMenu?.id || null,
-          loading: false,
-          loaded: true,
-          loadingError: null,
-        }));
+          selectedDashboardMenu?.id || null,
+          selectedDashboardSubMenu?.id || null
+        );
 
         if (selectedDashboardMenu || selectedDashboardSubMenu) {
           this.#router.navigate([
@@ -86,12 +58,7 @@ export class DashboardMenuService {
         }
       },
       error: (error) => {
-        this.#dashboardMenuStore.update((state) => ({
-          ...state,
-          loading: false,
-          loaded: false,
-          loadingError: error,
-        }));
+        this.dashboardState.failMenuLoad(error);
       },
     });
   }
@@ -134,11 +101,10 @@ export class DashboardMenuService {
 
     const selectedDashboardSubMenu = (selectedDashboardMenu.subMenus || [])[0];
 
-    this.#dashboardMenuStore.update((state) => ({
-      ...state,
-      selectedDashboardMenuId: selectedDashboardMenu.id,
-      selectedDashboardSubMenuId: selectedDashboardSubMenu?.id || null,
-    }));
+    this.dashboardState.selectMenu(
+      selectedDashboardMenu.id,
+      selectedDashboardSubMenu?.id || null
+    );
 
     this.#router.navigate([
       config.rootUrl,
@@ -150,10 +116,16 @@ export class DashboardMenuService {
   setCurrentSubDashboard(selectedDashboardSubMenu: DashboardMenuObject) {
     const config: DashboardConfig = this.dashboardConfigService.getConfig();
 
-    this.#dashboardMenuStore.update((state) => ({
-      ...state,
-      selectedDashboardSubMenuId: selectedDashboardSubMenu.id,
-    }));
+    const parent = this.dashboardMenus().find((menu) =>
+      menu.subMenus?.some(
+        (subMenu) => subMenu.id === selectedDashboardSubMenu.id
+      )
+    );
+    if (parent) {
+      this.dashboardState.selectMenu(parent.id, selectedDashboardSubMenu.id);
+    } else {
+      this.dashboardState.activateDashboard(selectedDashboardSubMenu.id);
+    }
     this.#router.navigate([config.rootUrl, selectedDashboardSubMenu.id]);
   }
 

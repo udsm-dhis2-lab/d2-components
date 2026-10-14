@@ -1,31 +1,29 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { select, Store } from '@ngrx/store';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  Injector,
+  OnInit,
+  computed,
+  inject,
+} from '@angular/core';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 
 import { CommonModule } from '@angular/common';
-import { isUndefined } from 'lodash';
 import {
-  catchError,
   distinctUntilChanged,
   filter,
-  Observable,
-  of,
   switchMap,
-  take,
-  tap,
 } from 'rxjs';
 import { CurrentDashboardHeaderComponent } from '../../components/current-dashboard-header/current-dashboard-header.component';
 import { DashboardItemsComponent } from '../../components/dashboard-items/dashboard-items.component';
 import { DashboardSelectionSummaryComponent } from '../../components/dashboard-selection-summary/dashboard-selection-summary.component';
 import {
-  DashboardObject,
   DashboardSelectionConfig,
   VisualizationDataSelection,
 } from '../../models';
-import { IGlobalSelection } from '../../models/global-selection.model';
 import { DashboardConfigService, DashboardService } from '../../services';
-import { D2DashboardSelectionState } from '../../store';
-import { DashboardSelectionActions } from '../../store/actions/dashboard-selection.actions';
-import { getDashboardSelectionById } from '../../store/selectors/dashboard-selection.selectors';
+import { DashboardStateFacade } from '../../state';
 
 @Component({
     imports: [
@@ -40,49 +38,36 @@ import { getDashboardSelectionById } from '../../store/selectors/dashboard-selec
     styleUrls: ['./current-dashboard.component.scss']
 })
 export class CurrentDashboardComponent implements OnInit {
-  currentDashboard$?: Observable<DashboardObject | undefined>;
-  globalSelection$!: Observable<IGlobalSelection | undefined>;
-  error?: object;
-  loading = true;
+  private injector = inject(Injector);
+  currentDashboard = this.dashboardState.activeDashboard;
+  globalSelection = this.dashboardState.activeSelection;
+  error = computed(() => this.dashboardState.errors().dashboard);
+  loading = computed(() => this.dashboardState.loading().dashboard);
   selectionConfig?: DashboardSelectionConfig;
+
   constructor(
     private dashboardService: DashboardService,
     private dashboardConfig: DashboardConfigService,
-    private dashboardSelectionStore: Store<D2DashboardSelectionState>
+    private dashboardState: DashboardStateFacade,
+    private destroyRef: DestroyRef
   ) {}
 
   ngOnInit() {
     this.selectionConfig = this.dashboardConfig.getConfig()?.selectionConfig;
 
-    this.currentDashboard$ = this.dashboardService.currentDashboardId$.pipe(
-      filter((dashboard) => !isUndefined(dashboard)),
-      switchMap((id) => {
-        this.loading = true;
-        this.globalSelection$ = this.dashboardSelectionStore.pipe(
-          select(getDashboardSelectionById(id))
-        );
-        return this.dashboardService.getCurrentDashboard(id);
-      }),
-      tap(() => {
-        this.loading = false;
-      }),
-      catchError((error) => {
-        this.error = error;
-        this.loading = false;
-        return of(undefined);
-      })
-    );
+    toObservable(this.dashboardState.activeDashboardId, {
+      injector: this.injector,
+    })
+      .pipe(
+        filter((id): id is string => !!id),
+        distinctUntilChanged(),
+        switchMap((id) => this.dashboardService.getCurrentDashboard(id)),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe();
   }
 
   onSetGlobalFilter(dataSelections: VisualizationDataSelection[], id: string) {
-    this.dashboardSelectionStore.dispatch(
-      DashboardSelectionActions.setDashboardSelection({
-        dataSelections,
-        dashboardId: id,
-      })
-    );
-    this.globalSelection$ = this.dashboardSelectionStore.pipe(
-      select(getDashboardSelectionById(id))
-    );
+    this.dashboardState.setDashboardSelection(id, dataSelections);
   }
 }

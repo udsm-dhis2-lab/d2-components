@@ -3,8 +3,6 @@ import { ModuleWithProviders, NgModule } from '@angular/core';
 import { MatSnackBarRef } from '@angular/material/snack-bar';
 import { ReactWrapperModule } from '@iapps/ng-dhis2-ui';
 import { KtdGridModule } from '@katoid/angular-grid-layout';
-import { EffectsModule } from '@ngrx/effects';
-import { StoreModule } from '@ngrx/store';
 import { NgxPrintModule } from 'ngx-print';
 import {
   d2DashboardComponents,
@@ -17,11 +15,6 @@ import { d2DashboardPipes } from './pipes';
 import { d2DashboardServices } from './services';
 import { DASHBOARD_CONFIG } from './services/dashboard-config.service';
 import { d2DashboardMaterialModules } from './shared';
-import {
-  d2DashboardEffects,
-  d2DashboardFeature,
-  d2DashboardSelectionFeature,
-} from './store';
 
 @NgModule({
   imports: [
@@ -31,9 +24,6 @@ import {
     NgxPrintModule,
     ReactWrapperModule,
     ...d2DashboardMaterialModules,
-    StoreModule.forFeature(d2DashboardFeature),
-    StoreModule.forFeature(d2DashboardSelectionFeature),
-    EffectsModule.forFeature(d2DashboardEffects),
   ],
   declarations: [
     ...d2DashboardContainers,

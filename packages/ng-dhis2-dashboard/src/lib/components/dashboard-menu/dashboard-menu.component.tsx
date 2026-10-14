@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { DashboardMenuObject } from '../../models';
 import React, { useState } from 'react';
-import { TabBar, Tab } from '@dhis2/ui';
+import { Tab } from '@dhis2/ui';
 
 import { ReactWrapperModule } from '@iapps/ng-dhis2-ui';
 import { DashboardSubMenuComponent } from '../dashboard-sub-menu/dashboard-sub-menu.component';
@@ -125,7 +125,16 @@ export class DashboardMenuComponent implements AfterViewInit {
       this.currentDashboardMenu?.id
     );
     return (
-      <TabBar scrollable>
+      <div
+        data-test="dashboard-menu-scroll-container"
+        role="tablist"
+        style={{
+          display: 'flex',
+          maxWidth: '100%',
+          overflowX: 'auto',
+          whiteSpace: 'nowrap',
+        }}
+      >
         {this.dashboardMenuItems.map((dashboardMenuItem) => (
           <Tab
             key={dashboardMenuItem.id}
@@ -138,7 +147,7 @@ export class DashboardMenuComponent implements AfterViewInit {
             {dashboardMenuItem.name}
           </Tab>
         ))}
-      </TabBar>
+      </div>
     );
   };
 

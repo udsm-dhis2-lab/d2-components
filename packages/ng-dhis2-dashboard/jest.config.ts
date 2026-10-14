@@ -7,7 +7,7 @@ module.exports = {
     'src/lib/models/{dashboard,dashboard-item,dashboard-menu,global-selection}.model.ts',
     'src/lib/utilities/*.util.ts',
     'src/lib/services/{dashboard,dashboard-config,dashboard-item,dashboard-menu,tracker-dashboard}.service.ts',
-    'src/lib/store/reducers/dashboard-selection.reducer.ts',
+    'src/lib/state/dashboard-state.facade.ts',
     '!src/lib/**/*.spec.ts',
   ],
   coverageThreshold: {

@@ -4,6 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { installD2Web } from '../../testing/dashboard.fixtures';
 import { DASHBOARD_CONFIG, DashboardConfigService } from './dashboard-config.service';
 import { DashboardMenuService } from './dashboard-menu.service';
+import { DashboardStateFacade } from '../state';
 
 describe('DashboardMenuService', () => {
   const router = { navigate: jest.fn().mockResolvedValue(true) };
@@ -11,6 +12,7 @@ describe('DashboardMenuService', () => {
   const configure = (config: Record<string, unknown>) => {
     TestBed.configureTestingModule({ providers: [
       DashboardMenuService,
+      DashboardStateFacade,
       DashboardConfigService,
       { provide: Router, useValue: router },
       { provide: DASHBOARD_CONFIG, useValue: config },

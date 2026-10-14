@@ -10,17 +10,13 @@ import {
 import { Router } from '@angular/router';
 import { D2Window } from '@iapps/d2-web-sdk';
 import { Period } from '@iapps/period-utilities';
-import { Store } from '@ngrx/store';
 import {
-  BehaviorSubject,
   catchError,
   distinctUntilChanged,
-  firstValueFrom,
   from,
   map,
   Observable,
   of,
-  take,
   tap,
 } from 'rxjs';
 import { DashboardLoaderComponent } from '../components/dashboard-loader/dashboard-loader.component';
@@ -30,28 +26,12 @@ import {
   DashboardMenuObject,
   DashboardObject,
   DashboardSelectionConfig,
-  VisualizationDataSelection,
 } from '../models';
-import { D2DashboardSelectionState } from '../store';
-import { DashboardSelectionActions } from '../store/actions/dashboard-selection.actions';
+import { DashboardStateFacade } from '../state';
 import { DashboardConfigService } from './dashboard-config.service';
-import { DashboardMenuService } from './dashboard-menu.service';
-
-interface DashboardStore {
-  currentDashboardMenu?: DashboardMenuObject;
-  globalSelections: {
-    [id: string]: {
-      default: boolean;
-      dataSelections: VisualizationDataSelection[];
-    };
-  };
-  startUpDataSelections: any;
-}
 
 @Injectable()
 export class DashboardService {
-  private _dashboardStore$: BehaviorSubject<DashboardStore>;
-  private _dashboardStoreObservable$: Observable<DashboardStore>;
   private _overlayRef?: OverlayRef;
   private _firstTimeLoad = true;
 
@@ -61,24 +41,17 @@ export class DashboardService {
     private _snackBarRef: MatSnackBarRef<TextOnlySnackBar>,
     private overlay: Overlay,
     private dashboardConfigService: DashboardConfigService,
-    private dashboardSelectionStore: Store<D2DashboardSelectionState>,
-    private dashboardMenuService: DashboardMenuService
+    private dashboardState: DashboardStateFacade
   ) {
     const config: DashboardConfig = this.dashboardConfigService.getConfig();
-    this._dashboardStore$ = new BehaviorSubject({
-      globalSelections: {},
-      startUpDataSelections: this._getStartUpDataSelections(config),
-    });
-
-    this._dashboardStoreObservable$ = this._dashboardStore$.asObservable();
+    this.dashboardState.setStartupSelections(
+      this._getStartUpDataSelections(config)
+    );
   }
 
-  currentDashboardId = computed(() => {
-    return (
-      this.dashboardMenuService.currentDashboardSubMenu()?.id ||
-      this.dashboardMenuService.currentDashboardMenu()?.id
-    );
-  });
+  currentDashboardId = computed(
+    () => this.dashboardState.activeDashboardId() ?? undefined
+  );
 
   currentDashboardId$ = toObservable(this.currentDashboardId);
 
@@ -86,40 +59,23 @@ export class DashboardService {
     const config: DashboardConfig = this.dashboardConfigService.getConfig();
     this._detachOverlay();
     this._attachOverlay();
+    this.dashboardState.beginDashboardLoad(id);
 
     return (
       config?.useDataStore
         ? this._findByIdFromDataStore(id, config)
         : this._findByIdFromApi(id)
     ).pipe(
-      tap(async (dashboard: DashboardObject) => {
+      tap((dashboard: DashboardObject) => {
+        this.dashboardState.setDashboard(dashboard);
         if (dashboard && dashboard.selectionConfig) {
           const dataSelections = this._getStartUpDataSelections({
             rootUrl: '',
             selectionConfig: dashboard.selectionConfig,
           });
-
-          const dashboardStore = await firstValueFrom(
-            this._dashboardStoreObservable$.pipe(take(1))
-          );
-
-          this._dashboardStore$.next({
-            ...dashboardStore,
-            globalSelections: {
-              ...dashboardStore.globalSelections,
-              [dashboard.id]: {
-                default: true,
-                dataSelections,
-              },
-            },
-          });
-
-          this.dashboardSelectionStore.dispatch(
-            DashboardSelectionActions.setStartupSelections({
-              startUpDataSelections: dataSelections,
-              dashboardId: id,
-            })
-          );
+          this.dashboardState.setStartupSelections(dataSelections, id);
+        } else {
+          this.dashboardState.ensureDashboardSelection(id);
         }
 
         this._detachOverlay();
@@ -128,6 +84,7 @@ export class DashboardService {
         }
       }),
       catchError((error) => {
+        this.dashboardState.failDashboardLoad(error);
         this._detachOverlay();
         this._snackBarRef = this._snackBar.open(
           `There was a problem loading dashboard of ID: ${id}`,
@@ -155,23 +112,8 @@ export class DashboardService {
       );
     }
 
-    const dashboardStore = await firstValueFrom(
-      this._dashboardStoreObservable$.pipe(take(1))
-    );
-
-    this._dashboardStore$.next({
-      ...dashboardStore,
-      currentDashboardMenu,
-      globalSelections: {
-        ...dashboardStore.globalSelections,
-        [currentDashboardMenu.id]: dashboardStore.globalSelections[
-          currentDashboardMenu.id
-        ] || {
-          default: true,
-          dataSelections: dashboardStore.startUpDataSelections,
-        },
-      },
-    });
+    this.dashboardState.activateDashboard(currentDashboardMenu.id);
+    this.dashboardState.ensureDashboardSelection(currentDashboardMenu.id);
 
     this.router.navigate([
       config.rootUrl,
@@ -181,10 +123,7 @@ export class DashboardService {
   }
 
   getCurrentDashboardId(): Observable<string | undefined> {
-    return this._dashboardStoreObservable$.pipe(
-      distinctUntilChanged(),
-      map((dashboardStore) => dashboardStore?.currentDashboardMenu?.id)
-    );
+    return this.currentDashboardId$.pipe(distinctUntilChanged());
   }
 
   private _findByIdFromApi(id: string) {

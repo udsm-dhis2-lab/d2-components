@@ -1,6 +1,6 @@
 @if ({
-  currentDashboard: currentDashboard$ | async,
-  globalSelection: globalSelection$ | async
+  currentDashboard: currentDashboard(),
+  globalSelection: globalSelection()
   }; as params) {
   <div
     class="d2-dashboard__current-dashboard-container"
@@ -40,7 +40,7 @@
         ></d2-dashboard-items>
       </ng-container>
     }
-    @if (error) {
+    @if (error()) {
       Dashboard Error
     }
   </div>
