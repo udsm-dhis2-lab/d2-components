@@ -7,7 +7,10 @@ import {
   ViewChild,
   WritableSignal,
   signal,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
+  OnChanges,
+  SimpleChanges,
+  inject,
 } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { MatDialog } from '@angular/material/dialog';
@@ -42,7 +45,6 @@ import { DashboardSelectionFilterService } from './services/dashboard-selection-
 @Component({
   imports: [
     CommonModule,
-    AdditionalFilterDialogComponent,
     OrganisationUnitSelectorModule,
     PeriodSelectorModule,
     ReactWrapperModule,
@@ -50,11 +52,11 @@ import { DashboardSelectionFilterService } from './services/dashboard-selection-
   providers: [DashboardSelectionFilterService],
   selector: 'd2-dashboard-selection-filters',
   templateUrl: './dashboard-selection-filters.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./dashboard-selection-filters.component.scss'],
 })
-export class DashboardSelectionFiltersComponent {
-  @Input() dataSelections!: VisualizationDataSelection[];
+export class DashboardSelectionFiltersComponent implements OnChanges {
+  @Input() dataSelections: VisualizationDataSelection[] = [];
   @Input() additionalFilters?: DashboardAdditionalFilter[];
   @Input() selectionConfig?: DashboardSelectionConfig;
 
@@ -158,7 +160,20 @@ export class DashboardSelectionFiltersComponent {
     );
   };
 
-  constructor(private dialog: MatDialog) {}
+  private dialog = inject(MatDialog);
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!changes['dataSelections']) {
+      return;
+    }
+
+    this.selectionEntities = Object.fromEntries(
+      this.dataSelections.map((selection) => [
+        selection.dimension,
+        [...selection.items],
+      ])
+    );
+  }
 
   onCancelPeriod() {
     this.showPeriodSelector.set(false);

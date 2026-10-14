@@ -1,7 +1,7 @@
 <div class="d2-dashboard__container">
   @if(dashboardMenuFacade.loading()) {
   <!-- Loading dashboard menu -->
-  Loading... } @else {
+  <div role="status" aria-live="polite">Loading dashboard menu…</div> } @else {
   <!-- Dashboard menus -->
   @if(dashboardMenuFacade.dashboardMenus(); as dashboardMenuList) {
   <d2-dashboard-menu
@@ -13,7 +13,7 @@
   ></d2-dashboard-menu>
   } @else if (dashboardMenuFacade.loadingError()) {
   <!-- Dashboard menu error-->
-  {{ dashboardMenuFacade.loadingError().message }}
+  <div role="alert">{{ dashboardMenuFacade.loadingError().message }}</div>
   }}
   <div class="d2-dashboard__content">
     <router-outlet></router-outlet>

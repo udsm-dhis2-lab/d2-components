@@ -8,7 +8,7 @@ export class SummarizeSelectionPipe implements PipeTransform {
   transform(
     selectionList: any[],
     dimension: string,
-    maxToShow: number = 2
+    maxToShow = 2
   ): any {
     switch (dimension) {
       case 'ou': {
@@ -56,7 +56,7 @@ export class SummarizeSelectionPipe implements PipeTransform {
 
   private _updateWithMaxToShow(
     selectionNames: string[],
-    maxToShow: number = -1
+    maxToShow = -1
   ) {
     if (maxToShow === -1 || selectionNames.length <= maxToShow) {
       return selectionNames.join(', ');

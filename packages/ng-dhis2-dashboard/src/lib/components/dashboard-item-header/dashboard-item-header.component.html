@@ -12,42 +12,6 @@
     </div>
   </div>
 
-  @if (showVisualizationTypes) {
-    <div
-      class="d2-dashboard__visualization-types-container"
-      >
-      <div class="d2-dashboard__visualization-types">
-        <button
-          class="d2-dashboard__visualization-type-close-btn"
-          [matTooltip]="'Close'"
-          (click)="onToggleVisualizationType($event)"
-          >
-          <mat-icon inline>close</mat-icon>
-        </button>
-        @for (visualizationTypeObject of visualizationTypes; track visualizationTypeObject) {
-          <div
-            [matTooltip]="visualizationTypeObject.description"
-          class="d2-dashboard__visualization-type-icon {{
-            visualizationTypeObject.type === visualizationType?.type
-              ? 'd2-dashboard__visualization-type-icon-selected'
-              : ''
-          }}"
-            >
-            <img [src]="visualizationTypeObject.icon" alt="" />
-            <div class="d2-dashboard__visualization-type-details">
-              <div class="d2-dashboard__visualization-type-label">
-                {{ visualizationTypeObject.label }}
-              </div>
-              <div class="d2-dashboard__visualization-type-description">
-                {{ visualizationTypeObject.description }}
-              </div>
-            </div>
-          </div>
-        }
-      </div>
-    </div>
-  }
-
   <div class="d2-dashboard__visualization-actions">
     <!-- Download section -->
     <div class="d2-dashboard__visualization-download-block">
@@ -65,21 +29,4 @@
       [component]="FullScreenButton"
     ></ng-dhis2-ui-wrapper>
   </div>
-
-  <!-- <ng-container *ngIf="!hideChartTypes">
-  <ul class="chart-type-list animated fadeInRight">
-    <li *ngFor="let chartType of chartTypes">
-      <button
-        (click)="updateChartType(chartType.type, $event)"
-        title="{{ chartType.description }}"
-          [ngClass]="
-            currentChartType === chartType.type ? 'active-chart-type' : ''
-          "
-        [disabled]="currentChartType === chartType.type"
-        >
-        <img [src]="chartType.icon" class="chart-option-icon" alt="" />
-      </button>
-    </li>
-  </ul>
-</ng-container> -->
 </div>

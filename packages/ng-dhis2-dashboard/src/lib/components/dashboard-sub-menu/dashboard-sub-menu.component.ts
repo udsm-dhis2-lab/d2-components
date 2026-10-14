@@ -1,7 +1,4 @@
-/* eslint-disable @angular-eslint/component-selector */
-/* eslint-disable @typescript-eslint/no-empty-function */
-/* eslint-disable @angular-eslint/no-empty-lifecycle-method */
-import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 import { DashboardMenuObject } from '../../models';
 
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -10,19 +7,15 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   imports: [MatTooltipModule],
   selector: 'd2-dashboard-sub-menu',
   templateUrl: './dashboard-sub-menu.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./dashboard-sub-menu.component.scss'],
 })
-export class DashboardSubMenuComponent implements OnInit {
+export class DashboardSubMenuComponent {
   @Input() dashboardSubMenus!: DashboardMenuObject[];
   @Input() curentDashboardSubMenu?: DashboardMenuObject;
 
   @Output() setCurrentDashboardSubMenu: EventEmitter<DashboardMenuObject> =
     new EventEmitter();
-  constructor() {}
-
-  ngOnInit() {}
-
   onSetCurrentDashboardSubMenu(
     event: MouseEvent,
     dashboardSubMenu: DashboardMenuObject
@@ -31,5 +24,5 @@ export class DashboardSubMenuComponent implements OnInit {
     this.setCurrentDashboardSubMenu.emit(dashboardSubMenu);
   }
 
-  trackById = (_: number, item: any) => item?.id;
+  trackById = (_: number, item: DashboardMenuObject) => item.id;
 }

@@ -1,7 +1,7 @@
 import { computed, inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { CurrentUser, D2Window } from '@iapps/d2-web-sdk';
-import { from, map, Observable, of, switchMap, tap, zip } from 'rxjs';
+import { from, map, Observable, of, switchMap, zip } from 'rxjs';
 import { DashboardConfig, DashboardMenu, DashboardMenuObject } from '../models';
 import { userAuthorizedDashboards } from '../utilities/access-control.util';
 import { DashboardConfigService } from './dashboard-config.service';
@@ -10,10 +10,8 @@ import { DashboardStateFacade } from '../state';
 @Injectable()
 export class DashboardMenuService {
   #router = inject(Router);
-  constructor(
-    private dashboardConfigService: DashboardConfigService,
-    private dashboardState: DashboardStateFacade
-  ) {}
+  private dashboardConfigService = inject(DashboardConfigService);
+  private dashboardState = inject(DashboardStateFacade);
 
   loading = computed(() => this.dashboardState.loading().menus);
 
@@ -65,20 +63,7 @@ export class DashboardMenuService {
 
   getMenus(): Observable<DashboardMenuObject[]> {
     const config: DashboardConfig = this.dashboardConfigService.getConfig();
-    // this._detachOverlay();
-    // this._attachOverlay();
-    return this.findMenuList(config as DashboardConfig).pipe(
-      tap((dashboardMenuItems: DashboardMenuObject[]) => {
-        // this._detachOverlay();
-        // const splitedUrl = (window.location.href || '').split('/');
-        // const currentDashboard =
-        //   find(dashboardMenuItems, [
-        //     'id',
-        //     splitedUrl[splitedUrl.indexOf('dashboard') + 1],
-        //   ]) || dashboardMenuItems[0];
-        // this.setCurrentDashboard(currentDashboard);
-      })
-    );
+    return this.findMenuList(config);
   }
 
   findMenuList(config: DashboardConfig): Observable<DashboardMenuObject[]> {
@@ -126,7 +111,11 @@ export class DashboardMenuService {
     } else {
       this.dashboardState.activateDashboard(selectedDashboardSubMenu.id);
     }
-    this.#router.navigate([config.rootUrl, selectedDashboardSubMenu.id]);
+    this.#router.navigate([
+      config.rootUrl,
+      'ng-dashboard-view',
+      selectedDashboardSubMenu.id,
+    ]);
   }
 
   #findAllFromApi(): Observable<any> {

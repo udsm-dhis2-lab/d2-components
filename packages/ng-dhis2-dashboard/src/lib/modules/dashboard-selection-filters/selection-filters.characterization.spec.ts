@@ -1,6 +1,7 @@
 import { MatDialog } from '@angular/material/dialog';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MatSelectionList } from '@angular/material/list';
+import { SimpleChange } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { orgUnitSelection, periodSelection } from '../../../testing/dashboard.fixtures';
@@ -12,16 +13,29 @@ const event = { stopPropagation: jest.fn() } as unknown as MouseEvent;
 
 describe('dashboard selection filters', () => {
   const createComponent = (dialog: MatDialog) => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [{ provide: MatDialog, useValue: dialog }],
+    });
     return TestBed.runInInjectionContext(
-      () => new DashboardSelectionFiltersComponent(dialog)
+      () => new DashboardSelectionFiltersComponent()
     );
+  };
+
+  const setSelections = (
+    component: DashboardSelectionFiltersComponent,
+    selections: ReturnType<typeof periodSelection>[]
+  ) => {
+    const previous = component.dataSelections;
+    component.dataSelections = selections;
+    component.ngOnChanges({
+      dataSelections: new SimpleChange(previous, selections, false),
+    });
   };
 
   it('emits the dimensions selected during the current component lifetime', () => {
     const dialog = { open: jest.fn() } as unknown as MatDialog;
     const component = createComponent(dialog);
-    component.dataSelections = [periodSelection()];
+    setSelections(component, [periodSelection()]);
     const emitted = jest.fn();
     component.setFilterSelection.subscribe(emitted);
 
@@ -35,15 +49,32 @@ describe('dashboard selection filters', () => {
     expect(component.showOrgUnitSelector()).toBe(false);
   });
 
-  it('characterizes the known omission of untouched input dimensions', () => {
+  it('preserves untouched input dimensions when another filter changes', () => {
     const component = createComponent({} as MatDialog);
-    component.dataSelections = [periodSelection()];
+    setSelections(component, [periodSelection()]);
     const emitted = jest.fn();
     component.setFilterSelection.subscribe(emitted);
 
     component.onSelectOrgUnit(orgUnitSelection().items);
 
-    expect(emitted).toHaveBeenCalledWith([orgUnitSelection()]);
+    expect(emitted).toHaveBeenCalledWith([
+      periodSelection(),
+      orgUnitSelection(),
+    ]);
+  });
+
+  it('re-seeds filter state when the input selection is replaced', () => {
+    const component = createComponent({} as MatDialog);
+    setSelections(component, [periodSelection()]);
+    setSelections(component, [orgUnitSelection()]);
+    const emitted = jest.fn();
+    component.setFilterSelection.subscribe(emitted);
+
+    component.onSelectOrgUnit(orgUnitSelection('ou-b', 'Facility B').items);
+
+    expect(emitted).toHaveBeenCalledWith([
+      orgUnitSelection('ou-b', 'Facility B'),
+    ]);
   });
 
   it('merges a confirmed additional-filter selection', () => {
@@ -52,7 +83,7 @@ describe('dashboard selection filters', () => {
       open: jest.fn(() => ({ afterClosed: () => result })),
     } as unknown as MatDialog;
     const component = createComponent(dialog);
-    component.dataSelections = [];
+    setSelections(component, []);
     component.menu = { closeMenu: jest.fn() } as never;
     const emitted = jest.fn();
     component.setFilterSelection.subscribe(emitted);

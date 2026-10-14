@@ -2,15 +2,21 @@
   "name": "@iapps/d2-dashboard",
   "version": "1.0.28",
   "peerDependencies": {
-    "@angular/common": "^20.0.0",
-    "@angular/core": "^20.0.0",
+    "@angular/common": ">=20.0.0 <23.0.0",
+    "@angular/core": ">=20.0.0 <23.0.0",
+    "@angular/cdk": ">=20.0.0 <23.0.0",
+    "@angular/material": ">=20.0.0 <23.0.0",
+    "@angular/router": ">=20.0.0 <23.0.0",
     "@iapps/d2-visualizer": "^1.1.25",
-    "@dhis2/ui": "~8.14.9",
+    "@iapps/d2-web-sdk": "^1.2.4",
+    "@iapps/ng-dhis2-ui": "^1.3.7",
+    "@iapps/period-utilities": "^1.0.4",
+    "@dhis2/ui": ">=8.14.9 <11.0.0",
+    "@katoid/angular-grid-layout": "^2.2.0",
+    "lodash": "^4.17.21",
+    "ngx-print": "^1.5.1",
     "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "styled-jsx": "^5.1.2",
-    "html-react-parser": "^5.2.2",
-    "prop-types": "^15.8.1"
+    "rxjs": "^7.8.0"
   },
   "dependencies": {
     "tslib": "^2.3.0"

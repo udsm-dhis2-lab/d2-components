@@ -17,16 +17,14 @@ Coverage is enforced in `jest.config.ts`. The initial measured baseline is
 the selected domain, service, utility, and state files. The enforced regression
 floor is 85% statements, 60% branches, 85% functions, and 85% lines.
 
-## Known behavior and defects
+## Closed defects and retained constraints
 
-- The additional-filter component keeps a local selection map that is not seeded
-  from its `dataSelections` input. A later selection can therefore omit an
-  existing startup dimension. This is scheduled for Sprint 02.
-- Submenu navigation currently uses a different URL shape from parent-dashboard
-  navigation. Tests characterize the current route call; Sprint 02 will make the
-  route canonical and update the expectation deliberately.
-- Visualization redraws are not cancellable and the visualizer has no component
-  teardown path. Sprint 03 owns those changes.
+- Filter state is seeded and re-seeded from `dataSelections`, so changing one
+  filter preserves untouched startup and dashboard dimensions.
+- Parent and submenu navigation both use
+  `<rootUrl>/ng-dashboard-view/<dashboardId>`.
+- Visualization renderers and observers are deterministically cleaned up.
+  In-flight work inside external `D2Visualizer.draw()` is still not cancellable.
 - The tracker request intentionally contains `skipPaging=true`; paging and query
   volume are excluded from this remediation plan.
 

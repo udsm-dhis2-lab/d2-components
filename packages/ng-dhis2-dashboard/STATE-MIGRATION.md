@@ -64,6 +64,14 @@ Source and built-output searches contain no `@ngrx`, `StoreModule`,
 `EffectsModule`, NgRx action, selector, reducer or feature references. The
 published package manifest has no NgRx dependency.
 
+## Migration and compatibility
+
+Applications importing the library do not register an NgRx feature store. The
+existing module, routes, component outputs and service accessors remain
+available; signal state is additive. No consumer-side migration is required
+unless an application imported private NgRx implementation files, which were
+never part of the supported entry point.
+
 ## Sprint 03 validation baseline
 
 Coverage is 90.57% statements, 68.04% branches, 91.79% functions and 90.09%

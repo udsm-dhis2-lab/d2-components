@@ -55,7 +55,7 @@ describe('DashboardMenuService', () => {
     ]);
   });
 
-  it('uses the established parent and submenu navigation shapes', () => {
+  it('uses the canonical dashboard-view route for parent and submenu navigation', () => {
     const service = configure({ rootUrl: 'dashboard', useDataStore: false });
     const child = { id: 'child-a', name: 'Child' };
 
@@ -65,6 +65,8 @@ describe('DashboardMenuService', () => {
     ]);
 
     service.setCurrentSubDashboard(child);
-    expect(router.navigate).toHaveBeenLastCalledWith(['dashboard', 'child-a']);
+    expect(router.navigate).toHaveBeenLastCalledWith([
+      'dashboard', 'ng-dashboard-view', 'child-a',
+    ]);
   });
 });

@@ -22,6 +22,14 @@
   margin-left: 16px;
   cursor: pointer;
   color: #ffffff;
+  border: 0;
+  background: transparent;
+  font: inherit;
+
+  &:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+  }
 }
 
 .dimension-label {

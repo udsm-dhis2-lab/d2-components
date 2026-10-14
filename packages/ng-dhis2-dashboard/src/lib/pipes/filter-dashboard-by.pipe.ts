@@ -14,7 +14,7 @@ export class FilterDashboardByPipe implements PipeTransform {
     if (!dataList) {
       return dataList;
     }
-    const splittedValue = value?.split(/[\.\-_,; ]/) || [];
+    const splittedValue = value?.split(/[.\-_,; ]/) || [];
     return splittedValue.length > 0
       ? dataList.filter(
           (item: any) =>

@@ -1,7 +1,5 @@
 
 import { Component, EventEmitter, Input, NgZone, Output, ChangeDetectionStrategy } from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   Button,
   IconDownload16,
@@ -21,10 +19,10 @@ import { ReactWrapperModule } from '@iapps/ng-dhis2-ui';
 import React, { useState } from 'react';
 
 @Component({
-    imports: [ReactWrapperModule, MatTooltipModule, MatIconModule],
+    imports: [ReactWrapperModule],
     selector: 'd2-dashboard-item-header',
     templateUrl: './dashboard-item-header.component.html',
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrls: ['./dashboard-item-header.component.scss']
 })
 export class DashboardItemHeaderComponent {
@@ -36,7 +34,6 @@ export class DashboardItemHeaderComponent {
   @Input() disableVisualizationChange!: boolean;
   visualizationTypes!: any[];
 
-  showVisualizationTypes!: boolean;
   downloadOptions: VisualizationDownloadOption[] = [];
   @Output()
   download: EventEmitter<DownloadFormat> = new EventEmitter<DownloadFormat>();
@@ -114,7 +111,6 @@ export class DashboardItemHeaderComponent {
                     setActiveVisualizationType(visualizationType);
                     setShowVisualizationTypes(false);
                     this.ngZone.run(() => {
-                      // this.updateChartType(visualizationType.type);
                       this.onVisualizationTypeChange(visualizationType.type);
                     });
                   }}
@@ -184,12 +180,6 @@ export class DashboardItemHeaderComponent {
   }
 
   onVisualizationTypeChange(visualizationType: string) {
-    this.showVisualizationTypes = false;
     this.visualizationTypeChange.emit(visualizationType);
-  }
-
-  onToggleVisualizationType(event: MouseEvent) {
-    event.stopPropagation();
-    this.showVisualizationTypes = !this.showVisualizationTypes;
   }
 }

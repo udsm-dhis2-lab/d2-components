@@ -34,7 +34,7 @@ import { DashboardStateFacade } from '../../state';
     ],
     selector: 'd2-current-dashboard',
     templateUrl: './current-dashboard.component.html',
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrls: ['./current-dashboard.component.scss']
 })
 export class CurrentDashboardComponent implements OnInit {

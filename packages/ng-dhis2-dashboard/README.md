@@ -1,7 +1,9 @@
 # DHIS2 Dashboard library
 
-This library was generated with [Nx](https://nx.dev).
-DHIS2 Dashboard is angular library that support dashboard visualization both using default dashboard APIs or custom dashboard managed from datastore. It is intended to get incorporated in any DHIS2 angular application where dashboard is to be one of application page
+DHIS2 Dashboard is an Angular library for rendering dashboards from either the
+standard DHIS2 dashboard API or a configured data-store namespace. Library
+state is owned by an injectable signal facade; consuming applications do not
+need NgRx.
 
 ## Installation
 
@@ -9,7 +11,7 @@ DHIS2 Dashboard is angular library that support dashboard visualization both usi
 
 ## Usage
 
-Import dashboard module in the root module of your application
+Import the dashboard module in the root module of your application:
 
 ```ts
 import { D2DashboardModule } from '@iapps/d2-dashboard';
@@ -41,7 +43,7 @@ import { D2DashboardModule } from '@iapps/d2-dashboard';
 export class AppModule {}
 ```
 
-Then, you can use dashboard module as a lazy loaded route
+Expose the dashboard as a lazy-loaded route:
 
 ```ts
  {
@@ -50,3 +52,24 @@ Then, you can use dashboard module as a lazy loaded route
       import('@iapps/d2-dashboard').then((m) => m.D2DashboardModule),
   }
 ```
+
+Dashboard and submenu navigation use the canonical URL shape
+`<rootUrl>/ng-dashboard-view/<dashboardId>`. Existing public components,
+outputs and service APIs remain compatible.
+
+## Required peers
+
+Consumers must provide supported Angular packages, RxJS, React 18, DHIS2 UI,
+the iapps visualizer/UI/web-sdk/period packages, Angular Grid Layout, lodash and
+ngx-print. See `package.json` for supported version ranges.
+
+## Release validation
+
+```bash
+npx nx test ng-dhis2-dashboard --coverage
+npx nx build ng-dhis2-dashboard
+npx nx lint ng-dhis2-dashboard
+```
+
+The manual release checklist and profiling procedure are maintained in
+`TESTING.md`.

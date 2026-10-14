@@ -24,7 +24,7 @@ import { MatDividerModule } from '@angular/material/divider';
 ],
   selector: 'd2-dashboard-menu',
   templateUrl: './dashboard-menu.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./dashboard-menu.component.scss'],
 })
 export class DashboardMenuComponent implements AfterViewInit {

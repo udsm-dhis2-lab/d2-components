@@ -10,10 +10,12 @@
         <div>
           {{ dataSelection.items | summarizeSelection: dataSelection.dimension }}
         </div>
-        <a
+        <button
+          type="button"
           (click)="onRemoveSelection($event, dataSelection.dimension)"
           class="remove-selection-button"
-          >Remove</a
+          [attr.aria-label]="'Remove ' + (dimensionLabels[dataSelection.dimension] || 'dimension') + ' filter'"
+          >Remove</button
           >
         </div>
       }

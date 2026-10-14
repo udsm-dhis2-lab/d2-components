@@ -1,12 +1,14 @@
 @if (dashboardMenuItem) {
-  <div
+  <button
+    type="button"
     [id]="dashboardMenuItem.id"
   [ngClass]="{
     'd2-dashboard__menu-item': true,
     'd2-dashboard__menu-item-active': isCurrentDashboard
   }"
     (click)="onSetDashboard($event)"
+    [attr.aria-current]="isCurrentDashboard ? 'page' : null"
     >
     {{ dashboardMenuItem.name }}
-  </div>
+  </button>
 }
