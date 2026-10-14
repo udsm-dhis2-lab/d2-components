@@ -6,6 +6,8 @@ setupZoneTestEnv({
 });
 
 class ResizeObserverMock implements ResizeObserver {
+  constructor(public callback: ResizeObserverCallback) {}
+
   observe = jest.fn();
   unobserve = jest.fn();
   disconnect = jest.fn();

@@ -34,8 +34,10 @@ export class D2Visualizer {
   config: Record<string, unknown> = {};
   visualizationType = 'COLUMN';
   plotOptions = new VisualizerPlotOptions();
+  visualizer = { dispose: jest.fn() };
   download = jest.fn();
   draw = jest.fn(async () => this);
+  setSelections = jest.fn(() => this);
 
   constructor() {
     D2Visualizer.instances.push(this);
@@ -43,7 +45,6 @@ export class D2Visualizer {
 
   setId() { return this; }
   setConfig(config: Record<string, unknown>) { this.config = config; return this; }
-  setSelections() { return this; }
   setType(type: string) { this.visualizationType = type; return this; }
   setChartType() { return this; }
   setPlotOptions(options: VisualizerPlotOptions) { this.plotOptions = options; return this; }

@@ -1,11 +1,14 @@
 /* eslint-disable @angular-eslint/component-selector */
 import {
   ChangeDetectionStrategy,
+  AfterViewInit,
   Component,
+  ElementRef,
   HostListener,
   inject,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
   SimpleChanges,
 } from '@angular/core';
@@ -22,6 +25,16 @@ import { CommonModule } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DashboardItemHeaderComponent } from '../dashboard-item-header/dashboard-item-header.component';
 
+interface VisualizationRenderRequest {
+  key: string;
+  visualizationId: string;
+  selections: VisualizationDataSelection[];
+}
+
+interface DisposableVisualizer {
+  dispose?: () => void;
+}
+
 @Component({
   imports: [
     CommonModule,
@@ -33,7 +46,9 @@ import { DashboardItemHeaderComponent } from '../dashboard-item-header/dashboard
   styleUrls: ['./dashboard-item.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DashboardItemComponent implements OnInit, OnChanges {
+export class DashboardItemComponent
+  implements OnInit, OnChanges, AfterViewInit, OnDestroy
+{
   @Input() trackedEntityInstances?: any[];
   @Input() isTrackerDashboard?: boolean;
   @Input() dashboardItem!: DashboardItemObject;
@@ -49,6 +64,15 @@ export class DashboardItemComponent implements OnInit, OnChanges {
   visualizationElement: any;
   hideVisualization?: boolean;
   visualizer!: D2Visualizer;
+
+  private completedRenderKey?: string;
+  private configuredVisualizationId?: string;
+  private destroyed = false;
+  private activeRenderKey?: string;
+  private pendingRender?: VisualizationRenderRequest;
+  private renderLoop?: Promise<void>;
+  private resizeObserver?: ResizeObserver;
+  private selectedVisualizationType?: string;
 
   @HostListener('document:fullscreenchange', ['$event'])
   @HostListener('document:webkitfullscreenchange', ['$event'])
@@ -79,11 +103,7 @@ export class DashboardItemComponent implements OnInit, OnChanges {
   }
 
   get visualizationHeight(): string {
-    return this.fullScreen
-      ? '100vh'
-      : (document.getElementsByClassName(
-          'dashboard-item-' + this.dashboardItem.id
-        )[0]?.clientHeight || 400) + 'px';
+    return this.fullScreen ? '100vh' : this.dashboardItemHeight || '400px';
   }
 
   get currrentVisualizationType() {
@@ -121,6 +141,9 @@ export class DashboardItemComponent implements OnInit, OnChanges {
 
   private dashboardItemService = inject(DashboardItemService);
   private trackerDashboardService = inject(TrackerDashboardService);
+  private elementRef = inject<ElementRef<HTMLElement>>(ElementRef, {
+    optional: true,
+  });
 
   constructor() {
     this._loading$ = new BehaviorSubject<boolean>(true);
@@ -128,8 +151,17 @@ export class DashboardItemComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['dataSelections'] && !changes['dataSelections'].firstChange) {
-      this.setVisualization();
+    const dashboardItemChanged =
+      changes['dashboardItem'] && !changes['dashboardItem'].firstChange;
+    const selectionsChanged =
+      changes['dataSelections'] && !changes['dataSelections'].firstChange;
+
+    if (dashboardItemChanged) {
+      this.resetVisualization();
+    }
+
+    if (dashboardItemChanged || selectionsChanged) {
+      void this.setVisualization();
     }
   }
 
@@ -138,50 +170,68 @@ export class DashboardItemComponent implements OnInit, OnChanges {
       (document.getElementsByClassName(
         'dashboard-item-' + this.dashboardItem.id
       )[0]?.clientHeight || 400) + 'px';
-    this.setVisualization();
+    void this.setVisualization();
   }
 
-  async setVisualization() {
+  ngAfterViewInit(): void {
+    const observedElement = this.elementRef?.nativeElement.parentElement;
+    if (!observedElement || typeof ResizeObserver === 'undefined') {
+      return;
+    }
+
+    this.resizeObserver = new ResizeObserver((entries) => {
+      const height = Math.round(entries[0]?.contentRect.height || 0);
+      if (height <= 0 || `${height}px` === this.dashboardItemHeight) {
+        return;
+      }
+
+      this.dashboardItemHeight = `${height}px`;
+      if (this.visualizer) {
+        void this.setVisualization();
+      }
+    });
+    this.resizeObserver.observe(observedElement);
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed = true;
+    this.pendingRender = undefined;
+    this.resizeObserver?.disconnect();
+    this.disposeVisualizer();
+    this._loading$.complete();
+  }
+
+  setVisualization(): Promise<void> {
     const visualizationId = this.dashboardItem?.visualization?.id;
+    if (!visualizationId || this.destroyed) {
+      this._loading$.next(false);
+      return Promise.resolve();
+    }
+
+    const selections = [...(this.dataSelections || [])];
+    const key = this.getRenderKey(visualizationId, selections);
+    if (
+      key === this.completedRenderKey ||
+      key === this.activeRenderKey ||
+      key === this.pendingRender?.key
+    ) {
+      return this.renderLoop || Promise.resolve();
+    }
+
+    this.pendingRender = { key, visualizationId, selections };
+    this.error = undefined;
     this._loading$.next(true);
 
-    if (visualizationId) {
-      try {
-        this.visualizationConfig =
-          this.visualizationConfig ||
-          (await firstValueFrom(
-            this.dashboardItemService.getItem(
-              this.dashboardItem.visualization.id as string,
-              this.dashboardItem.type,
-              this.dashboardItem.hasExtension
-            )
-          ));
-
-        const trackedEntityInstanceResponse = this.visualizationConfig
-          .isTrackerVisualization
-          ? await this._getTrackedEntityInstances()
-          : undefined;
-
-        this.visualizer = await new D2Visualizer()
-          .setId(this.visualizationConfig?.id)
-          .setConfig(this.visualizationConfig)
-          .setSelections(this.dataSelections || [])
-          .setType(this.visualizationConfig.type?.toUpperCase())
-          .setChartType(this.visualizationConfig.type)
-          .setPlotOptions(
-            new VisualizerPlotOptions().setHeight(this.visualizationHeight)
-          )
-          .setTrackedEntityInstances(
-            trackedEntityInstanceResponse?.trackedEntityInstances as any[]
-          )
-          .setProgram(trackedEntityInstanceResponse?.program as any)
-          .draw();
-      } catch (error) {
-        this._loading$.next(false);
-        console.log(error);
-      }
+    if (!this.renderLoop) {
+      this.renderLoop = this.processRenderQueue().finally(() => {
+        this.renderLoop = undefined;
+        if (!this.destroyed) {
+          this._loading$.next(false);
+        }
+      });
     }
-    this._loading$.next(false);
+
+    return this.renderLoop;
   }
 
   onDownload(format: DownloadFormat) {
@@ -203,13 +253,13 @@ export class DashboardItemComponent implements OnInit, OnChanges {
 
     this.fullScreen = !this.fullScreen;
     this.hideVisualization = false;
-    this.visualizer.plotOptions.height = this.visualizationHeight;
-
-    await this.visualizer.draw();
+    await this.setVisualization();
   }
 
   async onTypeChange(visualizationType: any) {
+    this.selectedVisualizationType = visualizationType;
     this.visualizer.setChartType(visualizationType).setType(visualizationType);
+    this.disposeRenderer();
     await this.visualizer.draw();
   }
 
@@ -240,5 +290,126 @@ export class DashboardItemComponent implements OnInit, OnChanges {
         this.dataSelections
       )
     );
+  }
+
+  private async processRenderQueue(): Promise<void> {
+    while (this.pendingRender && !this.destroyed) {
+      const request = this.pendingRender;
+      this.pendingRender = undefined;
+      this.activeRenderKey = request.key;
+
+      try {
+        await this.render(request);
+      } catch (error) {
+        this.disposeRenderer();
+        if (!this.pendingRender && !this.destroyed) {
+          this.error = error;
+        }
+      } finally {
+        this.activeRenderKey = undefined;
+      }
+    }
+  }
+
+  private async render(request: VisualizationRenderRequest): Promise<void> {
+    if (this.configuredVisualizationId !== request.visualizationId) {
+      const config = await firstValueFrom(
+        this.dashboardItemService.getItem(
+          request.visualizationId,
+          this.dashboardItem.type,
+          this.dashboardItem.hasExtension
+        )
+      );
+
+      if (this.isSuperseded(request)) {
+        return;
+      }
+
+      this.visualizationConfig = config;
+      this.configuredVisualizationId = request.visualizationId;
+    }
+
+    const trackedEntityInstanceResponse = this.visualizationConfig
+      .isTrackerVisualization
+      ? await this._getTrackedEntityInstances()
+      : undefined;
+
+    if (this.isSuperseded(request)) {
+      return;
+    }
+
+    if (!this.visualizer) {
+      this.visualizer = new D2Visualizer();
+    } else {
+      this.disposeRenderer();
+    }
+
+    const visualizationType =
+      this.selectedVisualizationType || this.visualizationConfig.type;
+
+    this.visualizer
+      .setId(this.visualizationConfig?.id)
+      .setConfig(this.visualizationConfig)
+      .setSelections(request.selections)
+      .setType(visualizationType?.toUpperCase())
+      .setChartType(visualizationType)
+      .setPlotOptions(
+        new VisualizerPlotOptions().setHeight(this.visualizationHeight)
+      )
+      .setTrackedEntityInstances(
+        trackedEntityInstanceResponse?.trackedEntityInstances as any[]
+      )
+      .setProgram(trackedEntityInstanceResponse?.program as any);
+
+    await this.visualizer.draw();
+
+    if (this.isSuperseded(request)) {
+      this.disposeRenderer();
+      return;
+    }
+
+    this.completedRenderKey = request.key;
+  }
+
+  private isSuperseded(request: VisualizationRenderRequest): boolean {
+    return (
+      this.destroyed ||
+      (!!this.pendingRender && this.pendingRender.key !== request.key)
+    );
+  }
+
+  private getRenderKey(
+    visualizationId: string,
+    selections: VisualizationDataSelection[]
+  ): string {
+    return JSON.stringify({
+      visualizationId,
+      type: this.dashboardItem.type,
+      hasExtension: !!this.dashboardItem.hasExtension,
+      height: this.visualizationHeight,
+      selections,
+    });
+  }
+
+  private resetVisualization(): void {
+    this.pendingRender = undefined;
+    this.activeRenderKey = undefined;
+    this.completedRenderKey = undefined;
+    this.configuredVisualizationId = undefined;
+    this.visualizationConfig = undefined;
+    this.selectedVisualizationType = undefined;
+    this.disposeVisualizer();
+  }
+
+  private disposeRenderer(): void {
+    const renderer = this.visualizer?.visualizer as
+      | DisposableVisualizer
+      | undefined;
+    renderer?.dispose?.();
+  }
+
+  private disposeVisualizer(): void {
+    this.disposeRenderer();
+    this.visualizer = undefined as unknown as D2Visualizer;
   }
 }

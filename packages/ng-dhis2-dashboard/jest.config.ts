@@ -4,6 +4,7 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
   coverageDirectory: '../../coverage/packages/ng-dhis2-dashboard',
   collectCoverageFrom: [
+    'src/lib/components/dashboard-item/dashboard-item.component.ts',
     'src/lib/models/{dashboard,dashboard-item,dashboard-menu,global-selection}.model.ts',
     'src/lib/utilities/*.util.ts',
     'src/lib/services/{dashboard,dashboard-config,dashboard-item,dashboard-menu,tracker-dashboard}.service.ts',
