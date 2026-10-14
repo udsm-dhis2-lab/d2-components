@@ -1,28 +1,22 @@
-/* tslint:disable:no-unused-variable */
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
-import { DebugElement } from '@angular/core';
-
+import { dashboardMenu } from '../testing/dashboard.fixtures';
 import { D2DashboardComponent } from './d2-dashboard.component';
+import { DashboardMenuService } from './services';
 
 describe('D2DashboardComponent', () => {
-  let component: D2DashboardComponent;
-  let fixture: ComponentFixture<D2DashboardComponent>;
+  it('loads menus on initialization and forwards menu actions', () => {
+    const facade = {
+      load: jest.fn(), setCurrentDashboardMenu: jest.fn(),
+      setCurrentSubDashboard: jest.fn(),
+    } as unknown as DashboardMenuService;
+    const component = new D2DashboardComponent(facade);
+    const menu = dashboardMenu();
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ D2DashboardComponent ]
-    })
-    .compileComponents();
-  }));
+    component.ngOnInit();
+    component.onSetCurrentDashboard(menu);
+    component.onSetCurrentSubDashboard(menu);
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(D2DashboardComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
+    expect(facade.load).toHaveBeenCalled();
+    expect(facade.setCurrentDashboardMenu).toHaveBeenCalledWith(menu);
+    expect(facade.setCurrentSubDashboard).toHaveBeenCalledWith(menu);
   });
 });
