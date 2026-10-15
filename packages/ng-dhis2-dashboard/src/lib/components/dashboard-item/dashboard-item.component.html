@@ -1,31 +1,26 @@
 @if ({ loading: loading$ | async }; as params) {
+<div class="d2-dashboard__visualization-container" [id]="dashboardContainerId">
+  @if (!params.loading && currrentVisualizationType) {
+  <d2-dashboard-item-header
+    [fullScreen]="fullScreen"
+    [isChart]="isChart"
+    [visualizationType]="currrentVisualizationType"
+    [visualizationTitle]="$safeNavigationMigration(visualizer?.config?.title)"
+    [disableVisualizationChange]="disableVisualizationChange"
+    (download)="onDownload($event)"
+    (fullscreenChange)="onFullScreenAction()"
+    (visualizationTypeChange)="onTypeChange($event)"
+  ></d2-dashboard-item-header>
+  }
   <div
-    class="d2-dashboard__visualization-container"
-    [id]="dashboardContainerId"
-    >
-    @if (!params.loading && currrentVisualizationType) {
-      <d2-dashboard-item-header
-        [fullScreen]="fullScreen"
-        [isChart]="isChart"
-        [visualizationType]="currrentVisualizationType"
-        [visualizationTitle]="$safeNavigationMigration(visualizer?.config?.title)"
-        [disableVisualizationChange]="disableVisualizationChange"
-        (download)="onDownload($event)"
-        (fullscreenChange)="onFullScreenAction()"
-        (visualizationTypeChange)="onTypeChange($event)"
-      ></d2-dashboard-item-header>
-    }
-    <div
-      [id]="dashboardItem?.visualization?.id || 'visualization_id'"
-      [style.height]="visualizationContainerHeight"
-      class="d2-dashboard__visualization-content"
-    ></div>
-    @if (params.loading) {
-      <div
-        class="d2-dashboard__visualization-loading-overlay"
-        >
-        <mat-spinner [strokeWidth]="2" [diameter]="30"></mat-spinner>
-      </div>
-    }
+    [id]="dashboardItem?.visualization?.id || 'visualization_id'"
+    [style.height]="visualizationContainerHeight"
+    class="d2-dashboard__visualization-content"
+  ></div>
+  @if (params.loading) {
+  <div class="d2-dashboard__visualization-loading-overlay">
+    <ng-dhis2-ui-wrapper [component]="Loader" />
   </div>
+  }
+</div>
 }

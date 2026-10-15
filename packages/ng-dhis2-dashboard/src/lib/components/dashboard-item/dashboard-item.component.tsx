@@ -23,6 +23,9 @@ import { DashboardItemService, TrackerDashboardService } from '../../services';
 import { CommonModule } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DashboardItemHeaderComponent } from '../dashboard-item-header/dashboard-item-header.component';
+import { CircularLoader } from '@dhis2/ui';
+import React from 'react';
+import { ReactWrapperModule } from '@iapps/ng-dhis2-ui';
 
 interface VisualizationRenderRequest {
   key: string;
@@ -39,6 +42,7 @@ interface DisposableVisualizer {
     CommonModule,
     MatProgressSpinnerModule,
     DashboardItemHeaderComponent,
+    ReactWrapperModule,
   ],
   selector: 'd2-dashboard-item',
   templateUrl: './dashboard-item.component.html',
@@ -84,6 +88,10 @@ export class DashboardItemComponent
       this.fullScreen = false;
     }
   }
+
+  Loader = () => {
+    return <CircularLoader small />;
+  };
 
   get isChart(): boolean {
     return [
