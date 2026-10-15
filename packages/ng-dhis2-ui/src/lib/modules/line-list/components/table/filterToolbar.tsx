@@ -11,6 +11,7 @@ import {
 } from '@dhis2/ui';
 import React, { useState } from 'react';
 import { parseISO, format, isValid } from 'date-fns';
+import { OrgUnitFormField } from '../org-unit-form-field.component';
 
 export const FilterToolbar = ({
   orgUnit: {
@@ -19,10 +20,8 @@ export const FilterToolbar = ({
     setSelectedOrgUnit,
     setOrgUnitState,
     defaultOrgUnit,
-    setHide,
     setTempOrgUnitState,
     tempOrgUnitState,
-    SetOrgUnitModalVisible,
     handleOrgUnitFilter,
     prevSelectedOrgUnit,
     setPrevSelectedOrgUnit,
@@ -108,17 +107,17 @@ export const FilterToolbar = ({
               <div>
                 <FlyoutMenu>
                   <div style={{ padding: '16px' }}>
-                    <InputField
-                      key="location"
-                      placeholder={
-                        orgUnitLabel ? orgUnitLabel : 'Registering unit'
-                      }
-                      value={selectedOrgUnit}
-                      onFocus={() => {
-                        SetOrgUnitModalVisible(true);
-                        setHide(false);
-                      }}
-                    />
+                    {isOpenOrgUnitDropdown && (
+                      <div style={{ width: '320px', maxWidth: '80vw' }}>
+                        <OrgUnitFormField
+                          key="registering-unit"
+                          onSelectOrgUnit={(unit: any) => {
+                            setSelectedOrgUnit(unit.displayName);
+                            setTempOrgUnitState(unit.id);
+                          }}
+                        />
+                      </div>
+                    )}
                     <div
                       style={{
                         paddingTop: '8px',

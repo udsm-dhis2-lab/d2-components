@@ -26,7 +26,6 @@ import {
 import React, { useEffect, useRef, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { ReactWrapperModule } from '../../react-wrapper/react-wrapper.component';
-import { OrgUnitSelector } from '../components/orgUnitSelector';
 import { FilterToolbar } from '../components/table/filterToolbar';
 import { LineListTable } from '../components/table/lineListTable';
 import { ActionOptionOrientation, LineListActionOption } from '../models';
@@ -215,7 +214,6 @@ export class LineListTableComponent
     const [orgUnitLabel, setOrgUnitLabel] = useState<string>('');
     const [selectedOrgUnit, setSelectedOrgUnit] = useState<string>('');
     const [prevSelectedOrgUnit, setPrevSelectedOrgUnit] = useState<string>('');
-    const [hide, setHide] = useState<boolean>(true);
     const [showAllFilters, setShowAllFilters] = useState(false);
     const visibleFilters = showAllFilters
       ? filteredColumns ?? []
@@ -238,8 +236,6 @@ export class LineListTableComponent
     const [showActionButtons, setShowActionButtons] = useState<boolean>(
       this.showActionButtons
     );
-    const [orgUnitModalVisible, setOrgUnitModalVisible] =
-      useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [prevInputValues, setPrevInputValues] = useState<
       Record<string, string>
@@ -779,16 +775,6 @@ export class LineListTableComponent
                     : 'Download'
                 )
               ),
-            orgUnitModalVisible &&
-              React.createElement(OrgUnitSelector, {
-                hide: hide,
-                setHide: setHide,
-                selectedOrgUnit: selectedOrgUnit,
-                setSelectedOrgUnit: setSelectedOrgUnit,
-                setOrgUnitState: setOrgUnitState,
-                setTempOrgUnitState: setTempOrgUnitState,
-                tempOrgUnitState: tempOrgUnitState,
-              }),
             this.showFilters &&
               React.createElement(FilterToolbar, {
                 orgUnit: {
@@ -797,10 +783,8 @@ export class LineListTableComponent
                   setSelectedOrgUnit,
                   setOrgUnitState,
                   defaultOrgUnit,
-                  setHide,
                   setTempOrgUnitState,
                   tempOrgUnitState,
-                  SetOrgUnitModalVisible: setOrgUnitModalVisible,
                   handleOrgUnitFilter,
                   prevSelectedOrgUnit,
                   setPrevSelectedOrgUnit,
