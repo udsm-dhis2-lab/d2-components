@@ -1,20 +1,35 @@
-.d2-dashboard__current-dashboard-container {
-  padding: 0px 0px 0px 0px;
-  background-color: #F4F6F8 !important;
+:host {
+  box-sizing: border-box;
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
 }
 
-.d2-dashboard__current-dashboard-items {
+.d2-dashboard__current-dashboard-container {
+  background-color: #f3f5f7 !important;
+  box-sizing: border-box;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  padding: 0;
 }
 
 .d2-dashboard__dashboard-selection-summary {
+  box-sizing: border-box;
   display: flex;
   justify-content: center;
+  max-inline-size: 100%;
+  min-inline-size: 0;
   padding-bottom: 4px;
 }
 
 .d2-dashboard__selection-description {
+  box-sizing: border-box;
+  max-inline-size: 100%;
   margin-top: 8px;
   margin-bottom: 8px;
+  overflow-wrap: anywhere;
   font-style: italic;
   color: #777;
 }

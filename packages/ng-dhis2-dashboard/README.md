@@ -59,6 +59,14 @@ item enters the browser viewport or its 200px vertical prefetch margin. Items
 remain active for the displayed dashboard so scrolling back does not refetch.
 Browsers without `IntersectionObserver` retain eager rendering.
 
+Dashboard layout responds to the width of its containing element rather than
+only the browser viewport. Containers at least 960px wide preserve the authored
+60-column DHIS2 layout. Widths from 600px to 959px use a collision-free
+12-column compact layout with a four-column minimum item span. Below 600px,
+items follow their top-to-bottom, left-to-right reading order in one full-width
+column. Responsive layouts are derived from, and never mutate, the canonical
+dashboard coordinates.
+
 Dashboard and submenu navigation use the canonical URL shape
 `<rootUrl>/ng-dashboard-view/<dashboardId>`. Existing public components,
 outputs and service APIs remain compatible.

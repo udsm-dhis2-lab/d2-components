@@ -8,10 +8,11 @@
   <ktd-grid
     [cols]="cols"
     [rowHeight]="rowHeight"
-    [layout]="dashboardItemsLayout"
+    [layout]="renderedLayout"
+    [attr.data-layout-mode]="layoutMode"
     class="d2-dashboard__grid-container"
   >
-    @for (dashboardItem of dashboardItems; track trackById($index,
+    @for (dashboardItem of renderedDashboardItems; track trackById($index,
     dashboardItem)) {
     <ktd-grid-item
       [draggable]="false"
@@ -28,14 +29,7 @@
           [dashboardItem]="dashboardItem"
           [dataSelections]="dataSelections"
         ></d2-dashboard-item>
-        } @else {
-        <div
-          class="d2-dashboard__dashboard-item-placeholder"
-          aria-hidden="true"
-        >
-          Visualization will load when visible
-        </div>
-        }
+        } @else { }
       </div>
     </ktd-grid-item>
     }

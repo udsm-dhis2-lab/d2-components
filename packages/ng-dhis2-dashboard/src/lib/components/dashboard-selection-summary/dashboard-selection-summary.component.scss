@@ -1,10 +1,29 @@
+:host {
+  box-sizing: border-box;
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+}
+
 .selection-summary-container {
   display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-inline-size: 100%;
+  min-inline-size: 0;
 }
 
 .selection-summary-item {
+  box-sizing: border-box;
   display: flex;
-  margin-left: 15px;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-left: 0;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
   justify-content: space-between;
   background-color: #000000;
   color: #ffffff;

@@ -5,6 +5,7 @@ const component = (name: string) => {
 };
 
 export const Button = component('Button');
+export const CircularLoader = component('CircularLoader');
 export const FlyoutMenu = component('FlyoutMenu');
 export const Menu = component('Menu');
 export const MenuItem = component('MenuItem');

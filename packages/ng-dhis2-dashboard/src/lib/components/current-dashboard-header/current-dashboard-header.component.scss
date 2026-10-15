@@ -1,8 +1,21 @@
 @use '../../shared/styles/common';
 
+:host {
+  box-sizing: border-box;
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+}
+
 .d2-dashboard__current-dashboard-header {
+  box-sizing: border-box;
   display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   justify-content: space-between;
+  max-inline-size: 100%;
+  min-inline-size: 0;
   padding-top: 8px;
   padding-bottom: 0px;
   padding-left: 10px;
@@ -11,7 +24,11 @@
 
 .d2-dashboard__current-dashboard-title-container {
   display: flex;
+  flex: 1 1 320px;
+  flex-wrap: wrap;
+  gap: 8px;
   align-items: center;
+  min-inline-size: 0;
 }
 
 .d2-dashboard__current-dashboard-title {
@@ -23,6 +40,8 @@
   font-size: 21px;
   font-weight: 500;
   min-width: 50px;
+  max-inline-size: 100%;
+  overflow-wrap: anywhere;
   top: 7px;
   opacity: 0.9;
   font-weight: bold;

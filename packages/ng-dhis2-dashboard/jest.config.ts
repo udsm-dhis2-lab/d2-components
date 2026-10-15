@@ -2,10 +2,12 @@ module.exports = {
   displayName: 'ng-dhis2-dashboard',
   preset: '../../jest.preset.js',
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'mjs', 'html', 'json'],
   coverageDirectory: '../../coverage/packages/ng-dhis2-dashboard',
   collectCoverageFrom: [
-    'src/lib/components/dashboard-item/dashboard-item.component.ts',
+    'src/lib/components/dashboard-item/dashboard-item.component.tsx',
     'src/lib/components/dashboard-items/dashboard-items.component.ts',
+    'src/lib/components/dashboard-items/dashboard-layout.util.ts',
     'src/lib/components/dashboard-items/viewport-activation.directive.ts',
     'src/lib/models/{dashboard,dashboard-item,dashboard-menu,global-selection}.model.ts',
     'src/lib/utilities/*.util.ts',

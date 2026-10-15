@@ -1,11 +1,13 @@
 import {
   ChangeDetectorRef,
   Component,
+  ElementRef,
   Input,
   OnInit,
   SimpleChange,
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { DashboardItemObject } from '../../models';
 import { DashboardItemsComponent } from './dashboard-items.component';
 import {
   DASHBOARD_ITEM_PREFETCH_MARGIN,
@@ -242,5 +244,240 @@ describe('DashboardItemsComponent activation registry', () => {
 
     expect(component.isItemActivated('item-a')).toBe(false);
     expect(component.activationKey('item-a')).toBe('dashboard-b:item-a');
+  });
+});
+
+class ControlledResizeObserver implements ResizeObserver {
+  static instances: ControlledResizeObserver[] = [];
+
+  readonly observe = jest.fn();
+  readonly unobserve = jest.fn();
+  readonly disconnect = jest.fn();
+
+  constructor(private readonly callback: ResizeObserverCallback) {
+    ControlledResizeObserver.instances.push(this);
+  }
+
+  emit(width: number): void {
+    this.callback(
+      [{ contentRect: { width } } as unknown as ResizeObserverEntry],
+      this
+    );
+  }
+}
+
+describe('DashboardItemsComponent responsive container layout', () => {
+  let resizeObserverDescriptor: PropertyDescriptor | undefined;
+  let requestAnimationFrameDescriptor: PropertyDescriptor | undefined;
+  let cancelAnimationFrameDescriptor: PropertyDescriptor | undefined;
+  let frameCallbacks: Map<number, FrameRequestCallback>;
+  let nextFrameId: number;
+
+  const layout = () => [
+    { id: 'item-c', x: 0, y: 12, w: 35, h: 18 },
+    { id: 'item-b', x: 35, y: 0, w: 25, h: 10 },
+    { id: 'item-a', x: 0, y: 0, w: 7, h: 8 },
+  ];
+
+  const dashboardItem = (id: string): DashboardItemObject => ({
+    id,
+    type: 'VISUALIZATION',
+    x: 0,
+    y: 0,
+    h: 8,
+    w: 8,
+    visualization: {
+      id: `visualization-${id}`,
+      name: id,
+      type: 'COLUMN',
+      regressionType: 'NONE',
+      dimensions: [],
+    },
+  });
+
+  const flushAnimationFrame = () => {
+    const callbacks = [...frameCallbacks.values()];
+    frameCallbacks.clear();
+    callbacks.forEach((callback) => callback(0));
+  };
+
+  const restoreProperty = (
+    property: 'ResizeObserver' | 'requestAnimationFrame' | 'cancelAnimationFrame',
+    descriptor: PropertyDescriptor | undefined
+  ) => {
+    if (descriptor) {
+      Object.defineProperty(globalThis, property, descriptor);
+    } else {
+      Reflect.deleteProperty(globalThis, property);
+    }
+  };
+
+  beforeEach(() => {
+    ControlledResizeObserver.instances = [];
+    frameCallbacks = new Map();
+    nextFrameId = 1;
+    resizeObserverDescriptor = Object.getOwnPropertyDescriptor(
+      globalThis,
+      'ResizeObserver'
+    );
+    requestAnimationFrameDescriptor = Object.getOwnPropertyDescriptor(
+      globalThis,
+      'requestAnimationFrame'
+    );
+    cancelAnimationFrameDescriptor = Object.getOwnPropertyDescriptor(
+      globalThis,
+      'cancelAnimationFrame'
+    );
+    Object.defineProperty(globalThis, 'ResizeObserver', {
+      configurable: true,
+      value: ControlledResizeObserver,
+    });
+    Object.defineProperty(globalThis, 'requestAnimationFrame', {
+      configurable: true,
+      value: jest.fn((callback: FrameRequestCallback) => {
+        const id = nextFrameId++;
+        frameCallbacks.set(id, callback);
+        return id;
+      }),
+    });
+    Object.defineProperty(globalThis, 'cancelAnimationFrame', {
+      configurable: true,
+      value: jest.fn((id: number) => frameCallbacks.delete(id)),
+    });
+  });
+
+  afterEach(() => {
+    restoreProperty('ResizeObserver', resizeObserverDescriptor);
+    restoreProperty('requestAnimationFrame', requestAnimationFrameDescriptor);
+    restoreProperty('cancelAnimationFrame', cancelAnimationFrameDescriptor);
+  });
+
+  const createResponsiveComponent = (initialWidth = 1200) => {
+    const changeDetectorRef = { markForCheck: jest.fn() };
+    const grid = { resize: jest.fn() };
+    const host = document.createElement('d2-dashboard-items');
+    jest.spyOn(host, 'getBoundingClientRect').mockReturnValue({
+      width: initialWidth,
+    } as DOMRect);
+    const component = new DashboardItemsComponent(
+      changeDetectorRef as unknown as ChangeDetectorRef,
+      new ElementRef(host)
+    );
+    (component as unknown as { grid: typeof grid }).grid = grid;
+    component.dashboardId = 'dashboard-a';
+    component.dashboardItems = [
+      dashboardItem('item-c'),
+      dashboardItem('item-b'),
+      dashboardItem('item-a'),
+    ];
+    component.dashboardItemsLayout = layout();
+    component.ngOnChanges({
+      dashboardItems: new SimpleChange(
+        undefined,
+        component.dashboardItems,
+        true
+      ),
+      dashboardItemsLayout: new SimpleChange(
+        undefined,
+        component.dashboardItemsLayout,
+        true
+      ),
+    });
+    component.ngAfterViewInit();
+    changeDetectorRef.markForCheck.mockClear();
+    grid.resize.mockClear();
+    return { component, changeDetectorRef, grid };
+  };
+
+  it('coalesces observations and derives compact layout from the source', () => {
+    const { component, changeDetectorRef } = createResponsiveComponent();
+    const sourceSnapshot = layout();
+    const observer = ControlledResizeObserver.instances[0];
+
+    observer.emit(820);
+    observer.emit(760);
+    expect(component.layoutMode).toBe('wide');
+    flushAnimationFrame();
+
+    expect(component.layoutMode).toBe('compact');
+    expect(component.cols).toBe(12);
+    expect(component.dashboardItemsLayout).toEqual(sourceSnapshot);
+    expect(component.renderedDashboardItems.map(({ id }) => id)).toEqual([
+      'item-a',
+      'item-b',
+      'item-c',
+    ]);
+    expect(changeDetectorRef.markForCheck).toHaveBeenCalledTimes(1);
+  });
+
+  it('resizes KTD once for a same-mode width change without deriving again', () => {
+    const { component, changeDetectorRef, grid } =
+      createResponsiveComponent(800);
+    const compactLayout = component.renderedLayout;
+
+    ControlledResizeObserver.instances[0].emit(740);
+    ControlledResizeObserver.instances[0].emit(720);
+    flushAnimationFrame();
+
+    expect(component.layoutMode).toBe('compact');
+    expect(component.renderedLayout).toBe(compactLayout);
+    expect(grid.resize).toHaveBeenCalledTimes(1);
+    expect(changeDetectorRef.markForCheck).not.toHaveBeenCalled();
+  });
+
+  it('stacks narrowly and restores the exact source layout when wide again', () => {
+    const { component } = createResponsiveComponent();
+    const sourceSnapshot = layout();
+    const observer = ControlledResizeObserver.instances[0];
+
+    observer.emit(480);
+    flushAnimationFrame();
+    expect(component.layoutMode).toBe('narrow');
+    expect(component.renderedLayout.every((item) => item.w === 1)).toBe(true);
+
+    observer.emit(1200);
+    flushAnimationFrame();
+    expect(component.layoutMode).toBe('wide');
+    expect(component.renderedLayout).toEqual(sourceSnapshot);
+  });
+
+  it('preserves activation across resize and rejects stale dashboard work', () => {
+    const { component } = createResponsiveComponent();
+    const observer = ControlledResizeObserver.instances[0];
+    component.activateItem('item-a');
+    observer.emit(480);
+
+    component.dashboardId = 'dashboard-b';
+    component.ngOnChanges({
+      dashboardId: new SimpleChange('dashboard-a', 'dashboard-b', false),
+    });
+    flushAnimationFrame();
+
+    expect(component.layoutMode).toBe('wide');
+    expect(component.isItemActivated('item-a')).toBe(false);
+  });
+
+  it('disconnects observation and cancels scheduled resize on destruction', () => {
+    const { component } = createResponsiveComponent();
+    const observer = ControlledResizeObserver.instances[0];
+    observer.emit(480);
+
+    component.ngOnDestroy();
+    flushAnimationFrame();
+
+    expect(observer.disconnect).toHaveBeenCalledTimes(1);
+    expect(component.layoutMode).toBe('wide');
+  });
+
+  it('keeps a safe wide layout when ResizeObserver is unavailable', () => {
+    Object.defineProperty(globalThis, 'ResizeObserver', {
+      configurable: true,
+      value: undefined,
+    });
+    const { component } = createResponsiveComponent();
+
+    expect(component.layoutMode).toBe('wide');
+    expect(component.cols).toBe(60);
+    expect(component.renderedLayout).toEqual(layout());
   });
 });

@@ -114,3 +114,38 @@ Run this checklist against a non-production DHIS2 instance:
 9. Use Performance and Memory tools to compare scripting time, retained nodes
    and observer count with the pre-Sprint baseline.
 10. With `IntersectionObserver` disabled, confirm all items render eagerly.
+
+## Responsive layout profiling
+
+Sprint 08 makes the dashboard responsive to its own container. The layout modes
+are wide at 960px and above (the canonical 60 columns), compact from 600px to
+959px (12 columns with a minimum four-column item span), and narrow below 600px
+(one full-width item per row). Compact and narrow layouts are always derived
+from the immutable canonical layout, so a wide-narrow-wide cycle cannot
+accumulate coordinate rounding.
+
+The pre-change card used content-box `width: 100%`, 3px horizontal margins and
+1px borders. Its outer width was therefore its grid shell width plus 8px, while
+the 70px minimum could force a 78px outer width in a smaller cell. The corrected
+shell owns 3px internal padding and the card uses border-box sizing, zero margin,
+zero minimum inline size and a 100% maximum inline size.
+
+Run this matrix in both a full-page host and a sidebar or split-view host:
+
+1. Load a small dashboard and `rUvRjwYqqPg` at container widths 1440, 1024,
+   768, 480 and 320px.
+2. Record `clientWidth` and `scrollWidth` for the document, dashboard container,
+   dashboard-items wrapper and KTD grid. Confirm no ordinary card or shell
+   extends past its owner.
+3. Confirm the active layout modes are respectively wide, wide, compact,
+   narrow and narrow.
+4. Resize slowly and rapidly across 960px and 600px. Confirm one final layout
+   transition per animation frame, stable item identity and no overlap.
+5. Resize wide-narrow-wide and compare the final 60-column coordinates with the
+   initial canonical coordinates.
+6. Scroll before and after resizing. Confirm hidden items remain deferred and
+   activated items do not issue additional configuration or analytics requests.
+7. Change filters and exercise visualization controls, downloads, fullscreen,
+   errors and keyboard focus at every mode.
+8. Repeat at 200% browser zoom and confirm titles, filter summaries and focus
+   indicators remain visible without unintended horizontal page scrolling.

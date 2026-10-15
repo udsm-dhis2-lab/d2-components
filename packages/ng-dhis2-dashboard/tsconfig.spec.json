@@ -4,6 +4,9 @@
     "outDir": "../../dist/out-tsc",
     "module": "preserve",
     "target": "es2016",
+    "jsx": "react",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "types": ["jest", "node"],
     "moduleResolution": "bundler",
     "isolatedModules": true,
@@ -14,6 +17,7 @@
     "jest.config.ts",
     "src/**/*.test.ts",
     "src/**/*.spec.ts",
+    "src/**/*.tsx",
     "src/**/*.d.ts"
   ],
   "angularCompilerOptions": {

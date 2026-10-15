@@ -1,10 +1,26 @@
+:host {
+  box-sizing: border-box;
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+}
+
 .d2-dashboard__visualization-container {
+  box-sizing: border-box;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
   position: relative;
   background-color: #fff;
   padding: 2px;
 }
 
 .d2-dashboard__visualization-content {
+  box-sizing: border-box;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
   overflow: hidden;
 }
 
