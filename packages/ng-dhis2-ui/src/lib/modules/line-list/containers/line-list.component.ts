@@ -173,6 +173,9 @@ export class LineListTableComponent
     );
     const [isOptionSetNameVisibleState, setOptionSetNameVisible] =
       useState<boolean>(this.isOptionSetNameVisible);
+    const defaultOrgUnitMode = (this.ouMode) as OuMode;
+    const [orgUnitModeState, setOrgUnitModeState] = useState<OuMode>(defaultOrgUnitMode);
+    const [tempOrgUnitModeState, setTempOrgUnitModeState] = useState<OuMode>(defaultOrgUnitMode);
     const [orgUnitState, setOrgUnitState] = useState<string>(this.orgUnit);
     const [tempOrgUnitState, setTempOrgUnitState] = useState<string>(
       this.orgUnit
@@ -307,7 +310,7 @@ export class LineListTableComponent
               .setProgram(this.programId)
               .setProgramStage(this.programStageId as string)
               .setOrgUnit(orgUnitState)
-              .setOuMode(this.ouMode as OuMode)
+              .setOuMode(orgUnitModeState)
               .setPagination(
                 new Pager({
                   pageSize: pager.pageSize,
@@ -389,7 +392,7 @@ export class LineListTableComponent
               .setProgram(this.programId)
               .setProgramStage(this.programStageId as string)
               .setOrgUnit(orgUnitState)
-              .setOuMode(this.ouMode as OuMode)
+              .setOuMode(orgUnitModeState)
               .setStatus(this.enrollmentStatus)
               .setEventStatus(
                 this.eventStatus?.status,
@@ -505,6 +508,7 @@ export class LineListTableComponent
       metaData,
       programIdState,
       orgUnitState,
+      orgUnitModeState,
       programStageIdState,
       attributeFiltersState,
       startDateState,
@@ -527,7 +531,7 @@ export class LineListTableComponent
           programId: programIdState,
           programStageId: programStageIdState,
           orgUnit: orgUnitState,
-          ouMode: this.ouMode,
+          ouMode: orgUnitModeState,
           startDate: startDateState,
           endDate: endDateState,
           dataQueryFilters: dataQueryFiltersState,
@@ -697,7 +701,16 @@ export class LineListTableComponent
       setDataQueryFiltersState(tempDataQueryFiltersState);
     const handleStartDateFilter = () => setStartDateState(tempStartDateState);
     const handleEndDateFilter = () => setEndDateState(tempEndDateState);
-    const handleOrgUnitFilter = () => setOrgUnitState(tempOrgUnitState);
+    const handleOrgUnitFilter = () => {
+      setOrgUnitState(tempOrgUnitState);
+      setOrgUnitModeState(tempOrgUnitModeState);
+      setPager((previous) => new Pager({ ...previous, page: 1 }));
+    };
+    const handleOrgUnitModeReset = () => {
+      setOrgUnitModeState(defaultOrgUnitMode);
+      setTempOrgUnitModeState(defaultOrgUnitMode);
+      setPager((previous) => new Pager({ ...previous, page: 1 }));
+    };
 
     function getTextColorFromBackGround(hex: string): string {
       hex = hex.replace('#', '');
@@ -788,6 +801,10 @@ export class LineListTableComponent
                   setTempOrgUnitState,
                   tempOrgUnitState,
                   handleOrgUnitFilter,
+                  tempOrgUnitModeState,
+                  defaultOrgUnitMode,
+                  setTempOrgUnitModeState,
+                  handleOrgUnitModeReset,
                   prevSelectedOrgUnit,
                   setPrevSelectedOrgUnit,
                 },

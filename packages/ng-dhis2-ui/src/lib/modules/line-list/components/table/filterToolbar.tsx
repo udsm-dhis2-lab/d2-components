@@ -24,6 +24,10 @@ export const FilterToolbar = ({
     setTempOrgUnitState,
     tempOrgUnitState,
     handleOrgUnitFilter,
+    tempOrgUnitModeState,
+    defaultOrgUnitMode,
+    setTempOrgUnitModeState,
+    handleOrgUnitModeReset,
     prevSelectedOrgUnit,
     setPrevSelectedOrgUnit,
   },
@@ -106,11 +110,11 @@ export const FilterToolbar = ({
             onClick={() => setIsOpenOrgUnitDropdown(!isOpenOrgUnitDropdown)}
             component={
               <div>
-                <FlyoutMenu>
+                <FlyoutMenu maxWidth="90vw">
                   <div style={{ padding: '16px' }}>
                     {isOpenOrgUnitDropdown && (
-                      <div style={{ width: '320px', maxWidth: '80vw' }}>
-                        <OrgUnitFormField
+                      <div style={{ width: '400px', maxWidth: '80vw' }}>
+                         <OrgUnitFormField
                           key="registering-unit"
                           customOrgUnitRoots={customOrgUnitRoots}
                           onSelectOrgUnit={(unit: any) => {
@@ -118,6 +122,26 @@ export const FilterToolbar = ({
                             setTempOrgUnitState(unit.id);
                           }}
                         />
+                        <div role="group" aria-label="Mode" style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '8px 0 12px' }}>
+                          <span style={{ fontSize: '14px', fontWeight: 400 }}>Mode:</span>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                          <SingleSelectField
+                            selected={tempOrgUnitModeState}
+                            helpText={`If no mode is selected, the default mode will be ${defaultOrgUnitMode}.`}
+                            onChange={({ selected }: { selected: string }) =>
+                              setTempOrgUnitModeState(selected)
+                            }
+                          >
+                            {(['ALL', 'DESCENDANTS', 'SELECTED', 'CHILDREN'] as const).map((mode) => (
+                              <SingleSelectOption
+                                key={mode}
+                                label={mode}
+                                value={mode}
+                              />
+                            ))}
+                          </SingleSelectField>
+                          </div>
+                        </div>
                       </div>
                     )}
                     <div
@@ -145,6 +169,7 @@ export const FilterToolbar = ({
                             setSelectedOrgUnit('');
                             setPrevSelectedOrgUnit('');
                             setOrgUnitState(defaultOrgUnit);
+                            handleOrgUnitModeReset();
                             setTempOrgUnitState(defaultOrgUnit);
                             setIsOpenOrgUnitDropdown(false);
                           }}
@@ -167,6 +192,7 @@ export const FilterToolbar = ({
                   setSelectedOrgUnit('');
                   setPrevSelectedOrgUnit('');
                   setOrgUnitState(defaultOrgUnit);
+                            handleOrgUnitModeReset();
                   setTempOrgUnitState(defaultOrgUnit);
                   setIsOpenOrgUnitDropdown(false);
                 }}
