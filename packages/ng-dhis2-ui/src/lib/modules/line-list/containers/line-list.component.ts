@@ -65,6 +65,7 @@ export class LineListTableComponent
   @Input() triggerToken!: string;
   @Input() programId!: string;
   @Input() orgUnit!: string;
+  @Input() customOrgUnitRoots?: string[];
   @Input() programStageId?: string;
   @Input() actionOptions?: LineListActionOption[];
   @Input() actionOptionOrientation: ActionOptionOrientation = 'DROPDOWN';
@@ -778,6 +779,7 @@ export class LineListTableComponent
             this.showFilters &&
               React.createElement(FilterToolbar, {
                 orgUnit: {
+                  customOrgUnitRoots: this.customOrgUnitRoots,
                   orgUnitLabel,
                   selectedOrgUnit,
                   setSelectedOrgUnit,

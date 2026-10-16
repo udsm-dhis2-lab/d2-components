@@ -15,6 +15,7 @@ import { OrgUnitFormField } from '../org-unit-form-field.component';
 
 export const FilterToolbar = ({
   orgUnit: {
+    customOrgUnitRoots,
     orgUnitLabel,
     selectedOrgUnit,
     setSelectedOrgUnit,
@@ -111,6 +112,7 @@ export const FilterToolbar = ({
                       <div style={{ width: '320px', maxWidth: '80vw' }}>
                         <OrgUnitFormField
                           key="registering-unit"
+                          customOrgUnitRoots={customOrgUnitRoots}
                           onSelectOrgUnit={(unit: any) => {
                             setSelectedOrgUnit(unit.displayName);
                             setTempOrgUnitState(unit.id);

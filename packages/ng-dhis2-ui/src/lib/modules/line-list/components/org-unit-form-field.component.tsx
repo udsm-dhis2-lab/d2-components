@@ -77,10 +77,19 @@ type Props = {
   maxTreeHeight?: number;
   disabled?: boolean;
   previousOrgUnitId?: string;
+  customOrgUnitRoots?: string[];
 };
 
 export const OrgUnitFormField = (props: Props) => {
-  const { onSelectOrgUnit, label, required, selected, disabled, key } = props;
+  const {
+    onSelectOrgUnit,
+    label,
+    required,
+    selected,
+    disabled,
+    key,
+    customOrgUnitRoots,
+  } = props;
   const d2 = (window as unknown as D2Window)?.d2Web;
   const classes = useDynamicStyles(orgUnitFieldStyles);
 
@@ -89,12 +98,16 @@ export const OrgUnitFormField = (props: Props) => {
   }, []);
 
   const rootOrgUnits = useMemo(() => {
-    return d2.currentUser?.organisationUnits || [];
-  }, []);
+    return (
+      customOrgUnitRoots?.map((id) => ({ id : `/${id}`, path: `/${id}` })) ??
+      d2.currentUser?.organisationUnits ??
+      []
+    );
+  }, [customOrgUnitRoots]);
 
   const getExpandedItems = () => {
     if (rootOrgUnits && rootOrgUnits.length === 1) {
-      return [`/${rootOrgUnits[0].id}`];
+      return [`${rootOrgUnits[0].path}`];
     } else if (rootOrgUnits?.length > 1) {
       return rootOrgUnits.map((root) => root.path);
     }
@@ -165,16 +178,10 @@ export const OrgUnitFormField = (props: Props) => {
   };
 
   const handleCollapse = ({ path }: { path: string }) => {
-    const pathIndex = expanded?.indexOf(path);
-
-    if (pathIndex && pathIndex !== -1 && expanded) {
-      const updatedExpanded =
-        pathIndex === 0
-          ? expanded.slice(1)
-          : [...expanded.slice(0, pathIndex), ...expanded.slice(pathIndex + 1)];
-      setExpanded(updatedExpanded);
-    }
-  };
+  setExpanded((previous) =>
+    previous?.filter((item) => item !== path)
+  );
+};
 
   const handleOrgUnitSearch = async (query: string) => {
     setSearchLoading(true);
