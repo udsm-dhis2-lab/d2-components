@@ -13,9 +13,14 @@ import React, { useState } from 'react';
 import { parseISO, format, isValid } from 'date-fns';
 import { OrgUnitFormField } from '../org-unit-form-field.component';
 
+import type { SelectedOrgUnit } from '../../models/selected-org-unit.model';
+
 export const FilterToolbar = ({
   orgUnit: {
     customOrgUnitRoots,
+    allowMultipleOrgUnits,
+    chosenOrgUnits: chosenOrgUnitsProp,
+    setChosenOrgUnits,
     orgUnitLabel,
     selectedOrgUnit,
     setSelectedOrgUnit,
@@ -65,6 +70,19 @@ export const FilterToolbar = ({
     setPrevDateStates,
   },
 }: any) => {
+  const chosenOrgUnits = chosenOrgUnitsProp as SelectedOrgUnit[];
+  const displayedOrgUnitNames = (prevSelectedOrgUnit || '').split(', ');
+  const orgUnitSelectionLabel =
+    displayedOrgUnitNames.length > 2
+      ? `${displayedOrgUnitNames.slice(0, 2).join(', ')} .....`
+      : prevSelectedOrgUnit;
+
+  const updateChosenOrgUnits = (units: typeof chosenOrgUnits) => {
+    setChosenOrgUnits(units);
+    setSelectedOrgUnit(units.map((unit) => unit.displayName).join(', '));
+    setTempOrgUnitState(units.map((unit) => unit.id).join(';'));
+  };
+
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenOrgUnitDropdown, setIsOpenOrgUnitDropdown] = useState(false);
   const [openDropdownKey, setOpenDropdownKey] = useState<string | null>(null);
@@ -114,12 +132,22 @@ export const FilterToolbar = ({
                   <div style={{ padding: '16px' }}>
                     {isOpenOrgUnitDropdown && (
                       <div style={{ width: '400px', maxWidth: '80vw' }}>
-                         <OrgUnitFormField
+                        <OrgUnitFormField
                           key="registering-unit"
                           customOrgUnitRoots={customOrgUnitRoots}
+                          multiple={allowMultipleOrgUnits}
+                          selectedPaths={chosenOrgUnits.map((unit) => unit.path)}
                           onSelectOrgUnit={(unit: any) => {
-                            setSelectedOrgUnit(unit.displayName);
-                            setTempOrgUnitState(unit.id);
+                            if (!allowMultipleOrgUnits) {
+                              updateChosenOrgUnits([unit]);
+                              return;
+                            }
+                            const paths: string[] = unit.selected;
+                            const units = chosenOrgUnits.filter((chosen) => paths.includes(chosen.path));
+                            if (paths.includes(unit.path) && !units.some((chosen) => chosen.id === unit.id)) {
+                              units.push(unit);
+                            }
+                            updateChosenOrgUnits(units);
                           }}
                         />
                         <div role="group" aria-label="Mode" style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '8px 0 12px' }}>
@@ -132,7 +160,7 @@ export const FilterToolbar = ({
                               setTempOrgUnitModeState(selected)
                             }
                           >
-                            {(['ALL', 'DESCENDANTS', 'SELECTED', 'CHILDREN'] as const).map((mode) => (
+                            {(['DESCENDANTS', 'SELECTED', 'CHILDREN'] as const).map((mode) => (
                               <SingleSelectOption
                                 key={mode}
                                 label={mode}
@@ -167,6 +195,7 @@ export const FilterToolbar = ({
                           disabled={!selectedOrgUnit}
                           onClick={() => {
                             setSelectedOrgUnit('');
+                            setChosenOrgUnits([]);
                             setPrevSelectedOrgUnit('');
                             setOrgUnitState(defaultOrgUnit);
                             handleOrgUnitModeReset();
@@ -184,12 +213,17 @@ export const FilterToolbar = ({
             }
           >
             {orgUnitLabel ? orgUnitLabel : 'Registering unit'}{' '}
-            {prevSelectedOrgUnit && ':'} {prevSelectedOrgUnit}
+            {prevSelectedOrgUnit && (
+              <span title={prevSelectedOrgUnit}>
+                : {orgUnitSelectionLabel}
+              </span>
+            )}
             {prevSelectedOrgUnit && (
               <span
                 onClick={(event) => {
                   event.stopPropagation();
                   setSelectedOrgUnit('');
+                            setChosenOrgUnits([]);
                   setPrevSelectedOrgUnit('');
                   setOrgUnitState(defaultOrgUnit);
                             handleOrgUnitModeReset();

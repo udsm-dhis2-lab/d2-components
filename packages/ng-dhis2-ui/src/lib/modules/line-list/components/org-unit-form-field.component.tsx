@@ -78,6 +78,8 @@ type Props = {
   disabled?: boolean;
   previousOrgUnitId?: string;
   customOrgUnitRoots?: string[];
+  multiple?: boolean;
+  selectedPaths?: string[];
 };
 
 export const OrgUnitFormField = (props: Props) => {
@@ -89,6 +91,8 @@ export const OrgUnitFormField = (props: Props) => {
     disabled,
     key,
     customOrgUnitRoots,
+    multiple = false,
+    selectedPaths,
   } = props;
   const d2 = (window as unknown as D2Window)?.d2Web;
   const classes = useDynamicStyles(orgUnitFieldStyles);
@@ -151,12 +155,16 @@ export const OrgUnitFormField = (props: Props) => {
   }, []);
 
   const highlighted: string[] | undefined = useMemo(() => {
+    if (selectedPaths !== undefined) {
+      return selectedPaths;
+    }
+
     if (selectedOrgUnit) {
       return [selectedOrgUnit['path']] as string[];
     }
 
     return undefined;
-  }, [selectedOrgUnit]);
+  }, [selectedPaths, selectedOrgUnit]);
 
   const selectedOrgUnitLabel: string = useMemo(() => {
     if (selectedOrgUnit) {
@@ -227,14 +235,14 @@ export const OrgUnitFormField = (props: Props) => {
           <OrganisationUnitTree
             key={`${key}-search`}
             roots={searchData?.map((orgUnit: any) => orgUnit.id) || []}
-            singleSelection={true}
+            singleSelection={!multiple}
             expanded={expanded as any}
             handleExpand={handleExpand}
             handleCollapse={handleCollapse}
             selected={highlighted}
             onChange={(event: any) => {
               setSelectedOrgUnit(event);
-              setShowOrgUnitTree(false);
+              setShowOrgUnitTree(multiple);
               onSelectOrgUnit(event);
             }}
           />
@@ -245,14 +253,14 @@ export const OrgUnitFormField = (props: Props) => {
       <OrganisationUnitTree
         key={key}
         roots={rootOrgUnits?.map((orgUnit) => orgUnit.id) || []}
-        singleSelection={true}
+        singleSelection={!multiple}
         expanded={expanded as any}
         handleExpand={handleExpand}
         handleCollapse={handleCollapse}
         selected={highlighted}
         onChange={(event: any) => {
           setSelectedOrgUnit(event);
-          setShowOrgUnitTree(false);
+          setShowOrgUnitTree(multiple);
           onSelectOrgUnit(event);
         }}
       />
@@ -284,7 +292,7 @@ export const OrgUnitFormField = (props: Props) => {
             </div>
           )}
 
-          {!showOrgUnitTree ? (
+          {!multiple && !showOrgUnitTree ? (
             selectedOrgUnit ? (
               <>
                 <Tooltip content={selectedOrgUnitLabel}>

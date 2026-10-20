@@ -27,6 +27,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { ReactWrapperModule } from '../../react-wrapper/react-wrapper.component';
 import { FilterToolbar } from '../components/table/filterToolbar';
+import type { SelectedOrgUnit } from '../models/selected-org-unit.model';
 import { LineListTable } from '../components/table/lineListTable';
 import { ActionOptionOrientation, LineListActionOption } from '../models';
 import { AttributeFilter } from '../models/attribute-filter.model';
@@ -65,6 +66,7 @@ export class LineListTableComponent
   @Input() triggerToken!: string;
   @Input() programId!: string;
   @Input() orgUnit!: string;
+  @Input() allowMultipleOrgUnits = false;
   @Input() customOrgUnitRoots?: string[];
   @Input() programStageId?: string;
   @Input() actionOptions?: LineListActionOption[];
@@ -173,6 +175,7 @@ export class LineListTableComponent
     );
     const [isOptionSetNameVisibleState, setOptionSetNameVisible] =
       useState<boolean>(this.isOptionSetNameVisible);
+    const [chosenOrgUnits, setChosenOrgUnits] = useState<SelectedOrgUnit[]>([]);
     const defaultOrgUnitMode = (this.ouMode) as OuMode;
     const [orgUnitModeState, setOrgUnitModeState] = useState<OuMode>(defaultOrgUnitMode);
     const [tempOrgUnitModeState, setTempOrgUnitModeState] = useState<OuMode>(defaultOrgUnitMode);
@@ -792,6 +795,9 @@ export class LineListTableComponent
             this.showFilters &&
               React.createElement(FilterToolbar, {
                 orgUnit: {
+                  allowMultipleOrgUnits: this.allowMultipleOrgUnits,
+                  chosenOrgUnits,
+                  setChosenOrgUnits,
                   customOrgUnitRoots: this.customOrgUnitRoots,
                   orgUnitLabel,
                   selectedOrgUnit,
