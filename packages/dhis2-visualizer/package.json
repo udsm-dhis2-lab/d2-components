@@ -2,10 +2,20 @@
   "name": "@iapps/d2-visualizer",
   "version": "1.1.26",
   "dependencies": {
+    "@turf/turf": "^7.3.5",
+    "date-fns": "^3.3.1",
+    "geojson": "^0.5.0",
+    "lodash": "^4.17.21",
     "tslib": "^2.3.0"
   },
   "peerDependencies": {
-    "@dhis2/ui": "~8.14.9"
+    "@dhis2/ui": ">=8.14.9 <11",
+    "@iapps/d2-web-sdk": ">=1.2.4 <2",
+    "@iapps/function-analytics": ">=1.0.0-beta.24 <2",
+    "highcharts": ">=11.4.8 <12",
+    "mapbox-gl": ">=3.5.1 <4",
+    "mapbox-gl-style-switcher": ">=1.0.11 <2",
+    "react": ">=18 <19"
   },
   "type": "commonjs",
   "main": "./src/index.js",

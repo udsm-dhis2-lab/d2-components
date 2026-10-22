@@ -222,8 +222,6 @@ export class TableUtil extends BaseVisualizer implements Visualizer {
         if (rowItem.name !== '') {
           td.style.minWidth = '180px';
           td.style.backgroundColor = 'rgb(218, 230, 248)';
-
-          div.style;
         }
 
         td.appendChild(div);

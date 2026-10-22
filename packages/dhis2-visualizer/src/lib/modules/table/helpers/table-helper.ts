@@ -3,16 +3,16 @@ import { each, findIndex, map, uniq } from 'lodash';
 export function tableCreate(id: string, analytics: any, configs: any) {
   //   var body = document.getElementsByTagName('body')[0];
 
-  var body = document.getElementById(id);
-  var tbl = document.createElement('table');
+  const body = document.getElementById(id);
+  const tbl = document.createElement('table');
   tbl.style.width = '100%';
   tbl.classList.add('table');
   tbl.setAttribute('border', '1');
   tbl.style.borderCollapse = 'collapse';
-  var tbdy = document.createElement('tbody');
+  const tbdy = document.createElement('tbody');
 
-  var filterTableRow = document.createElement('tr');
-  var filterTableData = document.createElement('td');
+  const filterTableRow = document.createElement('tr');
+  const filterTableData = document.createElement('td');
   filterTableData.setAttribute(
     'colSpan',
     (configs?.config?.useAsScoreCard ? 2 : 1) +
@@ -28,13 +28,13 @@ export function tableCreate(id: string, analytics: any, configs: any) {
 
   tbdy.appendChild(filterTableRow);
 
-  var colsTableRow = document.createElement('tr');
-  var colsFillerTableData = document.createElement('td');
+  const colsTableRow = document.createElement('tr');
+  const colsFillerTableData = document.createElement('td');
   colsFillerTableData.style.backgroundColor = '#afc9e3';
 
   colsTableRow.appendChild(colsFillerTableData);
   each(configs?.config?.visualization?.periods, (peItem) => {
-    var colTitleTD = document.createElement('td');
+    const colTitleTD = document.createElement('td');
     colTitleTD.appendChild(
       document.createTextNode(analytics?.metaData?.items[peItem?.id]['name'])
     );
@@ -47,7 +47,7 @@ export function tableCreate(id: string, analytics: any, configs: any) {
   });
 
   if (configs?.config?.useAsScoreCard) {
-    var colTitleTD = document.createElement('td');
+    const colTitleTD = document.createElement('td');
     colTitleTD.appendChild(document.createTextNode('Difference'));
 
     colTitleTD.style.textAlign = 'center';
@@ -59,21 +59,21 @@ export function tableCreate(id: string, analytics: any, configs: any) {
 
   tbdy.appendChild(colsTableRow);
 
-  var dataObject: any = {};
+  const dataObject: any = {};
 
-  let valueIndex = findIndex(analytics.headers, (headerObject: any) => {
+  const valueIndex = findIndex(analytics.headers, (headerObject: any) => {
     return headerObject['name'] == 'value';
   });
-  let peIndex = findIndex(analytics.headers, (headerObject: any) => {
+  const peIndex = findIndex(analytics.headers, (headerObject: any) => {
     return headerObject['name'] == 'pe';
   });
 
-  let dxIndex = findIndex(analytics.headers, (headerObject: any) => {
+  const dxIndex = findIndex(analytics.headers, (headerObject: any) => {
     return headerObject['name'] == 'dx';
   });
 
   each(analytics?.rows, (rowArray) => {
-    var rawDataObjectItem: any = {};
+    const rawDataObjectItem: any = {};
     rawDataObjectItem[rowArray[peIndex]] = rowArray[valueIndex];
 
     dataObject[rowArray[dxIndex]] = dataObject[rowArray[dxIndex]]
@@ -82,9 +82,9 @@ export function tableCreate(id: string, analytics: any, configs: any) {
   });
 
   each(analytics?.metaData?.dimensions?.dx, (dx) => {
-    var dxTableRow = document.createElement('tr');
+    const dxTableRow = document.createElement('tr');
 
-    var dxNameTableData = document.createElement('td');
+    const dxNameTableData = document.createElement('td');
     dxNameTableData.appendChild(
       document.createTextNode(
         analytics?.metaData?.names
@@ -98,7 +98,7 @@ export function tableCreate(id: string, analytics: any, configs: any) {
 
     configs?.config?.visualization?.periods.forEach(
       (peItem: any, index: number) => {
-        var dataForTheYear = document.createElement('td');
+        const dataForTheYear = document.createElement('td');
         dataForTheYear.appendChild(
           document.createTextNode(
             dataObject[dx] && dataObject[dx][peItem['id']]
@@ -114,11 +114,11 @@ export function tableCreate(id: string, analytics: any, configs: any) {
           configs?.config?.visualization?.periods?.length >= 2 &&
           configs?.config?.useAsScoreCard
         ) {
-          var currentData =
+          const currentData =
             dataObject[dx] && dataObject[dx][peItem['id']]
               ? dataObject[dx][peItem['id']]
               : null;
-          var previosPeriodData =
+          const previosPeriodData =
             dataObject[dx] &&
             dataObject[dx][
               configs?.config?.visualization?.periods[
@@ -132,7 +132,7 @@ export function tableCreate(id: string, analytics: any, configs: any) {
                 ]
               : null;
 
-          var difference = document.createElement('td');
+          const difference = document.createElement('td');
           difference.appendChild(
             document.createTextNode(
               currentData == null || previosPeriodData == null
@@ -180,11 +180,11 @@ export function tableCreate(id: string, analytics: any, configs: any) {
 }
 
 function findOuName(analytics: any): string {
-  let ouIndex = findIndex(analytics.headers, (headerObject: any) => {
+  const ouIndex = findIndex(analytics.headers, (headerObject: any) => {
     return headerObject['name'] == 'ou';
   });
 
-  let ousArray = uniq(
+  const ousArray = uniq(
     map(analytics?.rows, (analyticsRow) => {
       return analytics?.metaData?.names
         ? analytics?.metaData?.names[analyticsRow[ouIndex]]

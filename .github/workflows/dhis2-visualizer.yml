@@ -1,0 +1,40 @@
+name: dhis2-visualizer quality gates
+
+on:
+  pull_request:
+    paths:
+      - 'packages/dhis2-visualizer/**'
+      - 'packages/dhis2-analytics/**'
+      - 'packages/dhis2-web-sdk/**'
+      - 'tools/scripts/dhis2-visualizer-consumer-smoke.mjs'
+      - 'eslint.config.mjs'
+      - 'nx.json'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/dhis2-visualizer.yml'
+  push:
+    branches: [main, develop]
+    paths:
+      - 'packages/dhis2-visualizer/**'
+      - 'packages/dhis2-analytics/**'
+      - 'packages/dhis2-web-sdk/**'
+      - 'tools/scripts/dhis2-visualizer-consumer-smoke.mjs'
+      - 'eslint.config.mjs'
+      - 'nx.json'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/dhis2-visualizer.yml'
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx nx test dhis2-visualizer --coverage --runInBand
+      - run: npx nx lint dhis2-visualizer
+      - run: npx nx run dhis2-visualizer:consumer-smoke

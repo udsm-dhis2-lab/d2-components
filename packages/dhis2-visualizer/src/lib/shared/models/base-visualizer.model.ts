@@ -87,5 +87,7 @@ export class BaseVisualizer {
     const filename = this._config?.title || 'chart-data';
   }
 
-  dispose() {}
+  dispose() {
+    // Optional lifecycle hook for concrete visualizers.
+  }
 }

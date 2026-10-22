@@ -25,7 +25,7 @@ export class TrackedEntityFilterUtil {
       const attributeVariables = filter?.match(/A<[a-zA-Z0-9]{11}>/g);
 
       attributeVariables?.forEach((attributeVariable) => {
-        const attributeId = attributeVariable?.match(/\<([^{^)]+)>/g)?.join();
+        const attributeId = attributeVariable?.match(/<([^{^)]+)>/g)?.join();
 
         const availableAttributeValue = (attributes || []).find(
           (attribute: any) => `<${attribute.attribute}>` === attributeId
@@ -66,7 +66,7 @@ export class TrackedEntityFilterUtil {
 
       dataElementVariables?.forEach((dataElementVariable) => {
         const dataElementId = dataElementVariable
-          ?.match(/\<([^{^)]+)>/g)
+          ?.match(/<([^{^)]+)>/g)
           ?.join();
 
         const availableDataElementValue = (dataValues || []).find(

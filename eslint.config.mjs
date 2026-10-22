@@ -21,6 +21,10 @@ export default [
           allow: [],
           depConstraints: [
             {
+              sourceTag: 'scope:visualizer',
+              onlyDependOnLibsWithTags: ['scope:dhis2'],
+            },
+            {
               sourceTag: '*',
               onlyDependOnLibsWithTags: ['*'],
             },

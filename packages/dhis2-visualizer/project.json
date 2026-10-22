@@ -3,7 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/dhis2-visualizer/src",
   "projectType": "library",
-  "tags": [],
+  "tags": ["npm:public", "scope:visualizer", "scope:dhis2", "type:library"],
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
@@ -20,13 +20,24 @@
       "dependsOn": ["build"]
     },
     "lint": {
-      "executor": "@nx/eslint:lint"
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint 'packages/dhis2-visualizer/**/*.{ts,js,mjs,json}'"
+      }
     },
     "test": {
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
         "jestConfig": "packages/dhis2-visualizer/jest.config.ts"
+      }
+    },
+    "consumer-smoke": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "cache": false,
+      "options": {
+        "command": "node tools/scripts/dhis2-visualizer-consumer-smoke.mjs"
       }
     }
   }

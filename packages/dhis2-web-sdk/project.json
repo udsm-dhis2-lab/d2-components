@@ -10,7 +10,7 @@
       "manifestRootsToUpdate": ["dist/{projectRoot}"]
     }
   },
-  "tags": [],
+  "tags": ["scope:dhis2", "type:data-access"],
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",

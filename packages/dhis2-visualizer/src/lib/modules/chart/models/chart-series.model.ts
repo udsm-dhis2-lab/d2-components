@@ -16,6 +16,8 @@ export interface ChartSeriesObject {
   states?: { hover: { enabled: boolean } };
   lineWidth?: number;
 }
+// Empty by design: retained as a compatibility extension point.
+// eslint-disable-next-line @typescript-eslint/no-empty-interface, @typescript-eslint/no-empty-object-type
 export interface IChartSeries {}
 
 export class ChartSeries implements IChartSeries {
