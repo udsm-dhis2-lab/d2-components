@@ -1,0 +1,46 @@
+import { ChartColor } from './chart-color.model';
+import { ChartTitle } from './chart-title.model';
+import {
+  ChartOption,
+  ChartPlotOptions,
+  ChartRenderOptions,
+  ChartTooltipOptions,
+} from './chart-option.model';
+import { ChartXAxis } from './chart-x-axis.model';
+import { ChartYAxis } from './chart-y-axis.model';
+
+export class ChartObject {
+  title: Partial<ChartTitle>;
+  chart: ChartRenderOptions;
+  colors = new ChartColor().colors;
+  plotOptions: { [type: string]: ChartPlotOptions };
+  tooltip: ChartTooltipOptions;
+  credits = {
+    enabled: false,
+  };
+  exporting = this.#getExportingOptions();
+  xAxis: ChartXAxis[];
+  yAxis: ChartYAxis[];
+
+  constructor(analyticsResult: any, config: any) {
+    this.title = new ChartTitle(config, analyticsResult.metaData).title;
+
+    const chartOption = new ChartOption(config);
+    this.chart = chartOption.renderOptions;
+    this.plotOptions = chartOption.plotOptions;
+    this.tooltip = chartOption.tooltipOptions;
+
+    this.xAxis = ChartXAxis.getAxes(config, analyticsResult.metaData);
+    this.yAxis = ChartYAxis.getAxes(config);
+  }
+
+  #getExportingOptions() {
+    return {
+      buttons: {
+        contextButton: {
+          enabled: false,
+        },
+      },
+    };
+  }
+}

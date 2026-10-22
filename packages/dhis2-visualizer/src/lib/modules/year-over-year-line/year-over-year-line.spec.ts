@@ -6,6 +6,7 @@ import {
 } from '../../../testing/fixtures/visualizer.fixtures';
 import { VisualizationConfiguration } from '../../shared/models';
 import { YearOverYearLineHighchartsVisualizer } from './year-over-year-line';
+import { VisualizationDataSource } from '@iapps/d2-charts';
 
 interface D2TestWindow extends Window {
   d2Web: {
@@ -136,5 +137,71 @@ describe('year-over-year analytics characterization', () => {
     expect(result._data.message).toContain(
       'All per-year analytics calls failed'
     );
+  });
+
+  it('uses an explicitly supplied shared data source', async () => {
+    const getAnalytics = jest
+      .fn()
+      .mockResolvedValueOnce({
+        headers: [],
+        rows: [],
+        metaData: { dimensions: { pe: ['2024'] } },
+      })
+      .mockResolvedValueOnce({
+        headers: [],
+        rows: [],
+        metaData: {
+          dimensions: { pe: ['2024W1'] },
+          items: { '2024W1': { name: 'Week 1' } },
+        },
+      })
+      .mockResolvedValueOnce({
+        headers: [{ name: 'pe' }, { name: 'value' }],
+        rows: [['2024W1', '9']],
+        metaData: {},
+      });
+    const source = { getAnalytics } as VisualizationDataSource;
+    const visualizer = new D2Visualizer()
+      .setType('YEAR_OVER_YEAR_LINE')
+      .setSelections(selectionsFixture())
+      .setConfig(visualizationConfigFixture('YEAR_OVER_YEAR_LINE'));
+
+    expect(visualizer.setDataSource(source)).toBe(visualizer);
+    const result = await (
+      visualizer as unknown as {
+        _getDataYearOverYearLine(): Promise<{ _data: { series: unknown[] } }>;
+      }
+    )._getDataYearOverYearLine();
+
+    expect(getAnalytics).toHaveBeenCalledTimes(3);
+    expect(result._data.series).toEqual([
+      { name: '2024', year: 2024, data: [9] },
+    ]);
+  });
+
+  it('preserves the missing-data error without issuing requests', async () => {
+    const getAnalytics = jest.fn();
+    const visualizer = new D2Visualizer()
+      .setType('YEAR_OVER_YEAR_LINE')
+      .setSelections([])
+      .setConfig(
+        visualizationConfigFixture('YEAR_OVER_YEAR_LINE', {
+          filters: [],
+          rows: [],
+        })
+      )
+      .setDataSource({ getAnalytics } as VisualizationDataSource);
+
+    const result = await (
+      visualizer as unknown as {
+        _getDataYearOverYearLine(): Promise<{
+          _data: { error: boolean; message: string };
+        }>;
+      }
+    )._getDataYearOverYearLine();
+
+    expect(result._data.error).toBe(true);
+    expect(result._data.message).toContain('Missing dx');
+    expect(getAnalytics).not.toHaveBeenCalled();
   });
 });

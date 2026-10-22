@@ -2,6 +2,7 @@
   "name": "@iapps/d2-visualizer",
   "version": "1.1.26",
   "dependencies": {
+    "@iapps/d2-charts": "1.1.26",
     "@turf/turf": "^7.3.5",
     "date-fns": "^3.3.1",
     "geojson": "^0.5.0",

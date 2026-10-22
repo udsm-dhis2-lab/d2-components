@@ -1,5 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Fn } from '@iapps/function-analytics';
+import {
+  AnalyticsQuery,
+  AnalyticsResponse,
+  VisualizationDataSource,
+  YearOverYearDataService,
+} from '@iapps/d2-charts';
 import { D2VisualizerMapControl } from './modules/map/models/map-control.model';
 import { MapDashboardExtensionItem } from './modules/map/models/map-dashboard-extension.model';
 import { MapDashboardItem } from './modules/map/models/map-dashboard-item.model';
@@ -26,6 +32,7 @@ export class D2Visualizer {
   private readonly rendererRegistry: RendererRegistry;
   private readonly unsupportedTypeBehavior: 'ignore' | 'throw';
   private drawGeneration = 0;
+  private analyticsDataSource?: VisualizationDataSource;
   dataSelections!: any[];
   type!: VisualizationType;
   visualizationType!: VisualizationType;
@@ -311,6 +318,11 @@ export class D2Visualizer {
 
   setBaseUrl(baseUrl: string): D2Visualizer {
     this.baseUrl = baseUrl;
+    return this;
+  }
+
+  setDataSource(dataSource: VisualizationDataSource): D2Visualizer {
+    this.analyticsDataSource = dataSource;
     return this;
   }
 
@@ -715,29 +727,15 @@ export class D2Visualizer {
   //   };
   // }
   private async _getDataYearOverYearLine(): Promise<any> {
-    const d2 = (window as unknown as D2Window).d2Web;
-
-    // Always merge selections first (your current behavior)
     this.config.mergeDataSelections(this.dataSelections);
-
-    // Normalize favorite/config holder
-    const fav: any = this.config?.config ?? this.config;
-
-    // Unwrap axios-like response
-    const unwrap = (res: any) => res?.data ?? res;
-
+    const favorite: any = this.config?.config ?? this.config;
     const dxId =
       this._pickFirstSelectionId('dx') ??
-      this._pickFirstFavoriteId(fav, 'filters', 'dx');
-
+      this._pickFirstFavoriteId(favorite, 'filters', 'dx');
     const ouId =
       this._pickFirstSelectionId('ou') ??
-      this._pickFirstFavoriteId(fav, 'filters', 'ou') ??
+      this._pickFirstFavoriteId(favorite, 'filters', 'ou') ??
       'USER_ORGUNIT';
-
-    const baseRelativeDate =
-      this._getRelativePeriodDate(fav) ?? new Date().toISOString().slice(0, 10);
-
     if (!dxId) {
       return {
         _data: {
@@ -748,249 +746,28 @@ export class D2Visualizer {
       };
     }
 
-    // 1) YEARS META (exact DHIS2 first call)
-    const yearsMetaUrl = this._buildAnalyticsUrl({
-      dimension: ['pe:LAST_5_YEARS;THIS_YEAR'],
-      params: {
-        skipData: 'true',
-        skipMeta: 'false',
-        includeMetadataDetails: 'true',
-      },
-    });
-
-    let yearsMeta: any;
+    const dataSource =
+      this.analyticsDataSource ?? new D2WebAnalyticsDataSource();
     try {
-      yearsMeta = unwrap(await d2.httpInstance.get(yearsMetaUrl));
-    } catch (e) {
+      return {
+        _data: await new YearOverYearDataService(dataSource).load({
+          dxId,
+          ouId,
+          relativePeriodDate: this._getRelativePeriodDate(favorite),
+        }),
+      };
+    } catch (error) {
       return {
         _data: {
           kind: 'YEAR_OVER_YEAR_LINE',
           error: true,
-          message: 'Failed to load years metadata for YEAR_OVER_YEAR_LINE',
-          details: { yearsMetaUrl, error: String(e) },
+          message: String(error).includes('All year-over-year requests failed')
+            ? 'All per-year analytics calls failed for YEAR_OVER_YEAR_LINE'
+            : 'Failed to load YEAR_OVER_YEAR_LINE analytics',
+          details: { error: String(error) },
         },
       };
     }
-
-    const years: number[] = (yearsMeta?.metaData?.dimensions?.pe ?? [])
-      .map((y: any) => Number(y))
-      .filter((y: number) => Number.isFinite(y))
-      .sort((a: number, b: number) => a - b);
-
-    if (!years.length) {
-      return {
-        _data: {
-          kind: 'YEAR_OVER_YEAR_LINE',
-          error: true,
-          message: 'Could not resolve years from years meta response',
-          details: { yearsMetaUrl, yearsMeta },
-        },
-      };
-    }
-
-    // 2) For each year: weekly META + weekly DATA (exact DHIS2 calls)
-    const perYearSettled = await Promise.allSettled(
-      years.map(async (year) => {
-        const relDate = this._shiftDateYear(baseRelativeDate, year);
-
-        const weeklyMetaUrl = this._buildAnalyticsUrl({
-          dimension: ['pe:LAST_52_WEEKS'],
-          filter: [`ou:${ouId}`, `dx:${dxId}`],
-          params: {
-            displayProperty: 'NAME',
-            relativePeriodDate: relDate,
-            skipMeta: 'false',
-            skipData: 'true',
-            includeMetadataDetails: 'true',
-          },
-        });
-
-        const weeklyDataUrl = this._buildAnalyticsUrl({
-          dimension: ['pe:LAST_52_WEEKS'],
-          filter: [`ou:${ouId}`, `dx:${dxId}`],
-          params: {
-            displayProperty: 'NAME',
-            relativePeriodDate: relDate,
-            skipMeta: 'true',
-            skipData: 'false',
-          },
-        });
-
-        const [metaRes, dataRes] = await Promise.all([
-          d2.httpInstance.get(weeklyMetaUrl),
-          d2.httpInstance.get(weeklyDataUrl),
-        ]);
-
-        return {
-          year,
-          relDate,
-          weeklyMetaUrl,
-          weeklyDataUrl,
-          weeklyMeta: unwrap(metaRes),
-          weeklyData: unwrap(dataRes),
-        };
-      })
-    );
-
-    const perYearOk = perYearSettled
-      .filter((r) => r.status === 'fulfilled')
-      .map((r: any) => r.value as any);
-
-    const perYearFailed = perYearSettled
-      .filter((r) => r.status === 'rejected')
-      .map((r: any) => r.reason);
-
-    if (!perYearOk.length) {
-      return {
-        _data: {
-          kind: 'YEAR_OVER_YEAR_LINE',
-          error: true,
-          message:
-            'All per-year analytics calls failed for YEAR_OVER_YEAR_LINE',
-          details: { years, perYearFailed },
-        },
-      };
-    }
-
-    // 3) Canonical axis from latest year weeklyMeta
-    const latestYear = Math.max(...perYearOk.map((x: any) => x.year));
-    const axisSource =
-      perYearOk.find((x: any) => x.year === latestYear) ?? perYearOk[0];
-
-    const axisPeriodIds: string[] =
-      axisSource?.weeklyMeta?.metaData?.dimensions?.pe ?? [];
-    const axisItems: any = axisSource?.weeklyMeta?.metaData?.items ?? {};
-
-    if (!axisPeriodIds.length) {
-      return {
-        _data: {
-          kind: 'YEAR_OVER_YEAR_LINE',
-          error: true,
-          message: 'Weekly meta returned no axis periods',
-          details: { axisSource },
-        },
-      };
-    }
-
-    const categories: string[] = axisPeriodIds.map((pid) =>
-      this._toWeekLabel(axisItems?.[pid]?.name ?? pid)
-    );
-
-    // 4) Build aligned series (by week number)
-    const series = perYearOk
-      .map((item: any) => {
-        const headers = item.weeklyData?.headers ?? [];
-        const rows = item.weeklyData?.rows ?? [];
-
-        const peIdx = this._headerIndex(headers, 'pe');
-        const vIdx = this._headerIndex(headers, 'value');
-
-        const weekValue = new Map<number, number>();
-        for (const row of rows) {
-          const pe = row?.[peIdx];
-          const v = Number(row?.[vIdx]);
-          const wk = this._parseWeekOfYear(pe);
-          if (wk && Number.isFinite(v)) weekValue.set(wk, v);
-        }
-
-        const aligned = axisPeriodIds.map((pid) => {
-          const wk = this._parseWeekOfYear(pid);
-          return wk ? (weekValue.has(wk) ? weekValue.get(wk)! : 0) : 0;
-        });
-
-        return {
-          name: String(item.year),
-          year: item.year,
-          data: aligned,
-        };
-      })
-      .sort((a: any, b: any) => a.year - b.year);
-
-    // ✅ IMPORTANT: return under _data to match draw() contract
-    return {
-      _data: {
-        kind: 'YEAR_OVER_YEAR_LINE',
-        yearsMeta: { url: yearsMetaUrl, data: yearsMeta },
-        axis: {
-          year: axisSource.year,
-          relativePeriodDate: axisSource.relDate,
-          periodIds: axisPeriodIds,
-          categories,
-          meta: axisSource.weeklyMeta,
-          url: axisSource.weeklyMetaUrl,
-        },
-        series,
-        rawPerYear: perYearOk,
-        warnings: perYearFailed?.length ? { perYearFailed } : undefined,
-        context: { dxId, ouId, baseRelativeDate, years },
-      },
-    };
-  }
-
-  /* -------------------------------------------------------------------------- */
-  /* Helpers (drop these into the same class where you implement YoY)            */
-  /* -------------------------------------------------------------------------- */
-
-  private _buildAnalyticsUrl(args: {
-    dimension?: string[];
-    filter?: string[];
-    params?: Record<string, string>;
-  }): string {
-    const sp = new URLSearchParams();
-    (args.dimension ?? []).forEach((d) => sp.append('dimension', d));
-    (args.filter ?? []).forEach((f) => sp.append('filter', f));
-    Object.entries(args.params ?? {}).forEach(([k, v]) => sp.set(k, String(v)));
-    return `analytics?${sp.toString()}`;
-  }
-
-  /**
-   * Replace just the YEAR part, keep same MM-DD.
-   * Example: ("2026-02-17", 2023) -> "2023-02-17"
-   */
-  private _shiftDateYear(dateYYYYMMDD: string, targetYear: number): string {
-    const parts = String(dateYYYYMMDD).split('-');
-    if (parts.length !== 3) return String(dateYYYYMMDD);
-    const [, mm, dd] = parts;
-    return `${targetYear}-${mm}-${dd}`;
-  }
-
-  private _headerIndex(headers: Array<{ name: string }>, name: string): number {
-    return headers.findIndex((h) => h?.name === name);
-  }
-
-  /**
-   * Extract week number from:
-   *  - "2022W7"
-   *  - "W45 2023"
-   * Returns 1..53 or null
-   */
-  private _parseWeekOfYear(periodIdOrName: string): number | null {
-    const s = String(periodIdOrName ?? '');
-
-    // "2022W7"
-    let m = /^\d{4}W(\d{1,2})$/.exec(s);
-    if (m) return Number(m[1]);
-
-    // "W45 2023"
-    m = /^W(\d{1,2})\b/.exec(s);
-    if (m) return Number(m[1]);
-
-    return null;
-  }
-
-  /**
-   * Convert "W45 2023" -> "W45" or "2023W45" -> "W45"
-   */
-  private _toWeekLabel(nameOrId: string): string {
-    const s = String(nameOrId ?? '');
-
-    let m = /^W(\d{1,2})\b/.exec(s);
-    if (m) return `W${m[1]}`;
-
-    m = /^\d{4}W(\d{1,2})$/.exec(s);
-    if (m) return `W${m[1]}`;
-
-    return s;
   }
 
   /**
@@ -1133,5 +910,34 @@ export class D2Visualizer {
     this.drawGeneration += 1;
     if (this.visualizer) await this.visualizer.dispose();
     delete (this as { visualizer?: Visualizer }).visualizer;
+  }
+}
+
+class D2WebAnalyticsDataSource implements VisualizationDataSource {
+  async getAnalytics(query: AnalyticsQuery): Promise<AnalyticsResponse> {
+    const parameters = new URLSearchParams();
+    const [period, ...filters] = query.selections;
+    if (period) {
+      parameters.append(
+        'dimension',
+        `${period.dimension}:${period.items.join(';')}`
+      );
+    }
+    filters.forEach((selection) =>
+      parameters.append(
+        'filter',
+        `${selection.dimension}:${selection.items.join(';')}`
+      )
+    );
+    if (query.relativePeriodDate) {
+      parameters.set('relativePeriodDate', query.relativePeriodDate);
+    }
+    Object.entries(query.parameters ?? {}).forEach(([key, value]) =>
+      parameters.set(key, String(value))
+    );
+    const response = await (
+      window as unknown as D2Window
+    ).d2Web.httpInstance.get(`analytics?${parameters.toString()}`);
+    return (response?.data ?? response) as unknown as AnalyticsResponse;
   }
 }

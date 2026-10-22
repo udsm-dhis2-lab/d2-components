@@ -1,0 +1,43 @@
+{
+  "name": "dhis2-chart",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/dhis2-chart/src",
+  "projectType": "library",
+  "tags": ["npm:public", "scope:visualizer", "scope:dhis2", "type:library"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/dhis2-chart",
+        "main": "packages/dhis2-chart/src/index.ts",
+        "tsConfig": "packages/dhis2-chart/tsconfig.lib.json",
+        "assets": [
+          "packages/dhis2-chart/package.json",
+          "packages/dhis2-chart/README.md"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "packages/dhis2-chart/jest.config.ts"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint 'packages/dhis2-chart/**/*.{ts,js,mjs,json}'"
+      }
+    },
+    "consumer-smoke": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "cache": false,
+      "options": {
+        "command": "node packages/dhis2-chart/tools/scripts/consumer-smoke.mjs"
+      }
+    }
+  }
+}
