@@ -20,6 +20,8 @@
       "@iapps/d2-dashboard": ["packages/ng-dhis2-dashboard/src/index.ts"],
       "@iapps/d2-visualizer": ["packages/dhis2-visualizer/src/index.ts"],
       "@iapps/d2-charts": ["packages/dhis2-chart/src/index.ts"],
+      "@iapps/d2-kpi-cards": ["packages/dhis2-kpi-card/src/index.ts"],
+      "@iapps/d2-pivots": ["packages/dhis2-pivot/src/index.ts"],
       "@iapps/d2-web-sdk": ["packages/dhis2-web-sdk/src/index.ts"],
       "@iapps/function-analytics": ["packages/dhis2-analytics/src/index.ts"],
       "@iapps/ng-dhis2-shell": ["packages/ng-dhis2-shell/src/index.ts"],

@@ -1,0 +1,41 @@
+{
+  "name": "dhis2-pivot",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/dhis2-pivot/src",
+  "projectType": "library",
+  "tags": ["npm:public", "scope:visualizer", "scope:dhis2", "type:library"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/dhis2-pivot",
+        "main": "packages/dhis2-pivot/src/index.ts",
+        "tsConfig": "packages/dhis2-pivot/tsconfig.lib.json",
+        "assets": [
+          "packages/dhis2-pivot/package.json",
+          "packages/dhis2-pivot/README.md"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": { "jestConfig": "packages/dhis2-pivot/jest.config.ts" }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint 'packages/dhis2-pivot/**/*.{ts,js,mjs,json}'"
+      }
+    },
+    "consumer-smoke": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "cache": false,
+      "options": {
+        "command": "node packages/dhis2-pivot/tools/scripts/consumer-smoke.mjs"
+      }
+    }
+  }
+}

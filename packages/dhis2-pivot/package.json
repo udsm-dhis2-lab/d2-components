@@ -1,0 +1,11 @@
+{
+  "name": "@iapps/d2-pivots",
+  "version": "1.1.26",
+  "type": "commonjs",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "tslib": "^2.3.0"
+  }
+}

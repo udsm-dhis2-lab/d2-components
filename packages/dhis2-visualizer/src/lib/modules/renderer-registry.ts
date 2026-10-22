@@ -4,6 +4,8 @@ import {
   D2Charts,
   YearOverYearLineHighchartsVisualizer,
 } from '@iapps/d2-charts';
+import { SingleValueVisualizer } from '@iapps/d2-kpi-cards';
+import { TableUtil } from '@iapps/d2-pivots';
 import { getSelectionDimensionsFromFavorite } from '../shared/helpers';
 import {
   ChartType,
@@ -13,8 +15,6 @@ import { CustomVisualizer } from './custom/custom-visualizer';
 import { MapLayer } from './map/layers/map-layer.model';
 import { TrackedEntityLayer } from './map/layers/tracked-entity-layer.model';
 import { MapVisualizer } from './map/map-visualizer';
-import { SingleValueVisualizer } from './single-value/single-value-visualizer';
-import { TableUtil } from './table/utils/table.util';
 
 export interface FacadeRenderer {
   draw(): void | Promise<void>;

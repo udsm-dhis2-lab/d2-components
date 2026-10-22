@@ -8,6 +8,11 @@ module.exports = {
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../coverage/packages/dhis2-visualizer',
+  coveragePathIgnorePatterns: [
+    '/packages/dhis2-chart/',
+    '/packages/dhis2-kpi-card/',
+    '/packages/dhis2-pivot/',
+  ],
   collectCoverageFrom: [
     'src/lib/d2-visualizer.ts',
     'src/lib/modules/chart/**/*.ts',

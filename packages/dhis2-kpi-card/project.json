@@ -1,0 +1,41 @@
+{
+  "name": "dhis2-kpi-card",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/dhis2-kpi-card/src",
+  "projectType": "library",
+  "tags": ["npm:public", "scope:visualizer", "scope:dhis2", "type:library"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/dhis2-kpi-card",
+        "main": "packages/dhis2-kpi-card/src/index.ts",
+        "tsConfig": "packages/dhis2-kpi-card/tsconfig.lib.json",
+        "assets": [
+          "packages/dhis2-kpi-card/package.json",
+          "packages/dhis2-kpi-card/README.md"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": { "jestConfig": "packages/dhis2-kpi-card/jest.config.ts" }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint 'packages/dhis2-kpi-card/**/*.{ts,js,mjs,json}'"
+      }
+    },
+    "consumer-smoke": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "cache": false,
+      "options": {
+        "command": "node packages/dhis2-kpi-card/tools/scripts/consumer-smoke.mjs"
+      }
+    }
+  }
+}
