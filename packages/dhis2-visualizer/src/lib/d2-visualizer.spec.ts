@@ -130,7 +130,7 @@ describe('D2Visualizer compatibility facade', () => {
     ).toBe('/dhis');
   });
 
-  it('dispatches SINGLE_VALUE to its renderer without retaining it', async () => {
+  it('dispatches SINGLE_VALUE and retains it as the active renderer', async () => {
     const draw = jest
       .spyOn(SingleValueVisualizer.prototype, 'draw')
       .mockImplementation();
@@ -139,7 +139,7 @@ describe('D2Visualizer compatibility facade', () => {
     await expect(visualizer.draw()).resolves.toBe(visualizer);
 
     expect(draw).toHaveBeenCalledTimes(1);
-    expect(visualizer.visualizer).toBeUndefined();
+    expect(visualizer.visualizer).toBeInstanceOf(SingleValueVisualizer);
   });
 
   it('dispatches YEAR_OVER_YEAR_LINE to its Highcharts renderer', async () => {
@@ -156,7 +156,7 @@ describe('D2Visualizer compatibility facade', () => {
     expect(draw).toHaveBeenCalledTimes(1);
   });
 
-  it('dispatches CUSTOM analytics rendering without retaining the renderer', async () => {
+  it('dispatches CUSTOM analytics rendering and retains the renderer', async () => {
     const draw = jest
       .spyOn(CustomVisualizer.prototype, 'draw')
       .mockImplementation();
@@ -174,10 +174,10 @@ describe('D2Visualizer compatibility facade', () => {
     await expect(visualizer.draw()).resolves.toBe(visualizer);
 
     expect(draw).toHaveBeenCalledTimes(1);
-    expect(visualizer.visualizer).toBeUndefined();
+    expect(visualizer.visualizer).toBeInstanceOf(CustomVisualizer);
   });
 
-  it('dispatches TRACKED_ENTITY_LAYER without retaining the renderer', async () => {
+  it('dispatches TRACKED_ENTITY_LAYER and retains the renderer', async () => {
     const draw = jest
       .spyOn(TrackedEntityLayer.prototype, 'draw')
       .mockImplementation();
@@ -192,7 +192,7 @@ describe('D2Visualizer compatibility facade', () => {
     await expect(visualizer.draw()).resolves.toBe(visualizer);
 
     expect(draw).toHaveBeenCalledTimes(1);
-    expect(visualizer.visualizer).toBeUndefined();
+    expect(visualizer.visualizer).toBeInstanceOf(TrackedEntityLayer);
   });
 
   it.each(['DICTIONARY', 'MAPBOX'] as VisualizationType[])(
@@ -205,6 +205,19 @@ describe('D2Visualizer compatibility facade', () => {
       expect(visualizer.visualizer).toBeUndefined();
     }
   );
+
+  it('can strictly reject unsupported types without changing the legacy default', async () => {
+    const visualizer = new D2Visualizer({ unsupportedTypeBehavior: 'throw' })
+      .setId('visualization-host')
+      .setType('DICTIONARY')
+      .setSelections(selectionsFixture())
+      .setConfig(visualizationConfigFixture('DICTIONARY'))
+      .setData(analyticsFixture());
+
+    await expect(visualizer.draw()).rejects.toThrow(
+      'Unsupported visualization type: DICTIONARY'
+    );
+  });
 
   it('fetches analytics when supplied analytics are absent', async () => {
     const draw = jest
@@ -235,6 +248,28 @@ describe('D2Visualizer compatibility facade', () => {
     expect(download).toHaveBeenCalledWith('CSV');
   });
 
+  it('delegates downloads for renderers that were previously not retained', async () => {
+    jest.spyOn(CustomVisualizer.prototype, 'draw').mockImplementation();
+    const download = jest
+      .spyOn(CustomVisualizer.prototype, 'download')
+      .mockImplementation();
+    const visualizer = new D2Visualizer()
+      .setId('visualization-host')
+      .setType('CUSTOM')
+      .setSelections(selectionsFixture())
+      .setConfig(
+        visualizationConfigFixture('CUSTOM', {
+          template: { html: '<p>{{dx:dx-a}}</p>', cssStyles: '' },
+        })
+      )
+      .setData(analyticsFixture());
+    await visualizer.draw();
+
+    visualizer.download('PNG');
+
+    expect(download).toHaveBeenCalledWith('PNG');
+  });
+
   it('uses a fresh renderer for a repeated draw and keeps the latest instance', async () => {
     const draw = jest
       .spyOn(ChartVisualizer.prototype, 'draw')
@@ -248,4 +283,112 @@ describe('D2Visualizer compatibility facade', () => {
     expect(draw).toHaveBeenCalledTimes(2);
     expect(visualizer.visualizer).not.toBe(firstRenderer);
   });
+
+  it('disposes the active renderer before replacing it', async () => {
+    jest.spyOn(ChartVisualizer.prototype, 'draw').mockImplementation();
+    const dispose = jest
+      .spyOn(ChartVisualizer.prototype, 'dispose')
+      .mockImplementation();
+    const visualizer = configuredVisualizer('COLUMN');
+
+    await visualizer.draw();
+    const firstRenderer = visualizer.visualizer;
+    await visualizer.draw();
+
+    expect(dispose).toHaveBeenCalledTimes(1);
+    expect(dispose.mock.instances[0]).toBe(firstRenderer);
+  });
+
+  it('delegates disposal and clears the active renderer', async () => {
+    jest.spyOn(ChartVisualizer.prototype, 'draw').mockImplementation();
+    const dispose = jest
+      .spyOn(ChartVisualizer.prototype, 'dispose')
+      .mockImplementation();
+    const visualizer = configuredVisualizer('COLUMN');
+    await visualizer.draw();
+    const activeRenderer = visualizer.visualizer;
+
+    await visualizer.dispose();
+
+    expect(dispose).toHaveBeenCalledTimes(1);
+    expect(dispose.mock.instances[0]).toBe(activeRenderer);
+    expect(visualizer.visualizer).toBeUndefined();
+  });
+
+  it('rejects stale analytics work when a newer draw resolves first', async () => {
+    let resolveFirst!: (value: unknown) => void;
+    let resolveSecond!: (value: unknown) => void;
+    const firstData = new Promise((resolve) => (resolveFirst = resolve));
+    const secondData = new Promise((resolve) => (resolveSecond = resolve));
+    const get = jest
+      .fn()
+      .mockReturnValueOnce(firstData)
+      .mockReturnValueOnce(secondData);
+    (Fn.Analytics as jest.Mock)
+      .mockImplementationOnce(() => analyticsClient(get))
+      .mockImplementationOnce(() => analyticsClient(get));
+    const draw = jest
+      .spyOn(ChartVisualizer.prototype, 'draw')
+      .mockImplementation();
+    const visualizer = new D2Visualizer()
+      .setId('visualization-host')
+      .setType('COLUMN')
+      .setSelections(selectionsFixture())
+      .setConfig(visualizationConfigFixture('COLUMN'));
+
+    const olderDraw = visualizer.draw();
+    const newerDraw = visualizer.draw();
+    const newestData = analyticsFixture();
+    resolveSecond(newestData);
+    await newerDraw;
+    resolveFirst(analyticsFixture());
+    await olderDraw;
+
+    expect(draw).toHaveBeenCalledTimes(1);
+    expect((visualizer.visualizer as unknown as { _data: unknown })._data).toBe(
+      newestData
+    );
+  });
+
+  it('does not let an older renderer completion replace the latest renderer', async () => {
+    let resolveOlderDraw!: () => void;
+    const olderDrawCompletion = new Promise<void>(
+      (resolve) => (resolveOlderDraw = resolve)
+    );
+    const draw = jest
+      .spyOn(MapVisualizer.prototype, 'draw')
+      .mockReturnValueOnce(olderDrawCompletion)
+      .mockResolvedValueOnce(undefined);
+    const dispose = jest
+      .spyOn(MapVisualizer.prototype, 'dispose')
+      .mockImplementation();
+    const visualizer = new D2Visualizer()
+      .setId('visualization-host')
+      .setType('MAP')
+      .setSelections(selectionsFixture())
+      .setConfig(visualizationConfigFixture('MAP', { mapViews: [] }));
+
+    const olderDraw = visualizer.draw();
+    const olderRenderer = visualizer.visualizer;
+    const newerDraw = visualizer.draw();
+    await newerDraw;
+    const latestRenderer = visualizer.visualizer;
+    resolveOlderDraw();
+    await olderDraw;
+
+    expect(draw).toHaveBeenCalledTimes(2);
+    expect(latestRenderer).not.toBe(olderRenderer);
+    expect(visualizer.visualizer).toBe(latestRenderer);
+    expect(dispose.mock.instances).toContain(olderRenderer);
+  });
 });
+
+function analyticsClient(get: jest.Mock) {
+  return {
+    setData: jest.fn().mockReturnThis(),
+    setPeriod: jest.fn().mockReturnThis(),
+    setOrgUnit: jest.fn().mockReturnThis(),
+    setDimension: jest.fn().mockReturnThis(),
+    get,
+  };
+}

@@ -1027,7 +1027,8 @@ export class YearOverYearLineHighchartsVisualizer
   extends BaseVisualizer
   implements Visualizer
 {
-  private _chart!: Highcharts.Chart;
+  private _chart?: Highcharts.Chart;
+  private _drawTimer?: ReturnType<typeof setTimeout>;
   private _loaderEl?: HTMLElement;
 
   draw() {
@@ -1371,7 +1372,8 @@ export class YearOverYearLineHighchartsVisualizer
       },
     };
 
-    setTimeout(() => {
+    this._drawTimer = setTimeout(() => {
+      this._drawTimer = undefined;
       this.dispose();
       this._chart = Highcharts.chart(options);
       // chart load event hides loader
@@ -1379,7 +1381,13 @@ export class YearOverYearLineHighchartsVisualizer
   }
 
   override dispose() {
-    if (this._chart) this._chart.destroy();
+    if (this._drawTimer) {
+      clearTimeout(this._drawTimer);
+      this._drawTimer = undefined;
+    }
+    const chart = this._chart;
+    this._chart = undefined;
+    chart?.destroy();
     this.hideLoader();
   }
 
@@ -1389,9 +1397,10 @@ export class YearOverYearLineHighchartsVisualizer
 
     switch (downloadFormat) {
       case 'PNG':
-        this._chart.exportChart({ filename, type: 'image/png' }, {});
+        this._chart?.exportChart({ filename, type: 'image/png' }, {});
         break;
       case 'CSV':
+        if (!this._chart) return;
         new VisualizationDownloader()
           .setFilename(filename)
           .setCSV(this._chart.getCSV())

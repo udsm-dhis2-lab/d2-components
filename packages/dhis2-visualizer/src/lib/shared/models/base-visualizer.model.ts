@@ -2,8 +2,9 @@ import { DownloadFormat } from './download-format.model';
 import { VisualizationConfiguration } from './visualization-configuration.model';
 
 export interface Visualizer {
-  draw: () => void;
+  draw: () => void | Promise<void>;
   download: (downloadFormat: DownloadFormat) => void;
+  dispose: () => void | Promise<void>;
 }
 
 export class BaseVisualizer {

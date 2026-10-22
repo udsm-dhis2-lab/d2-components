@@ -1,8 +1,11 @@
 import { D2Visualizer } from '../../d2-visualizer';
+import * as Highcharts from 'highcharts';
 import {
   selectionsFixture,
   visualizationConfigFixture,
 } from '../../../testing/fixtures/visualizer.fixtures';
+import { VisualizationConfiguration } from '../../shared/models';
+import { YearOverYearLineHighchartsVisualizer } from './year-over-year-line';
 
 interface D2TestWindow extends Window {
   d2Web: {
@@ -11,6 +14,28 @@ interface D2TestWindow extends Window {
 }
 
 describe('year-over-year analytics characterization', () => {
+  it('cancels pending chart creation when disposed', () => {
+    jest.useFakeTimers();
+    document.body.innerHTML = '<div id="visualization-host"></div>';
+    const renderer = new YearOverYearLineHighchartsVisualizer()
+      .setId('visualization-host')
+      .setConfig(
+        new VisualizationConfiguration(
+          visualizationConfigFixture('YEAR_OVER_YEAR_LINE')
+        )
+      )
+      .setData({
+        axis: { categories: ['W1'] },
+        series: [{ name: '2024', data: [1] }],
+      }) as YearOverYearLineHighchartsVisualizer;
+
+    renderer.draw();
+    renderer.dispose();
+    jest.runOnlyPendingTimers();
+
+    expect(Highcharts.chart).not.toHaveBeenCalled();
+  });
+
   it('aligns each year to the latest weekly metadata axis', async () => {
     const get = jest
       .fn()

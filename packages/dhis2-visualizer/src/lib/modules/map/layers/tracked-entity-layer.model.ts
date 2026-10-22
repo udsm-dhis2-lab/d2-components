@@ -366,4 +366,11 @@ export class TrackedEntityLayer extends BaseVisualizer {
   draw(): void {
     this.buildInitialMap();
   }
+
+  override dispose(): void {
+    if (this.map) {
+      this.map.remove();
+      this.map = undefined;
+    }
+  }
 }

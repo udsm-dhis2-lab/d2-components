@@ -32,7 +32,8 @@ HighchartDrilldown(Highcharts);
 export class ChartVisualizer extends BaseVisualizer implements Visualizer {
   private _type: ChartType = 'COLUMN';
   private _layout: VisualizationLayout = new VisualizationLayout();
-  private _chart!: Highcharts.Chart;
+  private _chart?: Highcharts.Chart;
+  private _drawTimer?: ReturnType<typeof setTimeout>;
 
   /**
    *
@@ -54,16 +55,21 @@ export class ChartVisualizer extends BaseVisualizer implements Visualizer {
 
     const chartObject = drawChart(this._data, this._config as any);
 
-    setTimeout(() => {
+    this._drawTimer = setTimeout(() => {
+      this._drawTimer = undefined;
       this.dispose();
       this._chart = Highcharts.chart(chartObject);
     }, 20);
   }
 
   override dispose() {
-    if (this._chart) {
-      this._chart.destroy();
+    if (this._drawTimer) {
+      clearTimeout(this._drawTimer);
+      this._drawTimer = undefined;
     }
+    const chart = this._chart;
+    this._chart = undefined;
+    chart?.destroy();
   }
 
   /**
@@ -74,9 +80,10 @@ export class ChartVisualizer extends BaseVisualizer implements Visualizer {
     const filename = this._config?.title || 'chart-data';
     switch (downloadFormat) {
       case 'PNG':
-        this._chart.exportChart({ filename, type: 'image/png' }, {});
+        this._chart?.exportChart({ filename, type: 'image/png' }, {});
         break;
       case 'CSV':
+        if (!this._chart) return;
         new VisualizationDownloader()
           .setFilename(this._config?.title || 'chart-data')
           .setCSV(this._chart.getCSV())

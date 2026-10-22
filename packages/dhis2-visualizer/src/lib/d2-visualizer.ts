@@ -1,34 +1,31 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Fn } from '@iapps/function-analytics';
-import * as _ from 'lodash';
-import { ChartVisualizer } from './modules/chart/chart-visualizer';
-import { CustomVisualizer } from './modules/custom/custom-visualizer';
-import { MapLayer } from './modules/map/layers/map-layer.model';
-import { TrackedEntityLayer } from './modules/map/layers/tracked-entity-layer.model';
-import { MapVisualizer } from './modules/map/map-visualizer';
 import { D2VisualizerMapControl } from './modules/map/models/map-control.model';
 import { MapDashboardExtensionItem } from './modules/map/models/map-dashboard-extension.model';
 import { MapDashboardItem } from './modules/map/models/map-dashboard-item.model';
-import { SingleValueVisualizer } from './modules/single-value/single-value-visualizer';
 import { TableAnalytics } from './modules/table/models/table-analytics.model';
 import { TableConfiguration } from './modules/table/models/table-config.model';
 import { TableDashboardItem } from './modules/table/models/table-dashboard-item.model';
-import { TableUtil } from './modules/table/utils/table.util';
-import { getSelectionDimensionsFromFavorite } from './shared/helpers';
 import { LegendSet, Visualizer, VisualizerPlotOptions } from './shared/models';
 import { VisualizationConfiguration } from './shared/models/visualization-configuration.model';
-import {
-  ChartType,
-  VisualizationType,
-} from './shared/models/visualization-type.model';
+import { VisualizationType } from './shared/models/visualization-type.model';
 import { MapLayerConfiguration } from './modules/map/models';
 import {
-  YearOverYearLineHighchartsVisualizer,
-  // YearOverYearLineVisualizer,
-} from './modules/year-over-year-line/year-over-year-line';
+  createDefaultRendererRegistry,
+  FacadeRenderer,
+  RendererRegistry,
+} from './modules/renderer-registry';
 import { D2Window } from '@iapps/d2-web-sdk';
 
+export interface D2VisualizerOptions {
+  /** Preserve the historical no-op by default; opt in to strict rejection. */
+  unsupportedTypeBehavior?: 'ignore' | 'throw';
+}
+
 export class D2Visualizer {
+  private readonly rendererRegistry: RendererRegistry;
+  private readonly unsupportedTypeBehavior: 'ignore' | 'throw';
+  private drawGeneration = 0;
   dataSelections!: any[];
   type!: VisualizationType;
   visualizationType!: VisualizationType;
@@ -57,6 +54,11 @@ export class D2Visualizer {
   tableAnalytics: TableAnalytics | any;
   tableConfiguration: TableConfiguration | any;
   tableLegendSets: LegendSet[] | any;
+
+  constructor(options: D2VisualizerOptions = {}) {
+    this.rendererRegistry = createDefaultRendererRegistry();
+    this.unsupportedTypeBehavior = options.unsupportedTypeBehavior ?? 'ignore';
+  }
 
   /**
    *
@@ -1046,126 +1048,71 @@ export class D2Visualizer {
    * @returns
    */
   async draw(): Promise<any> {
-    const data =
-      this.visualizationType !== 'MAP'
-        ? !this.trackedEntityInstances
-          ? this.dataAnalytics || (await this._getData())
-          : undefined
-        : undefined;
+    const generation = ++this.drawGeneration;
+    let data: any;
+    try {
+      data =
+        this.visualizationType !== 'MAP'
+          ? !this.trackedEntityInstances
+            ? this.dataAnalytics || (await this._getData())
+            : undefined
+          : undefined;
+    } catch (error) {
+      if (generation !== this.drawGeneration) return this;
+      throw error;
+    }
 
-    // console.log('DATA 121212::: ', JSON.stringify(data));
-    // console.log('DATA TYPE 121212::: ', JSON.stringify(this.visualizationType));
+    if (generation !== this.drawGeneration) return this;
 
-    switch (this.visualizationType) {
-      case 'CHART':
-      case 'LINE':
-      case 'COLUMN':
-      case 'BAR':
-      case 'DOTTED':
-      case 'PIE':
-      case 'STACKED_BAR':
-      case 'STACKED_COLUMN':
-      case 'AREA':
-      case 'RADAR':
-      case 'SOLIDGAUGE':
-        this.visualizer = new ChartVisualizer()
-          .setId(this.id)
-          .setConfig(this.config)
-          .setData(data)
-          .setType(this.visualizationType as ChartType);
+    const renderer = this.rendererRegistry.create(
+      this.visualizationType,
+      {
+        id: this.id,
+        configuredType: this.visualizationType,
+        baseUrl: this.baseUrl,
+        config: this.config,
+        dataSelections: this.dataSelections,
+        mapLayerConfig: this.mapLayerConfig,
+        tableDashboardItem: this.tableDashboardItem,
+        legendSets: this.legendSets,
+        plotOptions: this.plotOptions,
+        trackedEntityInstances: this.trackedEntityInstances,
+        program: this.program,
+      },
+      data
+    );
 
-        this.visualizer.draw();
-        return this;
-      case 'MAP': {
-        this.visualizer = new MapVisualizer()
-          .setId(this.id)
-          .setBaseUrl(this.baseUrl)
-          .setBaseMap(this.config?.config?.basemap)
-          .setLayerConfig(this.mapLayerConfig);
-
-        (this.config?.config?.mapViews || []).forEach((mapView: any) => {
-          const dataSelections = _.unionBy(
-            this.dataSelections,
-            getSelectionDimensionsFromFavorite(mapView),
-            'dimension'
-          );
-
-          (this.visualizer as MapVisualizer).addLayer(
-            new MapLayer(mapView).setDataSelections(dataSelections)
-          );
-        });
-
-        (this.visualizer as MapVisualizer).draw();
-        return this;
-      }
-      case 'REPORT_TABLE':
-      case 'PIVOT_TABLE':
-        this.visualizer = new TableUtil()
-          .setId(this.id)
-          .setTableDashboardItem(this.tableDashboardItem)
-          .setTableConfiguration(this.config.toTableConfig())
-          .setTableAnalytics(data)
-          .setLegendSet(this.legendSets)
-          .setPlotOptions(this.plotOptions);
-
-        this.visualizer.draw();
-        return this;
-      case 'SINGLE_VALUE':
-        new SingleValueVisualizer().setId(this.id).setData(data).draw();
-        return this;
-      case 'YEAR_OVER_YEAR_LINE':
-        this.visualizer = new YearOverYearLineHighchartsVisualizer()
-          .setId(this.id)
-          .setConfig(this.config?.config ?? this.config)
-          .setSelections(this.dataSelections)
-          .setData(data);
-
-        this.visualizer.draw();
-        return this;
-      // case 'YEAR_OVER_YEAR_LINE':
-      //   new YearOverYearLineVisualizer()
-      //     .setId(this.id)
-      //     .setSelections(this.dataSelections)
-      //     .setConfig(this.config?.config ?? this.config)
-      //     .setData(data)
-      //     .draw();
-      //   return this;
-
-      // new YearOverYearLineVisualizer().setId(this.id).setData(data).draw();
-      // return this;
-
-      case 'CUSTOM': {
-        this.config.mergeDataSelections(this.dataSelections);
-        const dataSelections: any[] = this.config.dataSelections.filter(
-          (dataSelection) => dataSelection.domain === 'TRACKER'
+    if (!renderer) {
+      if (this.unsupportedTypeBehavior === 'throw') {
+        throw new Error(
+          `Unsupported visualization type: ${this.visualizationType}`
         );
-        new CustomVisualizer()
-          .setId(this.id)
-          .setConfig(this.config)
-          .setData(data)
-          .setSelections(dataSelections)
-          .setTrackedEntityInstances(this.trackedEntityInstances)
-          .draw();
-
-        return this;
       }
-      case 'TRACKED_ENTITY_LAYER': {
-        this.config.mergeDataSelections(this.dataSelections);
-        const dataSelections: any[] = this.config.dataSelections.filter(
-          (dataSelection) => dataSelection.dimension === 'tea'
-        );
+      return this;
+    }
 
-        new TrackedEntityLayer()
-          .setId(this.id)
-          .setConfig(this.config)
-          .setSelections(dataSelections)
-          .setTrackedEntityInstances(this.trackedEntityInstances)
-          .setProgram(this.program)
-          .draw();
-        return this;
-      }
-      default:
-        return this;
+    await this.activateRenderer(renderer, generation);
+    return this;
+  }
+
+  private async activateRenderer(
+    renderer: FacadeRenderer,
+    generation: number
+  ): Promise<void> {
+    const previousRenderer = this.visualizer;
+    if (previousRenderer) await previousRenderer.dispose();
+
+    if (generation !== this.drawGeneration) {
+      await renderer.dispose();
+      return;
+    }
+
+    this.visualizer = renderer as Visualizer;
+    await renderer.draw();
+
+    if (generation !== this.drawGeneration && this.visualizer === renderer) {
+      await renderer.dispose();
+      delete (this as { visualizer?: Visualizer }).visualizer;
     }
   }
 
@@ -1180,5 +1127,11 @@ export class D2Visualizer {
     } else {
       console.warn('Visualizer is not set yet');
     }
+  }
+
+  async dispose(): Promise<void> {
+    this.drawGeneration += 1;
+    if (this.visualizer) await this.visualizer.dispose();
+    delete (this as { visualizer?: Visualizer }).visualizer;
   }
 }
