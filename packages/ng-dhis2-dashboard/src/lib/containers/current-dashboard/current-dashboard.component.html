@@ -1,48 +1,38 @@
-@if ({
-  currentDashboard: currentDashboard(),
-  globalSelection: globalSelection()
-  }; as params) {
-  <div
-    class="d2-dashboard__current-dashboard-container"
-    id="d2_current_dashboard"
-    >
-    @if (params.currentDashboard; as currentDashboard) {
-      <d2-current-dashboard-header
-        [dashboard]="currentDashboard"
-        [selectionConfig]="selectionConfig"
-        [dataSelections]="params?.globalSelection?.dataSelections || []"
-        (setGlobalFilter)="onSetGlobalFilter($event, currentDashboard!.id)"
-      ></d2-current-dashboard-header>
-      <ng-container>
-        @if (params.globalSelection?.summary) {
-          <div
-            class="d2-dashboard__selection-description"
-            >
-            {{ params.globalSelection?.summary }}
-          </div>
-        }
-        @if (!params.globalSelection?.default) {
-          <div
-            class="d2-dashboard__dashboard-selection-summary"
-            >
-            <d2-dashboard-selection-summary
-              [globalSelection]="params?.globalSelection || undefined"
-          (removeSelection)="
-            onSetGlobalFilter($event, params.currentDashboard!.id)
-          "
-            ></d2-dashboard-selection-summary>
-          </div>
-        }
-        <d2-dashboard-items
-          [dashboardId]="currentDashboard.id"
-          [dashboardItems]="currentDashboard?.dashboardItems || []"
-          [dataSelections]="params?.globalSelection?.dataSelections || []"
-          [dashboardItemsLayout]="currentDashboard?.dashboardItemsLayout || []"
-        ></d2-dashboard-items>
-      </ng-container>
+@if ({ currentDashboard: currentDashboard(), globalSelection: globalSelection()
+}; as params) {
+<div
+  class="d2-dashboard__current-dashboard-container"
+  id="d2_current_dashboard"
+>
+  @if (params.currentDashboard; as currentDashboard) {
+  <d2-current-dashboard-header
+    [dashboard]="currentDashboard"
+    [selectionConfig]="selectionConfig"
+    [dataSelections]="params?.globalSelection?.dataSelections || []"
+    (setGlobalFilter)="onSetGlobalFilter($event, currentDashboard!.id)"
+  ></d2-current-dashboard-header>
+  <ng-container>
+    @if (params.globalSelection?.summary) {
+    <div class="d2-dashboard__selection-description">
+      {{ params.globalSelection?.summary }}
+    </div>
+    } @if (!params.globalSelection?.default) {
+    <div class="d2-dashboard__dashboard-selection-summary">
+      <d2-dashboard-selection-summary
+        [globalSelection]="params?.globalSelection || undefined"
+        (removeSelection)="
+          onSetGlobalFilter($event, params.currentDashboard!.id)
+        "
+      />
+    </div>
     }
-    @if (error()) {
-      Dashboard Error
-    }
-  </div>
+    <d2-dashboard-items
+      [dashboardId]="currentDashboard.id"
+      [dashboardItems]="currentDashboard?.dashboardItems || []"
+      [dataSelections]="params?.globalSelection?.dataSelections || []"
+      [dashboardItemsLayout]="currentDashboard?.dashboardItemsLayout || []"
+    ></d2-dashboard-items>
+  </ng-container>
+  } @if (error()) { Dashboard Error }
+</div>
 }

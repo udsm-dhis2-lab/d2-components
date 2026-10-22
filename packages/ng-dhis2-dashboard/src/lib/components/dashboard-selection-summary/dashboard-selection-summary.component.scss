@@ -7,9 +7,11 @@
 }
 
 .selection-summary-container {
+  align-items: center;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  justify-content: center;
   max-inline-size: 100%;
   min-inline-size: 0;
 }
