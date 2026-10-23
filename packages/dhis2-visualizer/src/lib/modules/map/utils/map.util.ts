@@ -76,8 +76,7 @@ export class MapUtil {
     /**
      * @description
      */
-    this.accessToken =
-      'pk.eyJ1IjoiaWJyYWhpbXdpY2thbWEiLCJhIjoiY2txM3Y2bXJ1MTJoZjJ2cXI1ZW9pdGg2biJ9.RZjlqK5FxQkQuFrh5lZm_g';
+    this.accessToken = '';
     this.antialias = '';
     this.attributionControl = false;
     this.bearing = 0;

@@ -1,1 +1,1 @@
-export type DigitGroupSeparator = 'SPACE';
+export type { DigitGroupSeparator } from '@iapps/d2-maps';

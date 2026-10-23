@@ -5,6 +5,13 @@ import {
   YearOverYearLineHighchartsVisualizer,
 } from '@iapps/d2-charts';
 import { SingleValueVisualizer } from '@iapps/d2-kpi-cards';
+import {
+  FetchMapDataSource,
+  MapDataSource,
+  MapLayer,
+  MapProviderConfig,
+  MapVisualizer,
+} from '@iapps/d2-maps';
 import { TableUtil } from '@iapps/d2-pivots';
 import { getSelectionDimensionsFromFavorite } from '../shared/helpers';
 import {
@@ -12,9 +19,8 @@ import {
   VisualizationType,
 } from '../shared/models/visualization-type.model';
 import { CustomVisualizer } from './custom/custom-visualizer';
-import { MapLayer } from './map/layers/map-layer.model';
 import { TrackedEntityLayer } from './map/layers/tracked-entity-layer.model';
-import { MapVisualizer } from './map/map-visualizer';
+import { VisualizationData } from '../shared/models/visualization-data.model';
 
 export interface FacadeRenderer {
   draw(): void | Promise<void>;
@@ -29,6 +35,8 @@ export interface RendererContext {
   config: any;
   dataSelections: any[];
   mapLayerConfig: any;
+  mapProviderConfig?: MapProviderConfig;
+  mapDataSource?: MapDataSource;
   tableDashboardItem: any;
   legendSets: any;
   plotOptions: any;
@@ -90,11 +98,19 @@ export function createDefaultRendererRegistry(): RendererRegistry {
     RADAR: chartFactory,
     SOLIDGAUGE: chartFactory,
     MAP: (context) => {
+      const dataSource =
+        context.mapDataSource ||
+        new FetchMapDataSource(async (selections) =>
+          new VisualizationData().setSelections(selections).getAnalytics()
+        );
       const renderer = new MapVisualizer()
         .setId(context.id)
         .setBaseUrl(context.baseUrl)
         .setBaseMap(context.config?.config?.basemap)
         .setLayerConfig(context.mapLayerConfig);
+      if (context.mapProviderConfig) {
+        renderer.setProviderConfig(context.mapProviderConfig);
+      }
 
       (context.config?.config?.mapViews || []).forEach((mapView: any) => {
         const dataSelections = _.unionBy(
@@ -103,7 +119,7 @@ export function createDefaultRendererRegistry(): RendererRegistry {
           'dimension'
         );
         renderer.addLayer(
-          new MapLayer(mapView).setDataSelections(dataSelections)
+          new MapLayer(mapView, dataSource).setDataSelections(dataSelections)
         );
       });
       return renderer;
@@ -135,12 +151,19 @@ export function createDefaultRendererRegistry(): RendererRegistry {
       const selections = context.config.dataSelections.filter(
         (selection: any) => selection.dimension === 'tea'
       );
-      return new TrackedEntityLayer()
+      const renderer = new TrackedEntityLayer()
         .setId(context.id)
         .setConfig(context.config)
         .setSelections(selections)
         .setTrackedEntityInstances(context.trackedEntityInstances)
-        .setProgram(context.program);
+        .setProgram(context.program) as TrackedEntityLayer;
+      if (context.mapProviderConfig) {
+        renderer.setProviderConfig({
+          style: context.mapProviderConfig.style as string,
+          accessToken: context.mapProviderConfig.accessToken,
+        });
+      }
+      return renderer;
     },
     DICTIONARY: null,
     MAPBOX: null,

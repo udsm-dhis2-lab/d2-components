@@ -13,11 +13,15 @@ import { MapboxStyleSwitcherControl } from 'mapbox-gl-style-switcher';
 
 export class TrackedEntityLayer extends BaseVisualizer {
   private map: any;
-  style =
-    'https://api.maptiler.com/maps/eef16200-c4cc-4285-9370-c71ca24bb42d/style.json?key=CH1cYDfxBV9ZBu1lHGqh';
+  style = '';
   source: any;
-  accessToken =
-    'pk.eyJ1IjoiaWJyYWhpbXdpY2thbWEiLCJhIjoiY2txM3Y2bXJ1MTJoZjJ2cXI1ZW9pdGg2biJ9.RZjlqK5FxQkQuFrh5lZm_g';
+  accessToken = '';
+
+  setProviderConfig(config: { style: string; accessToken?: string }) {
+    this.style = config.style;
+    this.accessToken = config.accessToken || '';
+    return this;
+  }
 
   constructor() {
     super();
@@ -27,6 +31,9 @@ export class TrackedEntityLayer extends BaseVisualizer {
     let legends: any[] = [];
     let legendTitle: string;
     try {
+      if (!this.style) {
+        throw new Error('Map provider configuration with a style is required');
+      }
       this.map = new mapboxgl.Map({
         container: this._id,
         style: this.style,

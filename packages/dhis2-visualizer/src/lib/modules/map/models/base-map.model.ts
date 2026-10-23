@@ -1,1 +1,1 @@
-export type BaseMap = 'osmLight';
+export type { BaseMap } from '@iapps/d2-maps';

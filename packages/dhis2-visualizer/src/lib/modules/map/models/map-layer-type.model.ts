@@ -1,1 +1,1 @@
-export type MapLayerType = 'thematic' | 'boundary' | 'orgUnit';
+export type { MapLayerType } from '@iapps/d2-maps';

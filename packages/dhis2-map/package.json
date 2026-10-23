@@ -1,0 +1,17 @@
+{
+  "name": "@iapps/d2-maps",
+  "version": "1.1.26",
+  "type": "commonjs",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "dependencies": {
+    "@turf/turf": "^7.3.5",
+    "geojson": "^0.5.0",
+    "lodash": "^4.17.21",
+    "tslib": "^2.3.0"
+  },
+  "peerDependencies": {
+    "mapbox-gl": ">=3.5.1 <4",
+    "mapbox-gl-style-switcher": ">=1.0.11 <2"
+  }
+}

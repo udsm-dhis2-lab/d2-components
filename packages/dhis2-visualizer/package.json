@@ -4,6 +4,7 @@
   "dependencies": {
     "@iapps/d2-charts": "1.1.26",
     "@iapps/d2-kpi-cards": "1.1.26",
+    "@iapps/d2-maps": "1.1.26",
     "@iapps/d2-pivots": "1.1.26",
     "@turf/turf": "^7.3.5",
     "date-fns": "^3.3.1",

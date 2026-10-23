@@ -1,4 +1,1 @@
-export class TitleOption {
-  title!: string;
-  hidden!: boolean;
-}
+export type { TitleOption } from '@iapps/d2-maps';

@@ -56,6 +56,15 @@ describe('D2Visualizer compatibility facade', () => {
     expect(visualizer.setConfig(visualizationConfigFixture())).toBe(visualizer);
     expect(visualizer.setData(analytics)).toBe(visualizer);
     expect(visualizer.setBaseUrl('/dhis')).toBe(visualizer);
+    expect(
+      visualizer.setMapProviderConfig({ style: 'mock://provider-style' })
+    ).toBe(visualizer);
+    expect(
+      visualizer.setMapDataSource({
+        loadGeoFeatures: jest.fn(),
+        loadAnalytics: jest.fn(),
+      })
+    ).toBe(visualizer);
 
     expect(visualizer.id).toBe('visualization-host');
     expect(visualizer.visualizationType).toBe('COLUMN');

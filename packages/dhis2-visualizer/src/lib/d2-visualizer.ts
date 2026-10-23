@@ -22,6 +22,7 @@ import {
   RendererRegistry,
 } from './modules/renderer-registry';
 import { D2Window } from '@iapps/d2-web-sdk';
+import type { MapDataSource, MapProviderConfig } from '@iapps/d2-maps';
 
 export interface D2VisualizerOptions {
   /** Preserve the historical no-op by default; opt in to strict rejection. */
@@ -33,6 +34,8 @@ export class D2Visualizer {
   private readonly unsupportedTypeBehavior: 'ignore' | 'throw';
   private drawGeneration = 0;
   private analyticsDataSource?: VisualizationDataSource;
+  private mapDataSource?: MapDataSource;
+  private mapProviderConfig?: MapProviderConfig;
   dataSelections!: any[];
   type!: VisualizationType;
   visualizationType!: VisualizationType;
@@ -305,6 +308,16 @@ export class D2Visualizer {
       this.mapLayerConfig = mapLayerConfig;
     }
 
+    return this;
+  }
+
+  setMapProviderConfig(config: MapProviderConfig): D2Visualizer {
+    this.mapProviderConfig = config;
+    return this;
+  }
+
+  setMapDataSource(dataSource: MapDataSource): D2Visualizer {
+    this.mapDataSource = dataSource;
     return this;
   }
 
@@ -850,6 +863,8 @@ export class D2Visualizer {
         config: this.config,
         dataSelections: this.dataSelections,
         mapLayerConfig: this.mapLayerConfig,
+        mapProviderConfig: this.mapProviderConfig,
+        mapDataSource: this.mapDataSource,
         tableDashboardItem: this.tableDashboardItem,
         legendSets: this.legendSets,
         plotOptions: this.plotOptions,
