@@ -19,22 +19,17 @@ export const FilterToolbar = ({
   orgUnit: {
     customOrgUnitRoots,
     allowMultipleOrgUnits,
-    chosenOrgUnits: chosenOrgUnitsProp,
-    setChosenOrgUnits,
+    appliedOrgUnits: appliedOrgUnitsProp,
+    setAppliedOrgUnits,
+    selectedOrgUnits: selectedOrgUnitsProp,
+    setSelectedOrgUnits,
     orgUnitLabel,
-    selectedOrgUnit,
-    setSelectedOrgUnit,
-    setOrgUnitState,
-    defaultOrgUnit,
-    setTempOrgUnitState,
-    tempOrgUnitState,
     handleOrgUnitFilter,
-    tempOrgUnitModeState,
+    appliedOrgUnitMode,
+    selectedOrgUnitMode,
     defaultOrgUnitMode,
-    setTempOrgUnitModeState,
+    setSelectedOrgUnitMode,
     handleOrgUnitModeReset,
-    prevSelectedOrgUnit,
-    setPrevSelectedOrgUnit,
   },
   dates: {
     startDateState,
@@ -70,17 +65,33 @@ export const FilterToolbar = ({
     setPrevDateStates,
   },
 }: any) => {
-  const chosenOrgUnits = chosenOrgUnitsProp as SelectedOrgUnit[];
-  const displayedOrgUnitNames = (prevSelectedOrgUnit || '').split(', ');
+  const selectedOrgUnits = selectedOrgUnitsProp as SelectedOrgUnit[];
+  const appliedOrgUnits = appliedOrgUnitsProp as SelectedOrgUnit[];
+  const orgUnitsChanged =
+    selectedOrgUnits.length !== appliedOrgUnits.length ||
+    selectedOrgUnits.some(
+      (selected) =>
+        !appliedOrgUnits.some((applied) => applied.id === selected.id)
+    );
+  const canUpdateOrgUnits =
+    selectedOrgUnits.length > 0 &&
+    (orgUnitsChanged || selectedOrgUnitMode !== appliedOrgUnitMode);
+  const canResetOrgUnits =
+    selectedOrgUnits.length > 0 ||
+    appliedOrgUnits.length > 0 ||
+    selectedOrgUnitMode !== defaultOrgUnitMode ||
+    appliedOrgUnitMode !== defaultOrgUnitMode;
+  const appliedOrgUnitsLabel = appliedOrgUnits
+    .map((unit) => unit.displayName)
+    .join(', ');
+  const displayedOrgUnitNames = appliedOrgUnits.map((unit) => unit.displayName);
   const orgUnitSelectionLabel =
     displayedOrgUnitNames.length > 2
       ? `${displayedOrgUnitNames.slice(0, 2).join(', ')} .....`
-      : prevSelectedOrgUnit;
+      : appliedOrgUnitsLabel;
 
-  const updateChosenOrgUnits = (units: typeof chosenOrgUnits) => {
-    setChosenOrgUnits(units);
-    setSelectedOrgUnit(units.map((unit) => unit.displayName).join(', '));
-    setTempOrgUnitState(units.map((unit) => unit.id).join(';'));
+  const updateSelectedOrgUnits = (units: typeof selectedOrgUnits) => {
+    setSelectedOrgUnits(units);
   };
 
   const [isOpen, setIsOpen] = useState(false);
@@ -136,28 +147,28 @@ export const FilterToolbar = ({
                           key="registering-unit"
                           customOrgUnitRoots={customOrgUnitRoots}
                           multiple={allowMultipleOrgUnits}
-                          selectedPaths={chosenOrgUnits.map((unit) => unit.path)}
+                          selectedPaths={selectedOrgUnits.map((unit) => unit.path)}
                           onSelectOrgUnit={(unit: any) => {
                             if (!allowMultipleOrgUnits) {
-                              updateChosenOrgUnits([unit]);
+                              updateSelectedOrgUnits([unit]);
                               return;
                             }
                             const paths: string[] = unit.selected;
-                            const units = chosenOrgUnits.filter((chosen) => paths.includes(chosen.path));
+                            const units = selectedOrgUnits.filter((chosen) => paths.includes(chosen.path));
                             if (paths.includes(unit.path) && !units.some((chosen) => chosen.id === unit.id)) {
                               units.push(unit);
                             }
-                            updateChosenOrgUnits(units);
+                            updateSelectedOrgUnits(units);
                           }}
                         />
                         <div role="group" aria-label="Mode" style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '8px 0 12px' }}>
                           <span style={{ fontSize: '14px', fontWeight: 400 }}>Mode:</span>
                           <div style={{ flex: 1, minWidth: 0 }}>
                           <SingleSelectField
-                            selected={tempOrgUnitModeState}
+                            selected={selectedOrgUnitMode}
                             helpText={`If no mode is selected, the default mode will be ${defaultOrgUnitMode}.`}
                             onChange={({ selected }: { selected: string }) =>
-                              setTempOrgUnitModeState(selected)
+                              setSelectedOrgUnitMode(selected)
                             }
                           >
                             {(['DESCENDANTS', 'SELECTED', 'CHILDREN'] as const).map((mode) => (
@@ -182,9 +193,8 @@ export const FilterToolbar = ({
                       <ButtonStrip>
                         <Button
                           primary
-                          disabled={!selectedOrgUnit}
+                          disabled={!canUpdateOrgUnits}
                           onClick={() => {
-                            setPrevSelectedOrgUnit(selectedOrgUnit);
                             handleOrgUnitFilter();
                             setIsOpenOrgUnitDropdown(false);
                           }}
@@ -192,14 +202,11 @@ export const FilterToolbar = ({
                           Update
                         </Button>
                         <Button
-                          disabled={!selectedOrgUnit}
+                          disabled={!canResetOrgUnits}
                           onClick={() => {
-                            setSelectedOrgUnit('');
-                            setChosenOrgUnits([]);
-                            setPrevSelectedOrgUnit('');
-                            setOrgUnitState(defaultOrgUnit);
+                            setSelectedOrgUnits([]);
+                            setAppliedOrgUnits([]);
                             handleOrgUnitModeReset();
-                            setTempOrgUnitState(defaultOrgUnit);
                             setIsOpenOrgUnitDropdown(false);
                           }}
                         >
@@ -213,21 +220,18 @@ export const FilterToolbar = ({
             }
           >
             {orgUnitLabel ? orgUnitLabel : 'Registering unit'}{' '}
-            {prevSelectedOrgUnit && (
-              <span title={prevSelectedOrgUnit}>
+            {appliedOrgUnitsLabel && (
+              <span title={appliedOrgUnitsLabel}>
                 : {orgUnitSelectionLabel}
               </span>
             )}
-            {prevSelectedOrgUnit && (
+            {appliedOrgUnitsLabel && (
               <span
                 onClick={(event) => {
                   event.stopPropagation();
-                  setSelectedOrgUnit('');
-                            setChosenOrgUnits([]);
-                  setPrevSelectedOrgUnit('');
-                  setOrgUnitState(defaultOrgUnit);
-                            handleOrgUnitModeReset();
-                  setTempOrgUnitState(defaultOrgUnit);
+                  setSelectedOrgUnits([]);
+                  setAppliedOrgUnits([]);
+                  handleOrgUnitModeReset();
                   setIsOpenOrgUnitDropdown(false);
                 }}
                 style={{ display: 'inline-flex', alignItems: 'center' }}

@@ -128,7 +128,9 @@ export class LineListTableComponent
         );
       }
       if (changes['orgUnit']) {
-        this.reactStateUpdaters.setOrgUnitState(this.orgUnit);
+        this.reactStateUpdaters.setDefaultOrgUnit(this.orgUnit);
+        this.reactStateUpdaters.setAppliedOrgUnits([]);
+        this.reactStateUpdaters.setSelectedOrgUnits([]);
       }
       if (changes['programStageId']) {
         this.reactStateUpdaters.setProgramStageIdState(this.programStageId);
@@ -175,14 +177,15 @@ export class LineListTableComponent
     );
     const [isOptionSetNameVisibleState, setOptionSetNameVisible] =
       useState<boolean>(this.isOptionSetNameVisible);
-    const [chosenOrgUnits, setChosenOrgUnits] = useState<SelectedOrgUnit[]>([]);
+    const [selectedOrgUnits, setSelectedOrgUnits] = useState<SelectedOrgUnit[]>([]);
     const defaultOrgUnitMode = (this.ouMode) as OuMode;
-    const [orgUnitModeState, setOrgUnitModeState] = useState<OuMode>(defaultOrgUnitMode);
-    const [tempOrgUnitModeState, setTempOrgUnitModeState] = useState<OuMode>(defaultOrgUnitMode);
-    const [orgUnitState, setOrgUnitState] = useState<string>(this.orgUnit);
-    const [tempOrgUnitState, setTempOrgUnitState] = useState<string>(
-      this.orgUnit
-    );
+    const [appliedOrgUnitMode, setAppliedOrgUnitMode] = useState<OuMode>(defaultOrgUnitMode);
+    const [selectedOrgUnitMode, setSelectedOrgUnitMode] = useState<OuMode>(defaultOrgUnitMode);
+    const [defaultOrgUnit, setDefaultOrgUnit] = useState<string>(this.orgUnit);
+    const [appliedOrgUnits, setAppliedOrgUnits] = useState<SelectedOrgUnit[]>([]);
+    const orgUnitState = appliedOrgUnits.length
+      ? appliedOrgUnits.map((unit) => unit.id).join(';')
+      : defaultOrgUnit;
     const [programStageIdState, setProgramStageIdState] = useState<
       string | undefined
     >(this.programStageId);
@@ -219,8 +222,6 @@ export class LineListTableComponent
       useState<ColumnDefinition[]>();
     const [inputValues, setInputValues] = useState<Record<string, string>>({});
     const [orgUnitLabel, setOrgUnitLabel] = useState<string>('');
-    const [selectedOrgUnit, setSelectedOrgUnit] = useState<string>('');
-    const [prevSelectedOrgUnit, setPrevSelectedOrgUnit] = useState<string>('');
     const [showAllFilters, setShowAllFilters] = useState(false);
     const visibleFilters = showAllFilters
       ? filteredColumns ?? []
@@ -228,7 +229,6 @@ export class LineListTableComponent
     // const visibleFilters = showAllFilters
     //   ? filteredColumns ?? []
     //   : filteredColumns ?? []).slice(0, 2);
-    const defaultOrgUnit = this.orgUnit;
     const [dateStates, setDateStates] = useState<{ [key: string]: string }>({});
     const [prevDateStates, setPrevDateStates] = useState<{
       [key: string]: string;
@@ -253,7 +253,9 @@ export class LineListTableComponent
     // Stores updaters in refs for Angular to access
     const updateRefs = useRef({
       setProgramIdState,
-      setOrgUnitState,
+      setDefaultOrgUnit,
+      setAppliedOrgUnits,
+      setSelectedOrgUnits,
       setProgramStageIdState,
       setAttributeFiltersState,
       setStartDateState,
@@ -313,7 +315,7 @@ export class LineListTableComponent
               .setProgram(this.programId)
               .setProgramStage(this.programStageId as string)
               .setOrgUnit(orgUnitState)
-              .setOuMode(orgUnitModeState)
+              .setOuMode(appliedOrgUnitMode)
               .setPagination(
                 new Pager({
                   pageSize: pager.pageSize,
@@ -395,7 +397,7 @@ export class LineListTableComponent
               .setProgram(this.programId)
               .setProgramStage(this.programStageId as string)
               .setOrgUnit(orgUnitState)
-              .setOuMode(orgUnitModeState)
+              .setOuMode(appliedOrgUnitMode)
               .setStatus(this.enrollmentStatus)
               .setEventStatus(
                 this.eventStatus?.status,
@@ -511,7 +513,7 @@ export class LineListTableComponent
       metaData,
       programIdState,
       orgUnitState,
-      orgUnitModeState,
+      appliedOrgUnitMode,
       programStageIdState,
       attributeFiltersState,
       startDateState,
@@ -534,7 +536,7 @@ export class LineListTableComponent
           programId: programIdState,
           programStageId: programStageIdState,
           orgUnit: orgUnitState,
-          ouMode: orgUnitModeState,
+          ouMode: appliedOrgUnitMode,
           startDate: startDateState,
           endDate: endDateState,
           dataQueryFilters: dataQueryFiltersState,
@@ -705,13 +707,13 @@ export class LineListTableComponent
     const handleStartDateFilter = () => setStartDateState(tempStartDateState);
     const handleEndDateFilter = () => setEndDateState(tempEndDateState);
     const handleOrgUnitFilter = () => {
-      setOrgUnitState(tempOrgUnitState);
-      setOrgUnitModeState(tempOrgUnitModeState);
+      setAppliedOrgUnits([...selectedOrgUnits]);
+      setAppliedOrgUnitMode(selectedOrgUnitMode);
       setPager((previous) => new Pager({ ...previous, page: 1 }));
     };
     const handleOrgUnitModeReset = () => {
-      setOrgUnitModeState(defaultOrgUnitMode);
-      setTempOrgUnitModeState(defaultOrgUnitMode);
+      setAppliedOrgUnitMode(defaultOrgUnitMode);
+      setSelectedOrgUnitMode(defaultOrgUnitMode);
       setPager((previous) => new Pager({ ...previous, page: 1 }));
     };
 
@@ -796,23 +798,18 @@ export class LineListTableComponent
               React.createElement(FilterToolbar, {
                 orgUnit: {
                   allowMultipleOrgUnits: this.allowMultipleOrgUnits,
-                  chosenOrgUnits,
-                  setChosenOrgUnits,
+                  appliedOrgUnits,
+                  setAppliedOrgUnits,
+                  selectedOrgUnits,
+                  setSelectedOrgUnits,
                   customOrgUnitRoots: this.customOrgUnitRoots,
                   orgUnitLabel,
-                  selectedOrgUnit,
-                  setSelectedOrgUnit,
-                  setOrgUnitState,
-                  defaultOrgUnit,
-                  setTempOrgUnitState,
-                  tempOrgUnitState,
                   handleOrgUnitFilter,
-                  tempOrgUnitModeState,
+                  appliedOrgUnitMode,
+                  selectedOrgUnitMode,
                   defaultOrgUnitMode,
-                  setTempOrgUnitModeState,
+                  setSelectedOrgUnitMode,
                   handleOrgUnitModeReset,
-                  prevSelectedOrgUnit,
-                  setPrevSelectedOrgUnit,
                 },
                 dates: {
                   startDateState,
