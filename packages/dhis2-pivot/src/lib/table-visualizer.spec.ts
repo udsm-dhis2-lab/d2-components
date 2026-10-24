@@ -1,6 +1,6 @@
 import { TablePayload } from './models/table-object.model';
 import { D2TableEngine } from './utils/table-engine.util';
-import { TableUtil } from './utils/table.util';
+import { D2Pivots, TableUtil } from './d2-pivot.visualizer';
 
 function tablePayloadFixture(): TablePayload {
   return {
@@ -26,6 +26,9 @@ function tablePayloadFixture(): TablePayload {
 }
 
 describe('TableUtil', () => {
+  it('keeps TableUtil as an alias of the D2Pivots public class', () => {
+    expect(TableUtil).toBe(D2Pivots);
+  });
   it('renders the current table payload into the configured host', () => {
     document.body.innerHTML = '<div id="table-host"></div>';
     jest

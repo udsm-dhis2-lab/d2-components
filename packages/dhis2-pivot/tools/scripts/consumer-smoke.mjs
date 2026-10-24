@@ -57,7 +57,7 @@ try {
       throw new Error(`Unexpected ${dependency} dependency`);
   writeFileSync(
     join(consumer, 'verify.cjs'),
-    "const m=require('@iapps/d2-pivots'); if(typeof m.TableUtil!=='function'||typeof m.D2TableEngine!=='function'||typeof m.tableToCsv!=='function') throw new Error('pivot exports missing'); console.log('Pivot-only consumer import passed');"
+    "const m=require('@iapps/d2-pivots'); if(typeof m.D2Pivots!=='function'||m.TableUtil!==m.D2Pivots||typeof m.D2TableEngine!=='function'||typeof m.tableToCsv!=='function') throw new Error('pivot exports missing'); console.log('Pivot-only consumer import passed');"
   );
   execFileSync(process.execPath, ['verify.cjs'], {
     cwd: consumer,

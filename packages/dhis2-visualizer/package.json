@@ -3,6 +3,7 @@
   "version": "1.1.26",
   "dependencies": {
     "@iapps/d2-charts": "1.1.26",
+    "@iapps/d2-custom-visualizations": "1.1.26",
     "@iapps/d2-kpi-cards": "1.1.26",
     "@iapps/d2-maps": "1.1.26",
     "@iapps/d2-pivots": "1.1.26",

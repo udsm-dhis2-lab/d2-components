@@ -22,7 +22,7 @@
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "eslint 'packages/dhis2-visualizer/**/*.{ts,js,mjs,json}'"
+        "command": "npx eslint 'packages/dhis2-visualizer/**/*.{ts,js,mjs,json}'"
       }
     },
     "test": {

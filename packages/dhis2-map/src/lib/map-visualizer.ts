@@ -17,7 +17,7 @@ export interface MapLayerFailure {
   error: unknown;
 }
 
-export class MapVisualizer extends BaseVisualizer implements Visualizer {
+export class D2Maps extends BaseVisualizer implements Visualizer {
   mapLayerConfiguration = new MapLayerConfiguration();
   layers: MapLayer[] = [];
   layerFailures: MapLayerFailure[] = [];
@@ -33,22 +33,22 @@ export class MapVisualizer extends BaseVisualizer implements Visualizer {
   ) {
     super();
   }
-  setBaseMap(_basemap: unknown): MapVisualizer {
+  setBaseMap(_basemap: unknown): D2Maps {
     return this;
   }
-  setZoom(zoom: number): MapVisualizer {
+  setZoom(zoom: number): D2Maps {
     this.zoom = zoom;
     return this;
   }
-  addLayer(layer: MapLayer): MapVisualizer {
+  addLayer(layer: MapLayer): D2Maps {
     this.layers = [...this.layers, layer];
     return this;
   }
-  setLayerConfig(config: MapLayerConfiguration): MapVisualizer {
+  setLayerConfig(config: MapLayerConfiguration): D2Maps {
     if (config) this.mapLayerConfiguration = config;
     return this;
   }
-  setProviderConfig(config: MapProviderConfig): MapVisualizer {
+  setProviderConfig(config: MapProviderConfig): D2Maps {
     this.#providerConfig = config;
     return this;
   }
@@ -207,3 +207,6 @@ export class MapVisualizer extends BaseVisualizer implements Visualizer {
     this.map = null;
   }
 }
+
+// Backwards-compatible class identity for existing consumers.
+export { D2Maps as MapVisualizer };

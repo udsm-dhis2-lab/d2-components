@@ -1,0 +1,9 @@
+import {CustomVisualizer} from './custom-visualizer';import {TemplateValidationError} from './template-security';
+const data={headers:[{name:'dx'},{name:'value'}],rows:[['dx-a','42.5']]};
+function renderer(html:string,cssStyles=''){document.body.innerHTML='<div id="host"></div>';return new CustomVisualizer().setId('host').setConfig({customTemplate:{html,cssStyles}}).setData(data);}
+describe('secure custom rendering',()=>{it('renders approved templates and deterministic analytics values',()=>{renderer('<strong class="total">{{dx:dx-a}}</strong>','strong { color: blue; }').draw();expect(document.querySelector('.total')?.textContent).toBe('42.5');expect(document.querySelector('style')?.textContent).toContain('color: blue');});
+  it.each(['<script>alert(1)</script>','<img src=x onerror=alert(1)>','<div onclick="alert(1)">x</div>'] )('rejects hostile markup: %s',html=>expect(()=>renderer(html).draw()).toThrow(TemplateValidationError));
+  it.each(['x { background: url(javascript:alert(1)); }','@import "evil.css";','x { width: expression(alert(1)); }'])('rejects hostile CSS',css=>expect(()=>renderer('<p>x</p>',css).draw()).toThrow(expect.objectContaining({code:'UNSAFE_CSS'})));
+  it('escapes substituted external values',()=>{const value='<img src=x onerror=alert(1)>';document.body.innerHTML='<div id="host"></div>';new CustomVisualizer().setId('host').setConfig({customTemplate:{html:'<p>{{dx:COUNT<enrollment>}}</p>',cssStyles:''}}).setTrackedEntityInstances([]).setTrackerEvaluator(()=>value).draw();expect(document.querySelector('img')).toBeNull();expect(document.querySelector('p')?.textContent).toBe(value);});
+  it('returns a typed error for malformed expressions',()=>expect(()=>renderer('<p>{{dx:dx-a</p>').draw()).toThrow(expect.objectContaining({code:'INVALID_EXPRESSION'})));
+});

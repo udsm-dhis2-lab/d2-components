@@ -12,14 +12,18 @@ import {
   MapProviderConfig,
   MapVisualizer,
 } from '@iapps/d2-maps';
-import { TableUtil } from '@iapps/d2-pivots';
+import { D2Pivots } from '@iapps/d2-pivots';
 import { getSelectionDimensionsFromFavorite } from '../shared/helpers';
 import {
   ChartType,
   VisualizationType,
 } from '../shared/models/visualization-type.model';
-import { CustomVisualizer } from './custom/custom-visualizer';
-import { TrackedEntityLayer } from './map/layers/tracked-entity-layer.model';
+import { CustomVisualizer } from '@iapps/d2-custom-visualizations';
+import {
+  SelectionFilterUtil,
+  TrackedEntityInstanceData,
+  TrackedEntityLayer,
+} from '@iapps/d2-maps';
 import { VisualizationData } from '../shared/models/visualization-data.model';
 
 export interface FacadeRenderer {
@@ -78,7 +82,7 @@ const chartFactory: RendererFactory = (context, data) =>
 
 export function createDefaultRendererRegistry(): RendererRegistry {
   const tableFactory: RendererFactory = (context, data) =>
-    new TableUtil()
+    new D2Pivots()
       .setId(context.id)
       .setTableDashboardItem(context.tableDashboardItem)
       .setTableConfiguration(context.config.toTableConfig())
@@ -139,12 +143,22 @@ export function createDefaultRendererRegistry(): RendererRegistry {
       const selections = context.config.dataSelections.filter(
         (selection: any) => selection.domain === 'TRACKER'
       );
-      return new CustomVisualizer()
+      const renderer = new CustomVisualizer()
         .setId(context.id)
         .setConfig(context.config)
         .setData(data)
         .setSelections(selections)
         .setTrackedEntityInstances(context.trackedEntityInstances);
+      if (context.trackedEntityInstances) {
+        const data = new TrackedEntityInstanceData(
+          context.trackedEntityInstances
+        );
+        const filter = SelectionFilterUtil.getCustomFilter(selections);
+        renderer.setTrackerEvaluator((expression) =>
+          data.getExpressionData(expression, filter)
+        );
+      }
+      return renderer;
     },
     TRACKED_ENTITY_LAYER: (context) => {
       context.config.mergeDataSelections(context.dataSelections);

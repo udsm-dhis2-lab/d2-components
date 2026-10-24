@@ -1,6 +1,7 @@
 export * from './lib/core';
 export * from './lib/class/table-drawable.class';
 export * from './lib/download.service';
+export * from './lib/d2-pivot.visualizer';
 export * from './lib/helpers/table-helper';
 export type { Legend, LegendSet } from './lib/models/legend-set.model';
 export type { TableAnalytics } from './lib/models/table-analytics.model';
@@ -16,4 +17,3 @@ export type {
 } from './lib/models/table-object.model';
 export type { TableVisualization } from './lib/models/table-visualization.model';
 export * from './lib/utils/table-engine.util';
-export * from './lib/utils/table.util';

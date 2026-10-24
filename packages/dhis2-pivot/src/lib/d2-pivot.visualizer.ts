@@ -4,14 +4,14 @@ import {
   DownloadFormat,
   Visualizer,
   VisualizerPlotOptions,
-} from '../core';
-import { TableDownloadService } from '../download.service';
-import { TablePayload } from '../models/table-object.model';
-import { LegendSet } from '../models/legend-set.model';
-import { TableAnalytics } from '../models/table-analytics.model';
-import { TableConfiguration } from '../models/table-config.model';
-import { TableDashboardItem } from '../models/table-dashboard-item.model';
-import { D2TableEngine } from './table-engine.util';
+} from './core';
+import { TableDownloadService } from './download.service';
+import { TablePayload } from './models/table-object.model';
+import { LegendSet } from './models/legend-set.model';
+import { TableAnalytics } from './models/table-analytics.model';
+import { TableConfiguration } from './models/table-config.model';
+import { TableDashboardItem } from './models/table-dashboard-item.model';
+import { D2TableEngine } from './utils/table-engine.util';
 
 function createElement(
   tagName: string,
@@ -36,7 +36,7 @@ function createElement(
   return element;
 }
 
-export class TableUtil extends BaseVisualizer implements Visualizer {
+export class D2Pivots extends BaseVisualizer implements Visualizer {
   /**
    *
    */
@@ -81,7 +81,7 @@ export class TableUtil extends BaseVisualizer implements Visualizer {
    * @param tableAnalytics
    * @returns
    */
-  public setTableAnalytics(tableAnalytics: TableAnalytics): TableUtil {
+  public setTableAnalytics(tableAnalytics: TableAnalytics): D2Pivots {
     this.tableAnalytics = tableAnalytics;
     return this;
   }
@@ -101,7 +101,7 @@ export class TableUtil extends BaseVisualizer implements Visualizer {
    */
   public setTableConfiguration(
     tableConfiguration: TableConfiguration
-  ): TableUtil {
+  ): D2Pivots {
     this.tableConfiguration = tableConfiguration;
     return this;
   }
@@ -119,7 +119,7 @@ export class TableUtil extends BaseVisualizer implements Visualizer {
    * @param legendSets
    * @returns
    */
-  setLegendSet(legendSets: LegendSet[]): TableUtil {
+  setLegendSet(legendSets: LegendSet[]): D2Pivots {
     this.legendSets = legendSets;
     return this;
   }
@@ -379,3 +379,6 @@ export class TableUtil extends BaseVisualizer implements Visualizer {
     }
   }
 }
+
+// Backwards-compatible class identity for existing consumers.
+export { D2Pivots as TableUtil };

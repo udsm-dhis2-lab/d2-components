@@ -1,6 +1,6 @@
 import type { Feature } from 'geojson';
 import { MapLayer } from './layers/map-layer.model';
-import { MapVisualizer } from './map-visualizer';
+import { D2Maps, MapVisualizer } from './map-visualizer';
 import type { MapProviderAdapter, ProviderMap } from './provider-adapter';
 
 class FakeMap implements ProviderMap {
@@ -42,6 +42,9 @@ async function ready(map: FakeMap, drawing: Promise<void>): Promise<void> {
 }
 
 describe('MapVisualizer', () => {
+  it('keeps MapVisualizer as an alias of the D2Maps public class', () => {
+    expect(MapVisualizer).toBe(D2Maps);
+  });
   it('waits for readiness, preserves order and fits every valid layer', async () => {
     const map = new FakeMap();
     const renderer = new MapVisualizer(provider(map)).setId(
