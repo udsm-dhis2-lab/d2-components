@@ -1,0 +1,8 @@
+{
+  "dhis2-visualizer": 240000,
+  "dhis2-chart": 110000,
+  "dhis2-map": 70000,
+  "dhis2-pivot": 55000,
+  "dhis2-kpi-card": 15000,
+  "dhis2-custom-visualization": 15000
+}

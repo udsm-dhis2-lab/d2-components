@@ -11,8 +11,8 @@ export class LegendControl {
     this._container.className = 'mapboxgl-ctrl';
 
     if (this._legends?.length > 1) {
-      this._container.innerHTML = `
-      <style>
+      const style = document.createElement('style');
+      style.textContent = `
      .legend-ctrl {
           background: white;
           border-radius: 5px;
@@ -45,24 +45,35 @@ export class LegendControl {
           font-size: 12px;
         }
 
-      </style>
-      <div class="legend-ctrl">
-      <div class="legend-ctrl-title">${this.legendTitle}</div>
-      ${this._legends
-        .map(
-          (legend) => `<div class="legend-ctrl-items">
-      ${
-        legend.useBackgroundColor
-          ? `<div class="legend-ctrl-icon" style="background-color: ${
-              legend.backgroundColor || 'gray'
-            }"></div>`
-          : `<img src="${legend.symbol}" />`
+      `;
+      const legendContainer = document.createElement('div');
+      legendContainer.className = 'legend-ctrl';
+      const title = document.createElement('div');
+      title.className = 'legend-ctrl-title';
+      title.textContent = this.legendTitle;
+      legendContainer.appendChild(title);
+
+      for (const legend of this._legends) {
+        const item = document.createElement('div');
+        item.className = 'legend-ctrl-items';
+        if (legend.useBackgroundColor) {
+          const icon = document.createElement('div');
+          icon.className = 'legend-ctrl-icon';
+          icon.style.backgroundColor = legend.backgroundColor || 'gray';
+          item.appendChild(icon);
+        } else {
+          const icon = document.createElement('img');
+          icon.alt = '';
+          icon.src = String(legend.symbol ?? '');
+          item.appendChild(icon);
+        }
+        const label = document.createElement('div');
+        label.className = 'legend-ctrl-label';
+        label.textContent = String(legend.label ?? '');
+        item.appendChild(label);
+        legendContainer.appendChild(item);
       }
-      <div class="legend-ctrl-label">${legend.label}</div>
-     </div>`
-        )
-        .join('')}
-      </div>`;
+      this._container.append(style, legendContainer);
     }
     return this._container;
   }

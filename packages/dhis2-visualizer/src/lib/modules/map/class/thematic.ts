@@ -431,9 +431,7 @@ export class ThematicDrawableMap extends MapDrawable {
         const description = mapMouseEvent.features[0].properties.description;
         const value = mapMouseEvent.features[0].properties.value;
 
-        const popUpMessage = `<p>${
-          description ? description : ''
-        } (${value})</p>`;
+        const popUpMessage = `${description || ''} (${value})`;
 
         // Create a popup, but don't add it to the map yet.
         const mapBoxPopUp = new mapboxgl.Popup({
@@ -443,7 +441,7 @@ export class ThematicDrawableMap extends MapDrawable {
 
         mapBoxPopUp
           .setLngLat(mapMouseEvent.lngLat)
-          .setHTML(popUpMessage)
+          .setText(popUpMessage)
           .addTo(map);
 
         map.flyTo({
@@ -597,7 +595,7 @@ export class ThematicDrawableMap extends MapDrawable {
       legendSet.legends.length
     ) {
       if (legendDOMElement) {
-        legendDOMElement.innerHTML = '';
+        legendDOMElement.replaceChildren();
         legendDOMElement.style.display = 'block';
       }
 
@@ -614,7 +612,9 @@ export class ThematicDrawableMap extends MapDrawable {
 
       legendTableHeadHorizontalLine.setAttribute('style', `width: 100%`);
 
-      legendTableDataItemTitleSection.innerHTML = `<label>${legendSet?.name}</label>`;
+      const titleLabel = document.createElement('label');
+      titleLabel.textContent = legendSet?.name ?? '';
+      legendTableDataItemTitleSection.appendChild(titleLabel);
       legendTableDataItemTitleSection.setAttribute('colspan', '3');
       legendTableHRLineTDItem.setAttribute('colspan', '3');
 
@@ -664,8 +664,9 @@ export class ThematicDrawableMap extends MapDrawable {
         const legendTableDataItemCount = document.createElement('td');
 
         legendTableDataItemColorSection.style.backgroundColor = legend?.color;
-        legendTableDataItemLabel.innerHTML = `<label>${legend?.name} ${legend?.startValue} - ${legend?.endValue} (${legend?.itemCount})</label>`;
-        // legendTableDataItemCount.innerHTML = `${legend?.name}`;
+        const legendLabel = document.createElement('label');
+        legendLabel.textContent = `${legend?.name} ${legend?.startValue} - ${legend?.endValue} (${legend?.itemCount})`;
+        legendTableDataItemLabel.appendChild(legendLabel);
 
         legendTableRowItem.appendChild(legendTableDataItemColorSection);
         legendTableRowItem.appendChild(legendTableDataItemLabel);
@@ -677,7 +678,7 @@ export class ThematicDrawableMap extends MapDrawable {
       }
     } else {
       if (legendDOMElement) {
-        legendDOMElement.innerHTML = '';
+        legendDOMElement.replaceChildren();
         legendDOMElement.style.display = 'none';
       }
     }
@@ -732,43 +733,48 @@ export class ThematicDrawableMap extends MapDrawable {
       const mapInfoDOMElement = document.getElementById(infoContainerId);
       const info: any = _.head(mapboxGeoJSONFeature);
 
-      let htmlCode = ``;
       if (mapInfoDOMElement) {
         mapInfoDOMElement.style.display = 'block';
+        mapInfoDOMElement.replaceChildren();
         if (dataName && mapboxGeoJSONFeature) {
-          htmlCode += `<table>`;
-          htmlCode += `<thead>`;
-          htmlCode += `</thead>`;
-          htmlCode += `<tbody>`;
-
+          const table = document.createElement('table');
+          const body = document.createElement('tbody');
           if (
             info &&
             info.properties &&
             info.properties.value &&
             info.properties.value
           ) {
-            htmlCode += `<tr>`;
-            htmlCode += `<td><b>Region:</b><label>${info.properties?.description}</label></td>`;
-            htmlCode += `</tr>`;
-            htmlCode += `<tr>`;
-            htmlCode += `<td><b>Data:</b><label>${indicatorName}</label></td>`;
-            htmlCode += `</tr>`;
-            htmlCode += `<tr>`;
-            htmlCode += `<td><b>Period:</b><label>${periodName}</label></td>`;
-            htmlCode += `</tr>`;
-            htmlCode += `<tr>`;
-            htmlCode += `<td><b>Value:</b><label>${info.properties.value}</label></td>`;
-            htmlCode += `</tr>`;
+            const rows: Array<[string, unknown]> = [
+              ['Region:', info.properties?.description],
+              ['Data:', indicatorName],
+              ['Period:', periodName],
+              ['Value:', info.properties.value],
+            ];
+            for (const [label, value] of rows) {
+              const row = document.createElement('tr');
+              const cell = document.createElement('td');
+              const strong = document.createElement('b');
+              strong.textContent = label;
+              const detail = document.createElement('span');
+              detail.textContent = String(value ?? '');
+              cell.append(strong, detail);
+              row.appendChild(cell);
+              body.appendChild(row);
+            }
           } else {
-            htmlCode += `<td>Hover on the map for more info! </td>`;
-            htmlCode += `</tr>`;
-            htmlCode += `</tr>`;
+            const row = document.createElement('tr');
+            const cell = document.createElement('td');
+            cell.textContent = 'Hover on the map for more info!';
+            row.appendChild(cell);
+            body.appendChild(row);
           }
-          htmlCode += `<tfoot>`;
-          htmlCode += `</tfoot>`;
-          mapInfoDOMElement.innerHTML = htmlCode;
+          table.appendChild(body);
+          mapInfoDOMElement.appendChild(table);
         } else {
-          mapInfoDOMElement.innerHTML = `<p>Hover over a state!</p>`;
+          const message = document.createElement('p');
+          message.textContent = 'Hover over a state!';
+          mapInfoDOMElement.appendChild(message);
         }
       }
     }
@@ -823,15 +829,14 @@ export class ThematicDrawableMap extends MapDrawable {
               ? mapAnalytics.metaData.items[periodId].name
               : '';
 
-          let htmlCode = ``;
-          htmlCode += `<label>${indicatorName} - ${periodName}</label>`;
-
-          mapTitleDOMElement.innerHTML = htmlCode;
+          const label = document.createElement('label');
+          label.textContent = `${indicatorName} - ${periodName}`;
+          mapTitleDOMElement.replaceChildren(label);
         }
       }
     } else {
       if (mapTitleDOMElement) {
-        mapTitleDOMElement.innerHTML = '';
+        mapTitleDOMElement.replaceChildren();
       }
     }
   }

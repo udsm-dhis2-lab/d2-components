@@ -17,3 +17,26 @@ do not trigger bounds fitting.
 Tracker-map support is exposed from this same entry point through
 `TrackedEntityLayer`, `TrackedEntityInstanceData`, and the validated tracker
 filter utilities.
+
+## Installation
+
+`npm install @iapps/d2-maps mapbox-gl mapbox-gl-style-switcher`
+
+## Usage
+
+Use `D2Maps`, add `MapLayer` instances and provide runtime provider config. See
+`examples/basic.mjs`.
+
+## Lifecycle
+
+Await `draw()` and call `dispose()` on replacement; owned provider resources
+are removed.
+
+## Errors
+
+Layer failures are recorded in `layerFailures`; successful layers continue.
+
+## Security
+
+Credentials stay external. Tracker popup values, URLs, colors and expressions
+are validated before rendering.

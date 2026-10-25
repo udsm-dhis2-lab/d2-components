@@ -39,6 +39,21 @@
       "options": {
         "command": "node tools/scripts/dhis2-visualizer-consumer-smoke.mjs"
       }
+    },
+    "bundle-budget": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": { "command": "node tools/scripts/check-visualizer-budgets.mjs" }
+    },
+    "release-review": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": { "command": "node tools/scripts/visualizer-release-review.mjs" }
+    },
+    "examples-smoke": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": { "command": "node tools/scripts/run-visualizer-examples.mjs" }
     }
   }
 }

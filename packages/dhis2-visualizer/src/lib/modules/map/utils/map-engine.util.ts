@@ -108,7 +108,6 @@ export class D2MapEngine extends ThematicDrawableMap {
           mapItem.layer &&
           _.toLower(_.trim(mapItem.layer)) === 'thematic'
         ) {
-          // Implement Section
           const mapDrawablePayload: MapDrawablePayload =
             thematicDrawableMap.getMapFeaturePayload(
               mapUtil,
@@ -117,21 +116,11 @@ export class D2MapEngine extends ThematicDrawableMap {
               sanitizedAnalytics
             );
           mapLayers.push({ ...mapDrawablePayload, id: mapItem.id });
-        } else {
-          // Implement Section
         }
       }
       return mapLayers;
     }
 
-    // if (this.type === 'thematic') {
-    //     const thematicDrawableMap = new ThematicDrawableMap();
-    //     return thematicDrawableMap.getMapFeaturePayload(
-    //         mapUtil,
-    //         geoFeatures,
-    //         mapAnalytics
-    //     );
-    // }
   }
 
   getSanitizedMapDrawableItem(
