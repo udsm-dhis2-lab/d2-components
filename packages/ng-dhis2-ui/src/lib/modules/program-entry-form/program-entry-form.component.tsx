@@ -444,7 +444,11 @@ export class ProgramEntryFormModule {
     }
 
     if (!this.trackedEntity()) {
-      return await instanceQuery.create();
+      const instance = await instanceQuery.create();
+
+      return this.codeGeneratorOrgUnit()
+        ? await this.#setReservedValuesForCodeGeneration(instance)
+        : instance;
     }
 
     const instanceResult = (
@@ -452,12 +456,18 @@ export class ProgramEntryFormModule {
     ).data as TrackedEntityInstance;
 
     if (!instanceResult) {
-      return await instanceQuery.create();
+      const instance = await instanceQuery.create();
+
+      return this.codeGeneratorOrgUnit()
+        ? await this.#setReservedValuesForCodeGeneration(instance)
+        : instance;
     }
 
     instanceQuery.setInstanceFields(this.metaData()?.program as Program);
 
-    const instance = await instanceQuery.setReservedValues();
+    const instance = this.codeGeneratorOrgUnit()
+      ? await this.#setReservedValuesForCodeGeneration(instanceQuery.instance)
+      : await instanceQuery.setReservedValues();
 
     if (this.orgUnit()) {
       instance.setOrgUnit(this.orgUnit() as string);
