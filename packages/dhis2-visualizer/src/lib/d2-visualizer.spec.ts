@@ -244,6 +244,67 @@ describe('D2Visualizer compatibility facade', () => {
     expect(draw).toHaveBeenCalledTimes(1);
   });
 
+  it('unwraps the real function-analytics result shape before renderer dispatch', async () => {
+    const analytics = analyticsFixture();
+    const networkAnalytics = {
+      headers: analytics.headers,
+      rows: analytics.rows,
+      metaData: {
+        dimensions: analytics.metaData.dimensions,
+        items: analytics.metaData.items,
+      },
+    };
+    const wrapped = {
+      _data: networkAnalytics,
+      get rows() {
+        return networkAnalytics.rows.map((row) => ({ row }));
+      },
+    };
+    (Fn.Analytics as jest.Mock).mockImplementationOnce(() =>
+      analyticsClient(jest.fn().mockResolvedValue(wrapped))
+    );
+    jest.spyOn(ChartVisualizer.prototype, 'draw').mockImplementation();
+    const visualizer = new D2Visualizer()
+      .setId('visualization-host')
+      .setType('COLUMN')
+      .setSelections(selectionsFixture())
+      .setConfig(visualizationConfigFixture('COLUMN'));
+
+    await visualizer.draw();
+
+    const rendererData = (
+      visualizer.visualizer as unknown as {
+        _data: {
+          rows: string[][];
+          metaData: { dx: string[]; names: Record<string, string> };
+        };
+      }
+    )._data;
+    expect(rendererData.rows[0][3]).toBe('40');
+    expect(rendererData.metaData.dx).toEqual(['dx-a']);
+    expect(rendererData.metaData.names['dx-a']).toBe('Coverage_indicator');
+  });
+
+  it('clears stale supplied data when render changes to a fetched request', async () => {
+    const fresh = analyticsFixture({ rows: [['dx-a', '2024', 'ou-a', '84']] });
+    (Fn.Analytics as jest.Mock).mockImplementationOnce(() =>
+      analyticsClient(jest.fn().mockResolvedValue({ _data: fresh }))
+    );
+    jest.spyOn(ChartVisualizer.prototype, 'draw').mockImplementation();
+    const visualizer = configuredVisualizer('COLUMN');
+
+    await visualizer.render({
+      type: 'COLUMN',
+      target: { id: 'visualization-host' },
+      configuration: visualizationConfigFixture('COLUMN'),
+      selections: selectionsFixture(),
+    });
+
+    expect((visualizer.visualizer as unknown as { _data: unknown })._data).toBe(
+      fresh
+    );
+  });
+
   it('delegates downloads to the retained renderer', async () => {
     jest.spyOn(ChartVisualizer.prototype, 'draw').mockImplementation();
     const download = jest

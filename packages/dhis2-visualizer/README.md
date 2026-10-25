@@ -23,6 +23,24 @@ await visualizer.render({
 Contracts are also available from `@iapps/d2-visualizer/contracts` and runtime
 validation from `@iapps/d2-visualizer/validation`. See `examples/basic.mjs`.
 
+Aggregate analytics acquisition is centralized by the facade. A direct-module
+consumer can optionally use the lightweight analytics entry point and still
+keep the renderer independent:
+
+```ts
+import { D2AnalyticsFacade } from '@iapps/d2-visualizer/analytics';
+import { D2Charts } from '@iapps/d2-charts';
+
+const data = await new D2AnalyticsFacade()
+  .setSelections(selections)
+  .getData();
+
+new D2Charts().setId('chart').setConfig(config).setData(data).draw();
+```
+
+`D2Charts` has no dependency on `@iapps/d2-visualizer`; consumers that already
+have analytics data can continue to call `setData()` directly.
+
 ## Lifecycle
 
 Repeated `render()` calls dispose the active renderer and reject stale async

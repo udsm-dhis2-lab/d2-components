@@ -93,20 +93,18 @@ describe('year-over-year analytics characterization', () => {
     const result = await (
       visualizer as unknown as {
         _getDataYearOverYearLine(): Promise<{
-          _data: {
-            axis: { categories: string[] };
-            series: Array<{ name: string; data: number[] }>;
-          };
+          axis: { categories: string[] };
+          series: Array<{ name: string; data: number[] }>;
         }>;
       }
     )._getDataYearOverYearLine();
 
     expect(get).toHaveBeenCalledTimes(5);
-    expect(result._data.axis.categories).toEqual([
+    expect(result.axis.categories).toEqual([
       'Week 1 2024',
       'Week 2 2024',
     ]);
-    expect(result._data.series).toEqual([
+    expect(result.series).toEqual([
       { name: '2023', year: 2023, data: [10, 20] },
       { name: '2024', year: 2024, data: [30, 0] },
     ]);
@@ -128,13 +126,14 @@ describe('year-over-year analytics characterization', () => {
     const result = await (
       visualizer as unknown as {
         _getDataYearOverYearLine(): Promise<{
-          _data: { error: boolean; message: string };
+          error: boolean;
+          message: string;
         }>;
       }
     )._getDataYearOverYearLine();
 
-    expect(result._data.error).toBe(true);
-    expect(result._data.message).toContain(
+    expect(result.error).toBe(true);
+    expect(result.message).toContain(
       'All per-year analytics calls failed'
     );
   });
@@ -169,12 +168,12 @@ describe('year-over-year analytics characterization', () => {
     expect(visualizer.setDataSource(source)).toBe(visualizer);
     const result = await (
       visualizer as unknown as {
-        _getDataYearOverYearLine(): Promise<{ _data: { series: unknown[] } }>;
+        _getDataYearOverYearLine(): Promise<{ series: unknown[] }>;
       }
     )._getDataYearOverYearLine();
 
     expect(getAnalytics).toHaveBeenCalledTimes(3);
-    expect(result._data.series).toEqual([
+    expect(result.series).toEqual([
       { name: '2024', year: 2024, data: [9] },
     ]);
   });
@@ -195,13 +194,14 @@ describe('year-over-year analytics characterization', () => {
     const result = await (
       visualizer as unknown as {
         _getDataYearOverYearLine(): Promise<{
-          _data: { error: boolean; message: string };
+          error: boolean;
+          message: string;
         }>;
       }
     )._getDataYearOverYearLine();
 
-    expect(result._data.error).toBe(true);
-    expect(result._data.message).toContain('Missing dx');
+    expect(result.error).toBe(true);
+    expect(result.message).toContain('Missing dx');
     expect(getAnalytics).not.toHaveBeenCalled();
   });
 });

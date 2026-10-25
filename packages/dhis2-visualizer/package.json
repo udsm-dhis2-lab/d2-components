@@ -38,6 +38,10 @@
       "types": "./src/validation.d.ts",
       "default": "./src/validation.js"
     },
+    "./analytics": {
+      "types": "./src/analytics.d.ts",
+      "default": "./src/analytics.js"
+    },
     "./package.json": "./package.json"
   }
 }

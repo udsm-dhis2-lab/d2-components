@@ -123,8 +123,12 @@ try {
       '};',
       "const visualizer = require('@iapps/d2-visualizer');",
       "const validation = require('@iapps/d2-visualizer/validation');",
+      "const analytics = require('@iapps/d2-visualizer/analytics');",
       "if (typeof visualizer.D2Visualizer !== 'function') throw new Error('D2Visualizer export missing');",
       "if (typeof validation.validateVisualizationRequest !== 'function') throw new Error('validation secondary entry point missing');",
+      "if (typeof analytics.D2AnalyticsFacade !== 'function') throw new Error('analytics secondary entry point missing');",
+      "const normalized = analytics.normalizeAnalyticsResponse({ _data: { headers: [{ name: 'value' }], rows: [['42']], metaData: {} } });",
+      "if (normalized.rows[0][0] !== '42') throw new Error('analytics normalization failed');",
       "if (!Array.isArray(visualizer.VISUALIZATION_TYPES)) throw new Error('VISUALIZATION_TYPES export missing');",
       "console.log('Packed consumer import passed');",
     ].join('\n')
@@ -141,12 +145,15 @@ try {
       "import { D2Visualizer, MapLayerConfiguration, type VisualizationRequest } from '@iapps/d2-visualizer';",
       "import type { ChartVisualizationRequest } from '@iapps/d2-visualizer/contracts';",
       "import { validateVisualizationRequest, VisualizationRequestValidationError } from '@iapps/d2-visualizer/validation';",
+      "import { D2AnalyticsFacade, type AnalyticsResponse } from '@iapps/d2-visualizer/analytics';",
       "const chart: ChartVisualizationRequest = { type: 'LINE', target: { id: 'chart' }, configuration: {} };",
       "const request: VisualizationRequest = validateVisualizationRequest(chart);",
       "if (request.type === 'LINE') request.data?.rows;",
       "void new D2Visualizer().render(chart);",
       "void new MapLayerConfiguration({ hideLegendControl: true });",
       "void VisualizationRequestValidationError;",
+      "const analyticsFacade = new D2AnalyticsFacade({ getAnalytics: async (): Promise<AnalyticsResponse> => ({ headers: [], rows: [], metaData: {} }) });",
+      "void analyticsFacade.setSelections([]).getData();",
     ].join('\n')
   );
   writeFileSync(

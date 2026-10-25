@@ -1,5 +1,6 @@
 export * from './lib/d2-visualizer';
 export * from './lib/public';
+export * from './analytics';
 export type {
   AnalyticsHeader,
   AnalyticsMetadata,

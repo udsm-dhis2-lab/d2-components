@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Fn } from '@iapps/function-analytics';
 import {
   AnalyticsQuery,
   AnalyticsResponse,
@@ -31,6 +30,10 @@ import {
 } from './public';
 import { DownloadFormat } from './shared/models/download-format.model';
 import { VisualizationDataSelection } from './shared/models/visualization-data-selection.model';
+import {
+  D2AnalyticsFacade,
+  normalizeAnalyticsResponse,
+} from './shared/data/analytics.facade';
 
 export interface D2VisualizerOptions {
   /** Preserve the historical no-op by default; opt in to strict rejection. */
@@ -42,6 +45,7 @@ export class D2Visualizer {
   private readonly unsupportedTypeBehavior: 'ignore' | 'throw';
   private drawGeneration = 0;
   private analyticsDataSource?: VisualizationDataSource;
+  private readonly analyticsFacade = new D2AnalyticsFacade();
   private mapDataSource?: MapDataSource;
   private mapProviderConfig?: MapProviderConfig;
   dataSelections: VisualizationDataSelection[] = [];
@@ -55,7 +59,7 @@ export class D2Visualizer {
   mapDashboardItem?: MapDashboardItem;
   mapDashboardExtensionItem?: MapDashboardExtensionItem;
   geoFeatures: unknown[] = [];
-  dataAnalytics: unknown = null;
+  dataAnalytics: unknown = undefined;
   layerStyle = 'default';
   trackedEntityInstances?: TrackedEntityInstance[];
   program?: TrackerProgram;
@@ -90,11 +94,12 @@ export class D2Visualizer {
       ...selection,
       items: selection.items.map((item) => ({ ...item })),
     }));
+    this.analyticsFacade.setSelections(this.dataSelections);
     this.config = new VisualizationConfiguration({
       ...valid.configuration,
       type: valid.type,
     });
-    if ('data' in valid) this.dataAnalytics = valid.data;
+    this.dataAnalytics = 'data' in valid ? valid.data : undefined;
     if ('trackedEntityInstances' in valid)
       this.trackedEntityInstances = [...(valid.trackedEntityInstances ?? [])];
     if ('program' in valid) this.program = valid.program;
@@ -197,6 +202,7 @@ export class D2Visualizer {
    */
   setSelections(dataSelections: VisualizationDataSelection[]) {
     this.dataSelections = dataSelections;
+    this.analyticsFacade.setSelections(dataSelections);
     return this;
   }
 
@@ -375,6 +381,7 @@ export class D2Visualizer {
 
   setDataSource(dataSource: VisualizationDataSource): D2Visualizer {
     this.analyticsDataSource = dataSource;
+    this.analyticsFacade.setDataSource(dataSource);
     return this;
   }
 
@@ -401,58 +408,11 @@ export class D2Visualizer {
    * Original behavior preserved as-is (moved here).
    */
   private _getDataDefault(): Promise<any> {
-    const analyticPromise = new Fn.Analytics();
-
     this.config.mergeDataSelections(this.dataSelections);
     const dataSelections: any[] = this.config.dataSelections.filter(
       (dataSelection) => dataSelection.dimension !== 'tea'
     );
-
-    (dataSelections || []).forEach((dataSelection) => {
-      switch (dataSelection.dimension) {
-        case 'dx':
-          analyticPromise.setData(
-            dataSelection.items
-              .map(
-                (item: { dimensionItem: any; id: any }) =>
-                  item.dimensionItem || item.id
-              )
-              .join(';')
-          );
-          break;
-
-        case 'pe':
-          analyticPromise.setPeriod(
-            dataSelection.items
-              .map(
-                (item: { dimensionItem: any; id: any }) =>
-                  item.dimensionItem || item.id
-              )
-              .join(';')
-          );
-          break;
-
-        case 'ou':
-          analyticPromise.setOrgUnit(
-            dataSelection.items
-              .map(
-                (item: { dimensionItem: any; id: any }) =>
-                  item.dimensionItem || item.id
-              )
-              .join(';')
-          );
-          break;
-
-        default:
-          analyticPromise.setDimension(
-            dataSelection?.dimension,
-            dataSelection.items.map((item: { id: any }) => item.id).join(';')
-          );
-          break;
-      }
-    });
-
-    return analyticPromise.get();
+    return this.analyticsFacade.setSelections(dataSelections).getData();
   }
 
   /**
@@ -488,34 +448,28 @@ export class D2Visualizer {
       'USER_ORGUNIT';
     if (!dxId) {
       return {
-        _data: {
-          kind: 'YEAR_OVER_YEAR_LINE',
-          error: true,
-          message: 'Missing dx selection for YEAR_OVER_YEAR_LINE',
-        },
+        kind: 'YEAR_OVER_YEAR_LINE',
+        error: true,
+        message: 'Missing dx selection for YEAR_OVER_YEAR_LINE',
       };
     }
 
     const dataSource =
       this.analyticsDataSource ?? new D2WebAnalyticsDataSource();
     try {
-      return {
-        _data: await new YearOverYearDataService(dataSource).load({
-          dxId,
-          ouId,
-          relativePeriodDate: this._getRelativePeriodDate(favorite),
-        }),
-      };
+      return await new YearOverYearDataService(dataSource).load({
+        dxId,
+        ouId,
+        relativePeriodDate: this._getRelativePeriodDate(favorite),
+      });
     } catch (error) {
       return {
-        _data: {
-          kind: 'YEAR_OVER_YEAR_LINE',
-          error: true,
-          message: String(error).includes('All year-over-year requests failed')
-            ? 'All per-year analytics calls failed for YEAR_OVER_YEAR_LINE'
-            : 'Failed to load YEAR_OVER_YEAR_LINE analytics',
-          details: { error: String(error) },
-        },
+        kind: 'YEAR_OVER_YEAR_LINE',
+        error: true,
+        message: String(error).includes('All year-over-year requests failed')
+          ? 'All per-year analytics calls failed for YEAR_OVER_YEAR_LINE'
+          : 'Failed to load YEAR_OVER_YEAR_LINE analytics',
+        details: { error: String(error) },
       };
     }
   }
@@ -581,7 +535,9 @@ export class D2Visualizer {
       data =
         this.visualizationType !== 'MAP'
           ? !this.trackedEntityInstances
-            ? this.dataAnalytics || (await this._getData())
+            ? this.dataAnalytics !== undefined
+              ? this._resolveRendererData(this.dataAnalytics)
+              : await this._getData()
             : undefined
           : undefined;
     } catch (error) {
@@ -622,6 +578,12 @@ export class D2Visualizer {
 
     await this.activateRenderer(renderer, generation);
     return this;
+  }
+
+  private _resolveRendererData(data: unknown): unknown {
+    return this._resolveVisType() === 'YEAR_OVER_YEAR_LINE'
+      ? data
+      : normalizeAnalyticsResponse(data);
   }
 
   private async activateRenderer(
