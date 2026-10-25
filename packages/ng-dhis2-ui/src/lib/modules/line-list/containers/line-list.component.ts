@@ -67,6 +67,7 @@ export class LineListTableComponent
   @Input() programId!: string;
   @Input() orgUnit!: string;
   @Input() allowMultipleOrgUnits = false;
+  @Input() showOrgUnitMode = false;
   @Input() customOrgUnitRoots?: string[];
   @Input() programStageId?: string;
   @Input() actionOptions?: LineListActionOption[];
@@ -798,6 +799,7 @@ export class LineListTableComponent
               React.createElement(FilterToolbar, {
                 orgUnit: {
                   allowMultipleOrgUnits: this.allowMultipleOrgUnits,
+                  showOrgUnitMode: this.showOrgUnitMode,
                   appliedOrgUnits,
                   setAppliedOrgUnits,
                   selectedOrgUnits,

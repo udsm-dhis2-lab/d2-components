@@ -19,6 +19,7 @@ export const FilterToolbar = ({
   orgUnit: {
     customOrgUnitRoots,
     allowMultipleOrgUnits,
+    showOrgUnitMode = false,
     appliedOrgUnits: appliedOrgUnitsProp,
     setAppliedOrgUnits,
     selectedOrgUnits: selectedOrgUnitsProp,
@@ -161,6 +162,7 @@ export const FilterToolbar = ({
                             updateSelectedOrgUnits(units);
                           }}
                         />
+                        {showOrgUnitMode && (
                         <div role="group" aria-label="Mode" style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '8px 0 12px' }}>
                           <span style={{ fontSize: '14px', fontWeight: 400 }}>Mode:</span>
                           <div style={{ flex: 1, minWidth: 0 }}>
@@ -181,6 +183,7 @@ export const FilterToolbar = ({
                           </SingleSelectField>
                           </div>
                         </div>
+                        )}
                       </div>
                     )}
                     <div
