@@ -19,7 +19,9 @@ const consumerRoot = join(temporaryRoot, 'consumer');
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
 const peerPackages = new Map([
+  ['@types/react', join(workspaceRoot, 'node_modules/@types/react')],
   ['@dhis2/ui', join(workspaceRoot, 'node_modules/@dhis2/ui')],
+  ['@dhis2/ui-icons', join(workspaceRoot, 'node_modules/@dhis2/ui-icons')],
   ['@iapps/d2-web-sdk', join(workspaceRoot, 'dist/packages/dhis2-web-sdk')],
   [
     '@iapps/function-analytics',
@@ -51,13 +53,23 @@ function linkPeer(packageName, source) {
 
 try {
   mkdirSync(consumerRoot, { recursive: true });
-  const packOutput = execFileSync(
-    npmCommand,
-    ['pack', '--json', '--pack-destination', temporaryRoot],
-    { cwd: packageRoot, encoding: 'utf8' }
-  );
-  const [{ filename }] = JSON.parse(packOutput);
-  const tarball = join(temporaryRoot, filename);
+  const packageRoots = [
+    packageRoot,
+    join(workspaceRoot, 'dist/packages/dhis2-chart'),
+    join(workspaceRoot, 'dist/packages/dhis2-custom-visualization'),
+    join(workspaceRoot, 'dist/packages/dhis2-kpi-card'),
+    join(workspaceRoot, 'dist/packages/dhis2-map'),
+    join(workspaceRoot, 'dist/packages/dhis2-pivot'),
+  ];
+  const tarballs = packageRoots.map((root) => {
+    const output = execFileSync(
+      npmCommand,
+      ['pack', '--json', '--pack-destination', temporaryRoot],
+      { cwd: root, encoding: 'utf8' }
+    );
+    const [{ filename }] = JSON.parse(output);
+    return join(temporaryRoot, filename);
+  });
 
   writeFileSync(
     join(consumerRoot, 'package.json'),
@@ -75,7 +87,7 @@ try {
       '--no-audit',
       '--no-fund',
       '--legacy-peer-deps',
-      tarball,
+      ...tarballs,
     ],
     consumerRoot
   );
@@ -110,7 +122,9 @@ try {
       '  return originalLoad.call(this, request, parent, isMain);',
       '};',
       "const visualizer = require('@iapps/d2-visualizer');",
+      "const validation = require('@iapps/d2-visualizer/validation');",
       "if (typeof visualizer.D2Visualizer !== 'function') throw new Error('D2Visualizer export missing');",
+      "if (typeof validation.validateVisualizationRequest !== 'function') throw new Error('validation secondary entry point missing');",
       "if (!Array.isArray(visualizer.VISUALIZATION_TYPES)) throw new Error('VISUALIZATION_TYPES export missing');",
       "console.log('Packed consumer import passed');",
     ].join('\n')
@@ -120,6 +134,30 @@ try {
     cwd: consumerRoot,
     stdio: 'inherit',
   });
+
+  writeFileSync(
+    join(consumerRoot, 'typecheck.ts'),
+    [
+      "import { D2Visualizer, MapLayerConfiguration, type VisualizationRequest } from '@iapps/d2-visualizer';",
+      "import type { ChartVisualizationRequest } from '@iapps/d2-visualizer/contracts';",
+      "import { validateVisualizationRequest, VisualizationRequestValidationError } from '@iapps/d2-visualizer/validation';",
+      "const chart: ChartVisualizationRequest = { type: 'LINE', target: { id: 'chart' }, configuration: {} };",
+      "const request: VisualizationRequest = validateVisualizationRequest(chart);",
+      "if (request.type === 'LINE') request.data?.rows;",
+      "void new D2Visualizer().render(chart);",
+      "void new MapLayerConfiguration({ hideLegendControl: true });",
+      "void VisualizationRequestValidationError;",
+    ].join('\n')
+  );
+  writeFileSync(
+    join(consumerRoot, 'tsconfig.json'),
+    JSON.stringify({ compilerOptions: { strict: true, noEmit: true, module: 'Node16', moduleResolution: 'Node16', target: 'ES2020', skipLibCheck: false }, files: ['typecheck.ts'] })
+  );
+  execFileSync(
+    process.execPath,
+    [join(workspaceRoot, 'node_modules/typescript/bin/tsc'), '-p', 'tsconfig.json'],
+    { cwd: consumerRoot, stdio: 'inherit' }
+  );
 } finally {
   rmSync(temporaryRoot, { recursive: true, force: true });
 }

@@ -23,6 +23,14 @@ import {
 } from './modules/renderer-registry';
 import { D2Window } from '@iapps/d2-web-sdk';
 import type { MapDataSource, MapProviderConfig } from '@iapps/d2-maps';
+import {
+  validateVisualizationRequest,
+  TrackedEntityInstance,
+  TrackerProgram,
+  VisualizationRequest,
+} from './public';
+import { DownloadFormat } from './shared/models/download-format.model';
+import { VisualizationDataSelection } from './shared/models/visualization-data-selection.model';
 
 export interface D2VisualizerOptions {
   /** Preserve the historical no-op by default; opt in to strict rejection. */
@@ -36,22 +44,22 @@ export class D2Visualizer {
   private analyticsDataSource?: VisualizationDataSource;
   private mapDataSource?: MapDataSource;
   private mapProviderConfig?: MapProviderConfig;
-  dataSelections!: any[];
+  dataSelections: VisualizationDataSelection[] = [];
   type!: VisualizationType;
   visualizationType!: VisualizationType;
   config!: VisualizationConfiguration;
-  chartType!: any;
+  chartType?: string;
   id!: string;
-  d2VisualizerMapControl: D2VisualizerMapControl | any;
-  legendSets: LegendSet[] | any = null;
-  mapDashboardItem: MapDashboardItem | any;
-  mapDashboardExtensionItem: MapDashboardExtensionItem | any;
-  geoFeatures: any[] = [];
+  d2VisualizerMapControl?: D2VisualizerMapControl;
+  legendSets?: LegendSet[];
+  mapDashboardItem?: MapDashboardItem;
+  mapDashboardExtensionItem?: MapDashboardExtensionItem;
+  geoFeatures: unknown[] = [];
   dataAnalytics: unknown = null;
   layerStyle = 'default';
-  trackedEntityInstances?: any[];
-  program: any;
-  data!: any;
+  trackedEntityInstances?: TrackedEntityInstance[];
+  program?: TrackerProgram;
+  data?: unknown;
   visualizer!: Visualizer;
   plotOptions!: VisualizerPlotOptions;
   baseUrl = '../../..';
@@ -60,14 +68,39 @@ export class D2Visualizer {
   mapLayerConfig!: MapLayerConfiguration;
 
   // Table Configuration
-  tableDashboardItem: TableDashboardItem | any;
-  tableAnalytics: TableAnalytics | any;
-  tableConfiguration: TableConfiguration | any;
-  tableLegendSets: LegendSet[] | any;
+  tableDashboardItem?: TableDashboardItem;
+  tableAnalytics?: TableAnalytics;
+  tableConfiguration?: TableConfiguration;
+  tableLegendSets?: LegendSet[];
 
   constructor(options: D2VisualizerOptions = {}) {
     this.rendererRegistry = createDefaultRendererRegistry();
     this.unsupportedTypeBehavior = options.unsupportedTypeBehavior ?? 'ignore';
+  }
+
+  /**
+   * Validated request-based rendering boundary.
+   * Invalid input is rejected before analytics, provider, or DOM work begins.
+   */
+  async render(request: VisualizationRequest): Promise<this> {
+    const valid = validateVisualizationRequest(request);
+    this.id = valid.target.id;
+    this.visualizationType = valid.type;
+    this.dataSelections = (valid.selections ?? []).map((selection) => ({
+      ...selection,
+      items: selection.items.map((item) => ({ ...item })),
+    }));
+    this.config = new VisualizationConfiguration({
+      ...valid.configuration,
+      type: valid.type,
+    });
+    if ('data' in valid) this.dataAnalytics = valid.data;
+    if ('trackedEntityInstances' in valid)
+      this.trackedEntityInstances = [...(valid.trackedEntityInstances ?? [])];
+    if ('program' in valid) this.program = valid.program;
+    if ('provider' in valid && valid.provider)
+      this.mapProviderConfig = valid.provider as MapProviderConfig;
+    return this.draw();
   }
 
   /**
@@ -84,7 +117,7 @@ export class D2Visualizer {
    *
    * @returns
    */
-  getTableDashboardItem(): TableDashboardItem {
+  getTableDashboardItem(): TableDashboardItem | undefined {
     return this.tableDashboardItem;
   }
 
@@ -102,7 +135,7 @@ export class D2Visualizer {
    *
    * @returns
    */
-  getTableAnalytics(): TableAnalytics {
+  getTableAnalytics(): TableAnalytics | undefined {
     return this.tableAnalytics;
   }
 
@@ -130,7 +163,7 @@ export class D2Visualizer {
    *
    * @returns
    */
-  getTableLegendSet(): LegendSet[] {
+  getTableLegendSet(): LegendSet[] | undefined {
     return this.tableLegendSets;
   }
 
@@ -138,6 +171,7 @@ export class D2Visualizer {
    * @description Set id to be used in rendering intended visualization
    * @param id String
    * @returns {D2Visualizer}
+   * @deprecated Use `render(request)` instead. Planned removal in v2.0.
    */
   setId(id: string) {
     this.id = id;
@@ -148,7 +182,7 @@ export class D2Visualizer {
    *
    * @param chartType
    * @returns
-   * @deprecated
+   * @deprecated Chart type is represented by `request.type`. Planned removal in v2.0.
    */
   setChartType(chartType: string) {
     this.chartType = chartType;
@@ -157,10 +191,11 @@ export class D2Visualizer {
 
   /**
    * @description Set data selection criterias
-   * @param dataSelections {any[]}
+   * @param dataSelections visualization dimension selections
    * @returns {D2Visualizer}
+   * @deprecated Use `render(request).selections`. Planned removal in v2.0.
    */
-  setSelections(dataSelections: any[]) {
+  setSelections(dataSelections: VisualizationDataSelection[]) {
     this.dataSelections = dataSelections;
     return this;
   }
@@ -169,6 +204,7 @@ export class D2Visualizer {
    * @description Set visualization type
    * @param type {VisualizationType}
    * @returns {D2Visualizer}
+   * @deprecated Use `render(request).type`. Planned removal in v2.0.
    */
   setType(type: VisualizationType) {
     this.visualizationType = type;
@@ -178,8 +214,9 @@ export class D2Visualizer {
 
   /**
    * @description Set visualization configurations
-   * @param config {any}
+   * @param config visualization configuration
    * @returns {D2Visualizer}
+   * @deprecated Use `render(request).configuration`. Planned removal in v2.0.
    */
   setConfig(config: Record<string, unknown>) {
     this.config = new VisualizationConfiguration(config);
@@ -190,8 +227,9 @@ export class D2Visualizer {
    *
    * @param analytics
    * @returns
+   * @deprecated Use `render(request).data`. Planned removal in v2.0.
    */
-  setData(analytics: any) {
+  setData(analytics: unknown) {
     this.dataAnalytics = analytics;
     return this;
   }
@@ -200,8 +238,9 @@ export class D2Visualizer {
    *
    * @param tracked entity instances
    * @returns
+   * @deprecated Use a tracker/custom request. Planned removal in v2.0.
    */
-  setTrackedEntityInstances(trackedEntityInstances: any[]) {
+  setTrackedEntityInstances(trackedEntityInstances: TrackedEntityInstance[]) {
     this.trackedEntityInstances = trackedEntityInstances;
     return this;
   }
@@ -211,7 +250,7 @@ export class D2Visualizer {
    * @param program
    * @returns
    */
-  setProgram(program: any) {
+  setProgram(program: TrackerProgram) {
     this.program = program;
     return this;
   }
@@ -221,7 +260,7 @@ export class D2Visualizer {
    * @param geoFeatures
    * @returns
    */
-  setGeoFeatures(geoFeatures: any) {
+  setGeoFeatures(geoFeatures: unknown[]) {
     this.geoFeatures = geoFeatures;
     return this;
   }
@@ -250,7 +289,7 @@ export class D2Visualizer {
    *
    * @returns
    */
-  getD2VisualizerMapControl(): D2VisualizerMapControl {
+  getD2VisualizerMapControl(): D2VisualizerMapControl | undefined {
     return this.d2VisualizerMapControl;
   }
 
@@ -284,7 +323,7 @@ export class D2Visualizer {
    *
    * @returns
    */
-  getDashboardItem(): MapDashboardItem {
+  getDashboardItem(): MapDashboardItem | undefined {
     return this.mapDashboardItem;
   }
 
@@ -325,7 +364,7 @@ export class D2Visualizer {
    *
    * @returns
    */
-  getDashboardExtensionItem(): MapDashboardExtensionItem {
+  getDashboardExtensionItem(): MapDashboardExtensionItem | undefined {
     return this.mapDashboardExtensionItem;
   }
 
@@ -837,7 +876,7 @@ export class D2Visualizer {
    *
    * @returns
    */
-  async draw(): Promise<any> {
+  async draw(): Promise<this> {
     const generation = ++this.drawGeneration;
     let data: any;
     try {
@@ -913,7 +952,7 @@ export class D2Visualizer {
    * @param downloadFormat
    * @returns
    */
-  download(downloadFormat: any) {
+  download(downloadFormat: DownloadFormat): void {
     if (this.visualizer) {
       this.visualizer.download(downloadFormat);
     } else {

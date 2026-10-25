@@ -12,14 +12,23 @@ export type ChartType =
   | 'RADAR'
   | 'SOLIDGAUGE';
 
-export type VisualizationType =
+/** Visualization identifiers implemented by the compatibility facade. */
+export type ImplementedVisualizationType =
   | ChartType
   | 'CHART'
   | 'REPORT_TABLE'
   | 'PIVOT_TABLE'
   | 'MAP'
-  | 'DICTIONARY'
   | 'CUSTOM'
-  | 'MAPBOX'
   | 'YEAR_OVER_YEAR_LINE'
   | 'TRACKED_ENTITY_LAYER';
+
+/**
+ * @deprecated These historical identifiers have no renderer. They remain only
+ * for fluent-API source compatibility and are rejected by the request API.
+ */
+export type UnsupportedVisualizationType = 'DICTIONARY' | 'MAPBOX';
+
+export type VisualizationType =
+  | ImplementedVisualizationType
+  | UnsupportedVisualizationType;

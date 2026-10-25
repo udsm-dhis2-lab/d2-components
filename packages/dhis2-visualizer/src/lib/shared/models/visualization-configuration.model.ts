@@ -10,6 +10,18 @@ import { TableConfiguration } from '../../modules/table/models/table-config.mode
 import { CustomVisualizationTemplate } from '../../modules/custom/models/custom-visualization-template.model';
 import { DEFAULT_ORG_UNIT_SELECTIONS } from '../constants/default-data-selections.constant';
 import { LngLatLike } from 'mapbox-gl';
+import { IMultiAxisType } from '../../modules/chart/models/multi-axis-type.model';
+
+export interface VisualizationAxisConfiguration {
+  type: 'DOMAIN' | 'RANGE' | string;
+  index?: number;
+  title?: string;
+  minValue?: number;
+  maxValue?: number;
+  decimals?: number;
+  steps?: number;
+  [property: string]: unknown;
+}
 
 export class VisualizationConfiguration {
   dataSelections: VisualizationDataSelection[];
@@ -162,7 +174,7 @@ export class VisualizationConfiguration {
     return this.config?.regression;
   }
 
-  get multiAxisTypes(): string[] {
+  get multiAxisTypes(): IMultiAxisType[] {
     return (
       this.config.selectedChartTypes ||
       (this.config?.series || []).map((series: any) => {
@@ -174,11 +186,11 @@ export class VisualizationConfiguration {
     );
   }
 
-  get axes(): any[] {
+  get axes(): VisualizationAxisConfiguration[] {
     return this.config.axes || [];
   }
 
-  get seriesOptions(): any[] {
+  get seriesOptions(): IMultiAxisType[] {
     return this.config.series;
   }
 

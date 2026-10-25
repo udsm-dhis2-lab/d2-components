@@ -3,16 +3,16 @@ export interface VisualizationDataSelection {
   name?: string;
   layout?: string;
   filter?: string;
-  optionSet?: any;
+  optionSet?: unknown;
   legendSet?: string;
   changed?: boolean;
   title?: string;
   domain?: 'TRACKER' | 'AGGREGATE';
   items: Array<{
     id: string;
-    name: string;
+    name?: string;
     type?: string;
-    functionObject?: any;
+    functionObject?: unknown;
   }>;
   groups?: Array<{
     id: string;

@@ -15,14 +15,14 @@ export interface MapDashboardItem {
   favorite: boolean;
   access: Access;
   map: Map;
-  favorites: any[];
-  reports: any[];
-  translations: any[];
-  userGroupAccesses: any[];
-  attributeValues: any[];
-  resources: any[];
-  users: any[];
-  userAccesses: any[];
+  favorites: unknown[];
+  reports: unknown[];
+  translations: unknown[];
+  userGroupAccesses: unknown[];
+  attributeValues: unknown[];
+  resources: unknown[];
+  users: unknown[];
+  userAccesses: unknown[];
 }
 
 export interface Access {
@@ -50,14 +50,14 @@ export interface Map {
   lastUpdatedBy: CreatedBy;
   createdBy: CreatedBy;
   user: CreatedBy;
-  favorites: any[];
-  translations: any[];
+  favorites: unknown[];
+  translations: unknown[];
   mapViews: MapView[];
-  interpretations: any[];
-  userGroupAccesses: any[];
-  subscribers: any[];
-  attributeValues: any[];
-  userAccesses: any[];
+  interpretations: unknown[];
+  userGroupAccesses: unknown[];
+  subscribers: unknown[];
+  attributeValues: unknown[];
+  userAccesses: unknown[];
 }
 
 export interface CreatedBy {
@@ -87,7 +87,7 @@ export interface MapView {
   eventClustering: boolean;
   opacity: number;
   parentLevel: number;
-  parentGraphMap: any;
+  parentGraphMap: unknown;
   completedOnly: boolean;
   eventPointRadius: number;
   sharing: Sharing;
@@ -99,30 +99,30 @@ export interface MapView {
   access: Access;
   relativePeriods: { [key: string]: boolean };
   legendSet: LegendSet;
-  dataElementGroupSetDimensions: any[];
-  attributeDimensions: any[];
-  translations: any[];
+  dataElementGroupSetDimensions: unknown[];
+  attributeDimensions: unknown[];
+  translations: unknown[];
   filterDimensions: string[];
-  interpretations: any[];
-  userGroupAccesses: any[];
-  subscribers: any[];
-  columns: any[];
-  dataElementDimensions: any[];
-  periods: any[];
-  categoryDimensions: any[];
-  itemOrganisationUnitGroups: any[];
-  programIndicatorDimensions: any[];
-  attributeValues: any[];
+  interpretations: unknown[];
+  userGroupAccesses: unknown[];
+  subscribers: unknown[];
+  columns: unknown[];
+  dataElementDimensions: unknown[];
+  periods: unknown[];
+  categoryDimensions: unknown[];
+  itemOrganisationUnitGroups: unknown[];
+  programIndicatorDimensions: unknown[];
+  attributeValues: unknown[];
   columnDimensions: string[];
-  userAccesses: any[];
-  favorites: any[];
+  userAccesses: unknown[];
+  favorites: unknown[];
   dataDimensionItems: DataDimensionItem[];
-  categoryOptionGroupSetDimensions: any[];
-  organisationUnitGroupSetDimensions: any[];
+  categoryOptionGroupSetDimensions: unknown[];
+  organisationUnitGroupSetDimensions: unknown[];
   organisationUnitLevels: number[];
-  organisationUnits: any[];
-  filters: any[];
-  rows: any[];
+  organisationUnits: unknown[];
+  filters: unknown[];
+  rows: unknown[];
 }
 
 export interface DataDimensionItem {
@@ -136,7 +136,7 @@ export interface LegendSet {
 
 export interface Sharing {
   external: boolean;
-  users: any;
-  userGroups: any;
+  users: Readonly<Record<string, unknown>>;
+  userGroups: Readonly<Record<string, unknown>>;
   owner?: string;
 }
