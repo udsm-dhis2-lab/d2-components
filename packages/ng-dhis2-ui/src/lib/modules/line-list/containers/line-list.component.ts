@@ -977,6 +977,7 @@ export class LineListTableComponent
   @Input() programId!: string;
   @Input() orgUnit!: string;
   @Input() allowMultipleOrgUnits = false;
+  @Input() showOrgUnitMode = false;
   @Input() customOrgUnitRoots?: string[];
   @Input() programStageId?: string;
   @Input() actionOptions?: LineListActionOption[];
