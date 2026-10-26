@@ -26,7 +26,7 @@ import type { IFormFieldGroup } from '../../interfaces/form-field-group.interfac
   selector: 'ng-dhis2-ui-section-form',
   templateUrl: './section-form.component.html',
   styleUrls: ['./section-form.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
 export class SectionFormComponent implements OnInit {

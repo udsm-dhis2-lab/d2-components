@@ -11,7 +11,7 @@ import { HeaderBar } from './utils/header-bar';
 @Component({
   selector: 'ng-dhis2-ui-header-bar',
   template: `<ng-container></ng-container>`,
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
 export class HeaderBarComponent extends ReactWrapperModule {

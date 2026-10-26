@@ -30,7 +30,7 @@ import { CoordinatePickerGeoConfig } from '../../components/coordinate-field-com
   selector: 'ng-dhis2-ui-form-field',
   templateUrl: './form-field.component.html',
   styleUrls: ['./form-field.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
 export class FormFieldComponent implements OnInit, OnChanges, OnDestroy {

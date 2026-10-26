@@ -1,106 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// // Copyright 2025 UDSM DHIS2 Lab. All rights reserved.
-// // Use of this source code is governed by a BSD-style
-// // license that can be found in the LICENSE file.
-
-// import {
-//   ActionOptionOrientation,
-//   DropdownMenuOption,
-//   LineListActionOption,
-// } from '../../models';
-// import { DropdownMenu } from '../dropdown-menu';
-// import React from 'react';
-// import { ButtonStrip, Button, colors } from '@dhis2/ui';
-// import { TableRow } from '../../models/line-list.models';
-// import { LineListRowActionFilterConfig } from '@iapps/d2-web-sdk';
-
-// export const DataTableActions = (props: {
-//   data: TableRow;
-//   actionOptions: LineListActionOption[];
-//   rowActionFilterConfig: LineListRowActionFilterConfig;
-//   actionOptionOrientation: ActionOptionOrientation;
-//   onClick: (dropdownOption: LineListActionOption) => void;
-// }) => {
-//   const {
-//     data,
-//     actionOptions,
-//     rowActionFilterConfig,
-//     actionOptionOrientation,
-//     onClick,
-//   } = props;
-
-//   console.log(
-//     'REACHED HERE AND IMPROVE THE FOLLOWING::: ',
-//     // JSON.stringify(data),
-//     rowActionFilterConfig
-//   );
-
-//   switch (actionOptionOrientation) {
-//     case 'BUTTON':
-//       return (
-//         <ButtonStrip>
-//           {actionOptions.map((option) => (
-//             <Button
-//               key={option.label}
-//               onClick={() => onClick(option)}
-//               icon={option.icon ? <option.icon /> : <></>}
-//               small
-//               destructive={option.destructive}
-//             >
-//               {!option.iconOnly ? option.label : ''}
-//             </Button>
-//           ))}
-//         </ButtonStrip>
-//       );
-
-//     case 'DROPDOWN':
-//       return (
-//         <DropdownMenu
-//           dropdownOptions={actionOptions}
-//           onClick={(option) => {
-//             onClick(option);
-//           }}
-//         />
-//       );
-
-//     case 'LINK':
-//       return (
-//         <div
-//           style={{
-//             display: 'flex',
-//             gap: 16,
-//             alignItems: 'center',
-//           }}
-//         >
-//           {actionOptions.map((option) => (
-//             <a
-//               style={{
-//                 cursor: 'pointer',
-//                 textDecoration: 'underline',
-//                 fontSize: 14,
-//                 display: 'flex',
-//                 alignItems: 'center',
-//                 gap: 4,
-//                 color: option.destructive ? colors.red700 : colors.grey900,
-//               }}
-//               key={option.label}
-//               onClick={(event: any) => {
-//                 event.stopPropagation();
-//                 onClick(option);
-//               }}
-//             >
-//               {option.icon ? <option.icon /> : <></>}
-//               {!option.iconOnly ? <span>{option.label}</span> : <></>}
-//             </a>
-//           ))}
-//         </div>
-//       );
-
-//     default:
-//       return <></>;
-//   }
-// };
-
 import React, { useMemo } from 'react';
 import { ButtonStrip, Button, colors } from '@dhis2/ui';
 
@@ -148,8 +45,8 @@ const matchesOperator = (
   const expectedList = Array.isArray(expected)
     ? expected.map(String)
     : expected != null
-    ? [String(expected)]
-    : [];
+      ? [String(expected)]
+      : [];
 
   switch (op) {
     case 'EXISTS':

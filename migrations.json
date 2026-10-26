@@ -260,7 +260,7 @@
     },
     {
       "version": "22.0.0",
-      "description": "Adds `ChangeDetectionStrategy.Eager` to all components.",
+      "description": "Adds `ChangeDetectionStrategy.OnPush` to all components.",
       "factory": "./bundles/change-detection-eager.cjs#migrate",
       "package": "@angular/core",
       "name": "change-detection-eager"

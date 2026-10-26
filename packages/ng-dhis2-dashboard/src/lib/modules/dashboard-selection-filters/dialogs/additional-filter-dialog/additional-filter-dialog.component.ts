@@ -15,7 +15,7 @@ import { DashboardSelectionFilterService } from '../../services/dashboard-select
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'd2-additional-filter-dialog',
   templateUrl: './additional-filter-dialog.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./additional-filter-dialog.component.css'],
 })
 export class AdditionalFilterDialogComponent implements OnInit {

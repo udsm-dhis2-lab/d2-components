@@ -1,3 +1,3 @@
 export interface LineListProps {
-    onApprovalClick?: (teiEnrollmentList: { teiId: string; enrollmentId: string }[]) => void;
-  }
+  onApprovalClick?: (teiEnrollmentList: { teiId: string; enrollmentId: string; }[]) => void;
+}

@@ -12,7 +12,7 @@ import { FormUtil } from '../../utils/form.util';
 @Component({
   selector: 'ng-dhis2-ui-flat-form',
   templateUrl: './flat-form.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
 export class FlatFormComponent

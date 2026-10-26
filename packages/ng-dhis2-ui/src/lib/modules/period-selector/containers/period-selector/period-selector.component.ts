@@ -40,7 +40,7 @@ type PeriodSelectionEvent = {
       }
     `,
   ],
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
 export class PeriodSelectorComponent extends ReactWrapperModule {

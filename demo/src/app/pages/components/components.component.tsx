@@ -35,7 +35,7 @@ import { ProgramEntryFormConfig } from '../../../../../packages/ng-dhis2-ui/src/
 @Component({
   selector: 'ng-dhis2-ui-app-componenent',
   templateUrl: './components.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
 export class ComponentsComponent implements OnInit {

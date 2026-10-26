@@ -5,7 +5,7 @@ import { DashboardMenuObject } from '../../models';
     selector: 'd2-dashboard-menu-item',
     templateUrl: './dashboard-menu-item.component.html',
     styleUrls: ['./dashboard-menu-item.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: false
 })
 export class DashboardMenuItemComponent {

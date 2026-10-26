@@ -42,7 +42,7 @@ import OrgUnitDimension from '../../../organisation-unit-selector/components/Org
   selector: 'app-selection-filters-ui',
   template: '<ng-content></ng-content>',
   styleUrls: ['./selection-filters-ui.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
 export class SelectionFiltersComponent

@@ -10,7 +10,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   imports: [MatTooltipModule],
   selector: 'd2-dashboard-sub-menu',
   templateUrl: './dashboard-sub-menu.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./dashboard-sub-menu.component.scss'],
 })
 export class DashboardSubMenuComponent implements OnInit {

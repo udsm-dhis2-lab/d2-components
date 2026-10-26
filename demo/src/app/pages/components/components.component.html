@@ -2,6 +2,8 @@
   <ng-dhis2-ui-line-list
     [programId]="malariaCaseNotificationProgramId"
     [allowRowsSelection]="true"
+    [showDownloadButton]="true"
+    [recordsLabel]="'Malaria Cases'"
     [orgUnit]="currentUserOrgUnitId ? currentUserOrgUnitId : ''"
     ouMode="DESCENDANTS"
     [showFilters]="true"
@@ -373,7 +375,7 @@
 <!--</div> -->
 <!-- </div> -->
 
-<ng-dhis2-ui-line-list
+<!-- <ng-dhis2-ui-line-list
   [programId]="'t1pTvYbv08Z'"
   [customOrgUnitRoots]="['YtVMnut7Foe']"
   [orgUnit]="'m0frOspS7JY'"
@@ -387,4 +389,4 @@
 
 <ng-dhis2-ui-program-entry-form
   [config]="formConfig"
-/>
+/> -->

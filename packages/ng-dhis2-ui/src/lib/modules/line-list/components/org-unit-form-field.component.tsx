@@ -103,7 +103,7 @@ export const OrgUnitFormField = (props: Props) => {
 
   const rootOrgUnits = useMemo(() => {
     return (
-      customOrgUnitRoots?.map((id) => ({ id : `/${id}`, path: `/${id}` })) ??
+      customOrgUnitRoots?.map((id) => ({ id: `/${id}`, path: `/${id}` })) ??
       d2.currentUser?.organisationUnits ??
       []
     );
@@ -186,10 +186,8 @@ export const OrgUnitFormField = (props: Props) => {
   };
 
   const handleCollapse = ({ path }: { path: string }) => {
-  setExpanded((previous) =>
-    previous?.filter((item) => item !== path)
-  );
-};
+    setExpanded((previous) => previous?.filter((item) => item !== path));
+  };
 
   const handleOrgUnitSearch = async (query: string) => {
     setSearchLoading(true);

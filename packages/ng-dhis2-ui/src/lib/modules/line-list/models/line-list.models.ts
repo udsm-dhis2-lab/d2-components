@@ -1,4 +1,4 @@
-import { DHIS2Event, Pager, TrackedEntityInstance,  } from '@iapps/d2-web-sdk';
+import { DHIS2Event, Pager, TrackedEntityInstance, } from '@iapps/d2-web-sdk';
 
 export interface PagerObject {
   page: number;
@@ -186,19 +186,19 @@ export interface ProgramStage {
 export interface ProgramMetadata {
   programType: string;
   programStages: ProgramStage[];
-  organisationUnits: { id: string; name: string }[];
+  organisationUnits: { id: string; name: string; }[];
   programTrackedEntityAttributes: ProgramTrackedEntityAttribute[];
   orgUnitLabel: string;
 }
 
 export interface LineListResponse {
   data:
-    | EventsResponse
-    | TrackedEntityInstancesResponse
-    | EnrollmentsResponse
-    | TrackedEntityResponse
-    | TrackedEntityInstance
-    | TrackedEntityInstance[];
+  | EventsResponse
+  | TrackedEntityInstancesResponse
+  | EnrollmentsResponse
+  | TrackedEntityResponse
+  | TrackedEntityInstance
+  | TrackedEntityInstance[];
 }
 
 // export interface TableRow {
@@ -220,7 +220,7 @@ export interface TableRow {
     value: TrackedEntityInstance | DHIS2Event | string | number;
     style?: string;
   };
-  index: { value: number; style?: string };
+  index: { value: number; style?: string; };
 }
 
 export interface ColumnDefinition {
@@ -262,11 +262,11 @@ export interface ProgramTrackedEntityAttribute {
   lastUpdated: string;
   mandatory: boolean;
   name: string;
-  program: { id: string };
+  program: { id: string; };
   programTrackedEntityAttributeGroups: any[];
   renderOptionsAsRadio: boolean;
   searchable: boolean;
-  sharing: { userGroups: any; external: boolean; users: any };
+  sharing: { userGroups: any; external: boolean; users: any; };
   sortOrder: string;
   trackedEntityAttribute: TrackedEntityAttribute;
   translations: any[];

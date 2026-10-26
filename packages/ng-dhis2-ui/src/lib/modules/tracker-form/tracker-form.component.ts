@@ -9,7 +9,7 @@ import { FormFieldExtension, FormMetaData, IFormMetadata } from '../form';
 @Component({
   selector: 'ng-dhis2-ui-tracker-form',
   templateUrl: './tracker-form.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
 export class TrackerFormComponent implements OnInit {

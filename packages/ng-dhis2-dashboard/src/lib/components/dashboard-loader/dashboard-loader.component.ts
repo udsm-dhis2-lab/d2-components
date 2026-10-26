@@ -4,7 +4,7 @@ import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
     selector: 'app-dashboard-loader',
     templateUrl: './dashboard-loader.component.html',
     styleUrls: ['./dashboard-loader.component.css'],
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: false
 })
 export class DashboardLoaderComponent implements OnInit {

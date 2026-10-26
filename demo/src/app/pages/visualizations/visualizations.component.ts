@@ -61,7 +61,7 @@ const legendSet = {
 @Component({
   selector: 'app-visualizations',
   templateUrl: './visualizations.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [],
 })
 export class VisualizationsComponent {

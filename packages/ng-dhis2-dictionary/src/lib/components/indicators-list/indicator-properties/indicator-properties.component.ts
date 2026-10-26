@@ -5,7 +5,7 @@ import * as _ from 'lodash';
     selector: 'app-indicator-properties',
     templateUrl: './indicator-properties.component.html',
     styleUrls: ['./indicator-properties.component.css'],
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: false
 })
 export class IndicatorPropertiesComponent implements OnInit {

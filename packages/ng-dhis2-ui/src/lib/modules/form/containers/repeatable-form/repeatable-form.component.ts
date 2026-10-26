@@ -23,7 +23,7 @@ import type { IFormField } from '../../interfaces/form-field.interface';
   selector: 'ng-dhis2-ui-repeatable-form',
   templateUrl: './repeatable-form.component.html',
   styleUrls: ['./repeatable-form.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
 export class RepeatableFormComponent implements OnInit {

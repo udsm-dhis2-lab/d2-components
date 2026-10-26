@@ -39,7 +39,7 @@ import {
   templateUrl: './program-entry-form.component.html',
   styleUrls: ['./program-entry-form.component.scss'],
 
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [D2FormModule, ReactWrapperModule],
 })
 // eslint-disable-next-line @angular-eslint/component-class-suffix

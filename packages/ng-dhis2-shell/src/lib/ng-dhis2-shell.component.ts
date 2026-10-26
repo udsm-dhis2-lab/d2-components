@@ -25,7 +25,7 @@ import { AppShellConfig, AppShellConfigService } from './models';
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'ng-dhis2-shell',
   template: '<ng-content></ng-content>',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
 export class NgDhis2ShellComponent implements AfterViewInit, OnDestroy {

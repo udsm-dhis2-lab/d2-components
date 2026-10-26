@@ -16,7 +16,7 @@ import { DateField, FieldConfig } from '../../../form-field/models';
   selector: 'ng-dhis2-ui-date-range-field',
   templateUrl: './date-range-field.component.html',
   styleUrls: ['./date-range-field.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
 export class DateRangeFieldComponent implements OnInit {

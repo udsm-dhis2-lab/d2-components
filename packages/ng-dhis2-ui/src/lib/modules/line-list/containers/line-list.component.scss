@@ -4,18 +4,6 @@
   min-width: 0;
 }
 
-::ng-deep .line-list-download-toolbar {
-  position: sticky;
-  left: 0;
-  z-index: 2;
-  display: flex;
-  justify-content: flex-end;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  background: #fff;
-}
-
 ::ng-deep .line-list-table-scroll {
   width: 100%;
   max-width: 100%;
@@ -186,5 +174,343 @@
   input:focus {
     border: none !important;
     box-shadow: none !important;
+  }
+}
+
+::ng-deep .line-list-results {
+  padding: 10px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  border: 1px solid #d5dde5;
+  border-bottom: 0;
+  background: var(--colors-grey050, #f8fafc);
+  font-size: 13px;
+  color: var(--colors-grey900, #35495c);
+}
+::ng-deep .line-list-results-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+::ng-deep .line-list-notice {
+  margin: 12px 0;
+}
+::ng-deep .line-list-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+::ng-deep .line-list-table-scroll {
+  border: 1px solid #d5dde5;
+  border-radius: 0 0 5px 5px;
+}
+::ng-deep .line-list-root [data-test='dhis2-uiwidgets-pagination'] {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+// Keep the filter bar usable while only the result area is replaced by a loader.
+::ng-deep .line-list-table-loading {
+  display: flex;
+  min-height: 210px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  color: var(--colors-grey700, #536475);
+  font-size: 14px;
+  background: var(--colors-white, #fff);
+}
+::ng-deep .line-list-table-error {
+  padding: 22px 16px;
+  color: var(--colors-grey700, #536475);
+  text-align: center;
+}
+::ng-deep .line-list-toolbar-content {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+::ng-deep .line-list-filter-menu {
+  padding: 16px;
+  min-width: min(300px, 80vw);
+  max-width: 90vw;
+}
+::ng-deep .line-list-filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 12px;
+}
+// Filter labels remain distinct from selected values; long values truncate without
+// hiding their full text (available via the native title tooltip).
+::ng-deep .line-list-filter-trigger {
+  display: inline-flex;
+  min-width: 0;
+  max-width: min(340px, 70vw);
+  align-items: center;
+  gap: 6px;
+  vertical-align: middle;
+}
+
+::ng-deep .line-list-filter-trigger-label {
+  min-width: 0;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// A clearly visible, compact applied-value chip, using DHIS2's blue palette.
+// Keep the existing removable control outside the chip to avoid nesting
+// interactive controls within a DropdownButton and changing event behavior.
+::ng-deep .line-list-filter-trigger--applied .line-list-filter-trigger-label {
+  font-weight: 600;
+}
+
+::ng-deep .line-list-filter-value {
+  display: inline-block;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 175px;
+  padding: 4px 8px;
+  border: 1px solid var(--colors-blue400, #6aa7db);
+  border-radius: 4px;
+  background: var(--colors-blue100, #d9eafd);
+  color: var(--colors-blue900, #163e67);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// This is a focusable span rather than a nested button because DropdownButton
+// owns the outer click target. Stop its mouse/key events in ClearControl.
+::ng-deep .line-list-filter-clear {
+  display: inline-flex;
+  flex: 0 0 26px;
+  width: 26px;
+  height: 26px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--colors-grey400, #a0adba);
+  border-radius: 50%;
+  background: var(--colors-grey100, #f2f4f6);
+  color: var(--colors-grey800, #404e5a);
+  font-size: 19px;
+  line-height: 1;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 100ms ease, border-color 100ms ease;
+}
+
+::ng-deep .line-list-filter-clear:hover {
+  border-color: var(--colors-grey600, #6c7783);
+  background: var(--colors-grey200, #e0e5e9);
+}
+
+::ng-deep .line-list-filter-clear:focus-visible {
+  outline: 2px solid var(--colors-blue500, #147cd1);
+  outline-offset: 2px;
+}
+::ng-deep .line-list-org-unit-picker {
+  width: min(400px, 80vw);
+}
+::ng-deep .line-list-enrollment-dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+}
+::ng-deep .line-list-time-control {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+}
+::ng-deep .line-list-time-control > label {
+  color: var(--colors-grey800, #404e5a);
+  font-size: 13px;
+}
+::ng-deep .line-list-time-control > input {
+  max-width: 240px;
+  padding: 8px 12px;
+  height: 40px;
+  border-radius: 4px;
+  border: 1px solid var(--colors-grey500, #a0adba);
+  background: #fff;
+  font: inherit;
+  color: inherit;
+  box-sizing: border-box;
+}
+::ng-deep .line-list-time-control > input:focus-visible {
+  outline: 2px solid var(--colors-blue500, #147cd1);
+}
+::ng-deep .line-list-filter-hint {
+  font-size: 12px;
+  color: var(--colors-grey700, #536475);
+}
+
+// Read-only date values and inline DHIS2 calendar avoid nested popup dismissal.
+::ng-deep .line-list-readonly-date {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 245px;
+}
+
+::ng-deep .line-list-time-selectors {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+::ng-deep .line-list-time-selectors > div {
+  min-width: 96px;
+}
+
+::ng-deep .line-list-time-label {
+  color: var(--colors-grey800, #404e5a);
+  font-size: 13px;
+}
+
+// Export buttons share the records-summary row; right-aligned and responsive.
+::ng-deep .line-list-results .line-list-download-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+@media (max-width: 560px) {
+  ::ng-deep .line-list-results .line-list-download-toolbar {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+// Export actions remain on the right while result/loading status stays beside the record count.
+::ng-deep .line-list-results-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-left: auto;
+}
+
+::ng-deep .line-list-fetch-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 12px;
+  white-space: nowrap;
+  color: var(--colors-grey700, #536475);
+  font-size: 13px;
+}
+
+// Show a little breathing room between a download spinner and its caption;
+// this wrapper is present only while CSV or Excel is being generated.
+::ng-deep .line-list-export-progress {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+// DATETIME uses the available flyout width instead of leaving the right empty.
+// Retain the inline calendar to prevent nested DHIS2 popover dismissal.
+::ng-deep .line-list-filter-menu--datetime {
+  box-sizing: border-box;
+  width: min(650px, calc(90vw - 32px));
+  max-width: 100%;
+}
+
+::ng-deep .line-list-datetime-layout {
+  display: grid;
+  // The DHIS2 Calendar has an intrinsic width; reserve it so that the time
+  // controls cannot collapse into the calendar when the flyout is constrained.
+  grid-template-columns: minmax(244px, 250px) minmax(240px, 1fr);
+  align-items: start;
+  column-gap: 32px;
+}
+
+::ng-deep .line-list-datetime-calendar,
+::ng-deep .line-list-datetime-details {
+  min-width: 0;
+}
+
+::ng-deep .line-list-datetime-calendar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+::ng-deep .line-list-datetime-section-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--colors-grey800, #404e5a);
+}
+
+::ng-deep .line-list-datetime-details {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border-left: 1px solid var(--colors-grey300, #d5dde5);
+  padding-left: 24px;
+  box-sizing: border-box;
+}
+
+::ng-deep .line-list-datetime-details .line-list-time-control {
+  margin-top: 0;
+}
+
+::ng-deep .line-list-datetime-hint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--colors-grey700, #536475);
+}
+
+::ng-deep .line-list-datetime-hint strong {
+  display: block;
+  font-weight: 600;
+}
+
+@media (max-width: 720px) {
+  ::ng-deep .line-list-datetime-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  ::ng-deep .line-list-datetime-details {
+    border-left: 0;
+    border-top: 1px solid var(--colors-grey300, #d5dde5);
+    padding-left: 0;
+    padding-top: 20px;
+  }
+
+  ::ng-deep .line-list-filter-menu--datetime {
+    width: min(330px, calc(90vw - 32px));
+  }
+
+  ::ng-deep .line-list-results-actions {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-start;
   }
 }

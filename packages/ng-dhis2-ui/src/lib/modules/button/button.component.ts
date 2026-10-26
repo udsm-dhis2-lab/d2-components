@@ -8,7 +8,7 @@ import * as ReactDOM from 'react-dom/client';
 @Component({
   selector: 'ng-dhis2-ui-button',
   template: '<ng-content></ng-content>',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
 export class ButtonComponent extends ReactWrapperModule {

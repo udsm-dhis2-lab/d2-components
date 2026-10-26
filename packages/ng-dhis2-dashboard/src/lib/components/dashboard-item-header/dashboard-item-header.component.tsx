@@ -24,7 +24,7 @@ import React, { useState } from 'react';
     imports: [ReactWrapperModule, MatTooltipModule, MatIconModule],
     selector: 'd2-dashboard-item-header',
     templateUrl: './dashboard-item-header.component.html',
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrls: ['./dashboard-item-header.component.scss']
 })
 export class DashboardItemHeaderComponent {

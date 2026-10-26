@@ -16,7 +16,7 @@ import { DictionaryState } from '../../store/reducers/dictionary.reducer';
     selector: 'app-indicators-list',
     templateUrl: './indicators-list.component.html',
     styleUrls: ['./indicators-list.component.css'],
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: false
 })
 export class IndicatorsListComponent implements OnInit {

@@ -32,7 +32,7 @@ import {
   selector: 'app-data-table-ui',
   standalone: false,
   template: '<ng-content></ng-content>',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./data-table-ui.component.scss'],
 })
 export class DataTableUIComponent

@@ -5,7 +5,7 @@ import { FormMetaData, IFormMetadata } from '../form';
 @Component({
   selector: 'ng-dhis2-ui-event-form',
   templateUrl: './event-form.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
 export class EventFormComponent implements OnInit {

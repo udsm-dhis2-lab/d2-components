@@ -8,7 +8,7 @@ import { Fn } from '@iapps/function-analytics';
   selector: 'ng-dhis2-ui-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
 export class AppComponent {

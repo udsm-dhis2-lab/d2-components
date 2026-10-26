@@ -10,7 +10,7 @@ import { SummarizeSelectionPipe } from '../../pipes/summarize-selection.pipe';
     imports: [SummarizeSelectionPipe],
     selector: 'd2-dashboard-selection-summary',
     templateUrl: './dashboard-selection-summary.component.html',
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrls: ['./dashboard-selection-summary.component.scss']
 })
 export class DashboardSelectionSummaryComponent {

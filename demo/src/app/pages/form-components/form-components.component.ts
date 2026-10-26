@@ -55,7 +55,7 @@ const SHEHIA_KEYWORDS = [
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'app-form-components',
   templateUrl: './form-components.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     D2FormModule,
     TrackerFormModule,

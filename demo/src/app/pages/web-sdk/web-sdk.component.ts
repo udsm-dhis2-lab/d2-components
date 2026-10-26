@@ -57,7 +57,7 @@ class Applicant extends TrackedEntityInstance {
 @Component({
   selector: 'app-web-sdk',
   templateUrl: './web-sdk.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [],
 })
 export class WebSdkComponent {

@@ -10,7 +10,7 @@ import { NgDhis2ShellWrapper } from '@iapps/ng-dhis2-shell';
 @Component({
   selector: 'app-root',
   template: '<ng-dhis2-shell (shellHasLoaded)="onReady()"></ng-dhis2-shell>',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
 // eslint-disable-next-line @angular-eslint/component-class-suffix

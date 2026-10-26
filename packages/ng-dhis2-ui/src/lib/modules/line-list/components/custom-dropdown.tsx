@@ -1,16 +1,16 @@
-import { DropdownButton, InputField, FlyoutMenu } from '@dhis2/ui';
-import { Button, ButtonStrip } from '@dhis2/ui';
-import { set } from 'date-fns';
+import { DropdownButton, InputField, FlyoutMenu } from "@dhis2/ui";
+import { Button, ButtonStrip } from "@dhis2/ui";
+import { set } from "date-fns";
 import React, {
   cloneElement,
   isValidElement,
   ReactNode,
   useEffect,
   useState,
-} from 'react';
+} from "react";
 
 type PopOverDropdownProps = {
-  component: ReactNode | ReactNode[]; 
+  component: ReactNode | ReactNode[];
   // onUpdate?: (value: string) => void;
   // onReset?: () => void;
 };
@@ -19,7 +19,7 @@ export const PopOverDropdown = ({
   component,
 }: //  onUpdate, onReset
 PopOverDropdownProps) => {
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [componentProps, setComponentProps] = useState<any>();
 
@@ -42,12 +42,12 @@ PopOverDropdownProps) => {
 
   // const clonedComponent = isValidElement(component) && cloneElement(component);
   const renderComponents = Array.isArray(component)
-  ? component.map((comp, idx) =>
-      isValidElement(comp) ? cloneElement(comp, { key: idx }) : comp
-    )
-  : isValidElement(component)
-    ? cloneElement(component)
-    : component;
+    ? component.map((comp, idx) =>
+        isValidElement(comp) ? cloneElement(comp, { key: idx }) : comp,
+      )
+    : isValidElement(component)
+      ? cloneElement(component)
+      : component;
 
   useEffect(() => {
     if (isValidElement(component)) {
@@ -56,7 +56,7 @@ PopOverDropdownProps) => {
   }, [component]);
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
       <DropdownButton
         name="customDropdown"
         open={isOpen}
@@ -64,7 +64,7 @@ PopOverDropdownProps) => {
         component={
           <div>
             <FlyoutMenu>
-              <div style={{ padding: '16px' }}>
+              <div style={{ padding: "16px" }}>
                 {/* {clonedComponent} */}
                 {renderComponents}
                 <ButtonStrip>
@@ -78,7 +78,7 @@ PopOverDropdownProps) => {
                   </Button>
                   <Button
                     onClick={() => {
-                      setValue('');
+                      setValue("");
                       setIsOpen(false);
                     }}
                   >
@@ -93,19 +93,17 @@ PopOverDropdownProps) => {
         label
         {/* {componentProps?.label} {componentProps?.value} */}
         {/* {componentProps?.value && ( */}
-          <span
-            onClick={(event) => {
-              event.stopPropagation();
-              console.log('Button clicked! Value:', value);
-            }}
-            style={{ display: 'inline-flex', alignItems: 'center' }}
-          >
-            <ClearIcon className="my-icon-class" />
-          </span>
+        <span
+          onClick={(event) => {
+            event.stopPropagation();
+            console.log("Button clicked! Value:", value);
+          }}
+          style={{ display: "inline-flex", alignItems: "center" }}
+        >
+          <ClearIcon className="my-icon-class" />
+        </span>
         {/* )} */}
       </DropdownButton>
     </div>
   );
 };
-
-

@@ -5,7 +5,7 @@ import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
     selector: 'app-dictionary-progress',
     templateUrl: './dictionary-progress.component.html',
     styleUrls: ['./dictionary-progress.component.css'],
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: false
 })
 export class DictionaryProgressComponent implements OnInit {

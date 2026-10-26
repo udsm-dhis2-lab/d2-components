@@ -42,7 +42,6 @@ import { DashboardSelectionFilterService } from './services/dashboard-selection-
 @Component({
   imports: [
     CommonModule,
-    AdditionalFilterDialogComponent,
     OrganisationUnitSelectorModule,
     PeriodSelectorModule,
     ReactWrapperModule,
@@ -50,7 +49,7 @@ import { DashboardSelectionFilterService } from './services/dashboard-selection-
   providers: [DashboardSelectionFilterService],
   selector: 'd2-dashboard-selection-filters',
   templateUrl: './dashboard-selection-filters.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./dashboard-selection-filters.component.scss'],
 })
 export class DashboardSelectionFiltersComponent {

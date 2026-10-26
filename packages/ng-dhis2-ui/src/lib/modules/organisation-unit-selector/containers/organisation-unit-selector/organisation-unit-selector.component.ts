@@ -26,7 +26,7 @@ type OrganisationUnitSelectionEvent = {
 @Component({
   selector: 'ng-dhis2-ui-org-unit-selector',
   template: '<ng-container><ng-container>',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
 export class OrganisationUnitSelectorComponent extends ReactWrapperModule {

@@ -40,7 +40,7 @@ type OrganisationUnitSelectionEvent = {
       }
     `,
   ],
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
 export class OrganisationUnitSelectorModalComponent extends ReactWrapperModule {
