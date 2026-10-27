@@ -287,6 +287,8 @@ export class ProgramEntryFormModule {
   ) {
     const trackedEntityId = this.trackedEntity?.();
     if (
+     // Event forms also receive a trackedEntity ID checking the ID alone prevented their auto-assigned fields from being populated since its passed even in creation of the events. 
+      this.config().formType === 'TRACKER' &&
       typeof trackedEntityId === 'string' &&
       trackedEntityId.trim().length > 0
     ) {
