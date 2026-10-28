@@ -1,4 +1,4 @@
-import { drawChart } from './chart/helpers/draw-chart.helper';
+import { ChartDefinitionRegistry, standardChartRegistry } from './chart-definitions';
 import {
   AnalyticalDataset,
   assertAnalyticalDataset,
@@ -14,15 +14,16 @@ import { ChartModel } from './chart-model';
 /** Pure analytics/configuration to engine-neutral chart meaning. */
 export function buildStandardChartModel(
   analytics: unknown | AnalyticalDataset,
-  configuration: unknown
+  configuration: unknown,
+  registry: ChartDefinitionRegistry = standardChartRegistry
 ): ChartModel {
-  adaptLegacyChartConfiguration(configuration);
+  const chartConfiguration = adaptLegacyChartConfiguration(configuration);
   if (isAnalyticalDataset(analytics)) {
     assertAnalyticalDataset(analytics);
     const legacy = toLegacyAnalytics(analytics);
     normalizeAnalyticalData(legacy);
-    return drawChart(legacy, configuration);
+    return registry.resolve(chartConfiguration.type).build({ analytics: legacy, configuration: chartConfiguration, source: configuration });
   }
   normalizeAnalyticalData(analytics);
-  return drawChart(analytics, configuration);
+  return registry.resolve(chartConfiguration.type).build({ analytics, configuration: chartConfiguration, source: configuration });
 }

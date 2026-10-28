@@ -10,21 +10,26 @@ import {
   HighchartsAdapter,
   ChartInstance,
 } from '../highcharts-adapter';
-import { buildStandardChartOptions } from '../standard-chart.transform';
+import { buildStandardChartModel } from '../standard-chart.model';
+import { HighchartsOptionsAdapter } from '../highcharts-options.adapter';
+import { ChartDefinitionRegistry, standardChartRegistry } from '../chart-definitions';
 import { AnalyticalDataset } from '../analytical-dataset';
 
 /**
  *
  */
 export class D2Charts extends BaseVisualizer implements Visualizer {
-  #type: ChartType = 'COLUMN';
+  #type: ChartType | (string & {}) = 'COLUMN';
   #chart?: ChartInstance;
   #drawTimer?: ReturnType<typeof setTimeout>;
+  #drawGeneration = 0;
   readonly #highcharts: HighchartsAdapter;
+  readonly #registry: ChartDefinitionRegistry;
 
-  constructor(highcharts: HighchartsAdapter = new DefaultHighchartsAdapter()) {
+  constructor(highcharts: HighchartsAdapter = new DefaultHighchartsAdapter(), registry: ChartDefinitionRegistry = standardChartRegistry) {
     super();
     this.#highcharts = highcharts;
+    this.#registry = registry;
   }
 
   /**
@@ -32,7 +37,7 @@ export class D2Charts extends BaseVisualizer implements Visualizer {
    * @param visualizationType
    * @returns
    */
-  setType(type: ChartType) {
+  setType(type: ChartType | (string & {})) {
     this.#type = type;
     return this;
   }
@@ -51,16 +56,22 @@ export class D2Charts extends BaseVisualizer implements Visualizer {
       this._config.config.type = this.#type.toLowerCase();
     }
 
-    const chartObject = buildStandardChartOptions(this._data, this._config);
+    const chartObject = new HighchartsOptionsAdapter().toOptions(
+      buildStandardChartModel(this._data, this._config, this.#registry)
+    );
 
+    if (this.#drawTimer) clearTimeout(this.#drawTimer);
+    const generation = ++this.#drawGeneration;
     this.#drawTimer = setTimeout(() => {
+      if (generation !== this.#drawGeneration) return;
       this.#drawTimer = undefined;
-      this.dispose();
+      this.#chart?.destroy();
       this.#chart = this.#highcharts.create(chartObject);
     }, 20);
   }
 
   override dispose() {
+    this.#drawGeneration++;
     if (this.#drawTimer) {
       clearTimeout(this.#drawTimer);
       this.#drawTimer = undefined;

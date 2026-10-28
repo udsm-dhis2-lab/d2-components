@@ -21,9 +21,24 @@ import {
   resolveStacking,
 } from '../transforms/presentation.transforms';
 
+export type ChartFamily = 'cartesian' | 'circular' | 'polar' | 'gauge' | 'combined';
+
+/** Legacy entry point; definitions supply the family explicitly. */
 export function drawChart(
   analyticsResult: any,
   chartConfiguration: any
+): ChartModel {
+  const families: Record<string, ChartFamily> = {
+    radar: 'polar', solidgauge: 'gauge', gauge: 'gauge',
+    pie: 'circular', combined: 'combined',
+  };
+  return drawChartFamily(analyticsResult, chartConfiguration, families[chartConfiguration.type] || 'cartesian');
+}
+
+export function drawChartFamily(
+  analyticsResult: any,
+  chartConfiguration: any,
+  family: ChartFamily
 ): ChartModel {
   const analyticsObject = chartConfiguration.cumulativeValues
     ? accumulateAnalytics(
@@ -52,48 +67,15 @@ export function drawChart(
    * Extend chart options depending on type
    */
 
-  const newChartConfiguration = _.clone(chartConfiguration);
-
-  switch (chartConfiguration.type) {
-    case 'radar':
-      chartObject = extendSpiderWebChartOptions(
-        chartObject,
-        analyticsObject,
-        chartConfiguration
-      );
-      break;
-    case 'solidgauge':
-      chartObject = extendSolidGaugeChartOptions(
-        chartObject,
-        analyticsObject,
-        chartConfiguration
-      );
-      break;
-    case 'gauge':
-      newChartConfiguration.type = 'solidgauge';
-      chartObject = extendSolidGaugeChartOptions(
-        chartObject,
-        analyticsObject,
-        newChartConfiguration
-      );
-      break;
-    case 'pie':
-      chartObject = extendPieChartOptions(
-        chartObject,
-        analyticsObject,
-        chartConfiguration
-      );
-      break;
-    case 'combined':
-      break;
-    default:
-      chartObject = extendOtherChartOptions(
-        chartObject,
-        analyticsObject,
-        chartConfiguration
-      );
-      break;
-  }
+  const builders: Record<ChartFamily, () => any> = {
+    cartesian: () => extendOtherChartOptions(chartObject, analyticsObject, chartConfiguration),
+    circular: () => extendPieChartOptions(chartObject, analyticsObject, chartConfiguration),
+    polar: () => extendSpiderWebChartOptions(chartObject, analyticsObject, chartConfiguration),
+    gauge: () => extendSolidGaugeChartOptions(chartObject, analyticsObject,
+      chartConfiguration.type === 'gauge' ? { ...chartConfiguration, type: 'solidgauge' } : chartConfiguration),
+    combined: () => chartObject,
+  };
+  chartObject = builders[family]();
 
   return toChartModel(
     filterEmptySeriesPoints(chartObject, chartConfiguration),
@@ -178,7 +160,7 @@ function extendPieChartOptions(
 
   const sanitizedSeries = sortedSeries.map((series) => {
     series.data = series.data.map((dataObject: { y: number }) => {
-      if (dataObject.y === null) {
+      if (dataObject.y === null && chartConfiguration.__pieNullAsZero !== false) {
         dataObject.y = 0;
       }
       return dataObject;
@@ -394,11 +376,11 @@ function getPlotOptions(chartConfiguration: any) {
         /**
          * Set attributes for stacked charts
          */
-        const stacking = resolveStacking(chartConfiguration);
+        const stacking = chartConfiguration.__resolvedStacking ?? resolveStacking(chartConfiguration);
         if (stacking)
           (plotOptions as any)[plotOptionChartType].stacking = stacking;
 
-        if (chartConfiguration.type === 'dotted') {
+        if (chartConfiguration.__dottedLine || chartConfiguration.type === 'dotted') {
           (plotOptions as any)['line'] = {
             lineWidth: 0,
             states: {
