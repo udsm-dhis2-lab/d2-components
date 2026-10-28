@@ -4,6 +4,17 @@
   "type": "commonjs",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./model": {
+      "types": "./src/model.d.ts",
+      "default": "./src/model.js"
+    },
+    "./package.json": "./package.json"
+  },
   "dependencies": {
     "lodash": "^4.17.21",
     "tslib": "^2.3.0"

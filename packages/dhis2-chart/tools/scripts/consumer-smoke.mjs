@@ -90,15 +90,37 @@ try {
     stdio: 'inherit',
   });
   writeFileSync(
+    join(consumer, 'verify-model.cjs'),
+    [
+      "const Module = require('node:module');",
+      'const load = Module._load;',
+      'Module._load = function(request, parent, main) {',
+      " if (request === 'highcharts' || request.startsWith('highcharts/')) throw new Error('Model entry loaded Highcharts');",
+      ' return load.call(this, request, parent, main);',
+      '};',
+      "const { buildStandardChartModel } = require('@iapps/d2-charts/model');",
+      "const raw = { headers: [{ name: 'dx' }, { name: 'value' }], rows: [['a', '0']], metaData: { dimensions: { dx: ['a'] }, dx: ['a'], names: { a: 'A' } } };",
+      "const model = buildStandardChartModel(raw, { type: 'column', xAxisType: ['dx'], yAxisType: 'dx', axes: [], zAxisType: [] });",
+      "if (model.kind !== 'CHART_MODEL') throw new Error('Model creation failed');",
+      "console.log('Model-only consumer import passed');",
+    ].join('\n')
+  );
+  execFileSync(process.execPath, ['verify-model.cjs'], {
+    cwd: consumer,
+    stdio: 'inherit',
+  });
+  writeFileSync(
     join(consumer, 'typecheck.ts'),
     [
-      "import { D2Charts, normalizeAnalyticalData, buildStandardChartOptions, type AnalyticalDataset, type AnalyticalObservation, AnalyticalBoundaryError } from '@iapps/d2-charts';",
+      "import { D2Charts, normalizeAnalyticalData, buildStandardChartOptions, buildStandardChartModel, HighchartsOptionsAdapter, type ChartModel, type AnalyticalDataset, type AnalyticalObservation, AnalyticalBoundaryError } from '@iapps/d2-charts';",
       "const raw = { headers: [{ name: 'dx' }, { name: 'value' }], rows: [['a', '0']], metaData: { dimensions: { dx: ['a'] }, names: { a: 'A' } } };",
       'const dataset: AnalyticalDataset = normalizeAnalyticalData(raw);',
       'const observation: AnalyticalObservation = dataset.observations[0];',
       "if (observation.value.kind === 'number') observation.value.value.toFixed(1);",
       'new D2Charts().setAnalyticalDataset(dataset);',
       "buildStandardChartOptions(dataset, { type: 'column', xAxisType: ['dx'], yAxisType: 'dx', axes: [] });",
+      "const model: ChartModel = buildStandardChartModel(dataset, { type: 'column', xAxisType: ['dx'], yAxisType: 'dx', axes: [] });",
+      'new HighchartsOptionsAdapter().toOptions(model);',
       'void AnalyticalBoundaryError;',
     ].join('\n')
   );
@@ -119,6 +141,41 @@ try {
   execFileSync(
     process.execPath,
     [join(workspace, 'node_modules/typescript/bin/tsc'), '-p', 'tsconfig.json'],
+    { cwd: consumer, stdio: 'inherit' }
+  );
+  writeFileSync(
+    join(consumer, 'typecheck-no-dom.ts'),
+    [
+      "import { buildStandardChartModel, type ChartModel, type ChartSeriesModel } from '@iapps/d2-charts/model';",
+      "const raw = { headers: [{ name: 'dx' }, { name: 'value' }], rows: [['a', '0']], metaData: { dimensions: { dx: ['a'] }, dx: ['a'], names: { a: 'A' } } };",
+      "const model: ChartModel = buildStandardChartModel(raw, { type: 'column', xAxisType: ['dx'], yAxisType: 'dx', axes: [], zAxisType: [] });",
+      'const series: ChartSeriesModel | undefined = model.series[0];',
+      'void series;',
+    ].join('\n')
+  );
+  writeFileSync(
+    join(consumer, 'tsconfig-no-dom.json'),
+    JSON.stringify({
+      compilerOptions: {
+        strict: true,
+        noEmit: true,
+        module: 'Node16',
+        moduleResolution: 'Node16',
+        target: 'ES2020',
+        lib: ['ES2020'],
+        types: [],
+        skipLibCheck: false,
+      },
+      files: ['typecheck-no-dom.ts'],
+    })
+  );
+  execFileSync(
+    process.execPath,
+    [
+      join(workspace, 'node_modules/typescript/bin/tsc'),
+      '-p',
+      'tsconfig-no-dom.json',
+    ],
     { cwd: consumer, stdio: 'inherit' }
   );
 } finally {

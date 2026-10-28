@@ -5,6 +5,8 @@ import HighchartsMore from 'highcharts/highcharts-more';
 import HighchartDrilldown from 'highcharts/modules/drilldown';
 import OfflineExporting from 'highcharts/modules/offline-exporting';
 import HighchartGauge from 'highcharts/modules/solid-gauge';
+import { ChartModuleRequirement } from './chart-model';
+import { requiredModulesForOptions } from './highcharts-options.adapter';
 
 export interface ChartInstance {
   destroy(): void;
@@ -19,25 +21,46 @@ export interface HighchartsAdapter {
   create(options: Highcharts.Options): ChartInstance;
 }
 
-let initialized = false;
+const moduleInitializers: Record<
+  ChartModuleRequirement,
+  (engine: typeof Highcharts) => void
+> = {
+  exporting: Exporting,
+  'offline-exporting': OfflineExporting,
+  'export-data': ExportData,
+  'highcharts-more': HighchartsMore,
+  'solid-gauge': HighchartGauge,
+  drilldown: HighchartDrilldown,
+};
+const initialized = new Set<ChartModuleRequirement>();
+const ALL_MODULES = Object.keys(moduleInitializers) as ChartModuleRequirement[];
 
-export function initializeHighcharts(): void {
-  if (initialized) return;
-  Exporting(Highcharts);
-  OfflineExporting(Highcharts);
-  ExportData(Highcharts);
-  HighchartsMore(Highcharts);
-  HighchartGauge(Highcharts);
-  HighchartDrilldown(Highcharts);
-  initialized = true;
+/** Idempotent, requirement-driven initialization with named diagnostics. */
+export function initializeHighcharts(
+  required: readonly ChartModuleRequirement[] = ALL_MODULES
+): void {
+  for (const moduleName of required) {
+    if (initialized.has(moduleName)) continue;
+    const initialize = moduleInitializers[moduleName];
+    if (typeof initialize !== 'function') {
+      throw new Error(
+        `Highcharts module ${moduleName} is unavailable; install a compatible Highcharts 11 package`
+      );
+    }
+    try {
+      initialize(Highcharts);
+    } catch (error) {
+      throw new Error(
+        `Failed to initialize Highcharts module ${moduleName}: ${String(error)}`
+      );
+    }
+    initialized.add(moduleName);
+  }
 }
 
 export class DefaultHighchartsAdapter implements HighchartsAdapter {
-  constructor() {
-    initializeHighcharts();
-  }
-
   create(options: Highcharts.Options): ChartInstance {
+    initializeHighcharts(requiredModulesForOptions(options));
     return Highcharts.chart(options);
   }
 }

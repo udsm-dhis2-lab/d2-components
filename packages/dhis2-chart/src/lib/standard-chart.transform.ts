@@ -1,21 +1,15 @@
-import { drawChart } from './chart/helpers/draw-chart.helper';
-import { AnalyticalDataset, assertAnalyticalDataset, isAnalyticalDataset } from './analytical-dataset';
-import { normalizeAnalyticalData, toLegacyAnalytics } from './analytics-boundary';
-import { adaptLegacyChartConfiguration } from './legacy-chart-configuration';
+import { AnalyticalDataset } from './analytical-dataset';
+import { buildStandardChartModel } from './standard-chart.model';
+import { HighchartsOptionsAdapter } from './highcharts-options.adapter';
 
-/** Pure analytics/configuration to Highcharts-options transformation. */
+export { buildStandardChartModel } from './standard-chart.model';
+
+/** Compatibility API: serialize the neutral model into Highcharts options. */
 export function buildStandardChartOptions(
   analytics: unknown | AnalyticalDataset,
   configuration: unknown
 ): any {
-  adaptLegacyChartConfiguration(configuration);
-  if (isAnalyticalDataset(analytics)) {
-    assertAnalyticalDataset(analytics);
-    const legacy = toLegacyAnalytics(analytics);
-    normalizeAnalyticalData(legacy);
-    return drawChart(legacy, configuration);
-  }
-  normalizeAnalyticalData(analytics);
-  // The raw input is retained here to keep Sprint 10 option output unchanged.
-  return drawChart(analytics, configuration);
+  return new HighchartsOptionsAdapter().toOptions(
+    buildStandardChartModel(analytics, configuration)
+  );
 }

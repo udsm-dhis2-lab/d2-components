@@ -1,6 +1,8 @@
 import * as _ from 'lodash';
 import { ChartAxisUtil } from '../utils';
 import { ChartColor } from '../models';
+import { ChartModel } from '../../chart-model';
+import { toChartModel } from '../../chart-model.builder';
 import {
   accumulateAnalytics,
   applySeriesOptions,
@@ -19,7 +21,10 @@ import {
   resolveStacking,
 } from '../transforms/presentation.transforms';
 
-export function drawChart(analyticsResult: any, chartConfiguration: any): any {
+export function drawChart(
+  analyticsResult: any,
+  chartConfiguration: any
+): ChartModel {
   const analyticsObject = chartConfiguration.cumulativeValues
     ? accumulateAnalytics(
         analyticsResult,
@@ -90,7 +95,10 @@ export function drawChart(analyticsResult: any, chartConfiguration: any): any {
       break;
   }
 
-  return filterEmptySeriesPoints(chartObject, chartConfiguration);
+  return toChartModel(
+    filterEmptySeriesPoints(chartObject, chartConfiguration),
+    chartConfiguration.type
+  );
 }
 
 function extendSpiderWebChartOptions(

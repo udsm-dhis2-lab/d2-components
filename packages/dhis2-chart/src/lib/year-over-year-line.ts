@@ -1,4 +1,5 @@
-import * as Highcharts from 'highcharts';
+import { YearOverYearChartModel } from './chart-model';
+import { HighchartsOptionsAdapter } from './highcharts-options.adapter';
 import {
   BaseVisualizer,
   downloadCsv,
@@ -114,271 +115,26 @@ export class YearOverYearLineHighchartsVisualizer
       return Number(b.name) - Number(a.name);
     });
 
-    const hcSeries: any[] = sortedSeries.map((s, idx) => {
-      const isThisYear = String(s.name) === String(thisYear);
-
-      return {
-        type: 'line',
-        name: s.name,
-        data: s.data.map((v) => (v == null ? null : v)),
-        color: palette[idx % palette.length],
-
-        marker: { enabled: false }, // ✅ default OFF (DHIS2)
-        lineWidth: isThisYear ? 2.8 : 1.9,
-        zIndex: isThisYear ? 10 : 1,
-
-        // ✅ hover halo marker (ONLY on hover)
-        states: {
-          hover: {
-            lineWidth: 3,
-          },
-        },
-
-        dataLabels: {
-          enabled: showData,
-          allowOverlap: false,
-          crop: true,
-          overflow: 'none',
-          style: {
-            fontSize: '10px',
-            fontWeight: '600',
-            color: '#111827',
-            textOutline: 'none',
-          } as any,
-          formatter: function () {
-            const y = (this as any).y as number | null;
-            if (y == null || y === 0) return '';
-            return formatNumber(y, digitGroupSeparator, skipRounding);
-          },
-        },
-      };
-    });
-
-    const tickStep = this.getTickStepForDHIS2Like(normalizedCategories.length);
-
-    // Determine if header exists
-    const hasTitle = !!titleText;
-    const hasSubtitle = !!subtitleText;
-
-    // More generous vertical spacing
-    const spacingTop = hasTitle || hasSubtitle ? 22 : 10;
-
-    // Better vertical positioning
-    const titleY = 5;
-    const subtitleY = hasSubtitle ? 28 : 48;
-
-    const options: Highcharts.Options = {
-      colors: palette,
-
-      chart: {
-        renderTo: el as any,
-        type: 'line',
-        animation: false,
-        backgroundColor: '#ffffff',
-
-        // ✅ More impressive header space
-        spacingTop,
-        spacingRight: 14,
-        spacingLeft: 14,
-        spacingBottom: showLegend ? 24 : 16,
-
-        style: {
-          fontFamily:
-            'Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif',
-        },
-
-        events: {
-          load: () => this.hideLoader(),
-        } as any,
-      },
-
-      // -----------------------------
-      // 🎯 VISUALLY IMPRESSIVE TITLE
-      // -----------------------------
-      title: {
-        text: titleText || undefined,
-        align: 'center',
-        y: titleY,
-        margin: 18, // more separation from subtitle
-        style: {
-          fontSize: '14px', // ⬆ bigger
-          fontWeight: '600', // bold and strong
-          letterSpacing: '0.3px',
-          color: '#111827',
-        },
-      },
-
-      // -----------------------------
-      // 🎯 ELEGANT SUBTITLE
-      // -----------------------------
-      subtitle: {
-        text: subtitleText || undefined,
-        align: 'center',
-        y: subtitleY,
-        style: {
-          fontSize: '13px',
-          fontWeight: '500',
-          color: '#475569',
-        },
-      },
-
-      credits: { enabled: false },
-      exporting: { enabled: true },
-
-      legend: {
-        enabled: showLegend,
-        align: 'center',
-        verticalAlign: 'bottom',
-        layout: 'horizontal',
-        itemStyle: {
-          fontSize: '11px',
-          fontWeight: '500',
-          color: '#374151',
-        },
-        itemMarginTop: 3,
-        itemMarginBottom: 3,
-        symbolHeight: 10,
-        symbolWidth: 18,
-      },
-
-      xAxis: {
-        categories: normalizedCategories,
-        tickmarkPlacement: 'on',
-        lineColor: '#E5E7EB',
-        tickColor: '#E5E7EB',
-        gridLineWidth: 0,
-
-        labels: {
-          step: tickStep,
-          rotation: -45,
-          style: {
-            fontSize: '10px',
-            color: '#6B7280',
-          } as any,
-        },
-
-        // ✅ vertical pointer line on hover
-        crosshair: {
-          width: 1,
-          color: '#94A3B8',
-          dashStyle: 'ShortDot',
-          snap: true,
-          zIndex: 8,
-        },
-      },
-
-      yAxis: {
-        title: { text: undefined },
-        min: 0,
-        tickAmount: 6,
-        gridLineColor: '#F3F4F6',
-        lineColor: '#E5E7EB',
-
-        labels: {
-          style: {
-            fontSize: '10px',
-            color: '#6B7280',
-          } as any,
-          formatter: function () {
-            const v = (this as any).value as number;
-            return formatNumber(v, digitGroupSeparator, skipRounding);
-          },
-        },
-
-        // ✅ horizontal pointer line on hover
-        crosshair: {
-          width: 1,
-          color: '#CBD5E1',
-          dashStyle: 'ShortDot',
-          zIndex: 8,
-        },
-      },
-
-      tooltip: {
-        shared: true,
-        useHTML: true,
-        backgroundColor: 'rgba(255,255,255,0.98)',
-        borderColor: '#E5E7EB',
-        borderRadius: 6,
-        shadow: true,
-        padding: 10,
-        followPointer: false,
-
-        formatter: function () {
-          const x = (this as any).x;
-          const pts = ((this as any).points || []) as any[];
-
-          const rows = pts
-            .slice()
-            .sort((a, b) => Number(b.series.name) - Number(a.series.name))
-            .map((p) => {
-              const val = formatNumber(p.y, digitGroupSeparator, skipRounding);
-              return `
-                <div style="display:flex;align-items:center;gap:8px;margin:2px 0;">
-                  <span style="color:${p.color};font-size:14px;line-height:0;">●</span>
-                  <span style="min-width:40px;color:#374151;">${p.series.name}</span>
-                  <b style="color:#111827;">${val}</b>
-                </div>
-              `;
-            })
-            .join('');
-
-          return `
-            <div style="font-size:12px;">
-              <div style="margin-bottom:6px;color:#111827;"><b>${x}</b></div>
-              ${rows}
-            </div>
-          `;
-        },
-      },
-
-      plotOptions: {
-        series: {
-          animation: false,
-          connectNulls: false,
-
-          marker: {
-            enabled: false,
-            states: {
-              hover: {
-                enabled: true, // ✅ hover halo ON
-                radius: 5,
-                lineWidth: 2,
-              },
-            },
-          },
-
-          stickyTracking: true,
-        },
-      },
-
-      series: hcSeries as any,
-
-      responsive: {
-        rules: [
-          {
-            condition: { maxWidth: 520 },
-            chartOptions: {
-              title: { style: { fontSize: '12px' } as any },
-              subtitle: { style: { fontSize: '11px' } as any },
-              xAxis: {
-                labels: {
-                  step: Math.max(2, tickStep),
-                  rotation: -60,
-                  style: { fontSize: '9px' } as any,
-                },
-              },
-              yAxis: {
-                labels: { style: { fontSize: '9px' } as any },
-              },
-              legend: {
-                itemStyle: { fontSize: '10px' } as any,
-              },
-            },
-          },
-        ],
-      },
+    const model: YearOverYearChartModel = {
+      kind: 'YEAR_OVER_YEAR_CHART_MODEL',
+      categories: normalizedCategories,
+      series: sortedSeries,
+      palette,
+      title: titleText,
+      subtitle: subtitleText,
+      showLegend,
+      showData,
+      digitGroupSeparator,
+      skipRounding,
+      tickStep: this.getTickStepForDHIS2Like(normalizedCategories.length),
+      currentYear: thisYear,
+      requiredModules: ['exporting', 'offline-exporting', 'export-data'],
     };
+    const options = new HighchartsOptionsAdapter().toYearOverYearOptions(
+      model,
+      el,
+      () => this.hideLoader()
+    );
 
     this.#drawTimer = setTimeout(() => {
       this.#drawTimer = undefined;
@@ -418,8 +174,7 @@ export class YearOverYearLineHighchartsVisualizer
     const wrapper = document.createElement('div');
     wrapper.style.cssText = 'padding:12px;color:#6B7280;font-size:12px';
     const heading = document.createElement('div');
-    heading.style.cssText =
-      'font-weight:600;margin-bottom:6px;color:#111827';
+    heading.style.cssText = 'font-weight:600;margin-bottom:6px;color:#111827';
     heading.textContent = title;
     const detail = document.createElement('div');
     detail.style.cssText = 'font-size:11px;color:#9CA3AF';
@@ -539,20 +294,4 @@ export class YearOverYearLineHighchartsVisualizer
     if (categoryCount <= 52) return 1;
     return 2;
   }
-}
-
-function formatNumber(
-  v: number,
-  sep: 'SPACE' | 'COMMA' | 'NONE',
-  skipRounding: boolean
-): string {
-  const value = skipRounding
-    ? v
-    : Math.abs(v) >= 1
-    ? Math.round(v * 100) / 100
-    : v;
-
-  if (sep === 'NONE') return String(value);
-  if (sep === 'COMMA') return new Intl.NumberFormat('en-US').format(value);
-  return String(value).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
