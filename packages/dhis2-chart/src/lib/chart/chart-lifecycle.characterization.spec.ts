@@ -7,6 +7,7 @@ import {
   chartConfigurationFixture,
 } from '../../testing/fixtures/chart-characterization.fixtures';
 import { D2Charts } from './chart-visualizer';
+import { normalizeAnalyticalData } from '../analytics-boundary';
 
 describe('D2Charts lifecycle characterization', () => {
   let instance: jest.Mocked<ChartInstance>;
@@ -47,6 +48,19 @@ describe('D2Charts lifecycle characterization', () => {
     expect(chart.setConfig(config)).toBe(chart);
     expect(chart.setData(analytics)).toBe(chart);
     expect(chart.setSelections([])).toBe(chart);
+  });
+
+  it('renders directly from a normalized dataset through the same adapter', () => {
+    const chart = new D2Charts(adapter)
+      .setId('chart-fixture')
+      .setConfig(chartConfigurationFixture('column'))
+      .setAnalyticalDataset(normalizeAnalyticalData(chartAnalyticsFixture()));
+
+    chart.draw();
+    jest.runOnlyPendingTimers();
+
+    expect(adapter.create).toHaveBeenCalledTimes(1);
+    expect(adapter.create.mock.calls[0][0].series).toHaveLength(2);
   });
 
   it('defers creation by the current fixed 20ms timer', () => {

@@ -89,6 +89,38 @@ try {
     cwd: consumer,
     stdio: 'inherit',
   });
+  writeFileSync(
+    join(consumer, 'typecheck.ts'),
+    [
+      "import { D2Charts, normalizeAnalyticalData, buildStandardChartOptions, type AnalyticalDataset, type AnalyticalObservation, AnalyticalBoundaryError } from '@iapps/d2-charts';",
+      "const raw = { headers: [{ name: 'dx' }, { name: 'value' }], rows: [['a', '0']], metaData: { dimensions: { dx: ['a'] }, names: { a: 'A' } } };",
+      'const dataset: AnalyticalDataset = normalizeAnalyticalData(raw);',
+      'const observation: AnalyticalObservation = dataset.observations[0];',
+      "if (observation.value.kind === 'number') observation.value.value.toFixed(1);",
+      'new D2Charts().setAnalyticalDataset(dataset);',
+      "buildStandardChartOptions(dataset, { type: 'column', xAxisType: ['dx'], yAxisType: 'dx', axes: [] });",
+      'void AnalyticalBoundaryError;',
+    ].join('\n')
+  );
+  writeFileSync(
+    join(consumer, 'tsconfig.json'),
+    JSON.stringify({
+      compilerOptions: {
+        strict: true,
+        noEmit: true,
+        module: 'Node16',
+        moduleResolution: 'Node16',
+        target: 'ES2020',
+        skipLibCheck: false,
+      },
+      files: ['typecheck.ts'],
+    })
+  );
+  execFileSync(
+    process.execPath,
+    [join(workspace, 'node_modules/typescript/bin/tsc'), '-p', 'tsconfig.json'],
+    { cwd: consumer, stdio: 'inherit' }
+  );
 } finally {
   rmSync(temporary, { recursive: true, force: true });
 }

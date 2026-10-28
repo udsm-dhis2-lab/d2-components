@@ -1,4 +1,5 @@
 import { Fn } from '@iapps/function-analytics';
+import { buildStandardChartOptions, normalizeAnalyticalData } from '@iapps/d2-charts';
 import { D2Visualizer } from './d2-visualizer';
 import { ChartVisualizer } from './modules/chart/chart-visualizer';
 import { CustomVisualizer } from './modules/custom/custom-visualizer';
@@ -242,6 +243,20 @@ describe('D2Visualizer compatibility facade', () => {
 
     expect(Fn.Analytics).toHaveBeenCalledTimes(1);
     expect(draw).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps facade chart options equivalent to the direct normalized-data path', async () => {
+    jest.spyOn(ChartVisualizer.prototype, 'draw').mockImplementation();
+    const visualizer = configuredVisualizer('COLUMN');
+    await visualizer.draw();
+    const renderer = visualizer.visualizer as unknown as {
+      _data: unknown;
+      _config: unknown;
+    };
+
+    expect(buildStandardChartOptions(
+      normalizeAnalyticalData(renderer._data), renderer._config
+    )).toEqual(buildStandardChartOptions(renderer._data, renderer._config));
   });
 
   it('unwraps the real function-analytics result shape before renderer dispatch', async () => {

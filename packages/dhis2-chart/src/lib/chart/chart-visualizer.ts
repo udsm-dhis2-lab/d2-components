@@ -11,6 +11,7 @@ import {
   ChartInstance,
 } from '../highcharts-adapter';
 import { buildStandardChartOptions } from '../standard-chart.transform';
+import { AnalyticalDataset } from '../analytical-dataset';
 
 /**
  *
@@ -33,6 +34,12 @@ export class D2Charts extends BaseVisualizer implements Visualizer {
    */
   setType(type: ChartType) {
     this.#type = type;
+    return this;
+  }
+
+  /** Supply already normalized analytics without an HTTP client. */
+  setAnalyticalDataset(dataset: AnalyticalDataset): this {
+    this._data = dataset;
     return this;
   }
 
