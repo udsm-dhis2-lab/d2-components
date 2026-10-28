@@ -114,7 +114,10 @@ describe('pure chart transformations', () => {
           ],
         },
       ])
-    ).toEqual([{ name: 'Facility A', categories: ['January', 'February'] }]);
+    ).toEqual([
+      { name: 'Facility A', leaf: 'Facility A', parent: 'January' },
+      { name: 'Facility A', leaf: 'Facility A', parent: 'February' },
+    ]);
     const chart = {
       series: [
         {

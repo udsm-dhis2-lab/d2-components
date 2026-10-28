@@ -46,6 +46,20 @@
       "options": {
         "command": "node packages/dhis2-chart/tools/scripts/visual-smoke.mjs"
       }
+    },
+    "category-prototypes": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node packages/dhis2-chart/tools/scripts/category-prototypes.mjs"
+      }
+    },
+    "category-dependency-check": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "command": "node packages/dhis2-chart/tools/scripts/category-dependency-check.mjs"
+      }
     }
   }
 }

@@ -70,6 +70,9 @@ function toAxis(axis: any): ChartAxisModel {
     ...(axis.categories !== undefined
       ? { categories: _.cloneDeep(axis.categories) }
       : {}),
+    ...(axis.categoryTuples !== undefined
+      ? { categoryTuples: _.cloneDeep(axis.categoryTuples) }
+      : {}),
     ...(Object.prototype.hasOwnProperty.call(axis, 'min')
       ? { minimum: axis.min }
       : {}),

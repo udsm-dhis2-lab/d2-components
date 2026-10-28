@@ -38,12 +38,19 @@ export interface ChartSeriesBase {
   readonly points: readonly ChartPointModel[];
 }
 
+/** One leaf category at one plot position; a parent is optional. */
+export interface ChartCategoryTuple {
+  readonly leaf: string;
+  readonly parent?: string;
+}
+
 export type ChartSeriesModel = {
   [K in ChartSeriesKind]: ChartSeriesBase & { readonly kind: K };
 }[ChartSeriesKind];
 
 export interface ChartAxisModel {
-  readonly categories?: readonly (string | Readonly<Record<string, unknown>>)[];
+  readonly categories?: readonly string[];
+  readonly categoryTuples?: readonly ChartCategoryTuple[];
   readonly minimum?: number;
   readonly maximum?: number;
   readonly decimalsAllowed?: boolean;

@@ -89,6 +89,10 @@ try {
       "if (registry.resolve('COLUMN').family !== 'cartesian') throw new Error('registry missing');",
       "if (registry.resolve('STACKED_AREA').family !== 'cartesian') throw new Error('stacked area missing');",
       "if (!chart.chartCapability('COLUMN', 'axes')) throw new Error('capability query missing');",
+      "const multi = { headers: [{ name: 'dx' }, { name: 'pe' }, { name: 'ou' }, { name: 'value' }], rows: [['d', 'jan', 'a', '1']], metaData: { dimensions: { dx: ['d'], pe: ['jan'], ou: ['a'] }, dx: ['d'], pe: ['jan'], ou: ['a'], names: { d: 'Data', jan: 'January', a: 'Facility' } } };",
+      "const multiModel = chart.buildStandardChartModel(multi, { type: 'column', xAxisType: ['pe', 'ou'], yAxisType: 'dx', axes: [], zAxisType: [] });",
+      "const multiOptions = new chart.HighchartsOptionsAdapter().toOptions(multiModel);",
+      "if (!Array.isArray(multiOptions.xAxis) || multiOptions.xAxis[0].categories[0] !== 'Facility — January') throw new Error('packed native category axes missing');",
       "try { registry.register(registry.resolve('COLUMN')); throw new Error('duplicate accepted'); } catch (error) { if (!String(error).includes('Duplicate chart definition')) throw error; }",
       "registry.register({ type: 'EXTERNAL', family: 'cartesian', build: context => registry.resolve('COLUMN').build({ ...context, configuration: { ...context.configuration, type: 'column', native: { ...context.configuration.native, type: 'column' } } }) });",
       "const external = new chart.D2Charts({ create() { return { destroy() {}, exportChart() {}, getCSV() { return ''; } }; } }, registry);",
@@ -123,7 +127,7 @@ try {
   writeFileSync(
     join(consumer, 'typecheck.ts'),
     [
-      "import { D2Charts, ChartDefinitionRegistry, createStandardChartRegistry, chartCapability, chartCapabilities, normalizeAnalyticalData, buildStandardChartOptions, buildStandardChartModel, buildYearOverYearChartModel, alignYearOverYear, HighchartsOptionsAdapter, type ChartDefinition, type ChartModel, type AnalyticalDataset, type AnalyticalObservation, AnalyticalBoundaryError } from '@iapps/d2-charts';",
+      "import { D2Charts, ChartDefinitionRegistry, createStandardChartRegistry, chartCapability, chartCapabilities, normalizeAnalyticalData, buildStandardChartOptions, buildStandardChartModel, buildYearOverYearChartModel, alignYearOverYear, HighchartsOptionsAdapter, type ChartDefinition, type ChartModel, type ChartCategoryTuple, type AnalyticalDataset, type AnalyticalObservation, AnalyticalBoundaryError } from '@iapps/d2-charts';",
       "const raw = { headers: [{ name: 'dx' }, { name: 'value' }], rows: [['a', '0']], metaData: { dimensions: { dx: ['a'] }, names: { a: 'A' } } };",
       'const dataset: AnalyticalDataset = normalizeAnalyticalData(raw);',
       'const observation: AnalyticalObservation = dataset.observations[0];',
@@ -137,6 +141,7 @@ try {
       "new D2Charts().setType('STACKED_AREA');",
       "new D2Charts().setType('YEAR_OVER_YEAR_COLUMN');",
       'void buildYearOverYearChartModel; void alignYearOverYear;',
+      "const category: ChartCategoryTuple = { leaf: 'January', parent: 'Facility' }; void category;",
       "const axesCapability = chartCapability('COLUMN', 'axes');",
       'void axesCapability; void chartCapabilities;',
       "buildStandardChartOptions(dataset, { type: 'column', xAxisType: ['dx'], yAxisType: 'dx', axes: [] });",
@@ -167,11 +172,12 @@ try {
   writeFileSync(
     join(consumer, 'typecheck-no-dom.ts'),
     [
-      "import { buildStandardChartModel, type ChartModel, type ChartSeriesModel } from '@iapps/d2-charts/model';",
+      "import { buildStandardChartModel, type ChartModel, type ChartSeriesModel, type ChartCategoryTuple } from '@iapps/d2-charts/model';",
       "const raw = { headers: [{ name: 'dx' }, { name: 'value' }], rows: [['a', '0']], metaData: { dimensions: { dx: ['a'] }, dx: ['a'], names: { a: 'A' } } };",
       "const model: ChartModel = buildStandardChartModel(raw, { type: 'column', xAxisType: ['dx'], yAxisType: 'dx', axes: [], zAxisType: [] });",
       'const series: ChartSeriesModel | undefined = model.series[0];',
-      'void series;',
+      "const tuple: ChartCategoryTuple = { leaf: 'January', parent: 'Facility' };",
+      'void series; void tuple;',
     ].join('\n')
   );
   writeFileSync(

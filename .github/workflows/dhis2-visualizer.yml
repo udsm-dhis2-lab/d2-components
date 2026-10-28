@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'packages/dhis2-visualizer/**'
+      - 'packages/dhis2-chart/**'
+      - 'demo/src/index.d.ts'
       - 'packages/dhis2-analytics/**'
       - 'packages/dhis2-web-sdk/**'
       - 'tools/scripts/dhis2-visualizer-consumer-smoke.mjs'
@@ -16,6 +18,8 @@ on:
     branches: [main, develop]
     paths:
       - 'packages/dhis2-visualizer/**'
+      - 'packages/dhis2-chart/**'
+      - 'demo/src/index.d.ts'
       - 'packages/dhis2-analytics/**'
       - 'packages/dhis2-web-sdk/**'
       - 'tools/scripts/dhis2-visualizer-consumer-smoke.mjs'
@@ -36,5 +40,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx nx test dhis2-visualizer --coverage --runInBand
+      - run: npx nx test dhis2-chart --coverage --runInBand
       - run: npx nx lint dhis2-visualizer
+      - run: npx nx lint dhis2-chart
+      - run: npx nx build dhis2-chart
+      - run: npx nx run dhis2-chart:category-dependency-check
       - run: npx nx run dhis2-visualizer:consumer-smoke

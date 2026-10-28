@@ -7,6 +7,13 @@ import { buildDataLabelOptions } from './presentation.transforms';
 export interface CategoryTuple {
   readonly id: string;
   readonly name: string;
+  readonly labels?: readonly string[];
+}
+
+export interface DisplayCategoryTuple {
+  readonly leaf: string;
+  readonly parent?: string;
+  readonly name: string;
 }
 
 export interface ChartLayout {
@@ -54,7 +61,7 @@ export function resolveLayout(analytics: any, configuration: Pick<SeriesLayoutCo
 export function buildCategoryTuples(
   items: readonly CategoryTuple[]
 ): CategoryTuple[] {
-  return items.map(({ id, name }) => ({ id, name }));
+  return items.map(({ id, name, labels }) => ({ id, name, ...(labels ? { labels: [...labels] } : {}) }));
 }
 
 export function buildSeriesMatrix(
@@ -212,27 +219,15 @@ export function accumulateAnalytics(
 }
 
 export function refineCategories(
-  series: readonly { data: readonly { name: string }[] }[]
-): any[] {
+  series: readonly { data: readonly { name: string; categoryLabels?: readonly string[] }[] }[]
+): DisplayCategoryTuple[] {
   const points = series[0]?.data || [];
-  const categories = points.map((point) => {
-    const parts = point.name.split('_').reverse();
-    return parts.length > 1
-      ? { name: parts[0], categories: [parts[1]] }
-      : { name: parts[0] };
+  return points.map(point => {
+    const labels = point.categoryLabels || point.name.split('_');
+    const leaf = labels.length > 1 ? labels.slice(1).join(' — ') : labels[0];
+    const parent = labels.length > 1 ? labels[0] : undefined;
+    return { leaf, ...(parent ? { parent } : {}), name: leaf };
   });
-  const grouped = _.groupBy(categories, 'name');
-  const mapped = categories.map((category) => {
-    const children = grouped[category.name]
-      .map((candidate) =>
-        candidate.categories ? candidate.categories[0] : null
-      )
-      .filter((child) => child !== null);
-    return children.length
-      ? { name: category.name, categories: children }
-      : { name: category.name };
-  });
-  return _.uniqBy(mapped, 'name');
 }
 
 export function limitCategories<T>(
@@ -290,26 +285,15 @@ export function filterEmptySeriesPoints(chart: any, configuration: SelectionConf
       })
       .filter((_point: any, index: number) => !removed.includes(index)),
   }));
-  let offset = 0;
-  const categories = (chart.xAxis ? chart.xAxis.categories : []).map(
-    (category: any) => {
-      if (!category.categories) return category;
-      const next = {
-        ...category,
-        categories: category.categories.filter(
-          (_inner: any, index: number) => !removed.includes(index + offset)
-        ),
-      };
-      offset += category.categories.length;
-      return next;
-    }
-  );
+  const tuples: DisplayCategoryTuple[] = (chart.xAxis?.categories || [])
+    .filter((_category: DisplayCategoryTuple, index: number) => !removed.includes(index));
   return _.cloneDeep({
     ...chart,
     series,
     xAxis: {
       ...chart.xAxis,
-      categories: categories.map((category: any) => category.name),
+      categories: tuples.map(tuple => tuple.leaf ?? tuple.name),
+      ...(tuples.some(tuple => tuple.parent) ? { categoryTuples: tuples.map(({ leaf, parent }) => ({ leaf, parent })) } : {}),
     },
   });
 }

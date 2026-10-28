@@ -55,7 +55,10 @@ export class ChartSeriesData {
 
         data.push({
           id: xAxisItem.id,
-          name: xAxisItem.name,
+          name: xAxisItem.labels?.length > 1
+            ? `${xAxisItem.labels[0]} — ${xAxisItem.labels.slice(1).join(' — ')}`
+            : xAxisItem.name,
+          categoryLabels: xAxisItem.labels,
           dataLabels: ChartSeriesData.getDataLabelsOptions(chartConfiguration),
           y: seriesValue,
         });

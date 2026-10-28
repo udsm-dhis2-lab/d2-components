@@ -148,6 +148,75 @@ function axisOptions(axis: ChartAxisModel): Record<string, unknown> {
   };
 }
 
+/** Two native, linked category axes: full names remain the data/export keys,
+ * while the screen-facing tick labels show leaf and contiguous parent runs. */
+function categoryAxisOptions(axis: ChartAxisModel): Highcharts.XAxisOptions | Highcharts.XAxisOptions[] {
+  const primary = axisOptions(axis) as Highcharts.XAxisOptions;
+  const primaryLabels = primary.labels as Highcharts.XAxisLabelsOptions | undefined;
+  const styledPrimary: Highcharts.XAxisOptions = {
+    ...primary,
+    labels: {
+      ...primaryLabels,
+      style: { ...primaryLabels?.style, fontSize: '11px', color: '#404b5a' },
+    },
+  };
+  const tuples = axis.categoryTuples;
+  if (!tuples?.length || !tuples.some(tuple => tuple.parent)) return styledPrimary;
+  const fullNames = tuples.map(tuple => tuple.parent ? `${tuple.parent} — ${tuple.leaf}` : tuple.leaf);
+  const existingLabels = styledPrimary.labels as Record<string, unknown> | undefined;
+  const leafLabels = existingLabels?.['labels'] && typeof existingLabels['labels'] === 'object'
+    ? existingLabels['labels'] as Record<string, unknown> : existingLabels;
+  const centers: number[] = [];
+  const parents: string[] = [];
+  const boundaries: number[] = [];
+  for (let start = 0; start < tuples.length;) {
+    const parent = tuples[start].parent ?? '';
+    let end = start + 1;
+    while (end < tuples.length && (tuples[end].parent ?? '') === parent) end++;
+    if (parent) {
+      centers.push((start + end - 1) / 2);
+      parents.push(parent);
+    }
+    if (end < tuples.length) boundaries.push(end - 0.5);
+    start = end;
+  }
+  return [
+    {
+      ...styledPrimary,
+      categories: fullNames,
+      plotLines: [
+        ...(primary.plotLines ?? []),
+        ...boundaries.map(value => ({ value, color: '#d9dfe5', width: 1, zIndex: 1 })),
+      ],
+      tickLength: 0,
+      tickWidth: 0,
+      labels: {
+        ...leafLabels,
+        style: { ...(leafLabels?.['style'] as Record<string, unknown> | undefined), fontSize: '11px', color: '#404b5a' },
+        useHTML: false,
+        formatter: function () { return tuples[this.pos]?.leaf ?? ''; },
+      },
+    },
+    {
+      linkedTo: 0,
+      opposite: true,
+      tickPositions: centers,
+      tickLength: 0,
+      tickWidth: 0,
+      lineWidth: 0,
+      gridLineWidth: 0,
+      title: { text: undefined },
+      labels: {
+        useHTML: false,
+        rotation: 0,
+        autoRotation: [0],
+        style: { fontSize: '11px', color: '#404b5a', whiteSpace: 'normal', textOverflow: 'none', width: 120 },
+        formatter: function () { return parents[centers.indexOf(this.pos)] ?? ''; },
+      },
+    },
+  ];
+}
+
 /** The single standard-chart serialization boundary for Highcharts.Options. */
 export class HighchartsOptionsAdapter {
   assertModulesAvailable(
@@ -494,7 +563,7 @@ export class HighchartsOptionsAdapter {
           }
         : {}),
       ...(model.categoryAxis !== undefined
-        ? { xAxis: axisOptions(model.categoryAxis) as Highcharts.XAxisOptions }
+        ? { xAxis: categoryAxisOptions(model.categoryAxis) }
         : {}),
       series: model.series.map(seriesOptions),
       ...(model.drilldownSeries !== undefined

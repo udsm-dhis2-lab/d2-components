@@ -511,6 +511,8 @@ function getPaneOptions(chartType: string) {
 
 function getXAxisOptions(xAxisCategories: any[], chartConfiguration: any) {
   let xAxisOptions: any = {};
+  const categories = xAxisCategories.map(category => category.parent
+    ? category : { name: category.leaf ?? category.name });
 
   const xAxisConfig: any = chartConfiguration.axes?.find(
     (axis: Record<string, unknown>) => axis['type'] === 'DOMAIN'
@@ -523,7 +525,7 @@ function getXAxisOptions(xAxisCategories: any[], chartConfiguration: any) {
       xAxisOptions = _.assign(
         {},
         {
-          categories: xAxisCategories,
+          categories,
           tickmarkPlacement: 'on',
           lineWidth: 0,
         }
@@ -533,7 +535,7 @@ function getXAxisOptions(xAxisCategories: any[], chartConfiguration: any) {
       xAxisOptions = _.assign(
         {},
         {
-          categories: xAxisCategories,
+          categories,
           allowDecimals,
           ...(xAxisConfig?.steps !== undefined ? { tickInterval: xAxisConfig.steps } : {}),
           labels: {

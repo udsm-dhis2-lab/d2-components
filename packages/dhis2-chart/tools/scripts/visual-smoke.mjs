@@ -3,12 +3,18 @@ import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
+import { buildSync } from 'esbuild';
+import { readFileSync } from 'node:fs';
 
 const require = createRequire(import.meta.url);
 const workspace = resolve(fileURLToPath(new URL('../../../../', import.meta.url)));
 const { buildStandardChartOptions, buildYearOverYearChartModel, HighchartsOptionsAdapter } = require(resolve(workspace, 'dist/packages/dhis2-chart'));
 const highchartsScript = resolve(workspace, 'node_modules/highcharts/highcharts.js');
 const accessibilityScript = resolve(workspace, 'node_modules/highcharts/modules/accessibility.js');
+const nativeChartBundle = buildSync({
+  entryPoints: [resolve(workspace, 'packages/dhis2-chart/src/lib/standard-chart.transform.ts')],
+  bundle: true, write: false, format: 'iife', globalName: 'D2ChartModel', platform: 'browser',
+}).outputFiles[0].text;
 const analytics = {
   headers: [{ name: 'dx' }, { name: 'pe' }, { name: 'value' }],
   rows: [['cases', 'jan', '10'], ['coverage', 'jan', '80'], ['cases', 'feb', '12'], ['coverage', 'feb', '85']],
@@ -38,6 +44,10 @@ try {
   await page.setContent('<div id="chart" style="width:800px;height:400px"></div>');
   await page.addScriptTag({ path: highchartsScript });
   await page.addScriptTag({ path: accessibilityScript });
+  await page.addScriptTag({ path: resolve(workspace, 'node_modules/highcharts/modules/exporting.js') });
+  await page.addScriptTag({ path: resolve(workspace, 'node_modules/highcharts/modules/offline-exporting.js') });
+  await page.addScriptTag({ path: resolve(workspace, 'node_modules/highcharts/modules/export-data.js') });
+  await page.addScriptTag({ content: nativeChartBundle });
   for (const [name, config] of [
     ['mixed', base],
     ['stacked area', { ...base, type: 'stacked_area', series: undefined, percentStackedValues: true }],
@@ -73,6 +83,63 @@ try {
     assert.equal(await page.locator('#chart .highcharts-series').count(), 2, `${name}: series missing`);
     assert.ok((await page.locator('#chart').screenshot()).length > 1000, `${name}: screenshot empty`);
     assert.ok(await page.locator('#chart [aria-label]').count(), `${name}: accessibility labels absent`);
+  }
+  const multi = {
+    headers: [{ name: 'dx' }, { name: 'pe' }, { name: 'ou' }, { name: 'value' }],
+    rows: [
+      ['cases', 'jan', 'a', '3'], ['cases', 'feb', 'a', '5'],
+      ['cases', 'jan', 'b', '7'],
+    ],
+    metaData: {
+      dimensions: { dx: ['cases'], pe: ['jan', 'feb'], ou: ['a', 'b'] },
+      dx: ['cases'], pe: ['jan', 'feb'], ou: ['a', 'b'],
+      names: { cases: 'Cases', jan: 'Januari ndefu', feb: 'Februari ndefu', a: 'Kituo A', b: 'Kituo B' },
+    },
+  };
+  for (const type of ['column', 'bar']) {
+    const outcome = await page.evaluate(({ analytics, type }) => {
+      window.__chart?.destroy();
+      const options = window.D2ChartModel.buildStandardChartOptions(analytics, {
+        type, xAxisType: ['pe', 'ou'], yAxisType: 'dx', axes: [], zAxisType: [], sortOrder: 0,
+      });
+      window.__chart = window.Highcharts.chart('chart', options);
+      const first = window.__chart.getSVG();
+      window.__chart.setSize(520, 360, false);
+      const resized = window.__chart.getSVG();
+      return {
+        axisCount: window.__chart.xAxis.length,
+        categories: window.__chart.xAxis[0].categories,
+        groupsBefore: ['Januari ndefu', 'Februari ndefu'].every(label => first.includes(label)),
+        groupsAfter: ['Januari ndefu', 'Februari ndefu'].every(label => resized.includes(label)),
+        leavesAfter: ['Kituo A', 'Kituo B'].every(label => resized.includes(label)),
+        upperGroups: window.__chart.xAxis[1].opposite && window.__chart.xAxis[1].tickPositions.length === 2,
+        noPointers: window.__chart.xAxis.every(axis => axis.options.tickLength === 0),
+        labelStyle: window.__chart.xAxis.every(axis => axis.options.labels.style.fontSize === '11px' && axis.options.labels.style.color === '#404b5a')
+          && window.__chart.xAxis[1].options.labels.rotation === 0
+          && window.__chart.xAxis[1].options.labels.style.whiteSpace === 'normal',
+        separatorsBefore: (first.match(/highcharts-plot-line/g) || []).length,
+        separatorsAfter: (resized.match(/highcharts-plot-line/g) || []).length,
+        csv: window.__chart.getCSV(),
+        svg: resized,
+        aria: [...document.querySelectorAll('#chart [aria-label]')].map(node => node.getAttribute('aria-label')).join(' '),
+      };
+    }, { analytics: multi, type });
+    assert.equal(outcome.axisCount, 2, `${type}: linked parent axis absent`);
+    assert.ok(outcome.groupsBefore && outcome.groupsAfter && outcome.leavesAfter, `${type}: labels absent after resize/export`);
+    assert.ok(outcome.upperGroups && outcome.noPointers, `${type}: group placement or axis pointers incorrect`);
+    assert.ok(outcome.labelStyle, `${type}: category label size, alignment or wrapping incorrect`);
+    assert.ok(outcome.separatorsBefore > 0 && outcome.separatorsAfter > 0, `${type}: group separators absent after resize/export`);
+    assert.ok(outcome.categories.every(category => category.includes('Kituo')), `${type}: full export keys absent`);
+    assert.ok(outcome.csv.includes('Kituo A') && outcome.csv.includes('Januari ndefu'), `${type}: CSV lost a level`);
+    assert.ok(outcome.svg.includes('Kituo A') && outcome.svg.includes('Januari ndefu'), `${type}: SVG lost a level`);
+    assert.ok(outcome.aria.includes('Kituo A') && outcome.aria.includes('Januari ndefu'), `${type}: screen reader labels lost a level`);
+    assert.ok(await page.locator('#chart [aria-label]').count(), `${type}: ARIA labels absent`);
+    assert.ok((await page.locator('#chart').screenshot()).length > 1000, `${type}: screen rendering absent`);
+    const downloadPromise = page.waitForEvent('download', { timeout: 15000 });
+    await page.evaluate(() => window.__chart.exportChartLocal({ type: 'image/png', fallbackToExportServer: false }));
+    const download = await downloadPromise;
+    const png = readFileSync(await download.path());
+    assert.deepEqual([...png.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10], `${type}: PNG export invalid`);
   }
   console.log('Visual and accessibility browser smoke passed');
 } finally {

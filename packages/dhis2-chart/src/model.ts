@@ -4,6 +4,7 @@ export type {
   ChartAccessibilityModel,
   ChartAnnotationModel,
   ChartAxisModel,
+  ChartCategoryTuple,
   ChartModel,
   ChartModuleRequirement,
   ChartPointModel,

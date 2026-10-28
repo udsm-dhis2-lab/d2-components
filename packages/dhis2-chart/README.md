@@ -27,6 +27,11 @@ const options = new HighchartsOptionsAdapter().toOptions(model);
 ```
 
 `ChartModel` has discriminated series and explicit `requiredModules`.
+For two-category cartesian layouts, `ChartModel.categoryAxis.categoryTuples`
+holds ordered `{leaf, parent}` values. The Highcharts adapter renders these
+with two linked native axes; exported CSV categories retain both names. No
+grouped-categories plugin is required. One-category layouts remain a single
+string category axis.
 `HighchartsOptionsAdapter` is the engine boundary. Its module availability
 check reports the missing module names; `DefaultHighchartsAdapter` initializes
 only required Highcharts modules, once per module.
@@ -65,3 +70,5 @@ Do not enable HTML labels for untrusted values. No credentials are bundled.
 The supported-option matrix is available through `chartCapabilities`, `chartCapability(type, key)` and `registry.capabilities(type)`. Unsupported option/type combinations throw `AnalyticalBoundaryError` with paths. `topLimit` is not a verified chart option and is rejected when nonzero.
 
 Run `npx nx run dhis2-chart:visual-smoke` for a real Highcharts/Chromium SVG and ARIA smoke check. The test environment needs a Playwright Chromium installation (`npx playwright install chromium`).
+Run `npx nx run dhis2-chart:category-dependency-check` to guard manifests and
+built artifacts against reintroducing the removed plugin.

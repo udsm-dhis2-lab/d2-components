@@ -142,6 +142,10 @@ exports[`Sprint 12 serialized option baseline area 1`] = `
         "y": 10,
       },
       "rotation": 0,
+      "style": {
+        "color": "#404b5a",
+        "fontSize": "11px",
+      },
       "title": {
         "align": "middle",
         "margin": 16,
@@ -347,6 +351,10 @@ exports[`Sprint 12 serialized option baseline bar 1`] = `
         "y": 10,
       },
       "rotation": 0,
+      "style": {
+        "color": "#404b5a",
+        "fontSize": "11px",
+      },
       "title": {
         "align": "middle",
         "margin": 16,
@@ -552,6 +560,10 @@ exports[`Sprint 12 serialized option baseline column 1`] = `
         "y": 10,
       },
       "rotation": 0,
+      "style": {
+        "color": "#404b5a",
+        "fontSize": "11px",
+      },
       "title": {
         "align": "middle",
         "margin": 16,
@@ -759,6 +771,10 @@ exports[`Sprint 12 serialized option baseline dotted 1`] = `
         "y": 10,
       },
       "rotation": 0,
+      "style": {
+        "color": "#404b5a",
+        "fontSize": "11px",
+      },
       "title": {
         "align": "middle",
         "margin": 16,
@@ -964,6 +980,10 @@ exports[`Sprint 12 serialized option baseline line 1`] = `
         "y": 10,
       },
       "rotation": 0,
+      "style": {
+        "color": "#404b5a",
+        "fontSize": "11px",
+      },
       "title": {
         "align": "middle",
         "margin": 16,
@@ -1170,6 +1190,10 @@ exports[`Sprint 12 serialized option baseline mixed axes and presentation 1`] = 
         "y": 10,
       },
       "rotation": 0,
+      "style": {
+        "color": "#404b5a",
+        "fontSize": "11px",
+      },
       "title": {
         "align": "middle",
         "margin": 16,
@@ -1388,6 +1412,10 @@ exports[`Sprint 12 serialized option baseline stacked_bar 1`] = `
         "y": 10,
       },
       "rotation": 0,
+      "style": {
+        "color": "#404b5a",
+        "fontSize": "11px",
+      },
       "title": {
         "align": "middle",
         "margin": 16,
@@ -1595,6 +1623,10 @@ exports[`Sprint 12 serialized option baseline stacked_column 1`] = `
         "y": 10,
       },
       "rotation": 0,
+      "style": {
+        "color": "#404b5a",
+        "fontSize": "11px",
+      },
       "title": {
         "align": "middle",
         "margin": 16,

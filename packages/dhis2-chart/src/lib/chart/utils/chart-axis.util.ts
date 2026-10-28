@@ -13,11 +13,12 @@ export class ChartAxisUtil {
         if (axisIndex > 0) {
           const availableItems = _.assign([], items);
           items = [];
-          itemKeys.forEach((itemKey: string) => {
-            availableItems.forEach((item: { id: string; name: string }) => {
+          availableItems.forEach((item: { id: string; name: string; labels?: string[] }) => {
+            itemKeys.forEach((itemKey: string) => {
               items.push({
                 id: item.id + '_' + itemKey,
                 name: item.name + '_' + metadataNames[itemKey].trim(),
+                labels: [...(item.labels || [item.name]), metadataNames[itemKey].trim()],
               });
             });
           });
@@ -26,6 +27,7 @@ export class ChartAxisUtil {
             return {
               id: itemKey,
               name: metadataNames[itemKey].trim(),
+              labels: [metadataNames[itemKey].trim()],
             };
           });
         }
