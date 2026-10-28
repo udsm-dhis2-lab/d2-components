@@ -1057,6 +1057,9 @@ export class LineListTableComponent
       if (changes['endDate']) {
         this.reactStateUpdaters.setEndDateState(this.endDate);
       }
+      if (changes['showOrgUnitMode']) {
+        this.reactStateUpdaters.setShowOrgUnitMode(this.showOrgUnitMode);
+      }
       if (changes['showActionButtons']) {
         this.reactStateUpdaters.setShowActionButtons(this.showActionButtons);
       }
@@ -1108,6 +1111,9 @@ export class LineListTableComponent
       useState<OuMode>(defaultOrgUnitMode);
     const [selectedOrgUnitMode, setSelectedOrgUnitMode] =
       useState<OuMode>(defaultOrgUnitMode);
+    const [showOrgUnitMode, setShowOrgUnitMode] = useState<boolean>(
+      this.showOrgUnitMode
+    );
     const [defaultOrgUnit, setDefaultOrgUnit] = useState<string>(this.orgUnit);
     const [appliedOrgUnits, setAppliedOrgUnits] = useState<SelectedOrgUnit[]>(
       []
@@ -1191,6 +1197,7 @@ export class LineListTableComponent
       setDefaultOrgUnit,
       setAppliedOrgUnits,
       setSelectedOrgUnits,
+      setShowOrgUnitMode,
       setProgramStageIdState,
       setAttributeFiltersState,
       setStartDateState,
@@ -1729,6 +1736,7 @@ export class LineListTableComponent
               selectedOrgUnitMode,
               defaultOrgUnitMode,
               setSelectedOrgUnitMode,
+              showOrgUnitMode,
               handleOrgUnitModeReset,
             },
             dates: {

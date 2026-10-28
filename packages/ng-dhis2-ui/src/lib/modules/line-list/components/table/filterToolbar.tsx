@@ -705,6 +705,7 @@
 //   }
 // }
 
+
 import {
   Button,
   ButtonStrip,
@@ -920,6 +921,7 @@ export const FilterToolbar = memo(
       selectedOrgUnitMode,
       defaultOrgUnitMode,
       setSelectedOrgUnitMode,
+      showOrgUnitMode = false,
       handleOrgUnitModeReset,
     } = orgUnit;
     const {
@@ -1264,24 +1266,28 @@ export const FilterToolbar = memo(
                           units.push(unit);
                         setSelectedOrgUnits(units);
                       } } key={''}                    />
-                    <span>Mode:</span>
-                    <SingleSelectField
-                      selected={selectedOrgUnitMode}
-                      helpText={`Default mode: ${defaultOrgUnitMode}`}
-                      onChange={({ selected }: { selected: string }) =>
-                        setSelectedOrgUnitMode(selected)
-                      }
-                    >
-                      {(['DESCENDANTS', 'SELECTED', 'CHILDREN'] as const).map(
-                        (mode) => (
-                          <SingleSelectOption
-                            key={mode}
-                            label={mode}
-                            value={mode}
-                          />
-                        )
-                      )}
-                    </SingleSelectField>
+                    {showOrgUnitMode && (
+                      <>
+                        <span>Mode:</span>
+                        <SingleSelectField
+                          selected={selectedOrgUnitMode}
+                          helpText={`Default mode: ${defaultOrgUnitMode}`}
+                          onChange={({ selected }: { selected: string }) =>
+                            setSelectedOrgUnitMode(selected)
+                          }
+                        >
+                          {(['DESCENDANTS', 'SELECTED', 'CHILDREN'] as const).map(
+                            (mode) => (
+                              <SingleSelectOption
+                                key={mode}
+                                label={mode}
+                                value={mode}
+                              />
+                            )
+                          )}
+                        </SingleSelectField>
+                      </>
+                    )}
                   </div>
                 )}
                 <div className="line-list-filter-actions">
@@ -1437,6 +1443,7 @@ export const FilterToolbar = memo(
         'allowMultipleOrgUnits',
         'defaultOrgUnitMode',
         'orgUnitLabel',
+        'showOrgUnitMode',
       ]) &&
       same(before['dates'], after['dates'], [
         'startDateState',
