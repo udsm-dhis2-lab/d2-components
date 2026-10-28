@@ -14,6 +14,7 @@ export const VISUALIZATION_DOWNLOAD_OPTIONS: VisualizationDownloadOption[] = [
     allowedVisualizations: [
       'COLUMN',
       'AREA',
+      'STACKED_AREA',
       'BAR',
       'DOTTED',
       'LINE',
@@ -32,6 +33,7 @@ export const VISUALIZATION_DOWNLOAD_OPTIONS: VisualizationDownloadOption[] = [
       'PIVOT_TABLE',
       'COLUMN',
       'AREA',
+      'STACKED_AREA',
       'BAR',
       'DOTTED',
       'LINE',

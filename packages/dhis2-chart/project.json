@@ -38,6 +38,14 @@
       "options": {
         "command": "node packages/dhis2-chart/tools/scripts/consumer-smoke.mjs"
       }
+    },
+    "visual-smoke": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "cache": false,
+      "options": {
+        "command": "node packages/dhis2-chart/tools/scripts/visual-smoke.mjs"
+      }
     }
   }
 }

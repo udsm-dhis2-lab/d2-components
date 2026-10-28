@@ -59,7 +59,7 @@ export function resolveStacking(configuration: {
   type: string;
   percentStackedValues?: boolean;
 }): 'percent' | 'normal' | undefined {
-  return ['stacked_column', 'stacked_bar', 'area'].includes(configuration.type)
+  return ['stacked_column', 'stacked_bar', 'stacked_area', 'area'].includes(configuration.type)
     ? configuration.percentStackedValues
       ? 'percent'
       : 'normal'

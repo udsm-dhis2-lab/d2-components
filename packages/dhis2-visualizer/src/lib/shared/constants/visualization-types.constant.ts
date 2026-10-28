@@ -57,6 +57,12 @@ export const VISUALIZATION_TYPES = [
     icon: IconVisualizationArea16,
   },
   {
+    type: 'STACKED_AREA',
+    description: 'Stacked Area',
+    label: 'Stacked Area',
+    icon: IconVisualizationArea16,
+  },
+  {
     type: 'PIE',
     description: 'Pie',
     label: 'Pie',

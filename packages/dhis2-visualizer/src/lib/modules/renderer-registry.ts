@@ -99,6 +99,7 @@ export function createDefaultRendererRegistry(): RendererRegistry {
     STACKED_BAR: chartFactory,
     STACKED_COLUMN: chartFactory,
     AREA: chartFactory,
+    STACKED_AREA: chartFactory,
     RADAR: chartFactory,
     SOLIDGAUGE: chartFactory,
     MAP: (context) => {

@@ -9,6 +9,7 @@ export type ChartType =
   | 'YEAR_OVER_YEAR_LINE'
   | 'STACKED_BAR'
   | 'AREA'
+  | 'STACKED_AREA'
   | 'RADAR'
   | 'SOLIDGAUGE';
 

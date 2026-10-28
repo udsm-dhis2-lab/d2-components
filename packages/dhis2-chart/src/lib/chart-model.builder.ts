@@ -97,6 +97,8 @@ function toAxis(axis: any): ChartAxisModel {
     ...(axis.gridLineInterpolation !== undefined
       ? { gridInterpolation: axis.gridLineInterpolation }
       : {}),
+    ...(axis.tickAmount !== undefined ? { tickAmount: axis.tickAmount } : {}),
+    ...(axis.tickInterval !== undefined ? { tickInterval: axis.tickInterval } : {}),
   };
 }
 

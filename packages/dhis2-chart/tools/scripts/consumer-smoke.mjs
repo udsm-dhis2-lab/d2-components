@@ -84,6 +84,8 @@ try {
       "if (typeof chart.buildStandardChartOptions !== 'function') throw new Error('pure transform missing');",
       "const registry = chart.createStandardChartRegistry();",
       "if (registry.resolve('COLUMN').family !== 'cartesian') throw new Error('registry missing');",
+      "if (registry.resolve('STACKED_AREA').family !== 'cartesian') throw new Error('stacked area missing');",
+      "if (!chart.chartCapability('COLUMN', 'axes')) throw new Error('capability query missing');",
       "try { registry.register(registry.resolve('COLUMN')); throw new Error('duplicate accepted'); } catch (error) { if (!String(error).includes('Duplicate chart definition')) throw error; }",
       "registry.register({ type: 'EXTERNAL', family: 'cartesian', build: context => registry.resolve('COLUMN').build({ ...context, configuration: { ...context.configuration, type: 'column', native: { ...context.configuration.native, type: 'column' } } }) });",
       "const external = new chart.D2Charts({ create() { return { destroy() {}, exportChart() {}, getCSV() { return ''; } }; } }, registry);",
@@ -118,7 +120,7 @@ try {
   writeFileSync(
     join(consumer, 'typecheck.ts'),
     [
-      "import { D2Charts, ChartDefinitionRegistry, createStandardChartRegistry, normalizeAnalyticalData, buildStandardChartOptions, buildStandardChartModel, HighchartsOptionsAdapter, type ChartDefinition, type ChartModel, type AnalyticalDataset, type AnalyticalObservation, AnalyticalBoundaryError } from '@iapps/d2-charts';",
+      "import { D2Charts, ChartDefinitionRegistry, createStandardChartRegistry, chartCapability, chartCapabilities, normalizeAnalyticalData, buildStandardChartOptions, buildStandardChartModel, HighchartsOptionsAdapter, type ChartDefinition, type ChartModel, type AnalyticalDataset, type AnalyticalObservation, AnalyticalBoundaryError } from '@iapps/d2-charts';",
       "const raw = { headers: [{ name: 'dx' }, { name: 'value' }], rows: [['a', '0']], metaData: { dimensions: { dx: ['a'] }, names: { a: 'A' } } };",
       'const dataset: AnalyticalDataset = normalizeAnalyticalData(raw);',
       'const observation: AnalyticalObservation = dataset.observations[0];',
@@ -129,6 +131,9 @@ try {
       'registry.register(extension);',
       'new D2Charts(undefined, registry);',
       "new D2Charts(undefined, registry).setType('EXTERNAL');",
+      "new D2Charts().setType('STACKED_AREA');",
+      "const axesCapability = chartCapability('COLUMN', 'axes');",
+      'void axesCapability; void chartCapabilities;',
       "buildStandardChartOptions(dataset, { type: 'column', xAxisType: ['dx'], yAxisType: 'dx', axes: [] });",
       "const model: ChartModel = buildStandardChartModel(dataset, { type: 'column', xAxisType: ['dx'], yAxisType: 'dx', axes: [] });",
       'new HighchartsOptionsAdapter().toOptions(model);',

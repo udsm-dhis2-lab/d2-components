@@ -25,7 +25,7 @@ export class VisualizationRequestValidationError extends Error {
 
 const supportedTypes: readonly SupportedVisualizationType[] = [
   'CHART','COLUMN','LINE','BAR','DOTTED','PIE','STACKED_COLUMN','STACKED_BAR',
-  'AREA','RADAR','SOLIDGAUGE','YEAR_OVER_YEAR_LINE','REPORT_TABLE',
+  'AREA','STACKED_AREA','RADAR','SOLIDGAUGE','YEAR_OVER_YEAR_LINE','REPORT_TABLE',
   'PIVOT_TABLE','SINGLE_VALUE','MAP','CUSTOM','TRACKED_ENTITY_LAYER',
 ];
 

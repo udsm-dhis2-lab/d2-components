@@ -61,3 +61,7 @@ Do not enable HTML labels for untrusted values. No credentials are bundled.
 # Chart definition extensions
 
 `D2Charts` accepts an optional `ChartDefinitionRegistry` as its second constructor argument. Create an isolated registry with `createStandardChartRegistry()`, register an uppercase custom `ChartDefinition`, then pass it to `new D2Charts(highchartsAdapter, registry)`. A definition receives a validated legacy configuration and analytics and must return a `ChartModel`; Highcharts serialization remains owned by the package. Existing fluent setters and the first constructor argument are unchanged. Duplicate or unknown types throw an explicit error.
+
+The supported-option matrix is available through `chartCapabilities`, `chartCapability(type, key)` and `registry.capabilities(type)`. Unsupported option/type combinations throw `AnalyticalBoundaryError` with paths. `topLimit` is not a verified chart option and is rejected when nonzero.
+
+Run `npx nx run dhis2-chart:visual-smoke` for a real Highcharts/Chromium SVG and ARIA smoke check. The test environment needs a Playwright Chromium installation (`npx playwright install chromium`).

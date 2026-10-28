@@ -2,10 +2,11 @@ import { ChartModel } from './chart-model';
 import { ChartFamily, drawChartFamily } from './chart/helpers/draw-chart.helper';
 import { LegacyChartConfiguration } from './legacy-chart-configuration';
 import { resolveStacking } from './chart/transforms/presentation.transforms';
+import { chartCapabilities, validateChartCapabilities } from './chart-capabilities';
 
 export type StandardChartType =
   | 'COLUMN' | 'BAR' | 'LINE' | 'DOTTED' | 'STACKED_COLUMN'
-  | 'STACKED_BAR' | 'AREA' | 'PIE' | 'RADAR' | 'SOLIDGAUGE';
+  | 'STACKED_BAR' | 'AREA' | 'STACKED_AREA' | 'PIE' | 'RADAR' | 'SOLIDGAUGE';
 
 export interface ChartBuildContext {
   readonly analytics: unknown;
@@ -38,8 +39,11 @@ export abstract class AbstractChartDefinition<T extends string = string>
     }
     const source = context.source && typeof context.source === 'object'
       ? context.source as Record<string, unknown> : context.configuration.native;
+    validateChartCapabilities(this.type, source);
+    const prepared = source['cumulativeValues'] === true && Array.isArray(source['yAxisType'])
+      ? { ...source, yAxisType: context.configuration.yAxisType } : source;
     const configuration = this.policies.reduce<Readonly<Record<string, unknown>>>(
-      (current, policy) => policy.apply(current), source
+      (current, policy) => policy.apply(current), prepared
     );
     return drawChartFamily(context.analytics, configuration, this.family);
   }
@@ -93,6 +97,7 @@ export class DottedDefinition extends CartesianChartDefinition<'DOTTED'> { reado
 export class StackedColumnDefinition extends CartesianChartDefinition<'STACKED_COLUMN'> { readonly type = 'STACKED_COLUMN' as const; protected override readonly policies = [percentStackingPolicy, stackingPolicy]; }
 export class StackedBarDefinition extends CartesianChartDefinition<'STACKED_BAR'> { readonly type = 'STACKED_BAR' as const; protected override readonly policies = [percentStackingPolicy, stackingPolicy]; }
 export class AreaDefinition extends CartesianChartDefinition<'AREA'> { readonly type = 'AREA' as const; }
+export class StackedAreaDefinition extends CartesianChartDefinition<'STACKED_AREA'> { readonly type = 'STACKED_AREA' as const; protected override readonly policies = [percentStackingPolicy, stackingPolicy]; }
 export class PieDefinition extends CircularChartDefinition<'PIE'> { readonly type = 'PIE' as const; protected override readonly policies = [missingValuePolicy]; }
 export class RadarDefinition extends PolarChartDefinition<'RADAR'> { readonly type = 'RADAR' as const; }
 export class SolidGaugeDefinition extends GaugeChartDefinition<'SOLIDGAUGE'> { readonly type = 'SOLIDGAUGE' as const; }
@@ -119,13 +124,17 @@ export class ChartDefinitionRegistry {
     return definition;
   }
   list(): readonly string[] { return [...this.definitions.keys()]; }
+  capabilities(type: string) {
+    this.resolve(type);
+    return chartCapabilities.filter(entry => entry.types.includes(type.toUpperCase()));
+  }
 }
 
 export function createStandardChartRegistry(): ChartDefinitionRegistry {
   return new ChartDefinitionRegistry([
     new ColumnDefinition(), new BarDefinition(), new LineDefinition(),
     new DottedDefinition(), new StackedColumnDefinition(), new StackedBarDefinition(),
-    new AreaDefinition(), new PieDefinition(), new RadarDefinition(), new SolidGaugeDefinition(),
+    new AreaDefinition(), new StackedAreaDefinition(), new PieDefinition(), new RadarDefinition(), new SolidGaugeDefinition(),
     new LegacyGaugeDefinition(),
   ]);
 }

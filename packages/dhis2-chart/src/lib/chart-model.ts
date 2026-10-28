@@ -55,6 +55,8 @@ export interface ChartAxisModel {
   readonly tickPlacement?: string;
   readonly lineWidth?: number;
   readonly gridInterpolation?: string;
+  readonly tickAmount?: number;
+  readonly tickInterval?: number;
 }
 
 export interface ChartTextModel {
@@ -88,7 +90,7 @@ export interface ChartModel {
   readonly borderWidth?: number | null;
   readonly shadow?: boolean;
   readonly title: ChartTextModel;
-  readonly subtitle: string;
+  readonly subtitle: string | ChartTextModel;
   readonly palette: readonly string[];
   readonly categoryAxis?: ChartAxisModel;
   readonly valueAxes?: readonly ChartAxisModel[];

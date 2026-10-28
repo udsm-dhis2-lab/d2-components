@@ -84,6 +84,7 @@ describe('D2Visualizer compatibility facade', () => {
     'STACKED_BAR',
     'STACKED_COLUMN',
     'AREA',
+    'STACKED_AREA',
     'RADAR',
     'SOLIDGAUGE',
   ] as VisualizationType[])(

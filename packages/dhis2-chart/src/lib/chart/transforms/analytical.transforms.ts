@@ -24,6 +24,7 @@ export interface SeriesLayoutConfiguration {
 export interface SeriesOption {
   readonly dimensionItem: string;
   readonly type: string;
+  readonly axis?: number;
   readonly axix?: number; // Historical spelling retained for compatibility.
   readonly color?: string;
 }
@@ -120,6 +121,36 @@ export function sortSeries<T extends { data: any[] }>(
   }))) as T[];
 }
 
+export function sortSeriesByCategory<T extends { data: any[] }>(
+  series: readonly T[], direction: 'ASC' | 'DESC'
+): T[] {
+  const ids = (series[0]?.data || []).map(point => ({ id: point.id, name: String(point.name ?? '') }));
+  ids.sort((a, b) => direction === 'ASC' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name));
+  return _.cloneDeep(series.map(item => ({
+    ...item, data: ids.map(category => item.data.find(point => point.id === category.id)).filter(Boolean),
+  }))) as T[];
+}
+
+export type EmptyItemStrategy = 'NONE' | 'BEFORE_FIRST' | 'AFTER_LAST' | 'BEFORE_FIRST_AFTER_LAST' | 'ALL';
+export function hideEmptyCategories<T extends { data: any[] }>(
+  series: readonly T[], strategy: EmptyItemStrategy,
+  presentCategoryIds?: ReadonlySet<string>
+): T[] {
+  if (strategy === 'NONE' || !series.length) return _.cloneDeep(series) as T[];
+  const count = series[0].data.length;
+  const populated = (index: number) => presentCategoryIds
+    ? presentCategoryIds.has(String(series[0].data[index]?.id)) : series.some(item => {
+    const value = item.data[index]?.y;
+    return value !== null && value !== undefined && value !== '';
+  });
+  const first = Array.from({ length: count }, (_, index) => index).find(populated) ?? count;
+  const last = Array.from({ length: count }, (_, index) => index).reverse().find(populated) ?? -1;
+  const keep = (index: number) => strategy === 'ALL' ? populated(index)
+    : strategy === 'BEFORE_FIRST' ? index >= first
+    : strategy === 'AFTER_LAST' ? index <= last : index >= first && index <= last;
+  return _.cloneDeep(series.map(item => ({ ...item, data: item.data.filter((_point, index) => keep(index)) }))) as T[];
+}
+
 export function applySeriesOptions<
   T extends { id: string; type: string; data: any[] }
 >(series: readonly T[], options: readonly SeriesOption[] | undefined): T[] {
@@ -136,7 +167,7 @@ export function applySeriesOptions<
       ...(dotted
         ? { lineWidth: 0, states: { hover: { enabled: false } } }
         : {}),
-      yAxis: extended.axix || 0,
+      yAxis: extended.axis ?? extended.axix ?? 0,
       type: ChartTypeUtil.getAllowedType(extended.type) || item.type,
       data: color
         ? item.data.map((point) => ({ ...point, color }))
@@ -168,7 +199,8 @@ export function accumulateAnalytics(
     xItems.forEach((xId: string) => {
       analytics.rows.forEach((row: any[]) => {
         if (row[yIndex] === yId && row[xIndex] === xId) {
-          running += parseInt(row[valueIndex], 10);
+          const value = Number(row[valueIndex]);
+          if (Number.isFinite(value)) running += value;
           const next = [...row];
           next[valueIndex] = running;
           rows.push(next);

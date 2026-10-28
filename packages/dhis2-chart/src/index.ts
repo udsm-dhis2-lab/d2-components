@@ -4,6 +4,7 @@ export * from './lib/highcharts-adapter';
 export * from './lib/standard-chart.transform';
 export * from './lib/chart-model';
 export * from './lib/chart-definitions';
+export * from './lib/chart-capabilities';
 export * from './lib/highcharts-options.adapter';
 export {
   AnalyticalBoundaryError,

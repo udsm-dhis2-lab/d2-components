@@ -8,10 +8,12 @@ import {
   applySeriesOptions,
   buildSeriesMatrix,
   filterEmptySeriesPoints,
+  hideEmptyCategories,
   refineCategories,
   resolveLayout,
   resolveSeriesColors,
   sortSeries,
+  sortSeriesByCategory,
 } from '../transforms/analytical.transforms';
 import {
   buildReferenceLines,
@@ -22,6 +24,41 @@ import {
 } from '../transforms/presentation.transforms';
 
 export type ChartFamily = 'cartesian' | 'circular' | 'polar' | 'gauge' | 'combined';
+
+function modern(config: any, key: string): any {
+  return config.config?.[key] ?? config[key];
+}
+
+function style(styled: any): Record<string, unknown> {
+  const font = styled?.fontStyle || {};
+  return {
+    ...(font.textColor ? { color: font.textColor } : {}),
+    ...(font.fontSize ? { fontSize: `${font.fontSize}px` } : {}),
+    ...(font.bold !== undefined ? { fontWeight: font.bold ? 'bold' : 'normal' } : {}),
+    ...(font.italic !== undefined ? { fontStyle: font.italic ? 'italic' : 'normal' } : {}),
+  };
+}
+
+function fontSize(value: unknown, fallback: string): string {
+  return typeof value === 'number' ? `${value}px` : typeof value === 'string' && value ? value : fallback;
+}
+
+function applyModernPresentation(chart: any, config: any): any {
+  const raw = { ...config, ...(config.config || {}) };
+  const modernTitle = !config.config || Object.prototype.hasOwnProperty.call(config.config, 'title');
+  if (modernTitle && typeof raw.title === 'string' && !config.hideTitle) chart.title = {
+    ...chart.title, text: raw.title,
+    style: { ...chart.title?.style, ...style(raw.fontStyle?.visualizationTitle) },
+  };
+  if (raw.hideTitle) chart.title = { ...chart.title, text: null };
+  if (typeof raw.subtitle === 'string') chart.subtitle = raw.hideSubtitle ? '' :
+    raw.fontStyle?.visualizationSubtitle ? { text: raw.subtitle, style: style(raw.fontStyle.visualizationSubtitle) } : raw.subtitle;
+  if (raw.seriesKey && typeof raw.seriesKey === 'object') chart.legend = {
+    enabled: !raw.seriesKey.hidden,
+    itemStyle: style(raw.seriesKey.label),
+  };
+  return chart;
+}
 
 /** Legacy entry point; definitions supply the family explicitly. */
 export function drawChart(
@@ -44,7 +81,7 @@ export function drawChartFamily(
     ? accumulateAnalytics(
         analyticsResult,
         chartConfiguration.xAxisType[0],
-        chartConfiguration.yAxisType
+        Array.isArray(chartConfiguration.yAxisType) ? chartConfiguration.yAxisType[0] : chartConfiguration.yAxisType
       )
     : analyticsResult;
 
@@ -75,7 +112,7 @@ export function drawChartFamily(
       chartConfiguration.type === 'gauge' ? { ...chartConfiguration, type: 'solidgauge' } : chartConfiguration),
     combined: () => chartObject,
   };
-  chartObject = builders[family]();
+  chartObject = applyModernPresentation(builders[family](), chartConfiguration);
 
   return toChartModel(
     filterEmptySeriesPoints(chartObject, chartConfiguration),
@@ -291,13 +328,33 @@ function extendOtherChartOptions(
   chartConfiguration: any
 ): any {
   const layout = resolveLayout(analyticsObject, chartConfiguration);
-  const series = applySeriesOptions(
-    sortSeries(
+  const structuredSort = modern(chartConfiguration, 'sorting');
+  const sorted = sortSeries(
       buildSeriesMatrix(analyticsObject, layout, chartConfiguration),
       chartConfiguration.cumulativeValues ? -1 : chartConfiguration.sortOrder
-    ),
-    chartConfiguration.seriesOptions
-  );
+    );
+  const ordered = structuredSort?.length
+    ? sortSeriesByCategory(sorted, structuredSort[0].direction) : sorted;
+  const strategy = modern(chartConfiguration, 'hideEmptyRowItems');
+  const categoryIndexes = chartConfiguration.xAxisType.map((dimension: string) =>
+    analyticsObject.headers.findIndex((header: any) => header.name === dimension));
+  const presentCategoryIds = new Set<string>(analyticsObject.rows.map((row: any[]) =>
+    categoryIndexes.map((index: number) => row[index]).join('_')));
+  const visible = strategy && strategy !== 'NONE'
+    ? hideEmptyCategories(ordered, strategy, presentCategoryIds) : ordered;
+  const nativeSeries = modern(chartConfiguration, 'series');
+  const rangeAxes = (chartConfiguration.axes || []).filter((axis: any) => axis.type === 'RANGE')
+    .sort((a: any, b: any) => (a.index ?? 0) - (b.index ?? 0));
+  const options = Array.isArray(nativeSeries) && nativeSeries.length
+    ? nativeSeries.map((item: any) => ({
+      dimensionItem: item.dimensionItem,
+      axis: item.axis === undefined ? undefined : rangeAxes.length
+        ? rangeAxes.findIndex((axis: any) => (axis.index ?? 0) === item.axis)
+        : item.axis,
+      type: item.type?.toLowerCase() || chartConfiguration.type,
+    }))
+    : chartConfiguration.seriesOptions;
+  const series = applySeriesOptions(visible, options);
 
   /**
    * Update colors by considering if series has data
@@ -478,6 +535,7 @@ function getXAxisOptions(xAxisCategories: any[], chartConfiguration: any) {
         {
           categories: xAxisCategories,
           allowDecimals,
+          ...(xAxisConfig?.steps !== undefined ? { tickInterval: xAxisConfig.steps } : {}),
           labels: {
             format: formatAxisNumber(xAxisConfig?.decimals),
             y: 10,
@@ -489,14 +547,14 @@ function getXAxisOptions(xAxisCategories: any[], chartConfiguration: any) {
               fontWeight: xAxisConfig?.label?.fontStyle?.bold
                 ? 'bold'
                 : 'normal',
-              fontSize: xAxisConfig?.label?.fontStyle?.fontSize || '11px',
+              fontSize: fontSize(xAxisConfig?.label?.fontStyle?.fontSize, '11px'),
               wordBreak: 'break-all',
               textAlign: 'center',
               textOverflow: 'allow',
             },
           },
           title: {
-            text: xAxisConfig?.title?.text,
+            text: xAxisConfig?.title?.textMode === 'AUTO' ? undefined : xAxisConfig?.title?.text,
             margin: 16,
             align: ChartAxisUtil.formatAxisTextAlignment(
               xAxisConfig?.title?.fontStyle?.textAlign
@@ -509,7 +567,7 @@ function getXAxisOptions(xAxisCategories: any[], chartConfiguration: any) {
               fontStyle: xAxisConfig?.title?.fontStyle?.italic
                 ? 'italic'
                 : 'normal',
-              fontSize: xAxisConfig?.title?.fontStyle?.fontSize || '13px',
+              fontSize: fontSize(xAxisConfig?.title?.fontStyle?.fontSize, '13px'),
             },
           },
         }
@@ -573,7 +631,7 @@ function getXAxisOptions(xAxisCategories: any[], chartConfiguration: any) {
 function getYAxisOptions(chartConfiguration: any) {
   const yAxes: any[] = chartConfiguration.axes?.filter(
     (axis: Record<string, unknown>) => axis['type'] === 'RANGE'
-  );
+  ).sort((a: any, b: any) => (a.index ?? 0) - (b.index ?? 0)) || [];
   let newYAxes: any[] = [];
 
   if (yAxes.length === 0) {
@@ -600,19 +658,20 @@ function getYAxisOptions(chartConfiguration: any) {
       const allowDecimals = yAxis.decimals !== undefined;
       return {
         reversedStacks: false,
-        min: chartConfiguration.rangeAxisMinValue,
-        max: chartConfiguration.rangeAxisMaxValue,
+        min: yAxis.minValue ?? chartConfiguration.rangeAxisMinValue,
+        max: yAxis.maxValue ?? chartConfiguration.rangeAxisMaxValue,
+        ...(yAxis.steps !== undefined ? { tickAmount: yAxis.steps + 1 } : {}),
         allowDecimals,
         labels: {
           format: formatAxisNumber(yAxis.decimals),
           style: {
             color: yAxis?.label?.fontStyle?.textColor || '#000000',
             fontWeight: yAxis?.label?.fontStyle?.bold ? 'bold' : 'normal',
-            fontSize: yAxis?.label?.fontStyle?.fontSize || '11px',
+            fontSize: fontSize(yAxis?.label?.fontStyle?.fontSize, '11px'),
           },
         },
         title: {
-          text: yAxis?.title?.text,
+          text: yAxis?.title?.textMode === 'AUTO' ? undefined : yAxis?.title?.text,
           margin: 16,
           align: ChartAxisUtil.formatAxisTextAlignment(
             yAxis?.title?.fontStyle?.textAlign
@@ -621,7 +680,7 @@ function getYAxisOptions(chartConfiguration: any) {
             color: yAxis?.title?.fontStyle?.textColor || '#000000',
             fontWeight: yAxis?.title?.fontStyle?.bold ? 'bold' : 'normal',
             fontStyle: yAxis?.title?.fontStyle?.italic ? 'italic' : 'normal',
-            fontSize: yAxis?.title?.fontStyle?.fontSize || '13px',
+            fontSize: fontSize(yAxis?.title?.fontStyle?.fontSize, '13px'),
           },
         },
       };
@@ -654,6 +713,15 @@ function getYAxisOptions(chartConfiguration: any) {
         break;
       default:
         yAxis['plotLines'] = buildReferenceLines(chartConfiguration);
+        {
+          const axisConfig = yAxes[newYAxes.indexOf(yAxis)] || {};
+          const lines = ['baseLine', 'targetLine'].map(key => axisConfig[key]).filter(Boolean);
+          if (lines.length) yAxis['plotLines'] = lines.map((line: any) => ({
+            color: '#000000', dashStyle: 'Solid', value: line.value,
+            width: 2, zIndex: 1000,
+            label: { text: line.title?.text, style: style(line.title) },
+          }));
+        }
         break;
     }
     return yAxis;
