@@ -7,6 +7,7 @@ export type ChartType =
   | 'SINGLE_VALUE'
   | 'STACKED_COLUMN'
   | 'YEAR_OVER_YEAR_LINE'
+  | 'YEAR_OVER_YEAR_COLUMN'
   | 'STACKED_BAR'
   | 'AREA'
   | 'STACKED_AREA'

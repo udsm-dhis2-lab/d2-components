@@ -28,4 +28,6 @@ export {
 export { adaptLegacyChartConfiguration } from './lib/legacy-chart-configuration';
 export type { LegacyChartConfiguration } from './lib/legacy-chart-configuration';
 export * from './lib/year-over-year-data.service';
+export * from './lib/year-over-year.alignment';
+export * from './lib/year-over-year.model';
 export * from './lib/year-over-year-line';

@@ -1,9 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as _ from 'lodash';
-import {
-  D2Charts,
-  YearOverYearLineHighchartsVisualizer,
-} from '@iapps/d2-charts';
+import { D2Charts } from '@iapps/d2-charts';
 import { SingleValueVisualizer } from '@iapps/d2-kpi-cards';
 import {
   FetchMapDataSource,
@@ -133,12 +130,8 @@ export function createDefaultRendererRegistry(): RendererRegistry {
     PIVOT_TABLE: tableFactory,
     SINGLE_VALUE: (context, data) =>
       new SingleValueVisualizer().setId(context.id).setData(data),
-    YEAR_OVER_YEAR_LINE: (context, data) =>
-      new YearOverYearLineHighchartsVisualizer()
-        .setId(context.id)
-        .setConfig(context.config?.config ?? context.config)
-        .setSelections(context.dataSelections)
-        .setData(data),
+    YEAR_OVER_YEAR_LINE: chartFactory,
+    YEAR_OVER_YEAR_COLUMN: chartFactory,
     CUSTOM: (context, data) => {
       context.config.mergeDataSelections(context.dataSelections);
       const selections = context.config.dataSelections.filter(

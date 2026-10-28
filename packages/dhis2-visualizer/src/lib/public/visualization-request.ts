@@ -3,7 +3,7 @@ import type { ChartType } from '../shared/models/visualization-type.model';
 
 export type SupportedChartType = Exclude<
   ChartType,
-  'SINGLE_VALUE' | 'YEAR_OVER_YEAR_LINE'
+  'SINGLE_VALUE' | 'YEAR_OVER_YEAR_LINE' | 'YEAR_OVER_YEAR_COLUMN'
 >;
 
 export interface VisualizationTargetRequest {
@@ -36,7 +36,7 @@ export interface ChartVisualizationRequest
 }
 
 export interface YearOverYearVisualizationRequest
-  extends VisualizationRequestBase<'YEAR_OVER_YEAR_LINE'> {
+  extends VisualizationRequestBase<'YEAR_OVER_YEAR_LINE' | 'YEAR_OVER_YEAR_COLUMN'> {
   data?: AnalyticsResponse | Readonly<Record<string, unknown>>;
 }
 

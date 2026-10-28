@@ -6,7 +6,7 @@ import { chromium } from 'playwright';
 
 const require = createRequire(import.meta.url);
 const workspace = resolve(fileURLToPath(new URL('../../../../', import.meta.url)));
-const { buildStandardChartOptions } = require(resolve(workspace, 'dist/packages/dhis2-chart'));
+const { buildStandardChartOptions, buildYearOverYearChartModel, HighchartsOptionsAdapter } = require(resolve(workspace, 'dist/packages/dhis2-chart'));
 const highchartsScript = resolve(workspace, 'node_modules/highcharts/highcharts.js');
 const accessibilityScript = resolve(workspace, 'node_modules/highcharts/modules/accessibility.js');
 const analytics = {
@@ -49,6 +49,28 @@ try {
     }, options);
     assert.ok(await page.locator('#chart svg').count(), `${name}: SVG not rendered`);
     assert.ok(await page.locator('#chart .highcharts-series').count() >= 2, `${name}: series absent`);
+    assert.ok((await page.locator('#chart').screenshot()).length > 1000, `${name}: screenshot empty`);
+    assert.ok(await page.locator('#chart [aria-label]').count(), `${name}: accessibility labels absent`);
+  }
+  const yoyBundle = {
+    axis: { categories: ['W01', 'W02', 'W53'] },
+    series: [
+      { name: '2023', year: 2023, data: [0, 5, 9] },
+      { name: '2024', year: 2024, data: [7, null, null] },
+    ],
+  };
+  for (const [name, type] of [
+    ['YOY line', 'YEAR_OVER_YEAR_LINE'],
+    ['YOY column', 'YEAR_OVER_YEAR_COLUMN'],
+  ]) {
+    const model = buildYearOverYearChartModel(yoyBundle, { config: { displayName: name } }, type);
+    const options = new HighchartsOptionsAdapter().toOptions(model);
+    await page.evaluate(chartOptions => {
+      window.__chart?.destroy();
+      window.__chart = window.Highcharts.chart('chart', chartOptions);
+    }, options);
+    assert.ok(await page.locator('#chart svg').count(), `${name}: SVG not rendered`);
+    assert.equal(await page.locator('#chart .highcharts-series').count(), 2, `${name}: series missing`);
     assert.ok((await page.locator('#chart').screenshot()).length > 1000, `${name}: screenshot empty`);
     assert.ok(await page.locator('#chart [aria-label]').count(), `${name}: accessibility labels absent`);
   }

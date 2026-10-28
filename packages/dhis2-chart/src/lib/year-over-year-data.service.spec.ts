@@ -26,7 +26,7 @@ describe('year-over-year data module', () => {
       )
     ).toEqual([
       { name: '2023', year: 2023, data: [10, 20] },
-      { name: '2024', year: 2024, data: [30, 0] },
+      { name: '2024', year: 2024, data: [30, null] },
     ]);
   });
 
@@ -49,6 +49,20 @@ describe('year-over-year data module', () => {
     });
     expect(bundle.axis.categories).toEqual(['Week 1']);
     expect(bundle.series[0].data).toEqual([7]);
+  });
+
+  it('rejects a request aborted while an injected source is pending', async () => {
+    let resolveYears!: (value: AnalyticsResponse) => void;
+    const source: VisualizationDataSource = {
+      getAnalytics: jest.fn(() => new Promise(resolve => { resolveYears = resolve; })),
+    };
+    const controller = new AbortController();
+    const pending = new YearOverYearDataService(source).load({
+      dxId: 'dx-a', ouId: 'ou-a', relativePeriodDate: '2024-06-01',
+    }, controller.signal);
+    controller.abort();
+    resolveYears(response({ pe: ['2024'] }));
+    await expect(pending).rejects.toThrow('aborted');
   });
 });
 

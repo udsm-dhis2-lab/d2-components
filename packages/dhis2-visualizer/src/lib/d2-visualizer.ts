@@ -44,6 +44,7 @@ export class D2Visualizer {
   private readonly rendererRegistry: RendererRegistry;
   private readonly unsupportedTypeBehavior: 'ignore' | 'throw';
   private drawGeneration = 0;
+  private yearOverYearController?: AbortController;
   private analyticsDataSource?: VisualizationDataSource;
   private readonly analyticsFacade = new D2AnalyticsFacade();
   private mapDataSource?: MapDataSource;
@@ -400,7 +401,7 @@ export class D2Visualizer {
   private async _getData(): Promise<any> {
     const visType = this._resolveVisType();
 
-    if (visType !== 'YEAR_OVER_YEAR_LINE') return this._getDataDefault();
+    if (visType !== 'YEAR_OVER_YEAR_LINE' && visType !== 'YEAR_OVER_YEAR_COLUMN') return this._getDataDefault();
     return this._getDataYearOverYearLine();
   }
 
@@ -436,7 +437,8 @@ export class D2Visualizer {
    * Your d2.httpInstance.get() returns an object whose payload is under `.data`.
    * This implementation unwraps responses using (res?.data ?? res).
    */
-  private async _getDataYearOverYearLine(): Promise<any> {
+  private async _getDataYearOverYearLine(signal?: AbortSignal): Promise<any> {
+    const type = this._resolveVisType();
     this.config.mergeDataSelections(this.dataSelections);
     const favorite: any = this.config?.config ?? this.config;
     const dxId =
@@ -448,27 +450,28 @@ export class D2Visualizer {
       'USER_ORGUNIT';
     if (!dxId) {
       return {
-        kind: 'YEAR_OVER_YEAR_LINE',
+        kind: type,
         error: true,
-        message: 'Missing dx selection for YEAR_OVER_YEAR_LINE',
+        message: `Missing dx selection for ${type}`,
       };
     }
 
     const dataSource =
       this.analyticsDataSource ?? new D2WebAnalyticsDataSource();
     try {
-      return await new YearOverYearDataService(dataSource).load({
+      const bundle = await new YearOverYearDataService(dataSource).load({
         dxId,
         ouId,
         relativePeriodDate: this._getRelativePeriodDate(favorite),
-      });
+      }, signal);
+      return { ...bundle, kind: type };
     } catch (error) {
       return {
-        kind: 'YEAR_OVER_YEAR_LINE',
+        kind: type,
         error: true,
         message: String(error).includes('All year-over-year requests failed')
-          ? 'All per-year analytics calls failed for YEAR_OVER_YEAR_LINE'
-          : 'Failed to load YEAR_OVER_YEAR_LINE analytics',
+          ? `All per-year analytics calls failed for ${type}`
+          : `Failed to load ${type} analytics`,
         details: { error: String(error) },
       };
     }
@@ -530,6 +533,9 @@ export class D2Visualizer {
    */
   async draw(): Promise<this> {
     const generation = ++this.drawGeneration;
+    this.yearOverYearController?.abort();
+    this.yearOverYearController = ['YEAR_OVER_YEAR_LINE', 'YEAR_OVER_YEAR_COLUMN'].includes(this._resolveVisType())
+      && this.dataAnalytics === undefined ? new AbortController() : undefined;
     let data: any;
     try {
       data =
@@ -537,7 +543,9 @@ export class D2Visualizer {
           ? !this.trackedEntityInstances
             ? this.dataAnalytics !== undefined
               ? this._resolveRendererData(this.dataAnalytics)
-              : await this._getData()
+              : this.yearOverYearController
+                ? await this._getDataYearOverYearLine(this.yearOverYearController.signal)
+                : await this._getData()
             : undefined
           : undefined;
     } catch (error) {
@@ -581,7 +589,7 @@ export class D2Visualizer {
   }
 
   private _resolveRendererData(data: unknown): unknown {
-    return this._resolveVisType() === 'YEAR_OVER_YEAR_LINE'
+    return ['YEAR_OVER_YEAR_LINE', 'YEAR_OVER_YEAR_COLUMN'].includes(this._resolveVisType())
       ? data
       : normalizeAnalyticsResponse(data);
   }
@@ -622,6 +630,7 @@ export class D2Visualizer {
 
   async dispose(): Promise<void> {
     this.drawGeneration += 1;
+    this.yearOverYearController?.abort();
     if (this.visualizer) await this.visualizer.dispose();
     delete (this as { visualizer?: Visualizer }).visualizer;
   }

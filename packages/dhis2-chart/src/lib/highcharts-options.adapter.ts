@@ -461,6 +461,7 @@ export class HighchartsOptionsAdapter {
       renderTo: model.renderTarget,
       zoomType: model.zoomMode,
       type: model.chartType,
+      ...(model.animation !== undefined ? { animation: model.animation } : {}),
       ...(model.polar !== undefined ? { polar: model.polar } : {}),
       ...(model.backgroundColor !== undefined
         ? { plotBackgroundColor: model.backgroundColor }

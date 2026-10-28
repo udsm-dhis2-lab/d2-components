@@ -106,7 +106,7 @@ describe('year-over-year analytics characterization', () => {
     ]);
     expect(result.series).toEqual([
       { name: '2023', year: 2023, data: [10, 20] },
-      { name: '2024', year: 2024, data: [30, 0] },
+      { name: '2024', year: 2024, data: [30, null] },
     ]);
   });
 

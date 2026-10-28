@@ -81,6 +81,9 @@ try {
       "const chart = require('@iapps/d2-charts');",
       "if (typeof chart.D2Charts !== 'function') throw new Error('D2Charts missing');",
       "if (typeof chart.YearOverYearDataService !== 'function') throw new Error('YearOverYearDataService missing');",
+      "if (typeof chart.alignYearOverYear !== 'function' || typeof chart.buildYearOverYearChartModel !== 'function') throw new Error('YOY transformation missing');",
+      "const yoy = chart.alignYearOverYear([{ year: 2024, values: { headers: [{ name: 'pe' }, { name: 'value' }], rows: [['2024W01', '0']], metaData: {} } }], ['2024W01', '2024W02']);",
+      "if (yoy.series[0].data[0] !== 0 || yoy.series[0].data[1] !== null) throw new Error('YOY alignment failed');",
       "if (typeof chart.buildStandardChartOptions !== 'function') throw new Error('pure transform missing');",
       "const registry = chart.createStandardChartRegistry();",
       "if (registry.resolve('COLUMN').family !== 'cartesian') throw new Error('registry missing');",
@@ -120,7 +123,7 @@ try {
   writeFileSync(
     join(consumer, 'typecheck.ts'),
     [
-      "import { D2Charts, ChartDefinitionRegistry, createStandardChartRegistry, chartCapability, chartCapabilities, normalizeAnalyticalData, buildStandardChartOptions, buildStandardChartModel, HighchartsOptionsAdapter, type ChartDefinition, type ChartModel, type AnalyticalDataset, type AnalyticalObservation, AnalyticalBoundaryError } from '@iapps/d2-charts';",
+      "import { D2Charts, ChartDefinitionRegistry, createStandardChartRegistry, chartCapability, chartCapabilities, normalizeAnalyticalData, buildStandardChartOptions, buildStandardChartModel, buildYearOverYearChartModel, alignYearOverYear, HighchartsOptionsAdapter, type ChartDefinition, type ChartModel, type AnalyticalDataset, type AnalyticalObservation, AnalyticalBoundaryError } from '@iapps/d2-charts';",
       "const raw = { headers: [{ name: 'dx' }, { name: 'value' }], rows: [['a', '0']], metaData: { dimensions: { dx: ['a'] }, names: { a: 'A' } } };",
       'const dataset: AnalyticalDataset = normalizeAnalyticalData(raw);',
       'const observation: AnalyticalObservation = dataset.observations[0];',
@@ -132,6 +135,8 @@ try {
       'new D2Charts(undefined, registry);',
       "new D2Charts(undefined, registry).setType('EXTERNAL');",
       "new D2Charts().setType('STACKED_AREA');",
+      "new D2Charts().setType('YEAR_OVER_YEAR_COLUMN');",
+      'void buildYearOverYearChartModel; void alignYearOverYear;',
       "const axesCapability = chartCapability('COLUMN', 'axes');",
       'void axesCapability; void chartCapabilities;',
       "buildStandardChartOptions(dataset, { type: 'column', xAxisType: ['dx'], yAxisType: 'dx', axes: [] });",

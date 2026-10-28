@@ -14,6 +14,7 @@ import { buildStandardChartModel } from '../standard-chart.model';
 import { HighchartsOptionsAdapter } from '../highcharts-options.adapter';
 import { ChartDefinitionRegistry, standardChartRegistry } from '../chart-definitions';
 import { AnalyticalDataset } from '../analytical-dataset';
+import { buildYearOverYearChartModel } from '../year-over-year.model';
 
 /**
  *
@@ -52,13 +53,26 @@ export class D2Charts extends BaseVisualizer implements Visualizer {
    *
    */
   draw() {
-    if (this._config) {
+    const yoy = this.#type === 'YEAR_OVER_YEAR_LINE' || this.#type === 'YEAR_OVER_YEAR_COLUMN';
+    if (yoy && (!Array.isArray(this._data?.axis?.categories) || !this._data.axis.categories.length
+      || !Array.isArray(this._data?.series) || !this._data.series.length)) {
+      this.dispose();
+      const host = typeof document === 'undefined' ? null : document.getElementById(this._id);
+      if (host) {
+        const empty = document.createElement('div');
+        empty.setAttribute('role', 'status');
+        empty.textContent = 'No data available: missing categories or series.';
+        host.replaceChildren(empty);
+      }
+      return;
+    }
+    if (this._config?.config && typeof this._config.config === 'object') {
       this._config.config.type = this.#type.toLowerCase();
     }
 
-    const chartObject = new HighchartsOptionsAdapter().toOptions(
-      buildStandardChartModel(this._data, this._config, this.#registry)
-    );
+    const chartObject = new HighchartsOptionsAdapter().toOptions(yoy
+      ? buildYearOverYearChartModel(this._data, this._config, this.#type as 'YEAR_OVER_YEAR_LINE' | 'YEAR_OVER_YEAR_COLUMN', this.#registry)
+      : buildStandardChartModel(this._data, this._config, this.#registry));
 
     if (this.#drawTimer) clearTimeout(this.#drawTimer);
     const generation = ++this.#drawGeneration;

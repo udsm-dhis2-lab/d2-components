@@ -3,6 +3,7 @@ import {
   AnalyticsResponse,
   VisualizationDataSource,
 } from './core';
+import { alignYearOverYear } from './year-over-year.alignment';
 
 export interface YearOverYearRequest {
   dxId: string;
@@ -11,7 +12,7 @@ export interface YearOverYearRequest {
 }
 
 export interface YearOverYearBundle {
-  kind: 'YEAR_OVER_YEAR_LINE';
+  kind: 'YEAR_OVER_YEAR_LINE' | 'YEAR_OVER_YEAR_COLUMN';
   axis: {
     year: number;
     relativePeriodDate: string;
@@ -19,7 +20,7 @@ export interface YearOverYearBundle {
     categories: string[];
     meta: AnalyticsResponse;
   };
-  series: Array<{ name: string; year: number; data: number[] }>;
+  series: Array<{ name: string; year: number; data: Array<number | null> }>;
   rawPerYear: unknown[];
   context: YearOverYearRequest & { years: number[] };
   warnings?: { perYearFailed: unknown[] };
@@ -32,8 +33,9 @@ export class YearOverYearDataService {
     this.#dataSource = dataSource;
   }
 
-  async load(request: YearOverYearRequest): Promise<YearOverYearBundle> {
-    const yearsMeta = await this.#dataSource.getAnalytics(yearsQuery());
+  async load(request: YearOverYearRequest, signal?: AbortSignal): Promise<YearOverYearBundle> {
+    const yearsMeta = await this.#dataSource.getAnalytics(yearsQuery(), signal);
+    if (signal?.aborted) throw new Error('Year-over-year request aborted');
     const years = (
       (yearsMeta.metaData?.['dimensions']?.['pe'] as string[]) ?? []
     )
@@ -48,10 +50,10 @@ export class YearOverYearDataService {
         const relativePeriodDate = shiftYear(request.relativePeriodDate, year);
         const [meta, values] = await Promise.all([
           this.#dataSource.getAnalytics(
-            weeklyQuery(request, relativePeriodDate, true)
+            weeklyQuery(request, relativePeriodDate, true), signal
           ),
           this.#dataSource.getAnalytics(
-            weeklyQuery(request, relativePeriodDate, false)
+            weeklyQuery(request, relativePeriodDate, false), signal
           ),
         ]);
         return { year, relativePeriodDate, meta, values };
@@ -66,6 +68,7 @@ export class YearOverYearDataService {
     const failed = settled
       .filter((result) => result.status === 'rejected')
       .map((result) => result.reason);
+    if (signal?.aborted) throw new Error('Year-over-year request aborted');
     if (!successful.length)
       throw new Error('All year-over-year requests failed');
 
@@ -77,6 +80,7 @@ export class YearOverYearDataService {
     if (!periodIds.length)
       throw new Error('Weekly metadata returned no periods');
 
+    const aligned = alignYearOverYear(successful, periodIds);
     return {
       kind: 'YEAR_OVER_YEAR_LINE',
       axis: {
@@ -88,7 +92,7 @@ export class YearOverYearDataService {
         ),
         meta: axisSource.meta,
       },
-      series: buildYearOverYearSeries(successful, periodIds),
+      series: aligned.series.map(series => ({ ...series, data: [...series.data] })),
       rawPerYear: successful,
       context: { ...request, years },
       warnings: failed.length ? { perYearFailed: failed } : undefined,
@@ -99,26 +103,8 @@ export class YearOverYearDataService {
 export function buildYearOverYearSeries(
   years: Array<{ year: number; values: AnalyticsResponse }>,
   periodIds: string[]
-): Array<{ name: string; year: number; data: number[] }> {
-  return years
-    .map(({ year, values }) => {
-      const periodIndex = values.headers.findIndex(({ name }) => name === 'pe');
-      const valueIndex = values.headers.findIndex(
-        ({ name }) => name === 'value'
-      );
-      const byWeek = new Map<number, number>();
-      values.rows.forEach((row) => {
-        const week = weekNumber(row[periodIndex]);
-        const value = Number(row[valueIndex]);
-        if (week && Number.isFinite(value)) byWeek.set(week, value);
-      });
-      return {
-        name: String(year),
-        year,
-        data: periodIds.map((id) => byWeek.get(weekNumber(id) ?? -1) ?? 0),
-      };
-    })
-    .sort((left, right) => left.year - right.year);
+): Array<{ name: string; year: number; data: Array<number | null> }> {
+  return alignYearOverYear(years, periodIds).series.map(series => ({ ...series, data: [...series.data] }));
 }
 
 function yearsQuery(): AnalyticsQuery {

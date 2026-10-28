@@ -85,6 +85,7 @@ export interface ChartModel {
   readonly seriesKind: ChartSeriesKind;
   readonly renderTarget?: string;
   readonly zoomMode?: string;
+  readonly animation?: boolean;
   readonly polar?: boolean;
   readonly backgroundColor?: string | null;
   readonly borderWidth?: number | null;
@@ -109,7 +110,7 @@ export interface ChartModel {
   readonly requiredModules: readonly ChartModuleRequirement[];
 }
 
-/** The existing year-over-year line path remains distinct until Sprint 16. */
+/** @deprecated Legacy YOY model retained only for declaration compatibility. */
 export interface YearOverYearChartModel {
   readonly kind: 'YEAR_OVER_YEAR_CHART_MODEL';
   readonly categories: readonly string[];

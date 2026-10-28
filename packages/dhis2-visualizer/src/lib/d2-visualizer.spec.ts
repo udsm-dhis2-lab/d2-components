@@ -7,7 +7,8 @@ import { MapVisualizer } from './modules/map/map-visualizer';
 import { SingleValueVisualizer } from './modules/single-value/single-value-visualizer';
 import { TableUtil } from './modules/table/utils/table.util';
 import { TrackedEntityLayer } from './modules/map/layers/tracked-entity-layer.model';
-import { YearOverYearLineHighchartsVisualizer } from './modules/year-over-year-line/year-over-year-line';
+import { D2Charts } from '@iapps/d2-charts';
+import * as Highcharts from 'highcharts';
 import {
   analyticsFixture,
   selectionsFixture,
@@ -153,19 +154,47 @@ describe('D2Visualizer compatibility facade', () => {
     expect(visualizer.visualizer).toBeInstanceOf(SingleValueVisualizer);
   });
 
-  it('dispatches YEAR_OVER_YEAR_LINE to its Highcharts renderer', async () => {
+  it.each(['YEAR_OVER_YEAR_LINE', 'YEAR_OVER_YEAR_COLUMN'] as VisualizationType[])(
+    'dispatches %s through D2Charts', async type => {
     const draw = jest
-      .spyOn(YearOverYearLineHighchartsVisualizer.prototype, 'draw')
+      .spyOn(D2Charts.prototype, 'draw')
       .mockImplementation();
-    const visualizer = configuredVisualizer('YEAR_OVER_YEAR_LINE');
+    const visualizer = configuredVisualizer(type);
 
     await expect(visualizer.draw()).resolves.toBe(visualizer);
 
     expect(visualizer.visualizer).toBeInstanceOf(
-      YearOverYearLineHighchartsVisualizer
+      D2Charts
     );
     expect(draw).toHaveBeenCalledTimes(1);
   });
+
+  it.each(['YEAR_OVER_YEAR_LINE', 'YEAR_OVER_YEAR_COLUMN'] as VisualizationType[])(
+    'keeps direct and facade %s Highcharts options equivalent', async type => {
+      jest.restoreAllMocks();
+      jest.useFakeTimers();
+      (Highcharts.chart as jest.Mock).mockClear();
+      const bundle = {
+        axis: { categories: ['W01', 'W02'] },
+        series: [{ name: '2024', year: 2024, data: [0, null] }],
+      };
+      const visualizer = new D2Visualizer()
+        .setId('visualization-host').setType(type)
+        .setConfig(visualizationConfigFixture(type))
+        .setData(bundle);
+      const direct = new D2Charts().setId('visualization-host')
+        .setConfig(visualizer.config).setData(bundle).setType(type);
+      direct.draw();
+      jest.runOnlyPendingTimers();
+      const directOptions = (Highcharts.chart as jest.Mock).mock.calls[0][0];
+      await visualizer.draw();
+      jest.runOnlyPendingTimers();
+      expect((Highcharts.chart as jest.Mock).mock.calls[1][0]).toEqual(directOptions);
+      direct.dispose();
+      await visualizer.dispose();
+      jest.useRealTimers();
+    }
+  );
 
   it('dispatches CUSTOM analytics rendering and retains the renderer', async () => {
     const draw = jest
@@ -434,6 +463,34 @@ describe('D2Visualizer compatibility facade', () => {
     expect((visualizer.visualizer as unknown as { _data: unknown })._data).toBe(
       newestData
     );
+  });
+
+  it('does not activate a stale year-over-year draw after a newer request', async () => {
+    let resolveOlder!: (value: any) => void;
+    const older = new Promise<any>(resolve => { resolveOlder = resolve; });
+    const response = (dimensions: Record<string, string[]>, rows: string[][] = []) => ({
+      headers: [{ name: 'pe' }, { name: 'value' }], rows,
+      metaData: { dimensions, items: { '2024W1': { name: 'W1' } } },
+    });
+    const getAnalytics = jest.fn()
+      .mockReturnValueOnce(older)
+      .mockResolvedValueOnce(response({ pe: ['2024'] }))
+      .mockResolvedValueOnce(response({ pe: ['2024W1'] }))
+      .mockResolvedValueOnce(response({}, [['2024W1', '7']]));
+    const draw = jest.spyOn(D2Charts.prototype, 'draw').mockImplementation();
+    const visualizer = new D2Visualizer()
+      .setId('visualization-host')
+      .setType('YEAR_OVER_YEAR_COLUMN')
+      .setSelections(selectionsFixture())
+      .setConfig(visualizationConfigFixture('YEAR_OVER_YEAR_COLUMN'))
+      .setDataSource({ getAnalytics });
+    const olderDraw = visualizer.draw();
+    const newerDraw = visualizer.draw();
+    await newerDraw;
+    resolveOlder(response({ pe: ['2023'] }));
+    await olderDraw;
+    expect(draw).toHaveBeenCalledTimes(1);
+    expect((visualizer.visualizer as unknown as { _data: { series: Array<{ year: number }> } })._data.series[0].year).toBe(2024);
   });
 
   it('does not let an older renderer completion replace the latest renderer', async () => {
