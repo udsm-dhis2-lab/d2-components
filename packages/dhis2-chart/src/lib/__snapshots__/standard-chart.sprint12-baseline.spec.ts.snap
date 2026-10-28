@@ -1,0 +1,1644 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Sprint 12 serialized option baseline area 1`] = `
+{
+  "chart": {
+    "renderTo": "chart-fixture",
+    "type": "area",
+    "zoomType": "xy",
+  },
+  "colors": [
+    "#A9BE3B",
+    "#558CC0",
+    "#D34957",
+    "#FF9F3A",
+    "#968F8F",
+    "#B7409F",
+    "#FFDA64",
+    "#4FBDAE",
+    "#B78040",
+    "#676767",
+    "#6A33CF",
+    "#4A7833",
+    "#434348",
+    "#7CB5EC",
+    "#F7A35C",
+    "#F15C80",
+  ],
+  "credits": {
+    "enabled": false,
+  },
+  "exporting": {
+    "buttons": {
+      "contextButton": {
+        "enabled": false,
+      },
+    },
+  },
+  "plotOptions": {
+    "area": {
+      "colorByPoint": false,
+      "groupPadding": 0.1,
+      "pointPadding": 0,
+      "showInLegend": true,
+      "stacking": "normal",
+    },
+  },
+  "series": [
+    {
+      "data": [
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202401",
+          "name": "January 2024",
+          "y": 10,
+        },
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202402",
+          "name": "February 2024",
+          "y": 0,
+        },
+      ],
+      "id": "dx-a",
+      "index": 0,
+      "name": "Cases",
+      "pointPlacement": undefined,
+      "turboThreshold": 0,
+      "type": "area",
+    },
+    {
+      "data": [
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202401",
+          "name": "January 2024",
+          "y": 3.5,
+        },
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202402",
+          "name": "February 2024",
+          "y": 4.5,
+        },
+      ],
+      "id": "dx-b",
+      "index": 1,
+      "name": "Coverage",
+      "pointPlacement": undefined,
+      "turboThreshold": 0,
+      "type": "area",
+    },
+  ],
+  "subtitle": "",
+  "title": {
+    "align": "center",
+    "style": {
+      "fontSize": "11px",
+      "fontWeight": 400,
+    },
+    "text": "",
+  },
+  "tooltip": {
+    "enabled": true,
+  },
+  "xAxis": {
+    "allowDecimals": false,
+    "categories": [
+      "January 2024",
+      "February 2024",
+    ],
+    "labels": {
+      "allowDecimals": false,
+      "categories": [
+        {
+          "name": "January 2024",
+        },
+        {
+          "name": "February 2024",
+        },
+      ],
+      "labels": {
+        "allowOverlap": true,
+        "format": undefined,
+        "rotation": 90,
+        "style": {
+          "color": "#000000",
+          "fontSize": "11px",
+          "fontWeight": "normal",
+          "textAlign": "center",
+          "textOverflow": "allow",
+          "wordBreak": "break-all",
+        },
+        "useHTML": true,
+        "y": 10,
+      },
+      "rotation": 0,
+      "title": {
+        "align": "middle",
+        "margin": 16,
+        "style": {
+          "color": "#000000",
+          "fontSize": "13px",
+          "fontStyle": "normal",
+          "fontWeight": "normal",
+        },
+        "text": undefined,
+      },
+    },
+    "title": {
+      "align": "middle",
+      "margin": 16,
+      "style": {
+        "color": "#000000",
+        "fontSize": "13px",
+        "fontStyle": "normal",
+        "fontWeight": "normal",
+      },
+      "text": undefined,
+    },
+  },
+  "yAxis": [
+    {
+      "max": undefined,
+      "min": undefined,
+      "plotLines": [
+        {
+          "color": "#000000",
+          "dashStyle": "Solid",
+          "label": {
+            "text": undefined,
+          },
+          "value": undefined,
+          "width": 2,
+          "zIndex": 1000,
+        },
+        {
+          "color": "#000000",
+          "dashStyle": "Solid",
+          "label": {
+            "text": undefined,
+          },
+          "value": undefined,
+          "width": 2,
+          "zIndex": 1000,
+        },
+      ],
+      "reversedStacks": false,
+      "title": {
+        "style": {
+          "color": "#000000",
+          "fontSize": "13px",
+          "fontWeight": "normal",
+        },
+        "text": "",
+      },
+    },
+  ],
+}
+`;
+
+exports[`Sprint 12 serialized option baseline bar 1`] = `
+{
+  "chart": {
+    "renderTo": "chart-fixture",
+    "type": "bar",
+    "zoomType": "xy",
+  },
+  "colors": [
+    "#A9BE3B",
+    "#558CC0",
+    "#D34957",
+    "#FF9F3A",
+    "#968F8F",
+    "#B7409F",
+    "#FFDA64",
+    "#4FBDAE",
+    "#B78040",
+    "#676767",
+    "#6A33CF",
+    "#4A7833",
+    "#434348",
+    "#7CB5EC",
+    "#F7A35C",
+    "#F15C80",
+  ],
+  "credits": {
+    "enabled": false,
+  },
+  "exporting": {
+    "buttons": {
+      "contextButton": {
+        "enabled": false,
+      },
+    },
+  },
+  "plotOptions": {
+    "bar": {
+      "colorByPoint": false,
+      "groupPadding": 0.1,
+      "pointPadding": 0,
+      "showInLegend": true,
+    },
+  },
+  "series": [
+    {
+      "data": [
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202401",
+          "name": "January 2024",
+          "y": 10,
+        },
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202402",
+          "name": "February 2024",
+          "y": 0,
+        },
+      ],
+      "id": "dx-a",
+      "index": 0,
+      "name": "Cases",
+      "pointPlacement": undefined,
+      "turboThreshold": 0,
+      "type": "bar",
+    },
+    {
+      "data": [
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202401",
+          "name": "January 2024",
+          "y": 3.5,
+        },
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202402",
+          "name": "February 2024",
+          "y": 4.5,
+        },
+      ],
+      "id": "dx-b",
+      "index": 1,
+      "name": "Coverage",
+      "pointPlacement": undefined,
+      "turboThreshold": 0,
+      "type": "bar",
+    },
+  ],
+  "subtitle": "",
+  "title": {
+    "align": "center",
+    "style": {
+      "fontSize": "11px",
+      "fontWeight": 400,
+    },
+    "text": "",
+  },
+  "tooltip": {
+    "enabled": true,
+  },
+  "xAxis": {
+    "allowDecimals": false,
+    "categories": [
+      "January 2024",
+      "February 2024",
+    ],
+    "labels": {
+      "allowDecimals": false,
+      "categories": [
+        {
+          "name": "January 2024",
+        },
+        {
+          "name": "February 2024",
+        },
+      ],
+      "labels": {
+        "allowOverlap": true,
+        "format": undefined,
+        "rotation": 90,
+        "style": {
+          "color": "#000000",
+          "fontSize": "11px",
+          "fontWeight": "normal",
+          "textAlign": "center",
+          "textOverflow": "allow",
+          "wordBreak": "break-all",
+        },
+        "useHTML": true,
+        "y": 10,
+      },
+      "rotation": 0,
+      "title": {
+        "align": "middle",
+        "margin": 16,
+        "style": {
+          "color": "#000000",
+          "fontSize": "13px",
+          "fontStyle": "normal",
+          "fontWeight": "normal",
+        },
+        "text": undefined,
+      },
+    },
+    "title": {
+      "align": "middle",
+      "margin": 16,
+      "style": {
+        "color": "#000000",
+        "fontSize": "13px",
+        "fontStyle": "normal",
+        "fontWeight": "normal",
+      },
+      "text": undefined,
+    },
+  },
+  "yAxis": [
+    {
+      "max": undefined,
+      "min": undefined,
+      "plotLines": [
+        {
+          "color": "#000000",
+          "dashStyle": "Solid",
+          "label": {
+            "text": undefined,
+          },
+          "value": undefined,
+          "width": 2,
+          "zIndex": 1000,
+        },
+        {
+          "color": "#000000",
+          "dashStyle": "Solid",
+          "label": {
+            "text": undefined,
+          },
+          "value": undefined,
+          "width": 2,
+          "zIndex": 1000,
+        },
+      ],
+      "reversedStacks": false,
+      "title": {
+        "style": {
+          "color": "#000000",
+          "fontSize": "13px",
+          "fontWeight": "normal",
+        },
+        "text": "",
+      },
+    },
+  ],
+}
+`;
+
+exports[`Sprint 12 serialized option baseline column 1`] = `
+{
+  "chart": {
+    "renderTo": "chart-fixture",
+    "type": "column",
+    "zoomType": "xy",
+  },
+  "colors": [
+    "#A9BE3B",
+    "#558CC0",
+    "#D34957",
+    "#FF9F3A",
+    "#968F8F",
+    "#B7409F",
+    "#FFDA64",
+    "#4FBDAE",
+    "#B78040",
+    "#676767",
+    "#6A33CF",
+    "#4A7833",
+    "#434348",
+    "#7CB5EC",
+    "#F7A35C",
+    "#F15C80",
+  ],
+  "credits": {
+    "enabled": false,
+  },
+  "exporting": {
+    "buttons": {
+      "contextButton": {
+        "enabled": false,
+      },
+    },
+  },
+  "plotOptions": {
+    "column": {
+      "colorByPoint": false,
+      "groupPadding": 0.1,
+      "pointPadding": 0,
+      "showInLegend": true,
+    },
+  },
+  "series": [
+    {
+      "data": [
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202401",
+          "name": "January 2024",
+          "y": 10,
+        },
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202402",
+          "name": "February 2024",
+          "y": 0,
+        },
+      ],
+      "id": "dx-a",
+      "index": 0,
+      "name": "Cases",
+      "pointPlacement": undefined,
+      "turboThreshold": 0,
+      "type": "column",
+    },
+    {
+      "data": [
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202401",
+          "name": "January 2024",
+          "y": 3.5,
+        },
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202402",
+          "name": "February 2024",
+          "y": 4.5,
+        },
+      ],
+      "id": "dx-b",
+      "index": 1,
+      "name": "Coverage",
+      "pointPlacement": undefined,
+      "turboThreshold": 0,
+      "type": "column",
+    },
+  ],
+  "subtitle": "",
+  "title": {
+    "align": "center",
+    "style": {
+      "fontSize": "11px",
+      "fontWeight": 400,
+    },
+    "text": "",
+  },
+  "tooltip": {
+    "enabled": true,
+  },
+  "xAxis": {
+    "allowDecimals": false,
+    "categories": [
+      "January 2024",
+      "February 2024",
+    ],
+    "labels": {
+      "allowDecimals": false,
+      "categories": [
+        {
+          "name": "January 2024",
+        },
+        {
+          "name": "February 2024",
+        },
+      ],
+      "labels": {
+        "allowOverlap": true,
+        "format": undefined,
+        "rotation": 90,
+        "style": {
+          "color": "#000000",
+          "fontSize": "11px",
+          "fontWeight": "normal",
+          "textAlign": "center",
+          "textOverflow": "allow",
+          "wordBreak": "break-all",
+        },
+        "useHTML": true,
+        "y": 10,
+      },
+      "rotation": 0,
+      "title": {
+        "align": "middle",
+        "margin": 16,
+        "style": {
+          "color": "#000000",
+          "fontSize": "13px",
+          "fontStyle": "normal",
+          "fontWeight": "normal",
+        },
+        "text": undefined,
+      },
+    },
+    "title": {
+      "align": "middle",
+      "margin": 16,
+      "style": {
+        "color": "#000000",
+        "fontSize": "13px",
+        "fontStyle": "normal",
+        "fontWeight": "normal",
+      },
+      "text": undefined,
+    },
+  },
+  "yAxis": [
+    {
+      "max": undefined,
+      "min": undefined,
+      "plotLines": [
+        {
+          "color": "#000000",
+          "dashStyle": "Solid",
+          "label": {
+            "text": undefined,
+          },
+          "value": undefined,
+          "width": 2,
+          "zIndex": 1000,
+        },
+        {
+          "color": "#000000",
+          "dashStyle": "Solid",
+          "label": {
+            "text": undefined,
+          },
+          "value": undefined,
+          "width": 2,
+          "zIndex": 1000,
+        },
+      ],
+      "reversedStacks": false,
+      "title": {
+        "style": {
+          "color": "#000000",
+          "fontSize": "13px",
+          "fontWeight": "normal",
+        },
+        "text": "",
+      },
+    },
+  ],
+}
+`;
+
+exports[`Sprint 12 serialized option baseline dotted 1`] = `
+{
+  "chart": {
+    "renderTo": "chart-fixture",
+    "type": "line",
+    "zoomType": "xy",
+  },
+  "colors": [
+    "#A9BE3B",
+    "#558CC0",
+    "#D34957",
+    "#FF9F3A",
+    "#968F8F",
+    "#B7409F",
+    "#FFDA64",
+    "#4FBDAE",
+    "#B78040",
+    "#676767",
+    "#6A33CF",
+    "#4A7833",
+    "#434348",
+    "#7CB5EC",
+    "#F7A35C",
+    "#F15C80",
+  ],
+  "credits": {
+    "enabled": false,
+  },
+  "exporting": {
+    "buttons": {
+      "contextButton": {
+        "enabled": false,
+      },
+    },
+  },
+  "plotOptions": {
+    "line": {
+      "lineWidth": 0,
+      "states": {
+        "hover": {
+          "enabled": false,
+        },
+      },
+    },
+  },
+  "series": [
+    {
+      "data": [
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202401",
+          "name": "January 2024",
+          "y": 10,
+        },
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202402",
+          "name": "February 2024",
+          "y": 0,
+        },
+      ],
+      "id": "dx-a",
+      "index": 0,
+      "name": "Cases",
+      "pointPlacement": undefined,
+      "turboThreshold": 0,
+      "type": "line",
+    },
+    {
+      "data": [
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202401",
+          "name": "January 2024",
+          "y": 3.5,
+        },
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202402",
+          "name": "February 2024",
+          "y": 4.5,
+        },
+      ],
+      "id": "dx-b",
+      "index": 1,
+      "name": "Coverage",
+      "pointPlacement": undefined,
+      "turboThreshold": 0,
+      "type": "line",
+    },
+  ],
+  "subtitle": "",
+  "title": {
+    "align": "center",
+    "style": {
+      "fontSize": "11px",
+      "fontWeight": 400,
+    },
+    "text": "",
+  },
+  "tooltip": {
+    "enabled": true,
+  },
+  "xAxis": {
+    "allowDecimals": false,
+    "categories": [
+      "January 2024",
+      "February 2024",
+    ],
+    "labels": {
+      "allowDecimals": false,
+      "categories": [
+        {
+          "name": "January 2024",
+        },
+        {
+          "name": "February 2024",
+        },
+      ],
+      "labels": {
+        "allowOverlap": true,
+        "format": undefined,
+        "rotation": 90,
+        "style": {
+          "color": "#000000",
+          "fontSize": "11px",
+          "fontWeight": "normal",
+          "textAlign": "center",
+          "textOverflow": "allow",
+          "wordBreak": "break-all",
+        },
+        "useHTML": true,
+        "y": 10,
+      },
+      "rotation": 0,
+      "title": {
+        "align": "middle",
+        "margin": 16,
+        "style": {
+          "color": "#000000",
+          "fontSize": "13px",
+          "fontStyle": "normal",
+          "fontWeight": "normal",
+        },
+        "text": undefined,
+      },
+    },
+    "title": {
+      "align": "middle",
+      "margin": 16,
+      "style": {
+        "color": "#000000",
+        "fontSize": "13px",
+        "fontStyle": "normal",
+        "fontWeight": "normal",
+      },
+      "text": undefined,
+    },
+  },
+  "yAxis": [
+    {
+      "max": undefined,
+      "min": undefined,
+      "plotLines": [
+        {
+          "color": "#000000",
+          "dashStyle": "Solid",
+          "label": {
+            "text": undefined,
+          },
+          "value": undefined,
+          "width": 2,
+          "zIndex": 1000,
+        },
+        {
+          "color": "#000000",
+          "dashStyle": "Solid",
+          "label": {
+            "text": undefined,
+          },
+          "value": undefined,
+          "width": 2,
+          "zIndex": 1000,
+        },
+      ],
+      "reversedStacks": false,
+      "title": {
+        "style": {
+          "color": "#000000",
+          "fontSize": "13px",
+          "fontWeight": "normal",
+        },
+        "text": "",
+      },
+    },
+  ],
+}
+`;
+
+exports[`Sprint 12 serialized option baseline line 1`] = `
+{
+  "chart": {
+    "renderTo": "chart-fixture",
+    "type": "line",
+    "zoomType": "xy",
+  },
+  "colors": [
+    "#A9BE3B",
+    "#558CC0",
+    "#D34957",
+    "#FF9F3A",
+    "#968F8F",
+    "#B7409F",
+    "#FFDA64",
+    "#4FBDAE",
+    "#B78040",
+    "#676767",
+    "#6A33CF",
+    "#4A7833",
+    "#434348",
+    "#7CB5EC",
+    "#F7A35C",
+    "#F15C80",
+  ],
+  "credits": {
+    "enabled": false,
+  },
+  "exporting": {
+    "buttons": {
+      "contextButton": {
+        "enabled": false,
+      },
+    },
+  },
+  "plotOptions": {
+    "line": {
+      "colorByPoint": false,
+      "groupPadding": 0.1,
+      "pointPadding": 0,
+      "showInLegend": true,
+    },
+  },
+  "series": [
+    {
+      "data": [
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202401",
+          "name": "January 2024",
+          "y": 10,
+        },
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202402",
+          "name": "February 2024",
+          "y": 0,
+        },
+      ],
+      "id": "dx-a",
+      "index": 0,
+      "name": "Cases",
+      "pointPlacement": undefined,
+      "turboThreshold": 0,
+      "type": "line",
+    },
+    {
+      "data": [
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202401",
+          "name": "January 2024",
+          "y": 3.5,
+        },
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202402",
+          "name": "February 2024",
+          "y": 4.5,
+        },
+      ],
+      "id": "dx-b",
+      "index": 1,
+      "name": "Coverage",
+      "pointPlacement": undefined,
+      "turboThreshold": 0,
+      "type": "line",
+    },
+  ],
+  "subtitle": "",
+  "title": {
+    "align": "center",
+    "style": {
+      "fontSize": "11px",
+      "fontWeight": 400,
+    },
+    "text": "",
+  },
+  "tooltip": {
+    "enabled": true,
+  },
+  "xAxis": {
+    "allowDecimals": false,
+    "categories": [
+      "January 2024",
+      "February 2024",
+    ],
+    "labels": {
+      "allowDecimals": false,
+      "categories": [
+        {
+          "name": "January 2024",
+        },
+        {
+          "name": "February 2024",
+        },
+      ],
+      "labels": {
+        "allowOverlap": true,
+        "format": undefined,
+        "rotation": 90,
+        "style": {
+          "color": "#000000",
+          "fontSize": "11px",
+          "fontWeight": "normal",
+          "textAlign": "center",
+          "textOverflow": "allow",
+          "wordBreak": "break-all",
+        },
+        "useHTML": true,
+        "y": 10,
+      },
+      "rotation": 0,
+      "title": {
+        "align": "middle",
+        "margin": 16,
+        "style": {
+          "color": "#000000",
+          "fontSize": "13px",
+          "fontStyle": "normal",
+          "fontWeight": "normal",
+        },
+        "text": undefined,
+      },
+    },
+    "title": {
+      "align": "middle",
+      "margin": 16,
+      "style": {
+        "color": "#000000",
+        "fontSize": "13px",
+        "fontStyle": "normal",
+        "fontWeight": "normal",
+      },
+      "text": undefined,
+    },
+  },
+  "yAxis": [
+    {
+      "max": undefined,
+      "min": undefined,
+      "plotLines": [
+        {
+          "color": "#000000",
+          "dashStyle": "Solid",
+          "label": {
+            "text": undefined,
+          },
+          "value": undefined,
+          "width": 2,
+          "zIndex": 1000,
+        },
+        {
+          "color": "#000000",
+          "dashStyle": "Solid",
+          "label": {
+            "text": undefined,
+          },
+          "value": undefined,
+          "width": 2,
+          "zIndex": 1000,
+        },
+      ],
+      "reversedStacks": false,
+      "title": {
+        "style": {
+          "color": "#000000",
+          "fontSize": "13px",
+          "fontWeight": "normal",
+        },
+        "text": "",
+      },
+    },
+  ],
+}
+`;
+
+exports[`Sprint 12 serialized option baseline mixed axes and presentation 1`] = `
+{
+  "chart": {
+    "renderTo": "chart-fixture",
+    "type": "column",
+    "zoomType": "xy",
+  },
+  "colors": [
+    "#A9BE3B",
+    "#558CC0",
+    "#D34957",
+    "#FF9F3A",
+    "#968F8F",
+    "#B7409F",
+    "#FFDA64",
+    "#4FBDAE",
+    "#B78040",
+    "#676767",
+    "#6A33CF",
+    "#4A7833",
+    "#434348",
+    "#7CB5EC",
+    "#F7A35C",
+    "#F15C80",
+  ],
+  "credits": {
+    "enabled": false,
+  },
+  "exporting": {
+    "buttons": {
+      "contextButton": {
+        "enabled": false,
+      },
+    },
+  },
+  "plotOptions": {
+    "column": {
+      "colorByPoint": false,
+      "groupPadding": 0.1,
+      "pointPadding": 0,
+      "showInLegend": true,
+    },
+  },
+  "series": [
+    {
+      "data": [
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202401",
+          "name": "January 2024",
+          "y": 10,
+        },
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202402",
+          "name": "February 2024",
+          "y": 0,
+        },
+      ],
+      "id": "dx-a",
+      "index": 0,
+      "name": "Cases",
+      "pointPlacement": undefined,
+      "turboThreshold": 0,
+      "type": "column",
+    },
+    {
+      "data": [
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202401",
+          "name": "January 2024",
+          "y": 3.5,
+        },
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202402",
+          "name": "February 2024",
+          "y": 4.5,
+        },
+      ],
+      "id": "dx-b",
+      "index": 1,
+      "name": "Coverage",
+      "pointPlacement": undefined,
+      "turboThreshold": 0,
+      "type": "line",
+      "yAxis": 1,
+    },
+  ],
+  "subtitle": "",
+  "title": {
+    "align": "center",
+    "style": {
+      "fontSize": "11px",
+      "fontWeight": 400,
+    },
+    "text": "",
+  },
+  "tooltip": {
+    "enabled": true,
+  },
+  "xAxis": {
+    "allowDecimals": true,
+    "categories": [
+      "January 2024",
+      "February 2024",
+    ],
+    "labels": {
+      "allowDecimals": true,
+      "categories": [
+        {
+          "name": "January 2024",
+        },
+        {
+          "name": "February 2024",
+        },
+      ],
+      "labels": {
+        "allowOverlap": true,
+        "format": "{value:.0f}",
+        "rotation": 90,
+        "style": {
+          "color": "#000000",
+          "fontSize": "11px",
+          "fontWeight": "normal",
+          "textAlign": "center",
+          "textOverflow": "allow",
+          "wordBreak": "break-all",
+        },
+        "useHTML": true,
+        "y": 10,
+      },
+      "rotation": 0,
+      "title": {
+        "align": "middle",
+        "margin": 16,
+        "style": {
+          "color": "#000000",
+          "fontSize": "13px",
+          "fontStyle": "normal",
+          "fontWeight": "normal",
+        },
+        "text": "Period",
+      },
+    },
+    "title": {
+      "align": "middle",
+      "margin": 16,
+      "style": {
+        "color": "#000000",
+        "fontSize": "13px",
+        "fontStyle": "normal",
+        "fontWeight": "normal",
+      },
+      "text": "Period",
+    },
+  },
+  "yAxis": [
+    {
+      "allowDecimals": true,
+      "labels": {
+        "format": "{value:.1f}",
+        "style": {
+          "color": "#000000",
+          "fontSize": "11px",
+          "fontWeight": "normal",
+        },
+      },
+      "max": undefined,
+      "min": undefined,
+      "plotLines": [
+        {
+          "color": "#000000",
+          "dashStyle": "Solid",
+          "label": {
+            "text": "Target",
+          },
+          "value": 50,
+          "width": 2,
+          "zIndex": 1000,
+        },
+        {
+          "color": "#000000",
+          "dashStyle": "Solid",
+          "label": {
+            "text": undefined,
+          },
+          "value": undefined,
+          "width": 2,
+          "zIndex": 1000,
+        },
+      ],
+      "reversedStacks": false,
+      "title": {
+        "align": "middle",
+        "margin": 16,
+        "style": {
+          "color": "#000000",
+          "fontSize": "13px",
+          "fontStyle": "normal",
+          "fontWeight": "normal",
+        },
+        "text": "Cases",
+      },
+    },
+  ],
+}
+`;
+
+exports[`Sprint 12 serialized option baseline stacked_bar 1`] = `
+{
+  "chart": {
+    "renderTo": "chart-fixture",
+    "type": "bar",
+    "zoomType": "xy",
+  },
+  "colors": [
+    "#A9BE3B",
+    "#558CC0",
+    "#D34957",
+    "#FF9F3A",
+    "#968F8F",
+    "#B7409F",
+    "#FFDA64",
+    "#4FBDAE",
+    "#B78040",
+    "#676767",
+    "#6A33CF",
+    "#4A7833",
+    "#434348",
+    "#7CB5EC",
+    "#F7A35C",
+    "#F15C80",
+  ],
+  "credits": {
+    "enabled": false,
+  },
+  "exporting": {
+    "buttons": {
+      "contextButton": {
+        "enabled": false,
+      },
+    },
+  },
+  "plotOptions": {
+    "bar": {
+      "colorByPoint": false,
+      "groupPadding": 0.1,
+      "pointPadding": 0,
+      "showInLegend": true,
+      "stacking": "normal",
+    },
+  },
+  "series": [
+    {
+      "data": [
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202401",
+          "name": "January 2024",
+          "y": 10,
+        },
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202402",
+          "name": "February 2024",
+          "y": 0,
+        },
+      ],
+      "id": "dx-a",
+      "index": 0,
+      "name": "Cases",
+      "pointPlacement": undefined,
+      "turboThreshold": 0,
+      "type": "bar",
+    },
+    {
+      "data": [
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202401",
+          "name": "January 2024",
+          "y": 3.5,
+        },
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202402",
+          "name": "February 2024",
+          "y": 4.5,
+        },
+      ],
+      "id": "dx-b",
+      "index": 1,
+      "name": "Coverage",
+      "pointPlacement": undefined,
+      "turboThreshold": 0,
+      "type": "bar",
+    },
+  ],
+  "subtitle": "",
+  "title": {
+    "align": "center",
+    "style": {
+      "fontSize": "11px",
+      "fontWeight": 400,
+    },
+    "text": "",
+  },
+  "tooltip": {
+    "enabled": true,
+  },
+  "xAxis": {
+    "allowDecimals": false,
+    "categories": [
+      "January 2024",
+      "February 2024",
+    ],
+    "labels": {
+      "allowDecimals": false,
+      "categories": [
+        {
+          "name": "January 2024",
+        },
+        {
+          "name": "February 2024",
+        },
+      ],
+      "labels": {
+        "allowOverlap": true,
+        "format": undefined,
+        "rotation": 90,
+        "style": {
+          "color": "#000000",
+          "fontSize": "11px",
+          "fontWeight": "normal",
+          "textAlign": "center",
+          "textOverflow": "allow",
+          "wordBreak": "break-all",
+        },
+        "useHTML": true,
+        "y": 10,
+      },
+      "rotation": 0,
+      "title": {
+        "align": "middle",
+        "margin": 16,
+        "style": {
+          "color": "#000000",
+          "fontSize": "13px",
+          "fontStyle": "normal",
+          "fontWeight": "normal",
+        },
+        "text": undefined,
+      },
+    },
+    "title": {
+      "align": "middle",
+      "margin": 16,
+      "style": {
+        "color": "#000000",
+        "fontSize": "13px",
+        "fontStyle": "normal",
+        "fontWeight": "normal",
+      },
+      "text": undefined,
+    },
+  },
+  "yAxis": [
+    {
+      "max": undefined,
+      "min": undefined,
+      "plotLines": [
+        {
+          "color": "#000000",
+          "dashStyle": "Solid",
+          "label": {
+            "text": undefined,
+          },
+          "value": undefined,
+          "width": 2,
+          "zIndex": 1000,
+        },
+        {
+          "color": "#000000",
+          "dashStyle": "Solid",
+          "label": {
+            "text": undefined,
+          },
+          "value": undefined,
+          "width": 2,
+          "zIndex": 1000,
+        },
+      ],
+      "reversedStacks": false,
+      "title": {
+        "style": {
+          "color": "#000000",
+          "fontSize": "13px",
+          "fontWeight": "normal",
+        },
+        "text": "",
+      },
+    },
+  ],
+}
+`;
+
+exports[`Sprint 12 serialized option baseline stacked_column 1`] = `
+{
+  "chart": {
+    "renderTo": "chart-fixture",
+    "type": "column",
+    "zoomType": "xy",
+  },
+  "colors": [
+    "#A9BE3B",
+    "#558CC0",
+    "#D34957",
+    "#FF9F3A",
+    "#968F8F",
+    "#B7409F",
+    "#FFDA64",
+    "#4FBDAE",
+    "#B78040",
+    "#676767",
+    "#6A33CF",
+    "#4A7833",
+    "#434348",
+    "#7CB5EC",
+    "#F7A35C",
+    "#F15C80",
+  ],
+  "credits": {
+    "enabled": false,
+  },
+  "exporting": {
+    "buttons": {
+      "contextButton": {
+        "enabled": false,
+      },
+    },
+  },
+  "plotOptions": {
+    "column": {
+      "colorByPoint": false,
+      "groupPadding": 0.1,
+      "pointPadding": 0,
+      "showInLegend": true,
+      "stacking": "normal",
+    },
+  },
+  "series": [
+    {
+      "data": [
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202401",
+          "name": "January 2024",
+          "y": 10,
+        },
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202402",
+          "name": "February 2024",
+          "y": 0,
+        },
+      ],
+      "id": "dx-a",
+      "index": 0,
+      "name": "Cases",
+      "pointPlacement": undefined,
+      "turboThreshold": 0,
+      "type": "column",
+    },
+    {
+      "data": [
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202401",
+          "name": "January 2024",
+          "y": 3.5,
+        },
+        {
+          "dataLabels": {
+            "enabled": true,
+          },
+          "id": "202402",
+          "name": "February 2024",
+          "y": 4.5,
+        },
+      ],
+      "id": "dx-b",
+      "index": 1,
+      "name": "Coverage",
+      "pointPlacement": undefined,
+      "turboThreshold": 0,
+      "type": "column",
+    },
+  ],
+  "subtitle": "",
+  "title": {
+    "align": "center",
+    "style": {
+      "fontSize": "11px",
+      "fontWeight": 400,
+    },
+    "text": "",
+  },
+  "tooltip": {
+    "headerFormat": "<b>{point.x}</b><br/>",
+    "pointFormat": "{series.name}: {point.y}<br/>Total: {point.stackTotal}",
+  },
+  "xAxis": {
+    "allowDecimals": false,
+    "categories": [
+      "January 2024",
+      "February 2024",
+    ],
+    "labels": {
+      "allowDecimals": false,
+      "categories": [
+        {
+          "name": "January 2024",
+        },
+        {
+          "name": "February 2024",
+        },
+      ],
+      "labels": {
+        "allowOverlap": true,
+        "format": undefined,
+        "rotation": 90,
+        "style": {
+          "color": "#000000",
+          "fontSize": "11px",
+          "fontWeight": "normal",
+          "textAlign": "center",
+          "textOverflow": "allow",
+          "wordBreak": "break-all",
+        },
+        "useHTML": true,
+        "y": 10,
+      },
+      "rotation": 0,
+      "title": {
+        "align": "middle",
+        "margin": 16,
+        "style": {
+          "color": "#000000",
+          "fontSize": "13px",
+          "fontStyle": "normal",
+          "fontWeight": "normal",
+        },
+        "text": undefined,
+      },
+    },
+    "title": {
+      "align": "middle",
+      "margin": 16,
+      "style": {
+        "color": "#000000",
+        "fontSize": "13px",
+        "fontStyle": "normal",
+        "fontWeight": "normal",
+      },
+      "text": undefined,
+    },
+  },
+  "yAxis": [
+    {
+      "max": undefined,
+      "min": undefined,
+      "reversedStacks": false,
+      "stackLabels": {
+        "enabled": false,
+        "style": {
+          "fontWeight": "bold",
+        },
+      },
+      "title": {
+        "style": {
+          "color": "#000000",
+          "fontSize": "13px",
+          "fontWeight": "normal",
+        },
+        "text": "",
+      },
+    },
+  ],
+}
+`;

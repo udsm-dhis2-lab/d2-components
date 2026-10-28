@@ -1,0 +1,283 @@
+import * as _ from 'lodash';
+import { ChartAxisUtil, ChartTypeUtil } from '../utils';
+import { ChartSeriesObject } from '../models';
+import { ChartSeriesData } from '../models/chart-series-data.model';
+import { buildDataLabelOptions } from './presentation.transforms';
+
+export interface CategoryTuple {
+  readonly id: string;
+  readonly name: string;
+}
+
+export interface ChartLayout {
+  readonly xAxisItems: readonly CategoryTuple[];
+  readonly yAxisItems: readonly CategoryTuple[];
+}
+
+export interface SeriesLayoutConfiguration {
+  readonly type: string;
+  readonly xAxisType: readonly string[];
+  readonly yAxisType: string;
+  readonly showData?: boolean;
+}
+
+export interface SeriesOption {
+  readonly dimensionItem: string;
+  readonly type: string;
+  readonly axix?: number; // Historical spelling retained for compatibility.
+  readonly color?: string;
+}
+
+export interface SelectionGroup {
+  readonly id: string;
+  readonly color?: string;
+  readonly members: readonly { readonly id: string }[];
+}
+
+export interface SelectionConfiguration {
+  readonly dataSelections?: readonly { readonly groups?: readonly SelectionGroup[] }[];
+}
+
+// Keep the legacy axis resolver's ordering until a separately approved behavior change.
+export function resolveLayout(analytics: any, configuration: Pick<SeriesLayoutConfiguration, 'xAxisType' | 'yAxisType'>): ChartLayout {
+  return {
+    xAxisItems: buildCategoryTuples(
+      ChartAxisUtil.getXAxisItems(analytics, [...configuration.xAxisType])
+    ),
+    yAxisItems: buildCategoryTuples(
+      ChartAxisUtil.getYAxisItems(analytics, configuration.yAxisType)
+    ),
+  };
+}
+
+export function buildCategoryTuples(
+  items: readonly CategoryTuple[]
+): CategoryTuple[] {
+  return items.map(({ id, name }) => ({ id, name }));
+}
+
+export function buildSeriesMatrix(
+  analytics: any,
+  layout: ChartLayout,
+  configuration: SeriesLayoutConfiguration
+): ChartSeriesObject[] {
+  return layout.yAxisItems.map((item, index) => ({
+    name: item.name,
+    id: item.id,
+    index,
+    turboThreshold: 0,
+    pointPlacement: configuration.type === 'radar' ? 'on' : undefined,
+    data: ChartSeriesData.get(analytics, configuration, item.id, [
+      ...layout.xAxisItems,
+    ]).map((point) => ({
+      ...point,
+      dataLabels: buildDataLabelOptions(configuration),
+    })),
+    type: ChartTypeUtil.getAllowedType(configuration.type) as string,
+  }));
+}
+
+export function combineSeriesData(
+  seriesData: readonly (readonly any[])[]
+): any[] {
+  let combined: any[] = [];
+  seriesData.forEach((points) => {
+    points.forEach((point) => {
+      const available = _.find(combined, ['id', point.id]);
+      if (!available) {
+        combined = [...combined, _.cloneDeep(point)];
+      } else {
+        const index = _.findIndex(combined, available);
+        const next = { ..._.cloneDeep(point), y: point.y + available.y };
+        combined = [
+          ...combined.slice(0, index),
+          next,
+          ...combined.slice(index + 1),
+        ];
+      }
+    });
+  });
+  return combined;
+}
+
+export function sortSeries<T extends { data: any[] }>(
+  series: readonly T[],
+  sortOrder: number
+): T[] {
+  const combined = combineSeriesData(series.map((item) => item.data));
+  if (sortOrder !== 1 && sortOrder !== -1)
+    return _.cloneDeep(series) as T[];
+  const ordered = _.sortBy(combined, ['y']);
+  const ids = (sortOrder === 1 ? [...ordered].reverse() : ordered).map(
+    (point) => point.id
+  );
+  return _.cloneDeep(series.map((item) => ({
+    ...item,
+    data:
+      ids.length > 0
+        ? ids.map((id) => _.find(item.data, ['id', id]))
+        : [...item.data],
+  }))) as T[];
+}
+
+export function applySeriesOptions<
+  T extends { id: string; type: string; data: any[] }
+>(series: readonly T[], options: readonly SeriesOption[] | undefined): T[] {
+  return _.cloneDeep(series.map((item) => {
+    const extended = options?.find(
+      (option) => option.dimensionItem === item.id
+    );
+    if (!extended) return { ...item, data: [...item.data] };
+    const color =
+      extended.color && extended.color.length > 0 ? extended.color : undefined;
+    const dotted = extended.type === 'dotted';
+    return {
+      ...item,
+      ...(dotted
+        ? { lineWidth: 0, states: { hover: { enabled: false } } }
+        : {}),
+      yAxis: extended.axix || 0,
+      type: ChartTypeUtil.getAllowedType(extended.type) || item.type,
+      data: color
+        ? item.data.map((point) => ({ ...point, color }))
+        : [...item.data],
+    };
+  })) as T[];
+}
+
+export function accumulateAnalytics(
+  analytics: any,
+  xAxisType: string,
+  yAxisType: string
+): any {
+  if (!analytics) return analytics;
+  const yItems = analytics.metaData[yAxisType];
+  const xItems = [...analytics.metaData[xAxisType]].reverse();
+  const yIndex = analytics.headers.findIndex(
+    (header: any) => header.name === yAxisType
+  );
+  const xIndex = analytics.headers.findIndex(
+    (header: any) => header.name === xAxisType
+  );
+  const valueIndex = analytics.headers.findIndex(
+    (header: any) => header.name === 'value'
+  );
+  const rows: any[] = [];
+  yItems.forEach((yId: string) => {
+    let running = 0;
+    xItems.forEach((xId: string) => {
+      analytics.rows.forEach((row: any[]) => {
+        if (row[yIndex] === yId && row[xIndex] === xId) {
+          running += parseInt(row[valueIndex], 10);
+          const next = [...row];
+          next[valueIndex] = running;
+          rows.push(next);
+        }
+      });
+    });
+  });
+  return { ..._.cloneDeep(analytics), rows };
+}
+
+export function refineCategories(
+  series: readonly { data: readonly { name: string }[] }[]
+): any[] {
+  const points = series[0]?.data || [];
+  const categories = points.map((point) => {
+    const parts = point.name.split('_').reverse();
+    return parts.length > 1
+      ? { name: parts[0], categories: [parts[1]] }
+      : { name: parts[0] };
+  });
+  const grouped = _.groupBy(categories, 'name');
+  const mapped = categories.map((category) => {
+    const children = grouped[category.name]
+      .map((candidate) =>
+        candidate.categories ? candidate.categories[0] : null
+      )
+      .filter((child) => child !== null);
+    return children.length
+      ? { name: category.name, categories: children }
+      : { name: category.name };
+  });
+  return _.uniqBy(mapped, 'name');
+}
+
+export function limitCategories<T>(
+  items: readonly T[],
+  limit: number | undefined
+): T[] {
+  return _.cloneDeep(limit === undefined ? [...items] : items.slice(0, Math.max(0, limit)));
+}
+
+export function resolveSeriesColors(
+  series: readonly { data: readonly Record<string, any>[] }[],
+  fallback: readonly string[]
+): string[] {
+  const colors = series
+    .map((item) => item.data[0]?.['color'])
+    .filter((color): color is string => !!color);
+  return colors.length ? colors : [...fallback];
+}
+
+export function filterEmptySeriesPoints(chart: any, configuration: SelectionConfiguration): any {
+  const groups = _.flatten(
+    (configuration.dataSelections || [])
+      .map((selection: any) => selection.groups)
+      .filter(Boolean)
+  );
+  const members = _.flatten(
+    groups.map((group: any) =>
+      group.members.map((member: any) => `${member.id}_${group.id}`)
+    )
+  );
+  const indexes = chart.series.map((item: any) =>
+    item.data
+      .map((point: any, index: number) =>
+        point.y === '' || (members.length > 0 && !members.includes(point.id))
+          ? index
+          : -1
+      )
+      .filter((index: number) => index !== -1)
+  );
+  let removed: number[] = [];
+  indexes.forEach((list: number[]) => {
+    removed = removed.length === 0 ? list : _.intersection(removed, list);
+  });
+  const series = chart.series.map((item: any) => ({
+    ...item,
+    data: item.data
+      .map((point: any) => {
+        const id = (point.id || point.drilldown || '').split('_');
+        const group: any = _.find(groups, ['id', id[1]]);
+        return group &&
+          _.some(group.members, (member: any) => member.id === id[0]) &&
+          group.color
+          ? { ...point, color: group.color }
+          : point;
+      })
+      .filter((_point: any, index: number) => !removed.includes(index)),
+  }));
+  let offset = 0;
+  const categories = (chart.xAxis ? chart.xAxis.categories : []).map(
+    (category: any) => {
+      if (!category.categories) return category;
+      const next = {
+        ...category,
+        categories: category.categories.filter(
+          (_inner: any, index: number) => !removed.includes(index + offset)
+        ),
+      };
+      offset += category.categories.length;
+      return next;
+    }
+  );
+  return _.cloneDeep({
+    ...chart,
+    series,
+    xAxis: {
+      ...chart.xAxis,
+      categories: categories.map((category: any) => category.name),
+    },
+  });
+}
