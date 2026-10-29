@@ -7,6 +7,45 @@ export function buildTitleOptions(
   return new ChartTitle(configuration, metadata).title;
 }
 
+/** Keep the in-chart export menu hidden; the dashboard card owns its controls. */
+export function buildEmbeddedChartExportingOptions() {
+  return { buttons: { contextButton: { enabled: false } } };
+}
+
+/** Resolve favorite filter labels for the small in-chart subtitle. */
+export function buildFilterSubtitle(
+  filters: unknown,
+  names: Readonly<Record<string, string>>,
+  explicit?: string,
+  hidden = false,
+  fontStyle?: Readonly<Record<string, unknown>>
+): { text: string | null; align: 'center'; style: Record<string, unknown> } {
+  if (hidden) return { text: null, align: 'center', style: { fontWeight: 400, fontSize: '11px' } };
+  const label = explicit ?? (Array.isArray(filters) ? filters.map(filter => {
+    if (!filter || typeof filter !== 'object') return '';
+    const items = (filter as Record<string, unknown>)['items'];
+    if (!Array.isArray(items)) return '';
+    return items.map((item: unknown) => {
+      if (!item || typeof item !== 'object') return '';
+      const value = item as Record<string, unknown>;
+      const id = value['dimensionItem'] ?? value['id'];
+      const raw = value['displayName'] ?? value['name'] ?? (typeof id === 'string' ? names[id] ?? id : '');
+      if (typeof raw !== 'string') return '';
+      return /^[A-Z][A-Z0-9_]*$/.test(raw) && raw.includes('_')
+        ? raw.toLowerCase().replace(/_/g, ' ').replace(/^./, char => char.toUpperCase())
+        : raw;
+    }).filter(Boolean).join(', ');
+  }).filter(Boolean).join(' - ') : '');
+  return { text: label || null, align: 'center', style: {
+    fontWeight: 400,
+    fontSize: '11px',
+    ...(typeof fontStyle?.['textColor'] === 'string' ? { color: fontStyle['textColor'] } : {}),
+    ...(typeof fontStyle?.['fontSize'] === 'number' ? { fontSize: `${fontStyle['fontSize']}px` } : {}),
+    ...(typeof fontStyle?.['bold'] === 'boolean' ? { fontWeight: fontStyle['bold'] ? 'bold' : 'normal' } : {}),
+    ...(typeof fontStyle?.['italic'] === 'boolean' ? { fontStyle: fontStyle['italic'] ? 'italic' : 'normal' } : {}),
+  } };
+}
+
 export function buildLegendOptions(configuration: {
   legendAlign?: string;
   reverseLegend?: boolean;

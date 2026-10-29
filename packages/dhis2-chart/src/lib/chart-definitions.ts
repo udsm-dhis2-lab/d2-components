@@ -3,6 +3,7 @@ import { ChartFamily, drawChartFamily } from './chart/helpers/draw-chart.helper'
 import { LegacyChartConfiguration } from './legacy-chart-configuration';
 import { resolveStacking } from './chart/transforms/presentation.transforms';
 import { chartCapabilities, validateChartCapabilities } from './chart-capabilities';
+import { buildScatterChartModel } from './scatter-chart.model';
 
 export type StandardChartType =
   | 'COLUMN' | 'BAR' | 'LINE' | 'DOTTED' | 'STACKED_COLUMN'
@@ -101,6 +102,12 @@ export class StackedAreaDefinition extends CartesianChartDefinition<'STACKED_ARE
 export class PieDefinition extends CircularChartDefinition<'PIE'> { readonly type = 'PIE' as const; protected override readonly policies = [missingValuePolicy]; }
 export class RadarDefinition extends PolarChartDefinition<'RADAR'> { readonly type = 'RADAR' as const; }
 export class SolidGaugeDefinition extends GaugeChartDefinition<'SOLIDGAUGE'> { readonly type = 'SOLIDGAUGE' as const; }
+export class ScatterDefinition extends CartesianChartDefinition<'SCATTER'> {
+  readonly type = 'SCATTER' as const;
+  override build(context: ChartBuildContext): ChartModel {
+    return buildScatterChartModel(context);
+  }
+}
 /** Existing raw configuration spelling, retained for direct consumers. */
 export class LegacyGaugeDefinition extends GaugeChartDefinition<'GAUGE'> { readonly type = 'GAUGE' as const; }
 
@@ -136,6 +143,7 @@ export function createStandardChartRegistry(): ChartDefinitionRegistry {
     new DottedDefinition(), new StackedColumnDefinition(), new StackedBarDefinition(),
     new AreaDefinition(), new StackedAreaDefinition(), new PieDefinition(), new RadarDefinition(), new SolidGaugeDefinition(),
     new LegacyGaugeDefinition(),
+    new ScatterDefinition(),
   ]);
 }
 

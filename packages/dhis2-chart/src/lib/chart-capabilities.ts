@@ -29,9 +29,9 @@ export const chartCapabilities: readonly ChartCapability[] = Object.freeze([
   { key: 'hideEmptyRowItems', status: 'partial', evidence: 'verified-dhis2', types: cartesian, note: 'Observed category presence; multi-dimension semantics unverified' },
   { key: 'topLimit', status: 'rejected', evidence: 'verified-dhis2', types: [], note: 'Verified for table/report workflows, not charts' },
   { key: 'legend', status: 'deferred', evidence: 'verified-dhis2', types: [], note: 'Value-range legend needs a legend-set resource' },
-  { key: 'scatter', status: 'deferred', evidence: 'verified-dhis2', types: [] },
+  { key: 'scatter', status: 'supported', evidence: 'verified-dhis2', types: ['SCATTER'], note: 'Entity- and context-safe paired measures with numeric axes' },
   { key: 'bubble', status: 'deferred', evidence: 'unverified', types: [] },
-  { key: 'outlierAnalysis', status: 'deferred', evidence: 'verified-dhis2', types: [] },
+  { key: 'outlierAnalysis', status: 'partial', evidence: 'verified-dhis2', types: ['SCATTER'], note: 'Local residual-based IQR and z-score strategies; not a diagnostic conclusion' },
 ]);
 
 export function chartCapability(type: string, key: string): ChartCapability | undefined {

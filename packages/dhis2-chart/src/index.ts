@@ -5,6 +5,8 @@ export * from './lib/standard-chart.transform';
 export * from './lib/chart-model';
 export * from './lib/chart-definitions';
 export * from './lib/chart-capabilities';
+export * from './lib/scatter-statistics';
+export * from './lib/scatter-chart.model';
 export * from './lib/highcharts-options.adapter';
 export {
   AnalyticalBoundaryError,

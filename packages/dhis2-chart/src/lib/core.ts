@@ -14,7 +14,8 @@ export type ChartType =
   | 'AREA'
   | 'STACKED_AREA'
   | 'RADAR'
-  | 'SOLIDGAUGE';
+  | 'SOLIDGAUGE'
+  | 'SCATTER';
 
 export interface AnalyticsResponse {
   headers: readonly { name: string; [key: string]: unknown }[];

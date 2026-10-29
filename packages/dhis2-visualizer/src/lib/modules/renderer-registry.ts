@@ -99,6 +99,7 @@ export function createDefaultRendererRegistry(): RendererRegistry {
     STACKED_AREA: chartFactory,
     RADAR: chartFactory,
     SOLIDGAUGE: chartFactory,
+    SCATTER: chartFactory,
     MAP: (context) => {
       const dataSource =
         context.mapDataSource ||

@@ -31,6 +31,8 @@ export interface AnalyticsDimensionSelection {
 
 export interface AnalyticsQuery {
   selections: readonly AnalyticsDimensionSelection[];
+  /** Dimensions aggregated as filters rather than returned as row coordinates. */
+  filters?: readonly AnalyticsDimensionSelection[];
   relativePeriodDate?: string;
   parameters?: Readonly<Record<string, string | number | boolean>>;
 }

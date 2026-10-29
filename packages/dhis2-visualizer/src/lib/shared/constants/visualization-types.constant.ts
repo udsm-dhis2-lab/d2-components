@@ -51,6 +51,12 @@ export const VISUALIZATION_TYPES = [
     icon: IconVisualizationScatter16,
   },
   {
+    type: 'SCATTER',
+    description: 'Scatter',
+    label: 'Scatter',
+    icon: IconVisualizationScatter16,
+  },
+  {
     type: 'AREA',
     description: 'Area',
     label: 'Area',

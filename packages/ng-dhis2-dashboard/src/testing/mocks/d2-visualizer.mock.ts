@@ -11,6 +11,7 @@ export interface VisualizationDownloadOption {
 export const VISUALIZATION_TYPES = [
   { type: 'COLUMN', description: 'Column', hiddenInList: false, icon: () => null },
   { type: 'LINE', description: 'Line', hiddenInList: false, icon: () => null },
+  { type: 'SCATTER', description: 'Scatter', hiddenInList: false, icon: () => null },
   { type: 'HIDDEN', description: 'Hidden', hiddenInList: true, icon: () => null },
 ];
 

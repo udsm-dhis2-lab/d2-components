@@ -251,6 +251,23 @@ describe('DashboardItemComponent visualization boundary', () => {
     expect(component.visualizer.draw).toHaveBeenCalledTimes(2);
   });
 
+  it('keeps a scatter visualization in the normal chart card flow', async () => {
+    const component = createComponent();
+    component.dashboardItem = item('item-a', 'visualization-a');
+    component.dashboardItem.visualization!.type = 'SCATTER';
+    itemService.getItem.mockReturnValue(
+      of({ id: 'visualization-a', type: 'SCATTER', title: 'ANC visits' })
+    );
+    await component.setVisualization();
+
+    expect(component.visualizer.visualizationType).toBe('SCATTER');
+    expect(component.isChart).toBe(true);
+    expect(component.currrentVisualizationType?.type).toBe('SCATTER');
+    expect(component.visualizer.draw).toHaveBeenCalledTimes(1);
+    component.onDownload(DownloadFormat.PNG);
+    expect(component.visualizer.download).toHaveBeenCalledWith(DownloadFormat.PNG);
+  });
+
   it('redraws for fullscreen size changes and preserves the selected type', async () => {
     const component = createComponent();
     await component.setVisualization();

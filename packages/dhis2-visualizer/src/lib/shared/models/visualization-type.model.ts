@@ -12,7 +12,8 @@ export type ChartType =
   | 'AREA'
   | 'STACKED_AREA'
   | 'RADAR'
-  | 'SOLIDGAUGE';
+  | 'SOLIDGAUGE'
+  | 'SCATTER';
 
 /** Visualization identifiers implemented by the compatibility facade. */
 export type ImplementedVisualizationType =

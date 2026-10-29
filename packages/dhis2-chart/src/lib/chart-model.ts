@@ -6,7 +6,8 @@ export type ChartSeriesKind =
   | 'area'
   | 'pie'
   | 'solidgauge'
-  | 'gauge';
+  | 'gauge'
+  | 'scatter';
 
 export type ChartModuleRequirement =
   | 'exporting'
@@ -20,6 +21,7 @@ export interface ChartPointModel {
   readonly id?: string;
   readonly name?: string;
   readonly value: number | string | null;
+  readonly x?: number;
   readonly color?: string;
   readonly drilldown?: string;
   readonly label?: Readonly<Record<string, unknown>>;
@@ -38,6 +40,13 @@ export interface ChartSeriesBase {
   readonly points: readonly ChartPointModel[];
 }
 
+export interface ScatterChartPointModel extends ChartPointModel {
+  readonly x: number;
+  readonly value: number;
+  readonly id: string;
+  readonly name: string;
+}
+
 /** One leaf category at one plot position; a parent is optional. */
 export interface ChartCategoryTuple {
   readonly leaf: string;
@@ -45,8 +54,11 @@ export interface ChartCategoryTuple {
 }
 
 export type ChartSeriesModel = {
-  [K in ChartSeriesKind]: ChartSeriesBase & { readonly kind: K };
-}[ChartSeriesKind];
+  [K in Exclude<ChartSeriesKind, 'scatter'>]: ChartSeriesBase & { readonly kind: K };
+}[Exclude<ChartSeriesKind, 'scatter'>] | (Omit<ChartSeriesBase, 'points'> & {
+  readonly kind: 'scatter';
+  readonly points: readonly ScatterChartPointModel[];
+});
 
 export interface ChartAxisModel {
   readonly categories?: readonly string[];
@@ -84,6 +96,12 @@ export interface ChartAccessibilityModel {
   readonly enabled?: boolean;
 }
 
+/** Statistical overlays are not counted as source-data series. */
+export type ChartOverlayModel =
+  | { readonly kind: 'regression'; readonly name: string; readonly points: readonly { readonly x: number; readonly y: number }[] }
+  | { readonly kind: 'outliers'; readonly name: string; readonly points: readonly { readonly id: string; readonly name: string; readonly x: number; readonly y: number }[] }
+  | { readonly kind: 'extreme-line'; readonly axis: 'x' | 'y'; readonly value: number };
+
 /** Presentation bags preserve current chart styling without importing an engine API. */
 export interface ChartModel {
   readonly kind: 'CHART_MODEL';
@@ -104,6 +122,7 @@ export interface ChartModel {
   readonly valueAxes?: readonly ChartAxisModel[];
   readonly pane?: Readonly<Record<string, unknown>>;
   readonly series: readonly ChartSeriesModel[];
+  readonly overlays?: readonly ChartOverlayModel[];
   readonly drilldownSeries?: readonly ChartSeriesModel[];
   readonly seriesPresentation: Readonly<
     Record<string, Readonly<Record<string, unknown>>>

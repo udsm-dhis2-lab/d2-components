@@ -100,6 +100,7 @@ export class DashboardItemComponent
       'COLUMN',
       'BAR',
       'DOTTED',
+      'SCATTER',
       'PIE',
       'STACKED_BAR',
       'STACKED_COLUMN',

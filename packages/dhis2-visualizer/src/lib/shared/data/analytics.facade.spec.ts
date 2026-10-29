@@ -1,7 +1,9 @@
 import {
   D2AnalyticsFacade,
+  FunctionAnalyticsDataSource,
   normalizeAnalyticsResponse,
 } from './analytics.facade';
+import { Fn } from '@iapps/function-analytics';
 
 const raw = {
   headers: [{ name: 'dx' }, { name: 'value' }],
@@ -57,5 +59,22 @@ describe('aggregate analytics facade', () => {
 
     await expect(facade.getData()).resolves.toMatchObject({ rows: fresh.rows });
     expect(getAnalytics).toHaveBeenCalledTimes(1);
+  });
+
+  it('encodes filtered periods separately from analytics response dimensions', async () => {
+    const get = jest.spyOn(Fn.Analytics.prototype, 'get').mockResolvedValue(raw);
+    const setParameters = jest.spyOn(Fn.Analytics.prototype, 'setParameters');
+    try {
+      await new FunctionAnalyticsDataSource().getAnalytics({
+        selections: [{ dimension: 'dx', items: ['x', 'y'] }, { dimension: 'ou', items: ['LEVEL-2'] }],
+        filters: [{ dimension: 'pe', items: ['LAST_12_MONTHS'] }],
+      });
+      expect(setParameters).toHaveBeenCalledWith({ filter: { pe: 'LAST_12_MONTHS' } });
+      expect(setParameters.mock.instances[0].url).toContain('filter=pe:LAST_12_MONTHS');
+      expect(setParameters.mock.instances[0].url).not.toContain('dimension=pe:');
+    } finally {
+      get.mockRestore();
+      setParameters.mockRestore();
+    }
   });
 });

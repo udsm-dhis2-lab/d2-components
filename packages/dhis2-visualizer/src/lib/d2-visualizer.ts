@@ -413,7 +413,10 @@ export class D2Visualizer {
     const dataSelections: any[] = this.config.dataSelections.filter(
       (dataSelection) => dataSelection.dimension !== 'tea'
     );
-    return this.analyticsFacade.setSelections(dataSelections).getData();
+    const filterDimensions = this._resolveVisType() === 'SCATTER'
+      ? (this.config?.config?.filters ?? []).map((selection: { dimension?: string }) => selection.dimension).filter((dimension: unknown): dimension is string => typeof dimension === 'string')
+      : [];
+    return this.analyticsFacade.setSelections(dataSelections).getData(undefined, filterDimensions);
   }
 
   /**

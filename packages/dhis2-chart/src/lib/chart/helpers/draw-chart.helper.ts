@@ -17,6 +17,7 @@ import {
 } from '../transforms/analytical.transforms';
 import {
   buildReferenceLines,
+  buildEmbeddedChartExportingOptions,
   buildTitleOptions,
   buildTooltipOptions,
   formatAxisNumber,
@@ -96,7 +97,7 @@ export function drawChartFamily(
       chartConfiguration,
       getAllowedChartType(chartConfiguration.type)
     ),
-    exporting: getChartExportingOptions(),
+    exporting: buildEmbeddedChartExportingOptions(),
     // legend: getLegendOptions(chartConfiguration)
   };
 
@@ -375,16 +376,6 @@ function getRearrangedSeries(series: any[], chartType: string) {
 function getChartCreditsOptions(): any {
   return {
     enabled: false,
-  };
-}
-
-function getChartExportingOptions(): any {
-  return {
-    buttons: {
-      contextButton: {
-        enabled: false,
-      },
-    },
   };
 }
 

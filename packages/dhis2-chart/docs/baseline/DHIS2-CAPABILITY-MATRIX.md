@@ -36,9 +36,9 @@ documented semantic is absent or inconsistent.
 | YEAR_OVER_YEAR_COLUMN | Verified DHIS2 | none | deferred | No current renderer. |
 | SINGLE_VALUE | Verified DHIS2 | KPI module/facade | rejected | Valid visualization, but not a Highcharts chart definition. |
 | PIVOT_TABLE | Verified DHIS2 | pivot module/facade | rejected | Valid visualization, but not a chart definition. |
-| SCATTER | Verified DHIS2 | none | deferred | Requires paired-measure transformation. |
+| SCATTER | Verified DHIS2 | paired `dx` measures by `ou` and context; numeric scatter axes | supported with limits | Accepts explicit x/y IDs, per-axis assignments, or two ordered `dx` column items in a saved favorite; column-to-axis ordering is a compatibility inference. Local statistical overlays are review signals. |
 | OUTLIER_TABLE | Verified DHIS2 | none in chart package | rejected | Belongs to the table/pivot module. |
-| BUBBLE | Backend enum only | none | unverified | Writable app/API contract must be verified before support. |
+| BUBBLE | Backend enum only | none | deferred | No verified writable chart payload/option contract; extension registry remains available. Bubble maps are a separate feature. |
 | DOTTED | Library compatibility type | `dotted` | supported | Not a DHIS2 visualization type; represented as a zero-width line. |
 | SOLIDGAUGE | Library compatibility type | `solidgauge` | supported | Requires Highcharts More and solid-gauge modules. |
 
@@ -59,7 +59,7 @@ documented semantic is absent or inconsistent.
 | `topLimit` | Verified for pivot | rejected | Not a verified chart option in the supplied type profiles. |
 | `hideEmptyRowItems` | Verified DHIS2 | deferred | Strategy enum is not implemented by standard chart transformation. |
 | `measureCriteria` | Verified DHIS2 | unverified | Retained by app profiles; renderer semantics are not established. |
-| `regressionType` | Verified DHIS2 | deferred | NONE/LINEAR/POLYNOMIAL/LOESS not implemented. |
+| `regressionType` | Verified retained field; scatter applicability not proven by UI catalogue | library extension | LINEAR, quadratic POLYNOMIAL and local-linear LOESS are pure scatter strategies; not claimed byte-equivalent to DHIS2. |
 | `outlierAnalysis` | Verified DHIS2 | deferred | Scatter/outlier algorithms are not implemented. |
 | `skipRounding` | Verified DHIS2 | partial | Decimal handling exists on axes, not as a coherent value policy. |
 

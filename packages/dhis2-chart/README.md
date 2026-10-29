@@ -36,6 +36,36 @@ string category axis.
 check reports the missing module names; `DefaultHighchartsAdapter` initializes
 only required Highcharts modules, once per module.
 
+For scatter, provide two explicit measures or a saved DHIS2 favorite with exactly
+two ordered `dx` column items, and an analytics response with `dx`, `ou` and a
+single shared period (which may be an aggregated filter absent from the rows).
+The first column item maps to y and the second to x when no explicit mapping is
+present. Pairing never joins different entities
+or periods. Statistical overlays are optional and are review aids, not
+diagnoses:
+
+```ts
+const model = buildStandardChartModel(analytics, {
+  type: 'SCATTER',
+  renderId: 'chart',
+  xMeasureId: 'staffing',
+  yMeasureId: 'coverage',
+  regressionType: 'LINEAR',
+  outlierAnalysis: {
+    enabled: true,
+    outlierMethod: 'IQR',
+    thresholdFactor: 1.5,
+  },
+});
+const options = new HighchartsOptionsAdapter().toOptions(model);
+```
+
+`POLYNOMIAL` (quadratic) and `LOESS` are also available as library regression
+strategies. `scatterOutlierLimit` is a library-only overlay cap; DHIS2's
+`outlierAnalysis.maxResults` belongs to `OUTLIER_TABLE`, not scatter. Bubble
+chart support is deferred pending a verified writable DHIS2 contract. The
+repository's ADR 0007 records the statistical conventions and limitations.
+
 For direct use with already fetched data, call `normalizeAnalyticalData(raw)`
 and pass the resulting `AnalyticalDataset` to
 `new D2Charts().setAnalyticalDataset(dataset)`. This path performs no HTTP

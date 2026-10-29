@@ -141,6 +141,37 @@ try {
     const png = readFileSync(await download.path());
     assert.deepEqual([...png.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10], `${type}: PNG export invalid`);
   }
+  const scatter = {
+    headers: [{ name: 'ou' }, { name: 'dx' }, { name: 'pe' }, { name: 'value' }],
+    rows: [
+      ['a', 'x', '2024', '1'], ['a', 'y', '2024', '2'],
+      ['b', 'x', '2024', '2'], ['b', 'y', '2024', '4'],
+      ['c', 'x', '2024', '3'], ['c', 'y', '2024', '6'],
+      ['d', 'x', '2024', '4'], ['d', 'y', '2024', '8'],
+    ],
+    metaData: { dimensions: { ou: ['a', 'b', 'c', 'd'], dx: ['x', 'y'], pe: ['2024'] }, names: { a: 'Alpha', b: 'Beta', c: 'Gamma', d: 'Delta', x: 'X measure', y: 'Y measure' } },
+  };
+  const scatterResult = await page.evaluate(analytics => {
+    window.__chart?.destroy();
+    const options = window.D2ChartModel.buildStandardChartOptions(analytics, {
+      type: 'SCATTER', renderId: 'chart', xMeasureId: 'x', yMeasureId: 'y', regressionType: 'LINEAR',
+      outlierAnalysis: { enabled: true, outlierMethod: 'IQR' },
+    });
+    window.__chart = window.Highcharts.chart('chart', options);
+    window.__chart.setSize(520, 360, false);
+    return {
+      points: window.__chart.series[0].points.length,
+      series: window.__chart.series.length,
+      svg: window.__chart.getSVG(),
+      csv: window.__chart.getCSV(),
+      aria: [...document.querySelectorAll('#chart [aria-label]')].map(node => node.getAttribute('aria-label')).join(' '),
+    };
+  }, scatter);
+  assert.equal(scatterResult.points, 4, 'scatter: entity pairs lost');
+  assert.equal(scatterResult.series, 3, 'scatter: base/regression/outlier serialization wrong');
+  assert.ok(scatterResult.svg.includes('Alpha') && scatterResult.svg.includes('X measure'), 'scatter: SVG labels absent');
+  assert.ok(scatterResult.csv.includes('Alpha') && scatterResult.aria.includes('Alpha'), 'scatter: export or accessibility names absent');
+  assert.ok((await page.locator('#chart').screenshot()).length > 1000, 'scatter: screen rendering absent');
   console.log('Visual and accessibility browser smoke passed');
 } finally {
   await browser.close();

@@ -17,8 +17,9 @@ export function adaptLegacyChartConfiguration(input: unknown): LegacyChartConfig
     }]);
   }
   const type = input['type'];
-  const xAxisType = input['xAxisType'];
-  const yAxisType = input['yAxisType'];
+  const scatter = typeof type === 'string' && type.toUpperCase() === 'SCATTER';
+  const xAxisType = input['xAxisType'] ?? (scatter ? [] : undefined);
+  const yAxisType = input['yAxisType'] ?? (scatter ? 'dx' : undefined);
   if (typeof type !== 'string' || !type) issues.push({
     path: 'configuration.type', code: 'INVALID_CHART_TYPE', message: 'Expected a chart type',
   });

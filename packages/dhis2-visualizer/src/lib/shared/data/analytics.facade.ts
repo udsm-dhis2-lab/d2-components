@@ -96,6 +96,11 @@ export class FunctionAnalyticsDataSource implements VisualizationDataSource {
           client.setDimension(selection.dimension, value);
       }
     }
+    if (query.filters?.length) {
+      client.setParameters({
+        filter: Object.fromEntries(query.filters.map(selection => [selection.dimension, selection.items.join(';')])),
+      });
+    }
     return normalizeAnalyticsResponse(await client.get());
   }
 }
@@ -139,7 +144,7 @@ export class D2AnalyticsFacade {
     return this;
   }
 
-  async getData(signal?: AbortSignal): Promise<AnalyticsResponse> {
+  async getData(signal?: AbortSignal, filterDimensions: readonly string[] = []): Promise<AnalyticsResponse> {
     if (this.#suppliedData) return this.#suppliedData;
     const selections = this.#selections.map((selection) => ({
       dimension: selection.dimension,
@@ -149,8 +154,10 @@ export class D2AnalyticsFacade {
         )
         .filter((item): item is string => Boolean(item)),
     }));
-    return normalizeAnalyticsResponse(
-      await this.#dataSource.getAnalytics({ selections }, signal)
-    );
+    const filtered = new Set(filterDimensions);
+    return normalizeAnalyticsResponse(await this.#dataSource.getAnalytics({
+      selections: selections.filter(selection => !filtered.has(selection.dimension)),
+      ...(filtered.size ? { filters: selections.filter(selection => filtered.has(selection.dimension)) } : {}),
+    }, signal));
   }
 }

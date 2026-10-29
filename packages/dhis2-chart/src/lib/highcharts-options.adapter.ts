@@ -47,6 +47,7 @@ function pointOptions(point: ChartPointModel): Record<string, unknown> {
     ...(point.id !== undefined ? { id: point.id } : {}),
     ...(point.name !== undefined ? { name: point.name } : {}),
     y: point.value,
+    ...(point.x !== undefined ? { x: point.x } : {}),
     ...(point.color !== undefined ? { color: point.color } : {}),
     ...(point.drilldown !== undefined ? { drilldown: point.drilldown } : {}),
     ...(point.label !== undefined ? { dataLabels: point.label } : {}),
@@ -110,6 +111,11 @@ function seriesOptions(series: ChartSeriesModel): Highcharts.SeriesOptionsType {
         ...common,
         type: 'gauge',
       } as unknown as Highcharts.SeriesGaugeOptions;
+    case 'scatter':
+      return {
+        ...common,
+        type: 'scatter',
+      } as unknown as Highcharts.SeriesScatterOptions;
   }
 }
 
@@ -545,6 +551,7 @@ export class HighchartsOptionsAdapter {
       title: model.title as Highcharts.TitleOptions,
       subtitle: model.subtitle as unknown as Highcharts.SubtitleOptions,
       credits: model.credits as Highcharts.CreditsOptions,
+      ...(model.accessibility !== undefined ? { accessibility: model.accessibility as Highcharts.AccessibilityOptions } : {}),
       colors: [...model.palette],
       plotOptions: model.seriesPresentation as Highcharts.PlotOptions,
       tooltip: model.tooltip as Highcharts.TooltipOptions,
@@ -565,11 +572,31 @@ export class HighchartsOptionsAdapter {
       ...(model.categoryAxis !== undefined
         ? { xAxis: categoryAxisOptions(model.categoryAxis) }
         : {}),
-      series: model.series.map(seriesOptions),
+      series: [
+        ...model.series.map(seriesOptions),
+        ...(model.overlays ?? []).filter(overlay => overlay.kind !== 'extreme-line').map(overlay => overlay.kind === 'regression'
+          ? { type: 'line' as const, name: overlay.name, data: overlay.points.map(point => ({ x: point.x, y: point.y })), marker: { enabled: false }, enableMouseTracking: false, showInLegend: false, dashStyle: 'ShortDash' as const }
+          : { type: 'scatter' as const, name: overlay.name, data: overlay.points.map(point => ({ id: point.id, name: point.name, x: point.x, y: point.y })), color: '#c62828', marker: { radius: 6 }, showInLegend: false }),
+      ],
       ...(model.drilldownSeries !== undefined
         ? { drilldown: { series: model.drilldownSeries.map(seriesOptions) } }
         : {}),
     };
+    if (model.overlays?.length) {
+      const lines = model.overlays.filter(overlay => overlay.kind === 'extreme-line');
+      if (lines.length) {
+        const xAxis = options.xAxis as Highcharts.XAxisOptions | undefined;
+        const yAxes = options.yAxis as Highcharts.YAxisOptions[] | undefined;
+        if (xAxis && !Array.isArray(xAxis)) xAxis.plotLines = [
+          ...(xAxis.plotLines ?? []),
+          ...lines.filter(line => line.axis === 'x').map(line => ({ value: line.value, width: 1, color: '#9e9e9e', dashStyle: 'Dash' as const })),
+        ];
+        if (yAxes?.[0]) yAxes[0].plotLines = [
+          ...(yAxes[0].plotLines ?? []),
+          ...lines.filter(line => line.axis === 'y').map(line => ({ value: line.value, width: 1, color: '#9e9e9e', dashStyle: 'Dash' as const })),
+        ];
+      }
+    }
     const serialized = _.cloneDeep(options);
     requirementsByOptions.set(serialized, [...model.requiredModules]);
     return serialized;

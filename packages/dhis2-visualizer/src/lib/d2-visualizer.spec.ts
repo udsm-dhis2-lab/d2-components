@@ -28,6 +28,7 @@ jest.mock('@iapps/function-analytics', () => {
     setPeriod: jest.fn().mockReturnThis(),
     setOrgUnit: jest.fn().mockReturnThis(),
     setDimension: jest.fn().mockReturnThis(),
+    setParameters: jest.fn().mockReturnThis(),
     get: jest.fn().mockResolvedValue(analyticsResult),
   }));
   return { Fn: { Analytics } };
@@ -45,6 +46,79 @@ function configuredVisualizer(type: VisualizationType): D2Visualizer {
 describe('D2Visualizer compatibility facade', () => {
   beforeEach(() => {
     document.body.innerHTML = '<div id="visualization-host"></div>';
+  });
+
+  it('delegates a paired SCATTER request to the chart module', async () => {
+    jest.useFakeTimers();
+    const analytics = {
+      headers: [{ name: 'ou' }, { name: 'dx' }, { name: 'pe' }, { name: 'value' }],
+      rows: [['a', 'x', '2024', '1'], ['b', 'x', '2024', '2'], ['a', 'y', '2024', '3'], ['b', 'y', '2024', '4']],
+      metaData: { dimensions: { ou: ['a', 'b'], dx: ['x', 'y'], pe: ['2024'] }, names: { a: 'Alpha', b: 'Beta', x: 'X', y: 'Y' } },
+    };
+    const visualizer = new D2Visualizer().setId('visualization-host').setType('SCATTER')
+      .setConfig({ id: 'visualization-host', type: 'SCATTER', xMeasureId: 'x', yMeasureId: 'y' })
+      .setData(analytics);
+    await visualizer.draw();
+    jest.runOnlyPendingTimers();
+    expect(visualizer.visualizer).toBeInstanceOf(D2Charts);
+    expect((Highcharts.chart as jest.Mock).mock.lastCall?.[0].series[0].type).toBe('scatter');
+    await visualizer.dispose();
+    jest.useRealTimers();
+  });
+
+  it('renders a saved DHIS2 SCATTER favorite without explicit axis assignments', async () => {
+    jest.useFakeTimers();
+    const favorite = {
+      id: 'visualization-host', type: 'SCATTER', displayName: 'ANC: 1st vs 4th visits (scatter plot)',
+      regressionType: 'NONE', series: [], axes: [],
+      columns: [{ dimension: 'dx', items: [{ id: 'fbfJHSPpUQD', name: 'ANC 1st visit' }, { id: 'hfdmMSPBgLG', name: 'ANC 4th or more visits' }] }],
+      rows: [{ dimension: 'ou', items: [{ id: 'ImspTQPwCqd' }, { id: 'LEVEL-2' }] }],
+      filters: [{ dimension: 'pe', items: [{ id: 'LAST_12_MONTHS' }] }],
+    };
+    const analytics = {
+      headers: [{ name: 'dx' }, { name: 'value' }, { name: 'ou' }],
+      rows: [['fbfJHSPpUQD', '100', 'district-a'], ['hfdmMSPBgLG', '40', 'district-a']],
+      metaData: { dimensions: { dx: ['fbfJHSPpUQD', 'hfdmMSPBgLG'], ou: ['district-a'] },
+        names: { fbfJHSPpUQD: 'ANC 1st visit', hfdmMSPBgLG: 'ANC 4th or more visits', 'district-a': 'District A' } },
+    };
+    const visualizer = new D2Visualizer().setId('visualization-host').setType('SCATTER').setConfig(favorite).setData(analytics);
+    await visualizer.draw();
+    jest.runOnlyPendingTimers();
+    expect((Highcharts.chart as jest.Mock).mock.lastCall?.[0].series[0].data[0]).toMatchObject({ x: 40, y: 100 });
+    expect((Highcharts.chart as jest.Mock).mock.lastCall?.[0].title.text).toBeNull();
+    expect((Highcharts.chart as jest.Mock).mock.lastCall?.[0].subtitle).toMatchObject({ text: 'Last 12 months' });
+    await visualizer.dispose();
+    jest.useRealTimers();
+  });
+
+  it('queries a saved SCATTER period as an aggregate filter before rendering', async () => {
+    jest.useFakeTimers();
+    const favorite = {
+      id: 'visualization-host', type: 'SCATTER', regressionType: 'NONE', series: [],
+      columns: [{ dimension: 'dx', items: [{ id: 'fbfJHSPpUQD' }, { id: 'hfdmMSPBgLG' }] }],
+      rows: [{ dimension: 'ou', items: [{ id: 'ImspTQPwCqd' }, { id: 'LEVEL-2' }] }],
+      filters: [{ dimension: 'pe', items: [{ id: 'LAST_12_MONTHS' }] }],
+    };
+    const analytics = {
+      headers: [{ name: 'dx' }, { name: 'ou' }, { name: 'value' }],
+      rows: [['fbfJHSPpUQD', 'district-a', '4000'], ['hfdmMSPBgLG', 'district-a', '10000']],
+      metaData: { dimensions: { dx: ['fbfJHSPpUQD', 'hfdmMSPBgLG'], ou: ['district-a'] }, names: { 'district-a': 'District A' } },
+    };
+    const getAnalytics = jest.fn().mockResolvedValue(analytics);
+    const visualizer = new D2Visualizer().setId('visualization-host').setType('SCATTER')
+      .setConfig(favorite).setDataSource({ getAnalytics });
+    await visualizer.draw();
+    jest.runOnlyPendingTimers();
+    expect(getAnalytics).toHaveBeenCalledWith({
+      selections: [
+        { dimension: 'ou', items: ['ImspTQPwCqd', 'LEVEL-2'] },
+        { dimension: 'dx', items: ['fbfJHSPpUQD', 'hfdmMSPBgLG'] },
+      ],
+      filters: [{ dimension: 'pe', items: ['LAST_12_MONTHS'] }],
+    }, undefined);
+    expect((Highcharts.chart as jest.Mock).mock.lastCall?.[0].series[0].data[0]).toMatchObject({ x: 10000, y: 4000 });
+    await visualizer.dispose();
+    jest.useRealTimers();
   });
 
   it('keeps fluent configuration setters chainable and observable', () => {

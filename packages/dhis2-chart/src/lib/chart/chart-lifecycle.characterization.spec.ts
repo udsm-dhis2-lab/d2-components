@@ -63,6 +63,20 @@ describe('D2Charts lifecycle characterization', () => {
     expect(adapter.create.mock.calls[0][0].series).toHaveLength(2);
   });
 
+  it('renders paired SCATTER points through the direct D2Charts path', () => {
+    const analytics = {
+      headers: [{ name: 'ou' }, { name: 'dx' }, { name: 'pe' }, { name: 'value' }],
+      rows: [['a', 'x', '2024', '1'], ['a', 'y', '2024', '2'], ['b', 'x', '2024', '3'], ['b', 'y', '2024', '4']],
+      metaData: { dimensions: { ou: ['a', 'b'], dx: ['x', 'y'], pe: ['2024'] }, names: { a: 'Alpha', b: 'Beta', x: 'X', y: 'Y' } },
+    };
+    const chart = new D2Charts(adapter).setId('chart-fixture').setType('SCATTER')
+      .setConfig({ type: 'SCATTER', renderId: 'chart-fixture', xMeasureId: 'x', yMeasureId: 'y' }).setData(analytics);
+    chart.draw();
+    jest.runOnlyPendingTimers();
+    expect(adapter.create).toHaveBeenCalledTimes(1);
+    expect(adapter.create.mock.calls[0][0].series?.[0]).toMatchObject({ type: 'scatter', data: [{ x: 1, y: 2 }, { x: 3, y: 4 }] });
+  });
+
   it('defers creation by the current fixed 20ms timer', () => {
     const chart = renderer();
 
