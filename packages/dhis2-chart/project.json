@@ -47,6 +47,30 @@
         "command": "node packages/dhis2-chart/tools/scripts/visual-smoke.mjs"
       }
     },
+    "bundle-budget": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "cache": false,
+      "options": {
+        "command": "node packages/dhis2-chart/tools/scripts/bundle-budget.mjs"
+      }
+    },
+    "api-check": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "cache": false,
+      "options": {
+        "command": "node packages/dhis2-chart/tools/scripts/api-check.mjs"
+      }
+    },
+    "examples-smoke": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "cache": false,
+      "options": {
+        "command": "node packages/dhis2-chart/tools/scripts/examples-smoke.mjs"
+      }
+    },
     "category-prototypes": {
       "executor": "nx:run-commands",
       "cache": false,

@@ -3,6 +3,7 @@ import { ChartAxisUtil } from '../utils';
 import { ChartColor } from '../models';
 import { ChartModel } from '../../chart-model';
 import { toChartModel } from '../../chart-model.builder';
+import { alignInferredAxisValues, inferredRangeAxisIndexes, inferredRangeAxisPlacement } from '../transforms/range-axis.transforms';
 import {
   accumulateAnalytics,
   applySeriesOptions,
@@ -329,6 +330,14 @@ function extendOtherChartOptions(
   chartConfiguration: any
 ): any {
   const layout = resolveLayout(analyticsObject, chartConfiguration);
+  const configuredSeries = modern(chartConfiguration, 'series');
+  if (Array.isArray(configuredSeries)) {
+    configuredSeries.forEach((item: any, index: number) => {
+      if (!layout.yAxisItems.some(axisItem => axisItem.id === item.dimensionItem)) {
+        throw new Error(`configuration.series[${index}].dimensionItem: Unknown series dimension item ${item.dimensionItem}`);
+      }
+    });
+  }
   const structuredSort = modern(chartConfiguration, 'sorting');
   const sorted = sortSeries(
       buildSeriesMatrix(analyticsObject, layout, chartConfiguration),
@@ -344,7 +353,7 @@ function extendOtherChartOptions(
   const visible = strategy && strategy !== 'NONE'
     ? hideEmptyCategories(ordered, strategy, presentCategoryIds) : ordered;
   const nativeSeries = modern(chartConfiguration, 'series');
-  const rangeAxes = (chartConfiguration.axes || []).filter((axis: any) => axis.type === 'RANGE')
+  const rangeAxes = (modern(chartConfiguration, 'axes') || []).filter((axis: any) => axis.type === 'RANGE')
     .sort((a: any, b: any) => (a.index ?? 0) - (b.index ?? 0));
   const options = Array.isArray(nativeSeries) && nativeSeries.length
     ? nativeSeries.map((item: any) => ({
@@ -355,7 +364,12 @@ function extendOtherChartOptions(
       type: item.type?.toLowerCase() || chartConfiguration.type,
     }))
     : chartConfiguration.seriesOptions;
-  const series = applySeriesOptions(visible, options);
+  const configured = applySeriesOptions(visible, options);
+  const inferredMultiAxis = chartConfiguration.type === 'column' && rangeAxes.length === 0 &&
+    Array.isArray(nativeSeries) && inferredRangeAxisIndexes(nativeSeries).length > 1;
+  const series = inferredMultiAxis
+    ? alignInferredAxisValues(analyticsObject, configured, chartConfiguration.xAxisType, chartConfiguration.yAxisType)
+    : configured;
 
   /**
    * Update colors by considering if series has data
@@ -622,7 +636,7 @@ function getXAxisOptions(xAxisCategories: any[], chartConfiguration: any) {
 }
 
 function getYAxisOptions(chartConfiguration: any) {
-  const yAxes: any[] = chartConfiguration.axes?.filter(
+  const yAxes: any[] = modern(chartConfiguration, 'axes')?.filter(
     (axis: Record<string, unknown>) => axis['type'] === 'RANGE'
   ).sort((a: any, b: any) => (a.index ?? 0) - (b.index ?? 0)) || [];
   let newYAxes: any[] = [];
@@ -646,6 +660,15 @@ function getYAxisOptions(chartConfiguration: any) {
         },
       ]
     );
+    const configuredSeries = modern(chartConfiguration, 'series');
+    if (chartConfiguration.type === 'column' && Array.isArray(configuredSeries) && configuredSeries.length) {
+      const indexes = inferredRangeAxisIndexes(configuredSeries);
+      if (indexes.length > 1) newYAxes = indexes.map(index => ({
+        ...newYAxes[0],
+        ...inferredRangeAxisPlacement(index),
+        title: { ...newYAxes[0].title },
+      }));
+    }
   } else {
     newYAxes = _.map(yAxes, (yAxis: any, yAxisIndex: any) => {
       const allowDecimals = yAxis.decimals !== undefined;

@@ -16,7 +16,8 @@ load year-over-year analytics without global HTTP state.
 
 ## Usage
 
-Use `D2Charts` or pure option transformations. See `examples/basic.mjs`.
+Use `D2Charts` or pure option transformations. Runnable examples are in
+`examples/basic.mjs`, `examples/normalized.mjs` and `examples/extension.mjs`.
 
 ```ts
 import { buildStandardChartModel } from '@iapps/d2-charts/model';
@@ -25,6 +26,27 @@ import { HighchartsOptionsAdapter } from '@iapps/d2-charts';
 const model = buildStandardChartModel(analytics, configuration);
 const options = new HighchartsOptionsAdapter().toOptions(model);
 ```
+
+A direct DOM consumer supplies a host, configuration and either raw analytics
+or a normalized `AnalyticalDataset`:
+
+```ts
+import { D2Charts, normalizeAnalyticalData } from '@iapps/d2-charts';
+
+const dataset = normalizeAnalyticalData(analyticsResponse);
+const chart = new D2Charts()
+  .setId('chart-host')
+  .setType('COLUMN')
+  .setConfig({ type: 'COLUMN', renderId: 'chart-host', xAxisType: ['pe'], yAxisType: 'dx', zAxisType: [] })
+  .setAnalyticalDataset(dataset);
+chart.draw();
+// When the host is removed:
+chart.dispose();
+```
+
+The `@iapps/d2-charts/model` entry is DOM-free and does not import Highcharts.
+`@iapps/d2-charts/extensions` is the supported extension contract. Package
+subpaths other than `.`, `/model`, and `/extensions` are not public.
 
 `ChartModel` has discriminated series and explicit `requiredModules`.
 For two-category cartesian layouts, `ChartModel.categoryAxis.categoryTuples`
@@ -99,6 +121,59 @@ Do not enable HTML labels for untrusted values. No credentials are bundled.
 
 The supported-option matrix is available through `chartCapabilities`, `chartCapability(type, key)` and `registry.capabilities(type)`. Unsupported option/type combinations throw `AnalyticalBoundaryError` with paths. `topLimit` is not a verified chart option and is rejected when nonzero.
 
+```ts
+import { D2Charts, buildStandardChartModel } from '@iapps/d2-charts';
+import { createStandardChartRegistry, defineChart } from '@iapps/d2-charts/extensions';
+
+const registry = createStandardChartRegistry(); // never mutate the shared default
+registry.register(defineChart({
+  type: 'LOCAL_COLUMN',
+  family: 'cartesian',
+  build: ({ analytics }) => ({
+    ...buildStandardChartModel(analytics, {
+      type: 'COLUMN', xAxisType: ['pe'], yAxisType: 'dx', zAxisType: [],
+    }),
+    visualType: 'local-column',
+  }),
+}));
+const chart = new D2Charts(undefined, registry);
+chart.setId('chart-host').setConfig({ type: 'LOCAL_COLUMN' }).setData(analyticsResponse);
+chart.setType('LOCAL_COLUMN').draw();
+```
+
+Definitions must use uppercase unique identifiers, declare one supported
+family and return an engine-neutral `ChartModel`. Do not mutate input analytics,
+global registries or the returned model. The package retains Highcharts module,
+download and disposal ownership. External definitions are consumer-owned:
+DHIS2 payload compatibility, accessibility and any optional-module costs must
+be reviewed before use. No new built-in series types are approved for this
+sprint; BUBBLE still lacks a verified writable chart contract.
+
+Run `npm exec nx run dhis2-chart:bundle-budget` to enforce model/runtime and
+per-optional-module budgets, including a check that root imports do not execute
+optional Highcharts modules. The pure `/model` and `/extensions` entries remain
+Highcharts-free. The root browser bundle can still include optional-module code
+when bundled without externalizing Highcharts; see the Sprint 19 release review.
+
 Run `npx nx run dhis2-chart:visual-smoke` for a real Highcharts/Chromium SVG and ARIA smoke check. The test environment needs a Playwright Chromium installation (`npx playwright install chromium`).
 Run `npx nx run dhis2-chart:category-dependency-check` to guard manifests and
 built artifacts against reintroducing the removed plugin.
+
+## Multi-axis COLUMN visualizations
+
+Saved DHIS2 `COLUMN` configurations may assign each `dx` item a numeric
+`series[].axis` even when `axes` is empty. `D2Charts` now creates positional
+range axes through the highest referenced index (including empty intermediate
+slots), preserves `COLUMN`/`LINE` series types, and leaves the category axis
+separate. Axis 0 is left, axis 1 right, and later inferred axes alternate sides
+with an outward offset. Explicit `RANGE` axes remain authoritative. No units
+or axis titles are inferred from indicator names or data types. This placement
+is a deterministic library rule; visual parity with DHIS2's rendering of the
+two supplied favorites has not yet been independently verified.
+
+Use the existing `D2Charts` renderer or `D2Visualizer` facade and provide
+analytics with `dx` and `pe` headers plus the referenced metadata IDs. The
+facade retains card-owned title, download and fullscreen controls. Invalid or
+duplicate series assignments fail with a field path. Multi-axis support is
+currently verified for `COLUMN` with optional `LINE` items; other families
+require separate contracts and tests.

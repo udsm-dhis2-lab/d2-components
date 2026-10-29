@@ -62,6 +62,31 @@ try {
     assert.ok((await page.locator('#chart').screenshot()).length > 1000, `${name}: screenshot empty`);
     assert.ok(await page.locator('#chart [aria-label]').count(), `${name}: accessibility labels absent`);
   }
+  const inferredAxes = buildStandardChartOptions(analytics, {
+    ...base, axes: [],
+  });
+  const inferredResult = await page.evaluate(options => {
+    window.__chart?.destroy();
+    window.__chart = window.Highcharts.chart('chart', options);
+    const before = window.__chart.getSVG();
+    window.__chart.setSize(520, 360, false);
+    return {
+      axes: window.__chart.yAxis.length,
+      opposite: window.__chart.yAxis.map(axis => axis.opposite),
+      kinds: window.__chart.series.map(series => series.type),
+      indexes: window.__chart.series.map(series => series.yAxis.index),
+      svgBefore: before, svgAfter: window.__chart.getSVG(),
+      csv: window.__chart.getCSV(),
+      aria: [...document.querySelectorAll('#chart [aria-label]')].map(node => node.getAttribute('aria-label')).join(' '),
+    };
+  }, inferredAxes);
+  assert.equal(inferredResult.axes, 2, 'inferred multi-axis: missing numeric axis');
+  assert.deepEqual(inferredResult.opposite, [false, true], 'inferred multi-axis: side order changed');
+  assert.deepEqual(inferredResult.kinds, ['column', 'line'], 'inferred multi-axis: mixed types changed');
+  assert.deepEqual(inferredResult.indexes, [0, 1], 'inferred multi-axis: series axis changed');
+  assert.ok(inferredResult.svgBefore.includes('Coverage') && inferredResult.svgAfter.includes('Coverage'), 'inferred multi-axis: resize lost labels');
+  assert.ok(inferredResult.csv.includes('Coverage') && inferredResult.aria.includes('Coverage'), 'inferred multi-axis: export or accessibility lost series');
+  assert.ok((await page.locator('#chart').screenshot()).length > 1000, 'inferred multi-axis: screen rendering absent');
   const yoyBundle = {
     axis: { categories: ['W01', 'W02', 'W53'] },
     series: [

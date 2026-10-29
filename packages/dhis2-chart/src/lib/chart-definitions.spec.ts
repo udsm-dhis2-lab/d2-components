@@ -1,10 +1,11 @@
-import { ChartDefinitionRegistry, createStandardChartRegistry, AbstractChartDefinition, ChartBuildContext } from './chart-definitions';
+import { ChartDefinitionRegistry, createStandardChartRegistry, defineChart, AbstractChartDefinition, ChartBuildContext } from './chart-definitions';
 import { ChartModel } from './chart-model';
 import { buildStandardChartModel } from './standard-chart.model';
 import { buildStandardChartOptions } from './standard-chart.transform';
 import { HighchartsOptionsAdapter } from './highcharts-options.adapter';
 import { D2Charts } from './chart/chart-visualizer';
 import { chartInstance } from '../testing/mocks/highcharts.mock';
+import { multiAxisAnalyticsFixture, mixedAxisConfigurationFixture } from '../testing/fixtures/multi-axis.fixtures';
 
 const analytics = {
   headers: [{ name: 'dx' }, { name: 'pe' }, { name: 'ou' }, { name: 'value' }],
@@ -23,12 +24,33 @@ const config = (type: string) => ({
 describe('chart definition registry', () => {
   beforeEach(() => { jest.useFakeTimers(); jest.clearAllMocks(); });
   afterEach(() => { jest.clearAllTimers(); jest.useRealTimers(); });
+  it('renders a mixed-axis saved configuration through direct D2Charts', () => {
+    const create = jest.fn().mockReturnValue({ destroy: jest.fn(), exportChart: jest.fn(), getCSV: jest.fn() });
+    const renderer = new D2Charts({ create } as never)
+      .setId('chart-fixture').setType('COLUMN')
+      .setConfig(mixedAxisConfigurationFixture())
+      .setData(multiAxisAnalyticsFixture(['coverage-1', 'coverage-2', 'coverage-3', 'visit-1', 'visit-2', 'visit-3'])) as D2Charts;
+    renderer.draw();
+    jest.runOnlyPendingTimers();
+    expect(create).toHaveBeenCalledTimes(1);
+    const options = create.mock.calls[0][0];
+    expect(options.yAxis).toHaveLength(2);
+    expect(options.series.map((item: { type: string; yAxis: number }) => [item.type, item.yAxis]))
+      .toEqual([['column', 0], ['column', 0], ['column', 0], ['line', 1], ['line', 1], ['line', 1]]);
+    renderer.dispose();
+  });
   it('rejects unknown and duplicate entries deterministically', () => {
     const registry = createStandardChartRegistry();
     expect(() => registry.resolve('UNKNOWN')).toThrow('Unsupported chart definition: UNKNOWN');
     expect(() => registry.register(registry.resolve('COLUMN'))).toThrow('Duplicate chart definition: COLUMN');
     expect(() => registry.register({ type: 'lowercase', family: 'cartesian', build: jest.fn() }))
       .toThrow('canonical uppercase');
+    expect(() => registry.register({ type: 'BROKEN', family: 'cartesian' } as never))
+      .toThrow('requires a supported family');
+    expect(() => registry.register({ type: 'BROKEN', family: 'unknown', build: jest.fn() } as never))
+      .toThrow('requires a supported family');
+    expect(defineChart({ type: 'EXTERNAL', family: 'cartesian', build: jest.fn() }).type)
+      .toBe('EXTERNAL');
   });
 
   it('retains prototype-backed legacy configuration getters through policies', () => {

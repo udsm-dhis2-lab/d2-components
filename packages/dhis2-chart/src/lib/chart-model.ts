@@ -61,6 +61,8 @@ export type ChartSeriesModel = {
 });
 
 export interface ChartAxisModel {
+  readonly opposite?: boolean;
+  readonly offset?: number;
   readonly categories?: readonly string[];
   readonly categoryTuples?: readonly ChartCategoryTuple[];
   readonly minimum?: number;

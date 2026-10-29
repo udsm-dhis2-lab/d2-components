@@ -41,8 +41,11 @@ export abstract class AbstractChartDefinition<T extends string = string>
     const source = context.source && typeof context.source === 'object'
       ? context.source as Record<string, unknown> : context.configuration.native;
     validateChartCapabilities(this.type, source);
-    const prepared = source['cumulativeValues'] === true && Array.isArray(source['yAxisType'])
-      ? { ...source, yAxisType: context.configuration.yAxisType } : source;
+    const prepared = Array.isArray(source['yAxisType'])
+      ? Object.defineProperty(
+        Object.assign(Object.create(Object.getPrototypeOf(source)), source),
+        'yAxisType', { value: context.configuration.yAxisType, enumerable: true }
+      ) as Record<string, unknown> : source;
     const configuration = this.policies.reduce<Readonly<Record<string, unknown>>>(
       (current, policy) => policy.apply(current), prepared
     );
@@ -117,6 +120,9 @@ export class ChartDefinitionRegistry {
     definitions.forEach(definition => this.register(definition));
   }
   register(definition: ChartDefinition): this {
+    if (!definition || typeof definition.build !== 'function' || !['cartesian', 'circular', 'polar', 'gauge', 'combined'].includes(definition.family)) {
+      throw new TypeError('Chart definition requires a supported family and build(context) function');
+    }
     const type = definition.type?.toUpperCase();
     if (!type || type !== definition.type || !/^[A-Z][A-Z0-9_]*$/.test(type)) {
       throw new Error('Chart definition type must be a canonical uppercase identifier');
@@ -135,6 +141,12 @@ export class ChartDefinitionRegistry {
     this.resolve(type);
     return chartCapabilities.filter(entry => entry.types.includes(type.toUpperCase()));
   }
+}
+
+/** Compile-time and runtime boundary for definitions supplied by consumers. */
+export function defineChart<T extends Uppercase<string>>(definition: ChartDefinition<T>): ChartDefinition<T> {
+  new ChartDefinitionRegistry().register(definition);
+  return definition;
 }
 
 export function createStandardChartRegistry(): ChartDefinitionRegistry {

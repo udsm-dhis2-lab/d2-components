@@ -13,6 +13,10 @@
       "types": "./src/model.d.ts",
       "default": "./src/model.js"
     },
+    "./extensions": {
+      "types": "./src/extensions.d.ts",
+      "default": "./src/extensions.js"
+    },
     "./package.json": "./package.json"
   },
   "dependencies": {

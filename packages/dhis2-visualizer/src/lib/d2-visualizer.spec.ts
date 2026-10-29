@@ -48,6 +48,36 @@ describe('D2Visualizer compatibility facade', () => {
     document.body.innerHTML = '<div id="visualization-host"></div>';
   });
 
+  it('keeps a saved multi-axis COLUMN/LINE chart in the existing facade renderer', async () => {
+    jest.useFakeTimers();
+    const favorite = {
+      id: 'visualization-host', type: 'COLUMN', displayName: 'Visits and coverage', axes: [],
+      columns: [{ dimension: 'dx', items: [{ id: 'coverage', name: 'Coverage' }, { id: 'visits', name: 'Visits' }] }],
+      rows: [{ dimension: 'pe', items: [{ id: '202401', name: 'January 2024' }] }],
+      filters: [{ dimension: 'ou', items: [{ id: 'ou-a', name: 'Facility A' }] }],
+      series: [{ dimensionItem: 'coverage', axis: 0 }, { dimensionItem: 'visits', axis: 1, type: 'LINE' }],
+    };
+    const analytics = {
+      headers: [{ name: 'value' }, { name: 'dx' }, { name: 'pe' }, { name: 'ou' }],
+      rows: [['75', 'coverage', '202401', 'ou-a'], ['120', 'visits', '202401', 'ou-a']],
+      metaData: { dimensions: { dx: ['coverage', 'visits'], pe: ['202401'], ou: ['ou-a'] },
+        dx: ['coverage', 'visits'], pe: ['202401'], ou: ['ou-a'],
+        names: { coverage: 'Coverage', visits: 'Visits', '202401': 'January 2024', 'ou-a': 'Facility A' } },
+    };
+    const visualizer = new D2Visualizer().setId('visualization-host').setType('COLUMN')
+      .setConfig(favorite).setData(analytics);
+    await visualizer.draw();
+    jest.runOnlyPendingTimers();
+    expect(visualizer.visualizer).toBeInstanceOf(D2Charts);
+    const options = (Highcharts.chart as jest.Mock).mock.lastCall?.[0];
+    expect(options.yAxis).toHaveLength(2);
+    expect(options.series.map((series: { type: string; yAxis: number }) => [series.type, series.yAxis]))
+      .toEqual([['column', 0], ['line', 1]]);
+    expect(options.series.map((series: { data: { y: number }[] }) => series.data[0].y)).toEqual([75, 120]);
+    await visualizer.dispose();
+    jest.useRealTimers();
+  });
+
   it('delegates a paired SCATTER request to the chart module', async () => {
     jest.useFakeTimers();
     const analytics = {

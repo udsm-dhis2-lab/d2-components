@@ -41,6 +41,23 @@ new D2Charts().setId('chart').setConfig(config).setData(data).draw();
 `D2Charts` has no dependency on `@iapps/d2-visualizer`; consumers that already
 have analytics data can continue to call `setData()` directly.
 
+For a chart favorite, the facade keeps the same card-independent renderer and
+centralized acquisition flow. The host element is owned by the application:
+
+```ts
+import { D2Visualizer } from '@iapps/d2-visualizer';
+
+const visualizer = new D2Visualizer().setId('chart-host')
+  .setType('SCATTER').setConfig(favorite);
+await visualizer.draw(); // analytics filters from the favorite are respected
+visualizer.download('PNG');
+await visualizer.dispose();
+```
+
+The dashboard card, if used, owns its title, fullscreen and download controls;
+it does not replace `D2Charts`. For direct chart extensions, use
+`@iapps/d2-charts/extensions` and inject the registry into `D2Charts`.
+
 ## Lifecycle
 
 Repeated `render()` calls dispose the active renderer and reject stale async

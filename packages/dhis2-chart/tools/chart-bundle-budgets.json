@@ -1,0 +1,13 @@
+{
+  "model": 125000,
+  "extensions": 122000,
+  "runtimeWithoutHighcharts": 145000,
+  "optionalModules": {
+    "exporting": 22000,
+    "offline-exporting": 11000,
+    "export-data": 14000,
+    "drilldown": 25000,
+    "solid-gauge": 6000,
+    "highcharts-more": 110000
+  }
+}

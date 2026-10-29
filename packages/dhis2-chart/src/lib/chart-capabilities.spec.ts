@@ -96,7 +96,7 @@ describe('Sprint 15 capability matrix', () => {
     ['column', { topLimit: 2 }, 'topLimit'],
     ['column', { colorSet: 'UNKNOWN' }, 'colorSet'],
     ['column', { axes: [{ type: 'RANGE', index: 0, minValue: 5, maxValue: 4 }] }, 'maxValue'],
-    ['column', { series: [{ dimensionItem: 'dx-a', axis: 2, type: 'LINE' }] }, 'axis'],
+    ['column', { axes: [{ type: 'RANGE', index: 0 }], series: [{ dimensionItem: 'dx-a', axis: 2, type: 'LINE' }] }, 'axis'],
     ['column', { series: [{ dimensionItem: 'dx-a', axis: 0, type: 'SCATTER' }] }, 'type'],
     ['column', { series: [{ dimensionItem: 'dx-a', axis: 0, type: 'BAR' }] }, 'type'],
   ])('%s rejects invalid %s', (type, overrides, path) => {

@@ -121,6 +121,8 @@ function seriesOptions(series: ChartSeriesModel): Highcharts.SeriesOptionsType {
 
 function axisOptions(axis: ChartAxisModel): Record<string, unknown> {
   return {
+    ...(axis.opposite !== undefined ? { opposite: axis.opposite } : {}),
+    ...(axis.offset !== undefined ? { offset: axis.offset } : {}),
     ...(axis.tickAmount !== undefined ? { tickAmount: axis.tickAmount } : {}),
     ...(axis.tickInterval !== undefined ? { tickInterval: axis.tickInterval } : {}),
     ...(axis.categories !== undefined ? { categories: axis.categories } : {}),

@@ -67,6 +67,8 @@ function toSeries(series: any, fallback: ChartSeriesKind): ChartSeriesModel {
 
 function toAxis(axis: any): ChartAxisModel {
   return {
+    ...(axis.opposite !== undefined ? { opposite: axis.opposite } : {}),
+    ...(axis.offset !== undefined ? { offset: axis.offset } : {}),
     ...(axis.categories !== undefined
       ? { categories: _.cloneDeep(axis.categories) }
       : {}),

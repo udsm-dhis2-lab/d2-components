@@ -13,8 +13,9 @@ const cartesian = ['COLUMN', 'STACKED_COLUMN', 'BAR', 'STACKED_BAR', 'LINE', 'DO
 const standard = [...cartesian, 'PIE', 'RADAR', 'GAUGE', 'SOLIDGAUGE'];
 /** Machine-readable UI contract. Retained server fields are not automatically capabilities. */
 export const chartCapabilities: readonly ChartCapability[] = Object.freeze([
-  { key: 'axes', status: 'partial', evidence: 'verified-dhis2', types: cartesian, note: 'One domain axis; numeric range axes, labels, bounds and reference lines' },
-  { key: 'series', status: 'partial', evidence: 'verified-dhis2', types: cartesian, note: 'Same-family types plus verified COLUMN/LINE mixing' },
+  { key: 'axes', status: 'partial', evidence: 'verified-dhis2', types: cartesian, note: 'One domain axis; numeric range axes, labels, bounds and reference lines. COLUMN series axis indexes may imply axes when axes is empty.' },
+  { key: 'inferredMultiAxis', status: 'partial', evidence: 'verified-dhis2', types: ['COLUMN'], note: 'Empty axes with per-item numeric axis indexes; side/offset parity with DHIS2 output remains unverified' },
+  { key: 'series', status: 'partial', evidence: 'verified-dhis2', types: cartesian, note: 'Same-family types plus verified COLUMN/LINE mixing; COLUMN supports inferred multi-axis slots' },
   { key: 'percentStackedValues', status: 'supported', evidence: 'verified-dhis2', types: ['STACKED_COLUMN', 'STACKED_BAR', 'STACKED_AREA'] },
   { key: 'noSpaceBetweenColumns', status: 'supported', evidence: 'verified-dhis2', types: ['COLUMN', 'STACKED_COLUMN', 'BAR', 'STACKED_BAR'] },
   { key: 'showData', status: 'supported', evidence: 'verified-dhis2', types: standard },
@@ -82,9 +83,12 @@ export function validateChartCapabilities(type: string, input: unknown): void {
   if (Array.isArray(series) && series.length) {
     if (!chartCapability(type, 'series')) issues.push(issue('configuration.series', `${type} does not support per-item series`));
     const range = Array.isArray(axes) ? axes.filter(axis => record(axis) && axis['type'] === 'RANGE') : [];
+    const seenDimensions = new Set<string>();
     series.forEach((item, index) => {
       const path = `configuration.series[${index}]`;
-      if (!record(item) || typeof item['dimensionItem'] !== 'string') { issues.push(issue(path, 'Series requires dimensionItem')); return; }
+      if (!record(item) || typeof item['dimensionItem'] !== 'string' || !item['dimensionItem']) { issues.push(issue(path, 'Series requires dimensionItem')); return; }
+      if (seenDimensions.has(item['dimensionItem'])) issues.push(issue(`${path}.dimensionItem`, 'Duplicate series dimensionItem'));
+      seenDimensions.add(item['dimensionItem']);
       if (item['type'] !== undefined) {
         const seriesType = String(item['type']).toUpperCase();
         const baseType = type.replace('STACKED_', '');
@@ -93,7 +97,7 @@ export function validateChartCapabilities(type: string, input: unknown): void {
           (type === 'DOTTED' && seriesType === 'LINE');
         if (!compatible) issues.push(issue(`${path}.type`, `${seriesType} is not a verified per-series type for ${type}; only same-family or COLUMN/LINE mixing is supported`));
       }
-      if (item['axis'] !== undefined && (!Number.isInteger(item['axis']) || Number(item['axis']) < 0 || (range.length > 0 && !range.some(axis => (axis['index'] ?? 0) === item['axis'])) || (range.length === 0 && item['axis'] !== 0))) issues.push(issue(`${path}.axis`, 'Series axis must reference an existing RANGE axis index'));
+      if (item['axis'] !== undefined && (!Number.isInteger(item['axis']) || Number(item['axis']) < 0 || (range.length > 0 && !range.some(axis => (axis['index'] ?? 0) === item['axis'])) || (range.length === 0 && Number(item['axis']) > 0 && type !== 'COLUMN'))) issues.push(issue(`${path}.axis`, 'Series axis must reference an existing RANGE axis index; only COLUMN may infer axes from an empty axes array'));
     });
   }
   for (const key of ['percentStackedValues', 'noSpaceBetweenColumns', 'cumulativeValues']) {
