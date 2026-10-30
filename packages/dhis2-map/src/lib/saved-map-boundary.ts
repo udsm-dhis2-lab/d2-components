@@ -1,13 +1,13 @@
 /** A version must be supplied by the caller; payload shape is not a version oracle. */
 export type MapCoreVersion = '2.41.3' | '2.43';
-export type MapLayerKind = 'thematic' | 'boundary' | 'orgUnit' | 'legacy';
+export type MapLayerKind = 'thematic' | 'facility' | 'boundary' | 'orgUnit' | 'legacy';
 export interface MapViewport { longitude: number; latitude: number; zoom: number }
 export interface MapBasemap { id: string; opacity?: number; hidden?: boolean; [key: string]: unknown }
 export interface MapSource { kind: 'analytics' | 'geometry'; selections?: readonly unknown[] }
 export interface MapPeriod { kind: 'single'; id?: string }
 export type MapLayerRequest =
   | { kind: 'thematic'; layer: SavedMapLayer; source: MapSource; period?: MapPeriod }
-  | { kind: 'boundary' | 'orgUnit'; layer: SavedMapLayer; source: MapSource; period?: MapPeriod }
+  | { kind: 'facility' | 'orgUnit'; layer: SavedMapLayer; source: MapSource; period?: MapPeriod }
   | { kind: 'unsupported'; layer: SavedMapLayer; originalKind: string };
 export interface SavedMapLayer { id: string; layer: string; config: Record<string, unknown>; raw: Record<string, unknown> }
 export interface SavedMapRequest {
@@ -84,7 +84,10 @@ export function serializeSavedMap(request: SavedMapRequest): Record<string, unkn
 
 /** Classification is intentionally narrower than the catalogue's family list. */
 export function toMapLayerRequest(layer: SavedMapLayer): MapLayerRequest {
-  if (layer.layer === 'thematic' || layer.layer === 'boundary' || layer.layer === 'orgUnit')
-    return { kind: layer.layer, layer, source: { kind: 'analytics' } };
+  if (layer.layer === 'thematic')
+    return { kind: 'thematic', layer, source: { kind: 'analytics' } };
+  if (layer.layer === 'facility' || layer.layer === 'orgUnit' || layer.layer === 'boundary')
+    return { kind: layer.layer === 'boundary' ? 'orgUnit' : layer.layer,
+      layer, source: { kind: 'geometry' } };
   return { kind: 'unsupported', layer, originalKind: layer.layer };
 }

@@ -37,7 +37,7 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
     private readonly provider: MapProviderAdapter = new DefaultMapProviderAdapter()
   ) {
     super();
-    for (const kind of ['thematic', 'boundary', 'orgUnit', 'legacy']) {
+    for (const kind of ['thematic', 'facility', 'boundary', 'orgUnit', 'legacy']) {
       this.layerRegistry.register({ kind,
         load: (layer, signal) => layer.loadFeatures(signal),
         render: (layer, map) => this.#renderLayer(layer, map) });
@@ -95,7 +95,8 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
 
   getBounds(): [number, number, number, number] | null {
     const features = this.getValidFeatures(
-      this.#loadedLayers.flatMap((layer) => layer.featureCollection.features)
+      this.#loadedLayers.filter(layer => !layer.hidden)
+        .flatMap((layer) => layer.featureCollection.features)
     );
     if (!features.length) return null;
     return turf.bbox({
@@ -152,7 +153,11 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
   }
 
   #renderLayers(map: ProviderMap): void {
-    this.#loadedLayers.forEach((layer) => {
+    this.#loadedLayers
+      .map((layer, index) => ({ layer, index }))
+      .sort((a, b) => (a.layer.sortOrder ?? a.index) - (b.layer.sortOrder ?? b.index) || a.index - b.index)
+      .forEach(({ layer }) => {
+      if (layer.hidden) return;
       try {
         this.layerRegistry.resolve(this.#definitionKind(layer)).render(layer, map);
       } catch (error) {
@@ -172,6 +177,37 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
           type: 'geojson',
           data: layer.featureCollection,
         });
+        if (layer.layer === 'facility' || layer.layer === 'orgUnit' || layer.layer === 'boundary') {
+          const polygonFilter = ['==', ['geometry-type'], 'Polygon'];
+          const pointFilter = ['==', ['geometry-type'], 'Point'];
+          if (layer.layer === 'facility' && layer.features.some(feature =>
+            feature.properties?.['geometryKind'] === 'straight-line-buffer'))
+            map.addLayer({ id: `${layer.id}-buffer`, type: 'fill', source,
+              filter: ['==', ['get', 'geometryKind'], 'straight-line-buffer'],
+              paint: { 'fill-color': ['get', 'color'], 'fill-opacity': Math.min(0.25, layer.opacity ?? 1) } });
+          if (layer.layer === 'facility' && layer.features.some(feature =>
+            feature.properties?.['geometryKind'] === 'associated-geometry'))
+            map.addLayer({ id: `${layer.id}-associated`, type: 'fill', source,
+              filter: ['==', ['get', 'geometryKind'], 'associated-geometry'],
+              paint: { 'fill-color': ['get', 'color'], 'fill-opacity': Math.min(0.3, layer.opacity ?? 1) } });
+          map.addLayer({ id: layer.id, type: layer.layer === 'facility' ? 'circle' : 'line', source,
+            filter: layer.layer === 'facility' ? pointFilter : polygonFilter,
+            paint: layer.paint, layout: {} });
+          if (layer.layer !== 'facility' && layer.features.some(feature => feature.geometry.type === 'Point'))
+            map.addLayer({ id: `${layer.id}-points`, type: 'circle', source,
+              filter: pointFilter, paint: { 'circle-color': ['get', 'color'],
+                'circle-radius': 5, 'circle-opacity': layer.opacity ?? 1 } });
+          if (layer.labels && this.#providerConfig?.style && !this.mapLayerConfiguration.hideBasemap)
+            map.addLayer({ id: `${layer.id}-labels`, type: 'symbol', source,
+              filter: layer.layer === 'facility' ? pointFilter : polygonFilter,
+              layout: { 'text-field': ['get', 'name'], 'text-size': 11 },
+              paint: { 'text-color': '#404b5a', 'text-halo-color': '#ffffff', 'text-halo-width': 1 } });
+          if (!this.mapLayerConfiguration.hideLegendControl && layer.legendSet?.legends?.length)
+            this.#addControl(new LegendControl(layer.legendSet.legends.map(legend => ({
+              useBackgroundColor: true, backgroundColor: legend.color, label: legend.name,
+            })), layer.legendSet.name || 'Map legend'), 'bottom-right');
+          return;
+        }
         map.addLayer({
           id: layer.id,
           type: layer.fillType,

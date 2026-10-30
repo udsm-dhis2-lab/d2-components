@@ -61,7 +61,8 @@ try {
       "const provider={createMap(){throw new Error('draw should not run')},createNavigationControl(){return{}},createStyleSwitcherControl(){return{}}};",
       "const renderer=new m.D2Maps(provider).setProviderConfig({style:'mock://style',accessToken:'test-only'});",
       "if(m.MapVisualizer!==m.D2Maps||typeof m.MapLayer!=='function'||typeof m.TrackedEntityLayer!=='function'||typeof m.FetchMapDataSource!=='function'||!renderer) throw new Error('map exports missing');",
-      "console.log('Map-only consumer import passed');",
+      "const layer=new m.MapLayer({id:'facility',layer:'facility'},{loadGeoFeatures:async()=>[{id:'ou-a',na:'Clinic',co:'[35,-6]',ty:1}],loadAnalytics:()=>{throw new Error('geometry layer requested analytics')}});",
+      "layer.loadFeatures().then(()=>{if(layer.features[0].geometry.type!=='Point') throw new Error('facility geometry missing');console.log('Map-only consumer import passed')}).catch(error=>{console.error(error);process.exitCode=1});",
     ].join('\n')
   );
   execFileSync(process.execPath, ['verify.cjs'], {

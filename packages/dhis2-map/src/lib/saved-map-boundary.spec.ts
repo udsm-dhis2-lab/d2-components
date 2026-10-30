@@ -10,7 +10,7 @@ describe('versioned saved-map boundary', () => {
       expect(request.layers.map(layer => layer.id)).toEqual(['view-thematic', 'view-facility']);
       expect(request.layers[0].config).toMatchObject({ legendDecimalPlaces: 1 });
       expect(toMapLayerRequest(request.layers[0]).kind).toBe('thematic');
-      expect(toMapLayerRequest(request.layers[1])).toMatchObject({ kind: 'unsupported', originalKind: 'facility' });
+      expect(toMapLayerRequest(request.layers[1])).toMatchObject({ kind: 'facility', source: { kind: 'geometry' } });
       expect(serializeSavedMap(request)).toEqual(input);
     }
   );
@@ -18,6 +18,7 @@ describe('versioned saved-map boundary', () => {
     const request = parseSavedMap({ ...legacySavedMapFixture(),
       mapViews: [{ id: 'boundary-a', layer: 'boundary', config: '{"label":true}' }] }, '2.41.3');
     expect(request.layers[0].layer).toBe('boundary');
+    expect(toMapLayerRequest(request.layers[0])).toMatchObject({ kind: 'orgUnit', source: { kind: 'geometry' } });
     expect(serializeSavedMap(request).mapViews).toEqual([{ id: 'boundary-a', layer: 'boundary', config: '{"label":true}' }]);
   });
   it('rejects malformed encoded objects and missing versioned basemaps', () => {

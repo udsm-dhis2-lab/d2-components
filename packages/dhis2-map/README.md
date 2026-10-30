@@ -37,12 +37,30 @@ boundary and `serializeSavedMap(request)` when writing a compatible payload.
 The Core version must come from the caller's verified server contract; it is
 not inferred from a retained field. The parser decodes `mapViews[].config`
 once, validates viewport/basemap shape, preserves safe unknown properties and
-classifies only `thematic`, `boundary` and `orgUnit` as currently recognized
+classifies `thematic`, `facility`, `boundary` and `orgUnit` as currently recognized
 layer requests. Other families remain unsupported; parsing them does not make
 them renderable. `MapLayerRegistry` permits provider-independent definitions,
 but the default `D2Maps` registry contains only the existing generic layer
 behavior. Existing `new D2Maps().addLayer(...).draw()` and `D2Visualizer` MAP
 facade imports remain supported.
+
+## Geometry-only layers
+
+`facility`, `orgUnit`, and legacy `boundary` layers request GeoFeatures but
+never request analytics. `boundary` is interpreted as `orgUnit` at the saved-map
+boundary without rewriting its stored identifier. Facility points and actual
+associated polygon geometry retain separate feature kinds. An `areaRadius`
+creates a **straight-line buffer in metres**, not an actual catchment,
+road-network area, routing result, or travel-time estimate. Missing/invalid
+geometry IDs are exposed on `MapLayer.missingGeometryIds`.
+
+The renderer accepts validated six-digit hex `organisationUnitColor` and
+optional explicit `groupColors` keyed by group ID. It does not derive a group
+palette or icon from a group-set ID alone; consumers must supply verified group
+metadata. Labels use the GeoFeature name as plain text. Arbitrary HTML label
+templates and unverified icon URLs are intentionally not rendered. `hidden`,
+`labels`, `opacity`, `pointRadius`, `sortOrder`, and `areaRadius` are supported;
+provider-side labels require a style with a glyph source.
 
 No geometry/value cache is currently active. A future cache must key by
 selections, access context, coordinate source, Core/app version and source

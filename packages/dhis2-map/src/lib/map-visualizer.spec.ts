@@ -43,6 +43,70 @@ async function ready(map: FakeMap, drawing: Promise<void>): Promise<void> {
 }
 
 describe('MapVisualizer', () => {
+  it('renders mixed thematic, facility and legacy boundary layers in stable order without geometry analytics', async () => {
+    const map = new FakeMap();
+    const point = { id: 'facility-a', na: 'Clinic A', co: '[35,-6]', ty: 1 } as MapGeoFeature;
+    const polygon = { id: 'ou-a', na: 'Area A',
+      co: '[[[35,-6],[36,-6],[36,-7],[35,-6]]]', ty: 2 } as MapGeoFeature;
+    const facilitySource = { loadGeoFeatures: jest.fn().mockResolvedValue([point]),
+      loadAnalytics: jest.fn().mockRejectedValue(new Error('must not request analytics')) };
+    const boundarySource = { loadGeoFeatures: jest.fn().mockResolvedValue([polygon]),
+      loadAnalytics: jest.fn().mockRejectedValue(new Error('must not request analytics')) };
+    const facility = new MapLayer({ id: 'facility', layer: 'facility', sortOrder: 1,
+      areaRadius: 5000, labels: true, config: '{"opacity":0.7}' }, facilitySource);
+    const boundary = new MapLayer({ id: 'boundary', layer: 'boundary', sortOrder: 2,
+      organisationUnitColor: '#334455', labels: true }, boundarySource);
+    const thematic = layer('thematic', [feature(35, -6)]);
+    thematic.layer = 'thematic'; thematic.sortOrder = 0;
+    const renderer = new D2Maps(provider(map)).setId('host') as D2Maps;
+    renderer.setProviderConfig({ style: 'provider-style' }).addLayer(boundary)
+      .addLayer(facility).addLayer(thematic);
+    await ready(map, renderer.draw());
+    expect(facilitySource.loadAnalytics).not.toHaveBeenCalled();
+    expect(boundarySource.loadAnalytics).not.toHaveBeenCalled();
+    expect(facility.bufferCount).toBe(1);
+    expect(map.addSource.mock.calls.map(([id]) => id)).toEqual([
+      'thematic-source', 'facility-source', 'boundary-source',
+    ]);
+    expect(map.addLayer.mock.calls.map(([item]) => item.id)).toContain('facility-buffer');
+    expect(map.addLayer.mock.calls.map(([item]) => item.id)).toContain('boundary-labels');
+    expect(map.addLayer.mock.calls.find(([item]) => item.id === 'boundary')?.[0].paint)
+      .toMatchObject({ 'line-color': ['get', 'color'] });
+    renderer.dispose();
+    expect(map.remove).toHaveBeenCalledTimes(1);
+  });
+  it('omits hidden geometry layers from provider output and retains the next visible layer', async () => {
+    const map = new FakeMap();
+    const source = { loadGeoFeatures: jest.fn().mockResolvedValue([
+      { id: 'ou-a', na: '<b>Plain text</b>', co: '[35,-6]', ty: 1 } as MapGeoFeature,
+    ]), loadAnalytics: jest.fn() };
+    const hidden = new MapLayer({ id: 'hidden', layer: 'facility', hidden: true }, source);
+    const visible = new MapLayer({ id: 'visible', layer: 'facility', labels: true }, source);
+    const renderer = new D2Maps(provider(map)).setId('host') as D2Maps;
+    renderer.addLayer(hidden).addLayer(visible);
+    await ready(map, renderer.draw());
+    expect(map.addSource.mock.calls.map(([id]) => id)).toEqual(['visible-source']);
+    expect(source.loadAnalytics).not.toHaveBeenCalled();
+    expect(visible.features[0].properties?.['name']).toBe('<b>Plain text</b>');
+    expect(map.addLayer.mock.calls.map(([item]) => item.id)).not.toContain('visible-labels');
+  });
+  it('renders only used validated facility group colours in an accessible legend', async () => {
+    const map = new FakeMap();
+    const source = { loadGeoFeatures: jest.fn().mockResolvedValue([
+      { id: 'ou-a', na: 'Clinic A', co: '[35,-6]', ty: 1,
+        dimensions: { group: 'hospital' } } as MapGeoFeature,
+    ]), loadAnalytics: jest.fn() };
+    const facility = new MapLayer({ id: 'grouped', layer: 'facility',
+      groupColors: { hospital: '#225588', unused: '#000000', unsafe: 'red' } }, source);
+    const renderer = new D2Maps(provider(map)).setId('host') as D2Maps;
+    renderer.addLayer(facility);
+    await ready(map, renderer.draw());
+    expect(facility.features[0].properties?.['color']).toBe('#225588');
+    expect(facility.legendSet.legends).toEqual([
+      { id: 'hospital', name: 'hospital', color: '#225588', startValue: 0, endValue: 0 },
+    ]);
+    expect(map.addControl).toHaveBeenCalled();
+  });
   it('provides valid circle paint and layout for DHIS2 point geometries', () => {
     const points = new MapLayer({ id: 'points', layer: 'thematic1',
       features: [feature(35, -6)] });
