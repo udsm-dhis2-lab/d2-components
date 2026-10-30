@@ -1,9 +1,11 @@
+
 {
   "name": "@iapps/ng-dhis2-ui",
-  "version": "1.4.2",
+  "version": "1.4.4",
   "peerDependencies": {
-    "@angular/common": "^19.0.0",
-    "@angular/core": "^19.0.0",
+    "@angular/common": "^19.0.0 || ^20.0.0",
+    "@angular/core": "^19.0.0 || ^20.0.0",
+    "@angular/forms": "^19.0.0 || ^20.0.0",
     "@dhis2/app-adapter": "^12.1.0",
     "@dhis2/app-runtime": "^3.13.0",
     "@dhis2/d2-i18n": "^1.1.2",

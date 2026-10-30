@@ -441,11 +441,34 @@ export class ProgramEntryFormMetaData implements IProgramEntryFormMetaData {
 
   async get() {
     try {
-      const program = await (
-        window as unknown as D2Window
-      )?.d2Web?.trackerModule?.trackedEntity
-        ?.setProgram(this.config?.program)
-        ?.getMetaData();
+      // const program = await (
+      //   window as unknown as D2Window
+      // )?.d2Web?.trackerModule?.trackedEntity
+      //   ?.setProgram(this.config?.program)
+      //   ?.getMetaData();
+
+      const programId = this.config?.program;
+
+      if (!programId) {
+        console.error(
+          'ProgramEntryFormMetaData: Program ID is missing.'
+        );
+        return null;
+      }
+
+      const trackedEntityQuery =
+        this.d2?.trackerModule?.trackedEntity;
+
+      if (!trackedEntityQuery) {
+        console.error(
+          'ProgramEntryFormMetaData: Tracker query is unavailable.'
+        );
+        return null;
+      }
+
+      const configuredQuery = trackedEntityQuery.setProgram(programId);
+
+      const program = await configuredQuery.getMetaData();
 
       if (program) {
         this.program = program;

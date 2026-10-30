@@ -8,7 +8,8 @@
         [fullScreen]="fullScreen"
         [isChart]="isChart"
         [visualizationType]="currrentVisualizationType"
-        [visualizationTitle]="$safeNavigationMigration(visualizer?.config?.title)"
+        /* [visualizationTitle]="$safeNavigationMigration(visualizer?.config?.title)" */
+        [visualizationTitle]="visualizer?.config?.title"
         [disableVisualizationChange]="disableVisualizationChange"
         (download)="onDownload($event)"
         (fullscreenChange)="onFullScreenAction()"

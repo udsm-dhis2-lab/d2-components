@@ -96,7 +96,18 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
     return this;
   }
 
+  // setProgram(program: string): BaseTrackerQuery<T> {
+  //   this.program = program;
+  //   return this;
+  // }
+
   setProgram(program: string): BaseTrackerQuery<T> {
+    if (!program?.trim()) {
+      throw new Error(
+        'BaseTrackerQuery: A valid program ID is required.'
+      );
+    }
+
     this.program = program;
     return this;
   }
@@ -454,9 +465,29 @@ export class BaseTrackerQuery<T extends TrackedEntityInstance> {
     return this.#saveAll();
   }
 
+  // async getMetaData(config?: {
+  //   skipProgramRules?: boolean;
+  // }): Promise<Program | null> {
+  //   return TrackerMetadataBuilder.getProgram(this.program!, config);
+  // }
+
   async getMetaData(config?: {
     skipProgramRules?: boolean;
   }): Promise<Program | null> {
-    return TrackerMetadataBuilder.getProgram(this.program!, config);
+    const programId = this.program;
+
+    console.log('BaseTrackerQuery.getMetaData:', {
+      programId,
+      config,
+    });
+
+    if (!programId) {
+      throw new Error(
+        'BaseTrackerQuery: Program is not initialized. ' +
+        'Call setProgram() before getMetaData().'
+      );
+    }
+
+    return TrackerMetadataBuilder.getProgram(programId, config);
   }
 }

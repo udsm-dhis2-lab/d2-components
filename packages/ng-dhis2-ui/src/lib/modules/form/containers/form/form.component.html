@@ -769,7 +769,8 @@
         @let sectionKey = stageSection?.id ?? $index;
         @let sectionDomId = 'section-' + sectionKey;
         @let descriptionDomId = sectionDomId + '-desc';
-        @let sectionDescription = $safeNavigationMigration(stageSection?.description);
+        <!-- @let sectionDescription = $safeNavigationMigration(stageSection?.description); -->
+        @let sectionDescription = stageSection?.description;
         @let hasDescription = !!sectionDescription;
 
         <section class="form__section" [attr.data-section-id]="sectionDomId">
@@ -901,7 +902,8 @@
         @let sectionKey = teiSection?.id ?? $index;
         @let sectionDomId = 'section-' + sectionKey;
         @let descriptionDomId = sectionDomId + '-desc';
-        @let sectionDescription = $safeNavigationMigration(teiSection?.description);
+        <!-- @let sectionDescription = $safeNavigationMigration(teiSection?.description); -->
+        @let sectionDescription = teiSection?.description;
         @let hasDescription = !!sectionDescription;
 
         <section class="form__section" [attr.data-section-id]="sectionDomId">
