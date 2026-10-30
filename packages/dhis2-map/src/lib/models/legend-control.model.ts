@@ -8,9 +8,9 @@ export class LegendControl {
   onAdd(map: any) {
     this._map = map;
     this._container = document.createElement('div');
-    this._container.className = 'mapboxgl-ctrl';
+    this._container.className = 'maplibregl-ctrl';
 
-    if (this._legends?.length > 1) {
+    if (this._legends?.length > 0) {
       const style = document.createElement('style');
       style.textContent = `
      .legend-ctrl {
@@ -48,6 +48,8 @@ export class LegendControl {
       `;
       const legendContainer = document.createElement('div');
       legendContainer.className = 'legend-ctrl';
+      legendContainer.setAttribute('role', 'group');
+      legendContainer.setAttribute('aria-label', this.legendTitle || 'Map legend');
       const title = document.createElement('div');
       title.className = 'legend-ctrl-title';
       title.textContent = this.legendTitle;

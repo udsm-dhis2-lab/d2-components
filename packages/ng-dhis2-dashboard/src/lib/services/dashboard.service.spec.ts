@@ -52,6 +52,26 @@ describe('DashboardService', () => {
     expect(overlayRef.detach).toHaveBeenCalled();
   });
 
+  it('requests map IDs and retains MAP items for the renderer', async () => {
+    const http = installD2Web({ 'dashboards/dashboard-maps': {
+      id: 'dashboard-maps', name: 'Maps', dashboardItems: [
+        { id: 'chart-card', type: 'VISUALIZATION', visualization: { id: 'chart-a' } },
+        { id: 'map-card-2', type: 'MAP', map: { id: 'map-a' } },
+        { id: 'chart-card-3', type: 'VISUALIZATION', visualization: { id: 'chart-b' } },
+        { id: 'map-card-4', type: 'MAP', map: { id: 'map-b' } },
+      ],
+    } });
+
+    const result = await firstValueFrom(
+      TestBed.inject(DashboardService).getCurrentDashboard('dashboard-maps')
+    );
+
+    expect(http.get.mock.calls[0][0]).toContain('map[id]');
+    expect(result?.dashboardItems?.map(item => item.visualization?.id)).toEqual([
+      'chart-a', 'map-a', 'chart-b', 'map-b',
+    ]);
+  });
+
   it('returns undefined and exposes a snackbar when loading fails', async () => {
     installD2Web({});
 

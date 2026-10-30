@@ -37,11 +37,7 @@ module.exports = {
     '^highcharts$': '<rootDir>/src/testing/mocks/highcharts.mock.ts',
     '^highcharts/(highcharts-more|modules/.+)$':
       '<rootDir>/src/testing/mocks/engine-initializer.mock.ts',
-    '^mapbox-gl$': '<rootDir>/src/testing/mocks/mapbox-gl.mock.ts',
-    '^mapbox-gl-controls$':
-      '<rootDir>/src/testing/mocks/mapbox-controls.mock.ts',
-    '^mapbox-gl-style-switcher$':
-      '<rootDir>/src/testing/mocks/mapbox-style-switcher.mock.ts',
+    '^maplibre-gl$': '<rootDir>/src/testing/mocks/maplibre-gl.mock.ts',
     '^@turf/turf$': '<rootDir>/src/testing/mocks/turf.mock.ts',
   },
 };

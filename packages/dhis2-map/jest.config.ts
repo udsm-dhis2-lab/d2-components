@@ -8,8 +8,6 @@ module.exports = {
   moduleFileExtensions: ['ts', 'js'],
   coverageDirectory: '../../coverage/packages/dhis2-map',
   moduleNameMapper: {
-    '^mapbox-gl$': '<rootDir>/src/testing/mapbox-gl.mock.ts',
-    '^mapbox-gl-style-switcher$':
-      '<rootDir>/src/testing/style-switcher.mock.ts',
+    '^maplibre-gl$': '<rootDir>/src/testing/maplibre-gl.mock.ts',
   },
 };

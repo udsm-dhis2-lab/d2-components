@@ -1,4 +1,6 @@
 export class Map {
+  static latestOptions: unknown;
+  constructor(options: unknown) { Map.latestOptions = options; }
   addControl() { return this; }
   remove() { return this; }
 }

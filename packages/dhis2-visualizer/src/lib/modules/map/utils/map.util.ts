@@ -1,4 +1,4 @@
-import * as mapboxgl from 'mapbox-gl';
+import * as maplibregl from 'maplibre-gl';
 import { Legend, LegendSet } from '../models/legend-set.model';
 import { MapAnalytics } from '../models/map-analytic.model';
 import { MapDrawablePayload } from '../models/map-drawable-payload.model';
@@ -1540,10 +1540,10 @@ export class MapUtil {
   draw(): void {
     try {
       // Map Instance
-      const map = new mapboxgl.Map(this as unknown as mapboxgl.MapboxOptions);
+      const map = new maplibregl.Map(this as unknown as maplibregl.MapOptions);
 
       // Map Controls Instance
-      const navigationControl = new mapboxgl.NavigationControl();
+      const navigationControl = new maplibregl.NavigationControl();
 
       // Add Navigation Control In Map Instance
       map.addControl(navigationControl);

@@ -246,6 +246,44 @@ describe('D2Visualizer compatibility facade', () => {
     ).toBe('/dhis');
   });
 
+  it('characterizes saved mapView order through the MAP facade without rendering unsupported families', async () => {
+    jest.spyOn(MapVisualizer.prototype, 'draw').mockResolvedValue(undefined);
+    const mapViews = [
+      { id: 'thematic-a', layer: 'thematic', thematicMapType: 'CHOROPLETH' },
+      { id: 'facility-b', layer: 'facility' },
+    ];
+    const visualizer = new D2Visualizer().setId('visualization-host').setType('MAP')
+      .setConfig(visualizationConfigFixture('MAP', { mapViews }));
+    await visualizer.draw();
+    const renderer = visualizer.visualizer as MapVisualizer;
+    expect(renderer).toBeInstanceOf(MapVisualizer);
+    expect(renderer.layers.map(layer => [layer.id, layer.layer])).toEqual([
+      ['thematic-a', 'thematic'], ['facility-b', 'facility'],
+    ]);
+    await visualizer.dispose();
+  });
+
+  it('feeds a thematic facade layer through the same zero-safe direct MapLayer path', async () => {
+    jest.spyOn(MapVisualizer.prototype, 'draw').mockResolvedValue(undefined);
+    const source = {
+      loadGeoFeatures: jest.fn().mockResolvedValue([{ id: 'ou-a', na: 'Area A', ty: 2,
+        co: '[[[35,-6],[36,-6],[36,-7],[35,-7],[35,-6]]]' }]),
+      loadAnalytics: jest.fn().mockResolvedValue({ rows: [{ ou: { id: 'ou-a' }, value: 0 }] }),
+    };
+    const visualizer = new D2Visualizer().setId('visualization-host').setType('MAP')
+      .setMapDataSource(source)
+      .setConfig(visualizationConfigFixture('MAP', { mapViews: [{ id: 'thematic-a',
+        layer: 'thematic', thematicMapType: 'CHOROPLETH', method: 2, classes: 1,
+        colorScale: '#2266aa', config: '{"noDataLegend":{"color":"#eeeeee"}}' }] }));
+    await visualizer.draw();
+    const renderer = visualizer.visualizer as MapVisualizer;
+    await renderer.layers[0].loadFeatures();
+    expect(renderer.layers[0].featureCollection.features[0].properties)
+      .toMatchObject({ value: 0, valueState: 'zero', color: '#2266aa' });
+    expect(source.loadAnalytics).toHaveBeenCalledTimes(1);
+    await visualizer.dispose();
+  });
+
   it('dispatches SINGLE_VALUE and retains it as the active renderer', async () => {
     const draw = jest
       .spyOn(SingleValueVisualizer.prototype, 'draw')

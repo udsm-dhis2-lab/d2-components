@@ -9,8 +9,9 @@ import * as _ from 'lodash';
 import { TableConfiguration } from '../../modules/table/models/table-config.model';
 import { CustomVisualizationTemplate } from '../../modules/custom/models/custom-visualization-template.model';
 import { DEFAULT_ORG_UNIT_SELECTIONS } from '../constants/default-data-selections.constant';
-import { LngLatLike } from 'mapbox-gl';
 import { IMultiAxisType } from '../../modules/chart/models/multi-axis-type.model';
+
+type MapCenter = [number, number] | { lng: number; lat: number } | { lon: number; lat: number };
 
 export interface VisualizationAxisConfiguration {
   type: 'DOMAIN' | 'RANGE' | string;
@@ -248,7 +249,7 @@ export class VisualizationConfiguration {
     return this.config?.symbols;
   }
 
-  get mapCenter(): LngLatLike {
+  get mapCenter(): MapCenter {
     return this.config?.center;
   }
 

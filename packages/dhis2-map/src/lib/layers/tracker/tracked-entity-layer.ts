@@ -3,10 +3,7 @@ import { flatten, uniqBy } from 'lodash';
 import { TrackerVisualizerBase } from './tracker-core';
 import { SelectionFilterUtil } from './selection-filter';
 import { TrackedEntityFilterUtil } from './tracked-entity-filter';
-import * as mapboxgl from 'mapbox-gl';
-import { MapboxStyleSwitcherControl } from 'mapbox-gl-style-switcher';
-// import 'mapbox-gl-controls/lib/controls.css';
-// import 'mapbox-gl-style-switcher/styles.css';
+import * as maplibregl from 'maplibre-gl';
 
 function safeUrl(value: unknown): string | undefined {
   if (typeof value !== 'string') return undefined;
@@ -36,19 +33,16 @@ export class TrackedEntityLayer extends TrackerVisualizerBase {
     let legends: any[] = [];
     let legendTitle: string;
     try {
-      if (!this.style) {
-        throw new Error('Map provider configuration with a style is required');
-      }
-      this.map = new mapboxgl.Map({
+      if (this.style.startsWith('mapbox://'))
+        throw new Error('Mapbox style URLs are not supported by MapLibre');
+      this.map = new maplibregl.Map({
         container: this._id,
-        style: this.style,
+        style: this.style || { version: 8, sources: {}, layers: [] },
         center: this._config?.mapCenter,
         zoom: this._config?.zoom || 5,
-        accessToken: this.accessToken,
       });
 
-      this.map.addControl(new mapboxgl.NavigationControl());
-      this.map.addControl(new MapboxStyleSwitcherControl());
+      this.map.addControl(new maplibregl.NavigationControl());
 
       const geojson = this.getGeoJSON();
 
@@ -68,9 +62,9 @@ export class TrackedEntityLayer extends TrackerVisualizerBase {
           markerEl.style.borderRadius = '50%';
         }
 
-        const markerElement = new mapboxgl.Marker(markerEl)
+        const markerElement = new maplibregl.Marker({ element: markerEl })
           .setLngLat(marker.geometry.coordinates)
-          .setPopup(new mapboxgl.Popup().setDOMContent(this.getPopupContent(marker)))
+          .setPopup(new maplibregl.Popup().setDOMContent(this.getPopupContent(marker)))
           .addTo(this.map);
 
         const markerDiv = markerElement.getElement();
@@ -111,7 +105,7 @@ export class TrackedEntityLayer extends TrackerVisualizerBase {
       onAdd(map: any) {
         this._map = map;
         this._container = document.createElement('div');
-        this._container.className = 'mapboxgl-ctrl';
+        this._container.className = 'maplibregl-ctrl';
 
         if (this._legends?.length > 1) {
           const legendRoot=document.createElement('div');legendRoot.className='legend-ctrl';const title=document.createElement('div');title.className='legend-ctrl-title';title.textContent=legendTitle||'';legendRoot.appendChild(title);

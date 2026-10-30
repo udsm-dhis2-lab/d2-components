@@ -1,5 +1,4 @@
-import * as mapboxgl from 'mapbox-gl';
-import { MapboxStyleSwitcherControl } from 'mapbox-gl-style-switcher';
+import * as maplibregl from 'maplibre-gl';
 
 export interface MapProviderConfig {
   style: string | Record<string, unknown>;
@@ -29,14 +28,20 @@ export interface MapProviderAdapter {
 }
 export class DefaultMapProviderAdapter implements MapProviderAdapter {
   createMap(options: Record<string, unknown>): ProviderMap {
-    return new mapboxgl.Map(
-      options as mapboxgl.MapboxOptions
+    const style = options['style'];
+    if (typeof style === 'string' && style.startsWith('mapbox://'))
+      throw new Error('Mapbox style URLs are not supported by MapLibre; configure an open MapLibre style URL or style object');
+    const { accessToken: _ignoredLegacyToken, ...mapOptions } = options;
+    return new maplibregl.Map(
+      mapOptions as maplibregl.MapOptions
     ) as unknown as ProviderMap;
   }
   createNavigationControl(): ProviderControl {
-    return new mapboxgl.NavigationControl();
+    return new maplibregl.NavigationControl();
   }
   createStyleSwitcherControl(): ProviderControl {
-    return new MapboxStyleSwitcherControl();
+    // The historical Mapbox style switcher has no configured open-style list.
+    // Retain the injectable adapter method without adding a proprietary control.
+    return { onAdd: () => document.createElement('div'), onRemove: () => undefined };
   }
 }

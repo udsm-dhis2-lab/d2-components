@@ -56,7 +56,7 @@ try {
     join(consumer, 'verify.cjs'),
     [
       "const Module=require('node:module'); const load=Module._load;",
-      "Module._load=function(request,parent,main){ if(request==='mapbox-gl') return {Map:class{},NavigationControl:class{}}; if(request==='mapbox-gl-style-switcher') return {MapboxStyleSwitcherControl:class{}}; return load.call(this,request,parent,main); };",
+      "Module._load=function(request,parent,main){ if(request==='maplibre-gl') return {Map:class{},NavigationControl:class{}}; if(request==='mapbox-gl') throw new Error('Mapbox dependency retained'); return load.call(this,request,parent,main); };",
       "const m=require('@iapps/d2-maps');",
       "const provider={createMap(){throw new Error('draw should not run')},createNavigationControl(){return{}},createStyleSwitcherControl(){return{}}};",
       "const renderer=new m.D2Maps(provider).setProviderConfig({style:'mock://style',accessToken:'test-only'});",

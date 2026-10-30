@@ -130,7 +130,7 @@ export class DashboardService {
     const d2 = (window as unknown as D2Window).d2Web;
     return from(
       d2.httpInstance.get(
-        `dashboards/${id}.json?fields=id,name,description,favorite,dashboardItems[id,type,x,y,height,width,shape,visualization[id],chart~rename(visualization)]`
+        `dashboards/${id}.json?fields=id,name,description,favorite,dashboardItems[id,type,x,y,height,width,shape,visualization[id],chart~rename(visualization),map[id]]`
       )
     ).pipe(
       map((dashboardResponse) =>

@@ -5,7 +5,7 @@ const require = createRequire(import.meta.url);
 const Module = require('node:module');
 const load = Module._load;
 Module._load = function (request, parent, main) {
-  if (request === 'mapbox-gl' || request === '@turf/turf') {
+  if (request === 'maplibre-gl' || request === 'mapbox-gl' || request === '@turf/turf') {
     throw new Error(`Unrelated import loaded ${request}`);
   }
   if (request === 'highcharts') {
@@ -36,4 +36,4 @@ for (const entry of [
 ])
   require(resolve(entry));
 
-console.log('Unrelated module imports did not load Mapbox or Turf');
+console.log('Unrelated module imports did not load MapLibre, Mapbox or Turf');

@@ -17,6 +17,11 @@
     [style.height]="visualizationContainerHeight"
     class="d2-dashboard__visualization-content"
   ></div>
+  @if (error && !params.loading) {
+  <div class="d2-dashboard__visualization-error" role="alert">
+    Unable to render this visualization. Check its data and map settings.
+  </div>
+  }
   @if (params.loading) {
   <div class="d2-dashboard__visualization-loading-overlay">
     <ng-dhis2-ui-wrapper [component]="Loader" />

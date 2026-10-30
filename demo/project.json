@@ -19,12 +19,16 @@
         "assets": [
           "demo/src/favicon.ico",
           "demo/src/assets",
-          "demo/src/manifest.webapp"
+          "demo/src/manifest.webapp",
+          {
+            "glob": "maplibre-gl-csp-worker.js",
+            "input": "node_modules/maplibre-gl/dist",
+            "output": "assets/"
+          }
         ],
         "styles": [
           "demo/src/styles.scss",
-          "node_modules/mapbox-gl/dist/mapbox-gl.css",
-          "node_modules/mapbox-gl-style-switcher/styles.css",
+          "node_modules/maplibre-gl/dist/maplibre-gl.css",
           "node_modules/leaflet/dist/leaflet.css"
         ],
         "scripts": []

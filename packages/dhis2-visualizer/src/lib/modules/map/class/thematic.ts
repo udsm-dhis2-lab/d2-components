@@ -8,7 +8,7 @@ import { Legend, LegendSet } from '../models/legend-set.model';
 import { MapView } from '../models/map-dashboard-item.model';
 import * as turf from '@turf/turf';
 import { D2MapEngine } from '../utils/map-engine.util';
-import * as mapboxgl from 'mapbox-gl';
+import * as maplibregl from 'maplibre-gl';
 
 export class ThematicDrawableMap extends MapDrawable {
   /**
@@ -321,7 +321,7 @@ export class ThematicDrawableMap extends MapDrawable {
         'id',
         'mapType',
         'legendSet',
-      ]) as mapboxgl.AnySourceData
+      ]) as any
     );
 
     const mapLayerId = _.trim(
@@ -434,7 +434,7 @@ export class ThematicDrawableMap extends MapDrawable {
         const popUpMessage = `${description || ''} (${value})`;
 
         // Create a popup, but don't add it to the map yet.
-        const mapBoxPopUp = new mapboxgl.Popup({
+        const mapBoxPopUp = new maplibregl.Popup({
           closeButton: true,
           closeOnClick: true,
         });
@@ -454,13 +454,13 @@ export class ThematicDrawableMap extends MapDrawable {
         map.getCanvas().style.cursor = 'pointer';
 
         // Create a popup, but don't add it to the map yet.
-        const mapBoxPopUp = new mapboxgl.Popup({
+        const mapBoxPopUp = new maplibregl.Popup({
           closeButton: false,
           closeOnClick: false,
         });
 
         if (mapUtil.getShowMapSummary()) {
-          const mapboxGeoJSONFeature: mapboxgl.MapboxGeoJSONFeature[] =
+          const mapboxGeoJSONFeature: maplibregl.MapGeoJSONFeature[] =
             map.queryRenderedFeatures(event.point, {
               layers: [mapContainerSourceId],
             });
@@ -498,7 +498,7 @@ export class ThematicDrawableMap extends MapDrawable {
         'id',
         'mapType',
         'legendSet',
-      ]) as mapboxgl.AnySourceData
+      ]) as any
     );
 
     const mapLayerId = _.trim(
@@ -688,7 +688,7 @@ export class ThematicDrawableMap extends MapDrawable {
    *
    */
   createHoverDetails(
-    mapboxGeoJSONFeature: mapboxgl.MapboxGeoJSONFeature[],
+    mapboxGeoJSONFeature: maplibregl.MapGeoJSONFeature[],
     mapAnalytics: MapAnalytics,
     infoContainerId: string
   ) {

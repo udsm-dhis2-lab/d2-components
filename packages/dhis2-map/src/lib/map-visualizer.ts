@@ -2,6 +2,7 @@ import * as turf from '@turf/turf';
 import type { Feature, FeatureCollection } from 'geojson';
 import { BaseVisualizer, Visualizer } from './core';
 import { MapLayer } from './layers/map-layer.model';
+import { MapLayerRegistry } from './layer-registry';
 import { LegendControl } from './models/legend-control.model';
 import { MapLayerConfiguration } from './models/map-layer-configuration.model';
 import {
@@ -27,11 +28,20 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
   #loadListener?: () => void;
   #readyResolve?: () => void;
   #controls: ProviderControl[] = [];
+  #loadedLayers: MapLayer[] = [];
+  #generation = 0;
+  #loadAbort?: AbortController;
+  readonly layerRegistry = new MapLayerRegistry();
 
   constructor(
     private readonly provider: MapProviderAdapter = new DefaultMapProviderAdapter()
   ) {
     super();
+    for (const kind of ['thematic', 'boundary', 'orgUnit', 'legacy']) {
+      this.layerRegistry.register({ kind,
+        load: (layer, signal) => layer.loadFeatures(signal),
+        render: (layer, map) => this.#renderLayer(layer, map) });
+    }
   }
   setBaseMap(_basemap: unknown): D2Maps {
     return this;
@@ -53,23 +63,25 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
     return this;
   }
 
-  async loadLayers(): Promise<MapLayer[]> {
+  async loadLayers(signal: AbortSignal = new AbortController().signal): Promise<MapLayer[]> {
+    const configured = [...this.layers];
     const settled = await Promise.allSettled(
-      this.layers.map(async (layer) => {
+      configured.map(async (layer) => {
         layer.setBaseUrl(this._baseUrl);
-        await layer.loadFeatures();
+        await this.layerRegistry.resolve(this.#definitionKind(layer)).load(layer, signal);
         return layer;
       })
     );
+    if (signal.aborted) return [];
     this.layerFailures = settled.flatMap((result, index) =>
       result.status === 'rejected'
-        ? [{ layerId: this.layers[index].id, error: result.reason }]
+        ? [{ layerId: configured[index].id, error: result.reason }]
         : []
     );
-    this.layers = settled.flatMap((result) =>
+    this.#loadedLayers = settled.flatMap((result) =>
       result.status === 'fulfilled' ? [result.value] : []
     );
-    return this.layers;
+    return this.#loadedLayers;
   }
 
   getValidFeatures(features: readonly Feature[]): Feature[] {
@@ -83,7 +95,7 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
 
   getBounds(): [number, number, number, number] | null {
     const features = this.getValidFeatures(
-      this.layers.flatMap((layer) => layer.featureCollection.features)
+      this.#loadedLayers.flatMap((layer) => layer.featureCollection.features)
     );
     if (!features.length) return null;
     return turf.bbox({
@@ -94,18 +106,19 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
 
   async draw(): Promise<void> {
     this.dispose();
-    await this.loadLayers();
-    if (
-      !this.mapLayerConfiguration.hideBasemap &&
-      !this.#providerConfig?.style
-    ) {
-      throw new Error('Map provider configuration with a style is required');
-    }
+    const generation = this.#generation;
+    const abort = new AbortController();
+    this.#loadAbort = abort;
+    await this.loadLayers(abort.signal);
+    if (abort.signal.aborted || generation !== this.#generation) return;
+    if (this.layers.length && !this.#loadedLayers.length && this.layerFailures.length)
+      throw new Error(`Unable to load map layers: ${this.layerFailures.map(item => item.layerId).join(', ')}`);
+    const blankStyle = { version: 8, sources: {}, layers: [] };
+    const hasProviderStyle = Boolean(this.#providerConfig?.style);
     this.map = this.provider.createMap({
       container: this._id,
-      style: this.mapLayerConfiguration.hideBasemap
-        ? { version: 8, sources: {}, layers: [] }
-        : this.#providerConfig?.style,
+      style: this.mapLayerConfiguration.hideBasemap || !hasProviderStyle
+        ? blankStyle : this.#providerConfig?.style,
       zoom: this.zoom,
       accessToken: this.#providerConfig?.accessToken,
     });
@@ -113,13 +126,14 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
     if (bounds) this.map.fitBounds(bounds, { padding: 40 });
     if (!this.mapLayerConfiguration.hideNavigationControls)
       this.#addControl(this.provider.createNavigationControl());
-    if (!this.mapLayerConfiguration.hideStyleSwitcher)
+    if (hasProviderStyle && !this.mapLayerConfiguration.hideStyleSwitcher)
       this.#addControl(this.provider.createStyleSwitcherControl());
     await new Promise<void>((resolve, reject) => {
       const map = this.map;
       if (!map) return resolve();
       this.#readyResolve = resolve;
       this.#loadListener = () => {
+        if (generation !== this.#generation) return resolve();
         try {
           this.#renderLayers(map);
           this.#readyResolve = undefined;
@@ -138,8 +152,21 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
   }
 
   #renderLayers(map: ProviderMap): void {
-    this.layers.forEach((layer) => {
+    this.#loadedLayers.forEach((layer) => {
       try {
+        this.layerRegistry.resolve(this.#definitionKind(layer)).render(layer, map);
+      } catch (error) {
+        this.layerFailures.push({ layerId: layer.id, error });
+      }
+    });
+  }
+
+  #definitionKind(layer: MapLayer): string {
+    // Preserve the old generic MapLayer path for historical facade payloads.
+    return layer.layer && this.layerRegistry.has(layer.layer) ? layer.layer : 'legacy';
+  }
+
+  #renderLayer(layer: MapLayer, map: ProviderMap): void {
         const source = `${layer.id}-source`;
         map.addSource(source, {
           type: 'geojson',
@@ -160,21 +187,24 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
             paint: { 'line-color': '#000000', 'line-width': 1 },
             layout: { 'line-join': 'round', 'line-cap': 'round' },
           });
-          map.addLayer({
-            id: `${layer.id}-symbol`,
-            type: 'symbol',
-            source,
-            layout: {
-              'text-field': ['get', 'name'],
-              'text-size': 11,
-              'text-anchor': 'center',
-            },
-            paint: {
-              'text-color': '#000000',
-              'text-halo-color': '#ffffff',
-              'text-halo-width': 2,
-            },
-          });
+          // A blank style has no glyph source; skip labels until a provider
+          // supplies a compatible style with fonts.
+          if (this.#providerConfig?.style && !this.mapLayerConfiguration.hideBasemap)
+            map.addLayer({
+              id: `${layer.id}-symbol`,
+              type: 'symbol',
+              source,
+              layout: {
+                'text-field': ['get', 'name'],
+                'text-size': 11,
+                'text-anchor': 'center',
+              },
+              paint: {
+                'text-color': '#000000',
+                'text-halo-color': '#ffffff',
+                'text-halo-width': 2,
+              },
+            });
         }
         if (!this.mapLayerConfiguration.hideLegendControl) {
           const legends = (layer.legendSet?.legends || []).map((legend) => ({
@@ -187,13 +217,12 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
             'bottom-right'
           );
         }
-      } catch (error) {
-        this.layerFailures.push({ layerId: layer.id, error });
-      }
-    });
   }
 
   override dispose(): void {
+    this.#generation++;
+    this.#loadAbort?.abort();
+    this.#loadAbort = undefined;
     if (this.map && this.#loadListener)
       this.map.off('load', this.#loadListener);
     if (this.map) {

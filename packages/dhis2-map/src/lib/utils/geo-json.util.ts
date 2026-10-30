@@ -19,6 +19,8 @@ export class GeoJSONUtil {
     );
 
     if (layerType === 'orgUnit' && geometry.type !== 'Point') {
+      if (geometry.type === 'MultiPolygon')
+        geometry.setCoordinates((geometry.coordinates as number[][][][]).flat() as any);
       geometry.setType('MultiLineString');
     }
 
@@ -47,11 +49,11 @@ export class GeoJSONUtil {
       'value'
     ];
 
-    return value ? Number(value) : null;
+    return value == null ? null : Number(value);
   }
 
   static getPropertyColor(value: number, legendSet: LegendSet) {
-    if (!value) {
+    if (value == null) {
       return '#ffffff';
     }
 

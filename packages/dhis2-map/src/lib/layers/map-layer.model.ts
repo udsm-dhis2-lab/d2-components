@@ -3,6 +3,7 @@ import type {
   MapDataSource,
   MapSelection,
 } from '../map-data-source';
+import { normalizeMapAnalytics } from '../map-data-source';
 import type { LegendSet } from '../models/legend-set.model';
 import type { Feature, FeatureCollection } from 'geojson';
 import {
@@ -14,8 +15,13 @@ import {
 } from '../models';
 import { MapGeoFeature } from '../models/map-geo-feature.model';
 import { GeoJSONUtil, LegendSetUtil } from '../utils';
+import { buildThematic, joinThematicData } from '../thematic/thematic.transform';
+import { thematicMapboxStyle } from '../thematic/thematic-mapbox.adapter';
+import type { ThematicMode } from '../thematic/thematic.model';
 
 export class MapLayer {
+  /** Library fallback for historical views that did not save a colour scale. */
+  static readonly legacyEqualCountPalette = ['#ffffcc', '#c2e699', '#78c679', '#31a354', '#006837'];
   id!: string;
   name!: string;
   program!: string;
@@ -33,6 +39,12 @@ export class MapLayer {
   classes!: number;
   colorScale!: string;
   noDataColor!: string;
+  unclassifiedColor?: string;
+  thematicMapType?: ThematicMode;
+  radiusLow?: number;
+  radiusHigh?: number;
+  config?: string | Record<string, unknown>;
+  missingGeometryIds: readonly string[] = [];
   legendSet!: LegendSet;
   dataSelections!: MapSelection[];
   geoFeatures!: MapGeoFeature[];
@@ -44,6 +56,20 @@ export class MapLayer {
   baseUrl = '../../..';
   constructor(props?: Partial<MapLayer>, private dataSource?: MapDataSource) {
     if (props) Object.assign(this, props);
+    if (this.layer === 'thematic' && this.thematicMapType && this.config) {
+      let decoded: unknown;
+      try { decoded = typeof this.config === 'string' ? JSON.parse(this.config) : this.config; }
+      catch { throw new Error(`Invalid thematic config for map layer "${this.id}"`); }
+      if (!decoded || typeof decoded !== 'object' || Array.isArray(decoded))
+        throw new Error(`Invalid thematic config for map layer "${this.id}"`);
+      const settings = decoded as Record<string, unknown>;
+      const noData = settings['noDataLegend'];
+      const unclassified = settings['unclassifiedLegend'];
+      if (noData && typeof noData === 'object' && 'color' in noData && typeof noData.color === 'string')
+        this.noDataColor = noData.color;
+      if (unclassified && typeof unclassified === 'object' && 'color' in unclassified && typeof unclassified.color === 'string')
+        this.unclassifiedColor = unclassified.color;
+    }
   }
 
   setDataSource(dataSource: MapDataSource): MapLayer {
@@ -140,15 +166,16 @@ export class MapLayer {
     return this;
   }
 
-  async loadFeatures() {
+  async loadFeatures(signal?: AbortSignal) {
     if (!this.dataSource)
       throw new Error(`No data source configured for map layer "${this.id}"`);
     const [geoFeatures, data] = await Promise.all([
-      this.dataSource.loadGeoFeatures(this.dataSelections || [], this.baseUrl),
-      this.dataSource.loadAnalytics(this.dataSelections || []),
+      this.dataSource.loadGeoFeatures(this.dataSelections || [], this.baseUrl, signal),
+      this.dataSource.loadAnalytics(this.dataSelections || [], signal),
     ]);
+    if (signal?.aborted) return;
     this.geoFeatures = geoFeatures;
-    this.data = data || { rows: [] };
+    this.data = normalizeMapAnalytics(data);
 
     this.#setFeatures();
     this.#setMapSourceData();
@@ -156,6 +183,8 @@ export class MapLayer {
   }
 
   get paint() {
+    if (this.layer === 'thematic' && this.thematicMapType)
+      return thematicMapboxStyle(this.thematicMapType, this.opacity ?? 1).paint;
     switch (this.fillType) {
       case 'line':
       default:
@@ -170,41 +199,24 @@ export class MapLayer {
           'fill-opacity': 1,
         };
 
-      case 'circle': {
-        const pain = {
-          // TODO: This is for thematics
-          // 'circle-radius': ['/', ['get', 'value'], 10],
-          // 'circle-color': ['get', 'color'],
-          // TODO: This is for cluster
-          'circle-color': [
-            'step',
-            ['get', 'sum'],
-            '#51bbd6',
-            100,
-            '#f1f075',
-            1000,
-            '#f28cb1',
-          ],
-          'circle-radius': ['step', ['get', 'sum'], 20, 100, 30, 1000, 40],
-        };
-
+      case 'circle':
         return {
-          'circle-radius': ['step', ['get', 'value'], 20, 100, 30, 750, 40],
+          'circle-radius': 6,
           'circle-color': ['get', 'color'],
+          'circle-stroke-color': '#404b5a',
+          'circle-stroke-width': 1,
         };
-      }
     }
   }
 
   get layout() {
+    if (this.layer === 'thematic' && this.thematicMapType) return {};
     switch (this.fillType) {
       case 'line':
       default:
         return {};
       case 'circle':
-        return {
-          'text-field': '{sum}',
-        };
+        return {};
     }
   }
 
@@ -216,6 +228,25 @@ export class MapLayer {
   }
 
   #setFeatures() {
+    if ((this.layer === 'thematic' && this.thematicMapType) ||
+      (this.layer === 'thematic1' && this.method === 3)) {
+      const fallbackColors = MapLayer.legacyEqualCountPalette;
+      const fallbackScale = !this.colorScale && this.layer === 'thematic1' &&
+        this.classes >= 1 && this.classes <= fallbackColors.length
+        ? Array.from({ length: this.classes }, (_, index) =>
+          fallbackColors[Math.round(index * (fallbackColors.length - 1) / Math.max(1, this.classes - 1))]).join(',')
+        : this.colorScale;
+      const result = buildThematic(joinThematicData(this.geoFeatures || [], this.data), {
+        mode: this.thematicMapType || 'CHOROPLETH', method: this.method as 1 | 2 | 3 | 10,
+        classes: this.classes, colorScale: fallbackScale, legendSet: this.legendSet,
+        noDataColor: this.noDataColor, unclassifiedColor: this.unclassifiedColor,
+        radiusLow: this.radiusLow, radiusHigh: this.radiusHigh, opacity: this.opacity,
+      });
+      this.features = result.features.features;
+      this.legendSet = result.legendSet;
+      this.missingGeometryIds = result.missingGeometry;
+      return;
+    }
     if (!this.legendSet) {
       this.legendSet = LegendSetUtil.generateFromColorScale(
         {

@@ -16,30 +16,16 @@ export class MapGeometryUtil {
       return 'Point';
     }
 
-    // Check if it's a Polygon
-    if (Array.isArray(coordinates[0])) {
-      // A Polygon should have at least one ring of coordinates
-      for (const ring of coordinates) {
-        if (
-          !Array.isArray(ring) ||
-          ring.length === 0 ||
-          !Array.isArray(ring[0])
-        ) {
-          return 'Invalid';
-        }
-        // Check if each coordinate pair in the ring is valid
-        for (const coord of ring) {
-          if (
-            coord.length !== 2 ||
-            typeof coord[0] !== 'number' ||
-            typeof coord[1] !== 'number'
-          ) {
-            return 'Invalid';
-          }
-        }
-      }
-      return 'Polygon';
-    }
+    const position = (value: unknown): value is [number, number] =>
+      Array.isArray(value) && value.length === 2 &&
+      value.every((part) => typeof part === 'number' && Number.isFinite(part));
+    const ring = (value: unknown): boolean =>
+      Array.isArray(value) && value.length > 0 && value.every(position);
+    const polygon = (value: unknown): boolean =>
+      Array.isArray(value) && value.length > 0 && value.every(ring);
+    if (polygon(coordinates)) return 'Polygon';
+    if (Array.isArray(coordinates) && coordinates.length > 0 &&
+      coordinates.every(polygon)) return 'MultiPolygon';
 
     return 'Invalid';
   }

@@ -28,11 +28,7 @@ const peerPackages = new Map([
     join(workspaceRoot, 'dist/packages/dhis2-analytics'),
   ],
   ['highcharts', join(workspaceRoot, 'node_modules/highcharts')],
-  ['mapbox-gl', join(workspaceRoot, 'node_modules/mapbox-gl')],
-  [
-    'mapbox-gl-style-switcher',
-    join(workspaceRoot, 'node_modules/mapbox-gl-style-switcher'),
-  ],
+  ['maplibre-gl', join(workspaceRoot, 'node_modules/maplibre-gl')],
   ['react', join(workspaceRoot, 'node_modules/react')],
 ]);
 
@@ -102,7 +98,9 @@ try {
   );
   if (
     !packageJson.dependencies?.lodash ||
-    !packageJson.peerDependencies?.highcharts
+    !packageJson.peerDependencies?.highcharts ||
+    !packageJson.peerDependencies?.['maplibre-gl'] ||
+    packageJson.peerDependencies?.['mapbox-gl']
   ) {
     throw new Error('Packed manifest did not preserve dependency declarations');
   }
@@ -117,7 +115,7 @@ try {
       'Module._load = function(request, parent, isMain) {',
       "  if (request === 'highcharts') return highchartsMock;",
       "  if (request.startsWith('highcharts/')) return highchartsModuleMock;",
-      "  if (request === 'mapbox-gl') return {};",
+      "  if (request === 'mapbox-gl') throw new Error('Mapbox dependency retained');",
       "  if (request === '@dhis2/ui') return new Proxy({}, { get: () => function Icon() {} });",
       '  return originalLoad.call(this, request, parent, isMain);',
       '};',

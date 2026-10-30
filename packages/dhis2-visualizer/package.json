@@ -18,8 +18,7 @@
     "@iapps/d2-web-sdk": ">=1.2.4 <2",
     "@iapps/function-analytics": ">=1.0.0-beta.24 <2",
     "highcharts": ">=11.4.8 <12",
-    "mapbox-gl": ">=3.5.1 <4",
-    "mapbox-gl-style-switcher": ">=1.0.11 <2",
+    "maplibre-gl": ">=5.24.0 <6",
     "react": ">=18 <19"
   },
   "type": "commonjs",
