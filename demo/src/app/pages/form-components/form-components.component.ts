@@ -627,32 +627,82 @@ export class FormComponentsComponent {
     return instance;
   };
 
-  // new ProgramEntryFormConfig({
-  //   program: 'lw9fZTamYec',
-  //   displayType: 'FLAT',
-  //   formType: 'TRACKER',
-  //   excludeProgramStages: true,
-  //   // excludeInheritedAttributes: true,
+  applicationFormConfig = new ProgramEntryFormConfig({
+    program: 'lw9fZTamYec',
+    displayType: 'FLAT',
+    formType: 'TRACKER',
+    excludeProgramStages: true,
+    // excludeInheritedAttributes: true,
 
-  //   hideRegistrationUnit: false,
-  //   hideEnrollmentDate: true,
-  //   autoComplete: true,
-  //   autoAssignedValues: [
-  //     {
-  //       field: 'batchNumber',
-  //       value: 'ND_BATCH_62712406',
-  //     },
-  //   ],
-  //   hideCustomAssignedFields: true,
-  //   formFieldExtensions: [
-  //     {
-  //       id: 'seUJl7AEZtS',
-  //       accept: ['.pdf', '.docx', '.zip'],
-  //       sizeLimit: 2 * 1024 * 1024,
-  //     },
-  //   ],
-  //   updateTeiOrgUnit: true,
-  // });
+    hideRegistrationUnit: false,
+    hideEnrollmentDate: true,
+    autoComplete: true,
+    autoAssignedValues: [
+      {
+        field: 'orgUnit',
+        value: 'ChsKRXkYSjL',
+      },
+      {
+        field: 'tgGvHgQgtQ0',
+        value: 'ND_BATCH_20292218',
+      },
+      {
+        field: 'RKOZF4JJNYm',
+        value: 'zHa2ohFrpPM',
+      },
+      {
+        field: 'e4VI4485QZY',
+        value: '99179344550598579971',
+      },
+      {
+        field: 'xozWLQN3K4m',
+        value: 'Asha',
+      },
+      {
+        field: 'MuMwgKIGNKk',
+        value: 'Neema',
+      },
+      {
+        field: 'uh5A5BxTVTc',
+        value: 'Mashauri',
+      },
+      {
+        field: 'rTLp4tEMuMk',
+        value: 'Female',
+      },
+      {
+        field: 'xHqaU9sNDrm',
+        value: '1997-04-12',
+      },
+      {
+        field: 'aUmSA2UwYqk',
+        value: '712874829',
+      },
+      {
+        field: 'KbgWwcoZEqC',
+        value: 'TZA',
+      },
+      {
+        field: 'CkawRU7c6TL',
+        value: 'Gv8WjhnoVjl',
+      },
+      {
+        field: 'ClPsqdpOAKu',
+        value: 'XdKh44J9SLX',
+      },
+      {
+        field: 'F0PGinAY3dp',
+        value: 'Verified',
+      },
+      {
+        field: 'zfqbBpSeZX6',
+        value: 'Simulation',
+      },
+    ],
+    hideCustomAssignedFields: false,
+    formFieldExtensions: [],
+    updateTeiOrgUnit: true,
+  });
 
   //   programEntryConfig =  ProgramEntryFormConfig({
   //     program: 'Gy65kx8gQv6',
@@ -1020,19 +1070,18 @@ export class FormComponentsComponent {
     response:
       | D2TrackerResponse<TrackedEntityInstance>
       | D2EventResponse<DHIS2Event>
-      | null,
+      | null
   ) {
     console.log('Form save completed', response);
   }
 
   aaaaformConfig = new ProgramEntryFormConfig({
-      enableCustomFieldConfigurations: false,
-      program: `t1pTvYbv08Z`,
-      programStage: `q2O2QgN4l8O`,
-      hideRegistrationUnit: false,
-      formType: 'EVENT',
-      displayType: 'FLAT',
-      // autoAssignedValues: [{ field: 'orgUnit', value: 'IzYp0MNy1j1' }],
-    });
-
+    enableCustomFieldConfigurations: false,
+    program: `t1pTvYbv08Z`,
+    programStage: `q2O2QgN4l8O`,
+    hideRegistrationUnit: false,
+    formType: 'EVENT',
+    displayType: 'FLAT',
+    // autoAssignedValues: [{ field: 'orgUnit', value: 'IzYp0MNy1j1' }],
+  });
 }

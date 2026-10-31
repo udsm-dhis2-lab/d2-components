@@ -1,10 +1,19 @@
 <div>
   <h3>Form components</h3>
 
-  <div>
+  <ng-dhis2-ui-program-entry-form
+      [customOrgUnitRoots]="[]"
+      [collapsibleSections]="false"
+      [config]="applicationFormConfig"
+      [trackedEntity]="''"
+      (instanceUpdate)="onSaveComplete($event)"
+      (formCanceel)="onCancel()"
+    />
+
+  <!-- <div>
     <ng-dhis2-ui-program-entry-form [orgUnit]="'bkgnS23y1Gs'"
     [trackedEntity]="'tc8ndsmGisV'" [enrollment]="'Tctj4nbDchx'"
-    [event]="'QruDGuHVNJI'" /*[event]="'dNuvJPkHene'" */ [config]="contract" />
+    [event]="'QruDGuHVNJI'" /*[event]="'dNuvJPkHene'" */ [config]="contract" /> -->
 
     <!-- <ng-dhis2-ui-form
       [form]="form"
@@ -108,7 +117,7 @@
       [programStage]="'k4ZFqYqRNDF'"
     /> -->
   </div>
-</div>
+<!-- </div> -->
 <!-- new FormMetaData({
   programs: [program],
   programStage: this.programStage(),
@@ -118,11 +127,11 @@
   formFieldExtensions: this.config()?.formFieldExtensions,
 }).toJson() -->
 
-  <ng-dhis2-ui-program-entry-form
+  <!-- <ng-dhis2-ui-program-entry-form
         [event]="'gc5cMdF1VqU'"
         [orgUnit]="'bbx2XZhopXy'"
         [trackedEntity]="'rWMJjwgLfep'"
         [enrollment]="'Q413cuuSrUD'"
         [config]="aaaaformConfig"
         (instanceSaveCompleted)="onSaveCompletion($event)"
-      />
+      /> -->

@@ -64,7 +64,7 @@ export class FormUtil {
 
         if (field.referenceKey) {
           const value = dataEntities
-            ? dataEntities[field.referenceKey] || ''
+            ? dataEntities[field.referenceKey] ?? ''
             : '';
           group[field.referenceKey] = field.required
             ? new UntypedFormControl(
@@ -103,7 +103,7 @@ export class FormUtil {
     dataEntities: Record<string, any>
   ) {
     const fieldValue = dataEntities
-      ? dataEntities[field.id] || dataEntities[field.key] || ''
+      ? dataEntities[field.id] ?? dataEntities[field.key] ?? ''
       : '';
 
     return isArray(fieldValue) ? JSON.stringify(fieldValue) : fieldValue;

@@ -42,7 +42,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [D2FormModule, ReactWrapperModule],
 })
-// eslint-disable-next-line @angular-eslint/component-class-suffix
+
 export class ProgramEntryFormModule {
   config = input.required<ProgramEntryFormConfig>();
   trackedEntity = input<string>();
@@ -63,6 +63,16 @@ export class ProgramEntryFormModule {
   isFormValid$: Observable<boolean> = toObservable(this.isFormValid);
   instance = signal<TrackedEntityInstance | DHIS2Event | null>(null);
   trackedEntityInstance = signal<TrackedEntityInstance | null>(null);
+
+  // SDK instances are mutable class objects. A revision signal ensures that
+  // dependent computed values refresh after updateDataValues() mutates one.
+  private readonly instanceRevision = signal(0);
+
+  // Maintain configured defaults independently of the rendered field list.
+  // hideCustomAssignedFields can remove their controls from the FormGroup.
+  private readonly initialAutoAssignedValues = signal<
+    Record<string, unknown>
+  >({});
   instanceQuery!:
     | BaseTrackerQuery<TrackedEntityInstance>
     | BaseEventQuery<DHIS2Event>;
@@ -101,6 +111,8 @@ export class ProgramEntryFormModule {
   });
 
   dataEntities = computed<Record<string, unknown>>(() => {
+    this.instanceRevision();
+
     if (!this.instance()) {
       return {};
     }
@@ -118,6 +130,9 @@ export class ProgramEntryFormModule {
         : this.instance();
 
     return {
+      // Fallback for assignments hidden from the rendered form metadata.
+      // Values held by the SDK instance take precedence when present.
+      ...this.initialAutoAssignedValues(),
       ...attributeDataValues,
       ...(currentInstanceDataValues || {}),
     };
@@ -220,12 +235,14 @@ export class ProgramEntryFormModule {
         return;
       }
 
-      this.instance.set(instance);
-
+      // Apply assignments BEFORE publishing the instance to the form. This
+      // prevents a child form from initializing with pre-assignment values.
       const autoAssigned = config.autoAssignedValues;
       if (autoAssigned?.length) {
-        this.#updateInstanceWithAutoAssignedValues(autoAssigned);
+        this.#updateInstanceWithAutoAssignedValues(instance, autoAssigned);
       }
+
+      this.instance.set(instance);
     } catch (error) {
       console.error('Error during ProgramEntryForm initialization', error);
     } finally {
@@ -234,7 +251,43 @@ export class ProgramEntryFormModule {
   }
 
   onFormUpdate(dataValues: Record<string, unknown>) {
-    this.#updateInstance(dataValues);
+    // Hidden auto-assigned fields may be absent from the FormGroup. Preserve
+    // their CURRENT values (not repeatedly their initial defaults), so later
+    // programmatic updates are not accidentally rolled back by another field.
+    const preservedAssignedValues: Record<string, unknown> = {};
+    if (this.config().hideCustomAssignedFields) {
+      // Read the mutable SDK instance directly: a cached computed signal may
+      // not yet reflect values modified by external SDK/preprocess code.
+      const currentInstance = this.instance();
+      const attributeValues = this.trackedEntityInstance()
+        ? this.#getTrackedEntityDataValues(this.trackedEntityInstance()!)
+        : {};
+      const currentInstanceValues =
+        this.config().formType === 'TRACKER' && currentInstance
+          ? this.#getTrackedEntityDataValues(
+              currentInstance as TrackedEntityInstance
+            )
+          : currentInstance ?? {};
+      const currentValues: Record<string, unknown> = {
+        ...attributeValues,
+        ...currentInstanceValues,
+      };
+      for (const [key, initialValue] of Object.entries(
+        this.initialAutoAssignedValues()
+      )) {
+        // orgUnit has its own registration control and precedence rules.
+        if (key === 'orgUnit') continue;
+        preservedAssignedValues[key] = Object.prototype.hasOwnProperty.call(
+          currentValues,
+          key
+        )
+          ? currentValues[key]
+          : initialValue;
+      }
+    }
+
+    // Explicit user edits and clears (including null/empty string) win.
+    this.#updateInstance({ ...preservedAssignedValues, ...dataValues });
     if (this.instance()) {
       this.instanceUpdate.emit(
         this.instance() as TrackedEntityInstance | DHIS2Event
@@ -283,11 +336,13 @@ export class ProgramEntryFormModule {
   }
 
   #updateInstanceWithAutoAssignedValues(
+    instance: TrackedEntityInstance | DHIS2Event,
     autoAssignedValues: AutoAssignedValues[]
   ) {
     const trackedEntityId = this.trackedEntity?.();
     if (
-     // Event forms also receive a trackedEntity ID checking the ID alone prevented their auto-assigned fields from being populated since its passed even in creation of the events. 
+      // Existing TRACKER records must not have their stored attributes replaced.
+      // EVENT forms may legitimately have an existing tracked entity ID.
       this.config().formType === 'TRACKER' &&
       typeof trackedEntityId === 'string' &&
       trackedEntityId.trim().length > 0
@@ -305,6 +360,14 @@ export class ProgramEntryFormModule {
 
     for (let index = 0; index < valueCount; index++) {
       const { field: configuredKey, value } = autoAssignedValues[index];
+      if (!configuredKey) continue;
+
+      // An explicit orgUnit input takes precedence over the optional
+      // auto-assignment fallback used for new TRACKER registration.
+      if (configuredKey === 'orgUnit' && this.orgUnit()?.trim()) {
+        aggregatedValues['orgUnit'] = this.orgUnit()!.trim();
+        continue;
+      }
 
       const semanticKey = metaData
         ? this.#resolveFieldRuntimeId(configuredKey, metaData)
@@ -321,7 +384,22 @@ export class ProgramEntryFormModule {
       return;
     }
 
-    this.#updateInstance(aggregatedValues);
+    this.initialAutoAssignedValues.set(aggregatedValues);
+    this.#applyDataValues(instance, aggregatedValues);
+  }
+
+  #applyDataValues(
+    instance: TrackedEntityInstance | DHIS2Event,
+    dataValues: Record<string, unknown>
+  ): void {
+    for (const key in dataValues) {
+      if (Object.prototype.hasOwnProperty.call(dataValues, key)) {
+        // Keep the existing SDK integration behavior for other consumers.
+        (instance as any)[key] = dataValues[key];
+      }
+    }
+
+    instance.updateDataValues(dataValues, this.config().updateTeiOrgUnit);
   }
 
   #updateInstance(dataValues: Record<string, unknown>) {
@@ -329,24 +407,15 @@ export class ProgramEntryFormModule {
       return;
     }
 
-    const shouldUpdateOrgUnit = this.config().updateTeiOrgUnit;
+    const instance = this.instance();
+    if (!instance) {
+      return;
+    }
 
-    this.instance.update((instance) => {
-      if (!instance) {
-        return instance;
-      }
-
-      for (const key in dataValues) {
-        if (Object.prototype.hasOwnProperty.call(dataValues, key)) {
-          (instance as TrackedEntityInstance | DHIS2Event)[key] =
-            dataValues[key];
-        }
-      }
-
-      instance.updateDataValues(dataValues, shouldUpdateOrgUnit);
-
-      return instance;
-    });
+    this.#applyDataValues(instance, dataValues);
+    // The SDK model is a class, so do not spread/clone it just to change the
+    // signal reference (that would discard its prototype methods).
+    this.instanceRevision.update((revision) => revision + 1);
   }
 
   async #saveInstance(): Promise<
@@ -394,7 +463,7 @@ export class ProgramEntryFormModule {
     instance: TrackedEntityInstance
   ): Promise<TrackedEntityInstance> {
     const orgUnitForCodeGeneration =
-      this.codeGeneratorOrgUnit() || this.orgUnit();
+      this.codeGeneratorOrgUnit() || this.#resolveTrackerOrgUnit();
 
     const reservedValueQuery = this.d2.trackerModule.trackedEntity.setProgram(
       this.config().program
@@ -415,13 +484,34 @@ export class ProgramEntryFormModule {
     return instance;
   }
 
+  #resolveTrackerOrgUnit(): string | undefined {
+    const explicitOrgUnit = this.orgUnit()?.trim();
+    if (explicitOrgUnit) {
+      return explicitOrgUnit;
+    }
+
+    // For new TRACKER records, an orgUnit auto-assignment must also be used
+    // when creating the instance/query, not only after it has been created.
+    if (this.config().formType !== 'TRACKER' || this.trackedEntity()?.trim()) {
+      return undefined;
+    }
+
+    const assignedOrgUnit = this.config().autoAssignedValues?.find(
+      (item) => item.field === 'orgUnit'
+    )?.value;
+
+    return typeof assignedOrgUnit === 'string' && assignedOrgUnit.trim()
+      ? assignedOrgUnit.trim()
+      : undefined;
+  }
+
   #getQuery(instanceType: 'TRACKER' | 'EVENT') {
     const d2 = (window as unknown as D2Window).d2Web;
     switch (instanceType) {
       case 'TRACKER':
         return d2.trackerModule.trackedEntity
           .setProgram(this.config().program)
-          .setOrgUnit(this.orgUnit() as string);
+          .setOrgUnit(this.#resolveTrackerOrgUnit() as string);
 
       case 'EVENT':
         return d2.eventModule.event

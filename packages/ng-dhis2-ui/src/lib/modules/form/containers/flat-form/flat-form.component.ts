@@ -30,7 +30,14 @@ export class FlatFormComponent
   }
 
   onFormUpdate(dataValues?: Record<string, unknown>) {
-    this.updateDataValues(dataValues ?? this.formGroup.getRawValue());
+    // Controls can be omitted from a FLAT form when their fields are hidden.
+    // Keep their initial values while letting rendered controls override them,
+    // including intentional clears (null or empty string).
+    const updatedValues = dataValues ?? this.formGroup.getRawValue();
+    this.updateDataValues({
+      ...this.dataValues(),
+      ...updatedValues,
+    });
     this.updateFormValidity(this.formGroup.valid);
   }
 }
