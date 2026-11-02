@@ -5,6 +5,7 @@ import { MapLayer } from './layers/map-layer.model';
 import { MapLayerRegistry } from './layer-registry';
 import { LegendControl } from './models/legend-control.model';
 import { MapLayerConfiguration } from './models/map-layer-configuration.model';
+import { facilitySymbolUrl } from './geometry/facility-symbol';
 import {
   DefaultMapProviderAdapter,
   MapProviderAdapter,
@@ -133,10 +134,10 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
       const map = this.map;
       if (!map) return resolve();
       this.#readyResolve = resolve;
-      this.#loadListener = () => {
+      this.#loadListener = async () => {
         if (generation !== this.#generation) return resolve();
         try {
-          this.#renderLayers(map);
+          await this.#renderLayers(map);
           this.#readyResolve = undefined;
           resolve();
         } catch (error) {
@@ -152,18 +153,19 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
     this.map?.addControl(control, position);
   }
 
-  #renderLayers(map: ProviderMap): void {
-    this.#loadedLayers
+  async #renderLayers(map: ProviderMap): Promise<void> {
+    for (const { layer } of this.#loadedLayers
       .map((layer, index) => ({ layer, index }))
       .sort((a, b) => (a.layer.sortOrder ?? a.index) - (b.layer.sortOrder ?? b.index) || a.index - b.index)
-      .forEach(({ layer }) => {
-      if (layer.hidden) return;
+    ) {
+      if (this.map !== map) return;
+      if (layer.hidden) continue;
       try {
-        this.layerRegistry.resolve(this.#definitionKind(layer)).render(layer, map);
+        await this.layerRegistry.resolve(this.#definitionKind(layer)).render(layer, map);
       } catch (error) {
         this.layerFailures.push({ layerId: layer.id, error });
       }
-    });
+    }
   }
 
   #definitionKind(layer: MapLayer): string {
@@ -171,8 +173,10 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
     return layer.layer && this.layerRegistry.has(layer.layer) ? layer.layer : 'legacy';
   }
 
-  #renderLayer(layer: MapLayer, map: ProviderMap): void {
+  async #renderLayer(layer: MapLayer, map: ProviderMap): Promise<void> {
         const source = `${layer.id}-source`;
+        const icons = layer.layer === 'facility' ? await this.#loadFacilitySymbols(layer, map) : [];
+        if (this.map !== map) return;
         map.addSource(source, {
           type: 'geojson',
           data: layer.featureCollection,
@@ -190,9 +194,18 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
             map.addLayer({ id: `${layer.id}-associated`, type: 'fill', source,
               filter: ['==', ['get', 'geometryKind'], 'associated-geometry'],
               paint: { 'fill-color': ['get', 'color'], 'fill-opacity': Math.min(0.3, layer.opacity ?? 1) } });
+          const iconGroupIds = icons.map(icon => icon.groupId);
           map.addLayer({ id: layer.id, type: layer.layer === 'facility' ? 'circle' : 'line', source,
-            filter: layer.layer === 'facility' ? pointFilter : polygonFilter,
+            filter: layer.layer === 'facility' && icons.length
+              ? ['all', pointFilter, ['!', ['in', ['get', 'groupId'], ['literal', iconGroupIds]]]]
+              : layer.layer === 'facility' ? pointFilter : polygonFilter,
             paint: layer.paint, layout: {} });
+          if (icons.length)
+            map.addLayer({ id: `${layer.id}-icons`, type: 'symbol', source,
+              filter: ['all', pointFilter, ['in', ['get', 'groupId'], ['literal', iconGroupIds]]],
+              layout: { 'icon-image': ['match', ['get', 'groupId'],
+                ...icons.flatMap(icon => [icon.groupId, icon.imageId]), ''],
+                'icon-allow-overlap': true } });
           if (layer.layer !== 'facility' && layer.features.some(feature => feature.geometry.type === 'Point'))
             map.addLayer({ id: `${layer.id}-points`, type: 'circle', source,
               filter: pointFilter, paint: { 'circle-color': ['get', 'color'],
@@ -204,7 +217,10 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
               paint: { 'text-color': '#404b5a', 'text-halo-color': '#ffffff', 'text-halo-width': 1 } });
           if (!this.mapLayerConfiguration.hideLegendControl && layer.legendSet?.legends?.length)
             this.#addControl(new LegendControl(layer.legendSet.legends.map(legend => ({
-              useBackgroundColor: true, backgroundColor: legend.color, label: legend.name,
+              useBackgroundColor: !icons.some(icon => icon.groupId === legend.id),
+              backgroundColor: legend.color,
+              symbol: icons.find(icon => icon.groupId === legend.id)?.url,
+              label: legend.name,
             })), layer.legendSet.name || 'Map legend'), 'bottom-right');
           return;
         }
@@ -253,6 +269,24 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
             'bottom-right'
           );
         }
+  }
+
+  async #loadFacilitySymbols(layer: MapLayer, map: ProviderMap): Promise<{ groupId: string; imageId: string; url: string }[]> {
+    if (!map.loadImage || !map.addImage) return [];
+    const used = new Set(layer.features.filter(feature => feature.geometry.type === 'Point')
+      .map(feature => feature.properties?.['groupId']).filter((id): id is string => typeof id === 'string' && Boolean(id)));
+    const loaded = await Promise.all(layer.facilityGroups.filter(group => used.has(group.id)).map(async group => {
+      const url = facilitySymbolUrl(group.symbol, layer.baseUrl, layer.symbolBaseUrl);
+      if (!url) return null;
+      const imageId = `${layer.id}-group-${group.id}`;
+      try {
+        const image = await map.loadImage!(url);
+        if (this.map !== map) return null;
+        if (!map.hasImage?.(imageId)) map.addImage!(imageId, image.data);
+        return { groupId: group.id, imageId, url };
+      } catch { return null; }
+    }));
+    return loaded.filter((item): item is NonNullable<typeof item> => item !== null);
   }
 
   override dispose(): void {

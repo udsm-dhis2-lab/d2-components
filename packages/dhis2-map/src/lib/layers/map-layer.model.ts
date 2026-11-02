@@ -1,4 +1,5 @@
 import type {
+  FacilityGroup,
   MapAnalytics,
   MapDataSource,
   MapSelection,
@@ -52,6 +53,10 @@ export class MapLayer {
   pointRadius?: number;
   areaRadius?: number;
   groupColors?: Record<string, string>;
+  symbolBaseUrl?: string;
+  organisationUnitGroupSet?: { id: string };
+  facilityGroups: FacilityGroup[] = [];
+  groupMetadataError?: unknown;
   bufferCount = 0;
   missingGeometryIds: readonly string[] = [];
   legendSet!: LegendSet;
@@ -79,6 +84,9 @@ export class MapLayer {
       if (typeof settings['pointRadius'] === 'number') this.pointRadius = settings['pointRadius'];
       if (typeof settings['areaRadius'] === 'number') this.areaRadius = settings['areaRadius'];
       if (typeof settings['opacity'] === 'number') this.opacity = settings['opacity'];
+      const groupSet = settings['organisationUnitGroupSet'];
+      if (groupSet && typeof groupSet === 'object' && typeof (groupSet as { id?: unknown }).id === 'string')
+        this.organisationUnitGroupSet = { id: (groupSet as { id: string }).id };
     }
     if (this.layer === 'thematic' && this.thematicMapType && this.config) {
       let decoded: unknown;
@@ -202,27 +210,47 @@ export class MapLayer {
         throw new Error(`Invalid opacity for map layer "${this.id}"`);
       if (this.pointRadius != null && (!Number.isFinite(this.pointRadius) || this.pointRadius < 1 || this.pointRadius > 30))
         throw new Error(`Invalid pointRadius for map layer "${this.id}"`);
-      const geoFeatures = await this.dataSource.loadGeoFeatures(
-        this.dataSelections || [], this.baseUrl, signal);
+      const groupSetId = this.layer === 'facility' ? this.organisationUnitGroupSet?.id : undefined;
+      const [geoFeatures, groups] = await Promise.all([
+        this.dataSource.loadGeoFeatures(this.dataSelections || [], this.baseUrl, signal,
+          { includeGroupSets: Boolean(groupSetId) }),
+        groupSetId && this.dataSource.loadFacilityGroups
+          ? this.dataSource.loadFacilityGroups(groupSetId, this.baseUrl, signal)
+              .catch(error => { this.groupMetadataError = error; return [] as FacilityGroup[]; })
+          : Promise.resolve([] as FacilityGroup[]),
+      ]);
       if (signal?.aborted) return;
       this.geoFeatures = geoFeatures;
+      this.facilityGroups = groups;
+      const groupByOu: Record<string, string> = {};
+      const groupColors = { ...this.groupColors };
+      for (const group of groups) {
+        if (typeof group.color === 'string' && /^#[0-9a-fA-F]{6}$/.test(group.color))
+          groupColors[group.id] = group.color;
+        for (const id of group.organisationUnitIds) groupByOu[id] ??= group.id;
+      }
+      if (groupSetId) for (const item of geoFeatures) {
+        const id = item.dimensions?.[groupSetId];
+        if (typeof id === 'string') groupByOu[item.id] = id;
+      }
       const result = buildGeometryLayer(geoFeatures, {
         kind: this.layer === 'facility' ? 'facility' : 'orgUnit',
         color: this.organisationUnitColor,
-        groupColors: this.groupColors,
+        groupColors,
+        groupByOu,
         areaRadius: this.areaRadius,
       });
       this.features = result.features;
       this.missingGeometryIds = result.missingGeometryIds;
       this.bufferCount = result.bufferCount;
-      if (!this.legendSet && this.groupColors) {
-        const usedGroups = new Set(geoFeatures.map(item =>
-          typeof item.dimensions === 'object' && item.dimensions !== null
-            ? item.dimensions['group'] : undefined).filter((id): id is string => typeof id === 'string'));
+      if (!this.legendSet && Object.keys(groupColors).length) {
+        const usedGroups = new Set(this.features.map(item => item.properties?.['groupId'])
+          .filter((id): id is string => typeof id === 'string' && Boolean(id)));
         this.legendSet = { id: `${this.id}-groups`, name: 'Facility groups',
-          legends: Object.entries(this.groupColors)
+          legends: Object.entries(groupColors)
             .filter(([id, color]) => usedGroups.has(id) && /^#[0-9a-fA-F]{6}$/.test(color))
-            .map(([id, color]) => ({ id, name: id, color, startValue: 0, endValue: 0 })) };
+            .map(([id, color]) => ({ id, name: groups.find(group => group.id === id)?.name || id,
+              color, startValue: 0, endValue: 0 })) };
       }
       this.#setMapSourceData();
       this.setFillType();

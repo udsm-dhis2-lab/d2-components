@@ -4,7 +4,7 @@ import type { ProviderMap } from './provider-adapter';
 export interface MapLayerDefinition {
   readonly kind: string;
   load(layer: MapLayer, signal: AbortSignal): Promise<void>;
-  render(layer: MapLayer, map: ProviderMap): void;
+  render(layer: MapLayer, map: ProviderMap): void | Promise<void>;
 }
 
 /** Registry owns dispatch, never the provider or the layer's lifecycle. */

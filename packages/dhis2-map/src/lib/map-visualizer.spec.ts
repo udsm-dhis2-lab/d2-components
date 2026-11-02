@@ -16,6 +16,9 @@ class FakeMap implements ProviderMap {
   removeControl = jest.fn();
   fitBounds = jest.fn();
   remove = jest.fn();
+  loadImage = jest.fn().mockResolvedValue({ data: { width: 16, height: 16, data: new Uint8Array(1024) } });
+  addImage = jest.fn();
+  hasImage = jest.fn().mockReturnValue(false);
 }
 const provider = (map: FakeMap): MapProviderAdapter => ({
   createMap: jest.fn(() => map),
@@ -106,6 +109,84 @@ describe('MapVisualizer', () => {
       { id: 'hospital', name: 'hospital', color: '#225588', startValue: 0, endValue: 0 },
     ]);
     expect(map.addControl).toHaveBeenCalled();
+  });
+  it('uses group-set GeoFeature dimensions without an analytics or OU-membership request', async () => {
+    const source = { loadGeoFeatures: jest.fn().mockResolvedValue([
+      { id: 'ou-a', na: 'Clinic A', co: '[35,-6]', ty: 1,
+        dimensions: { GroupSet001: 'Group000001' } } as MapGeoFeature,
+    ]), loadAnalytics: jest.fn(), loadFacilityGroups: jest.fn().mockResolvedValue([
+      { id: 'Group000001', name: 'Hospital', color: '#225588', symbol: 'hospital.png',
+        organisationUnitIds: [] },
+    ]) };
+    const facility = new MapLayer({ id: 'grouped', layer: 'facility',
+      organisationUnitGroupSet: { id: 'GroupSet001' } }, source);
+    await facility.loadFeatures();
+    expect(source.loadFacilityGroups).toHaveBeenCalledWith('GroupSet001', '../../..', undefined);
+    expect(source.loadGeoFeatures).toHaveBeenCalledWith([], '../../..', undefined,
+      { includeGroupSets: true });
+    expect(source.loadAnalytics).not.toHaveBeenCalled();
+    expect(facility.features[0].properties).toMatchObject({ groupId: 'Group000001', color: '#225588' });
+    expect(facility.legendSet.legends[0].name).toBe('Hospital');
+  });
+  it('registers a safe group symbol and renders it instead of a circle', async () => {
+    const map = new FakeMap();
+    const source = { loadGeoFeatures: jest.fn().mockResolvedValue([
+      { id: 'ou-a', na: 'Clinic A', co: '[35,-6]', ty: 1 } as MapGeoFeature,
+    ]), loadAnalytics: jest.fn(), loadFacilityGroups: jest.fn().mockResolvedValue([
+      { id: 'Group000001', name: 'Hospital', color: '#225588', symbol: 'hospital.png',
+        organisationUnitIds: ['ou-a'] },
+    ]) };
+    const facility = new MapLayer({ id: 'grouped', layer: 'facility',
+      organisationUnitGroupSet: { id: 'GroupSet001' } }, source);
+    const renderer = new D2Maps(provider(map)).setId('host') as D2Maps;
+    renderer.addLayer(facility);
+    await ready(map, renderer.draw());
+    expect(map.loadImage).toHaveBeenCalledWith('http://localhost/images/orgunitgroup/hospital.png');
+    expect(map.addImage).toHaveBeenCalledWith('grouped-group-Group000001', expect.any(Object));
+    expect(map.addLayer.mock.calls.find(([value]) => value.id === 'grouped-icons')?.[0])
+      .toMatchObject({ type: 'symbol', layout: { 'icon-allow-overlap': true } });
+    expect(map.addLayer.mock.calls.find(([value]) => value.id === 'grouped')?.[0].filter)
+      .toContainEqual(['!', ['in', ['get', 'groupId'], ['literal', ['Group000001']]]]);
+  });
+  it('falls back to a coloured circle when a group symbol cannot load', async () => {
+    const map = new FakeMap();
+    map.loadImage.mockRejectedValue(new Error('missing image'));
+    const source = { loadGeoFeatures: jest.fn().mockResolvedValue([
+      { id: 'ou-a', na: 'Clinic A', co: '[35,-6]', ty: 1 } as MapGeoFeature,
+    ]), loadAnalytics: jest.fn(), loadFacilityGroups: jest.fn().mockResolvedValue([
+      { id: 'Group000001', name: 'Hospital', color: '#225588', symbol: '/api/icons/missing.png',
+        organisationUnitIds: ['ou-a'] },
+    ]) };
+    const renderer = new D2Maps(provider(map)).setId('host') as D2Maps;
+    renderer.addLayer(new MapLayer({ id: 'grouped', layer: 'facility',
+      organisationUnitGroupSet: { id: 'GroupSet001' } }, source));
+    await ready(map, renderer.draw());
+    expect(map.addLayer.mock.calls.map(([value]) => value.id)).not.toContain('grouped-icons');
+    expect(map.addLayer.mock.calls.find(([value]) => value.id === 'grouped')?.[0].type).toBe('circle');
+  });
+  it('does not register a late facility symbol after disposal', async () => {
+    const map = new FakeMap();
+    let finishImage!: (value: { data: unknown }) => void;
+    map.loadImage.mockImplementation(() => new Promise(resolve => { finishImage = resolve; }));
+    const source = { loadGeoFeatures: jest.fn().mockResolvedValue([
+      { id: 'ou-a', na: 'Clinic A', co: '[35,-6]', ty: 1,
+        dimensions: { GroupSet001: 'Group000001' } } as MapGeoFeature,
+    ]), loadAnalytics: jest.fn(), loadFacilityGroups: jest.fn().mockResolvedValue([
+      { id: 'Group000001', name: 'Hospital', symbol: 'hospital.png',
+        organisationUnitIds: [] },
+    ]) };
+    const renderer = new D2Maps(provider(map)).setId('host') as D2Maps;
+    renderer.addLayer(new MapLayer({ id: 'grouped', layer: 'facility',
+      organisationUnitGroupSet: { id: 'GroupSet001' } }, source));
+    const drawing = renderer.draw();
+    while (!map.listener) await Promise.resolve();
+    map.listener?.();
+    while (!finishImage) await Promise.resolve();
+    renderer.dispose();
+    finishImage({ data: {} });
+    await drawing;
+    expect(map.addImage).not.toHaveBeenCalled();
+    expect(map.addSource).not.toHaveBeenCalled();
   });
   it('provides valid circle paint and layout for DHIS2 point geometries', () => {
     const points = new MapLayer({ id: 'points', layer: 'thematic1',

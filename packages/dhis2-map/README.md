@@ -55,10 +55,15 @@ road-network area, routing result, or travel-time estimate. Missing/invalid
 geometry IDs are exposed on `MapLayer.missingGeometryIds`.
 
 The renderer accepts validated six-digit hex `organisationUnitColor` and
-optional explicit `groupColors` keyed by group ID. It does not derive a group
-palette or icon from a group-set ID alone; consumers must supply verified group
-metadata. Labels use the GeoFeature name as plain text. Arbitrary HTML label
-templates and unverified icon URLs are intentionally not rendered. `hidden`,
+optional explicit `groupColors` keyed by group ID. When a facility layer has
+`organisationUnitGroupSet.id`, it requests GeoFeatures with `includeGroupSets`,
+joins `dimensions[groupSet.id]` to group metadata, and registers same-origin
+PNG/JPEG/WebP symbols from `images/orgunitgroup/` with MapLibre. Missing group
+symbols use the pinned Maps-app 21–25.png fallback; a failed image load keeps
+the facility visible as a coloured circle. A custom `symbolBaseUrl` may be set
+for installations that serve those assets elsewhere. Labels use the GeoFeature
+name as plain text. Arbitrary HTML label templates and external icon URLs are
+intentionally not rendered. `hidden`,
 `labels`, `opacity`, `pointRadius`, `sortOrder`, and `areaRadius` are supported;
 provider-side labels require a style with a glyph source.
 

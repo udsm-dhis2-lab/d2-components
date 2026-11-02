@@ -13,6 +13,9 @@ export interface ProviderMap {
   off(event: 'load', listener: () => void): void;
   addSource(id: string, source: unknown): void;
   addLayer(layer: unknown): void;
+  loadImage?(url: string): Promise<{ data: unknown }>;
+  addImage?(id: string, image: unknown): void;
+  hasImage?(id: string): boolean;
   addControl(control: ProviderControl, position?: string): void;
   removeControl?(control: ProviderControl): void;
   fitBounds(

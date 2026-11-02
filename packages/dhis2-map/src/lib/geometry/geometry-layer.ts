@@ -6,6 +6,7 @@ export interface GeometryLayerOptions {
   kind: 'facility' | 'orgUnit';
   color?: string;
   groupColors?: Readonly<Record<string, string>>;
+  groupByOu?: Readonly<Record<string, string>>;
   areaRadius?: number;
 }
 export interface GeometryLayerResult {
@@ -47,11 +48,11 @@ export function buildGeometryLayer(geo: readonly MapGeoFeature[], options: Geome
   for (const item of geo) {
     const geometry = parseGeometry(item.co);
     if (!geometry) { missingGeometryIds.push(item.id); continue; }
-    const groupId = typeof item.dimensions === 'object' && item.dimensions !== null &&
-      typeof item.dimensions['group'] === 'string' ? item.dimensions['group'] as string : undefined;
+    const groupId = options.groupByOu?.[item.id] || (typeof item.dimensions === 'object' && item.dimensions !== null &&
+      typeof item.dimensions['group'] === 'string' ? item.dimensions['group'] as string : undefined);
     const groupColor = groupId ? options.groupColors?.[groupId] : undefined;
     const color = safeColor(groupColor) ? groupColor : options.color || '#404b5a';
-    const properties = { id: item.id, name: item.na || item.id, color,
+    const properties = { id: item.id, name: item.na || item.id, color, groupId: groupId || '',
       geometryKind: geometry.type === 'Point' ? 'point' : 'associated-geometry' };
     features.push({ type: 'Feature', geometry, properties });
     if (options.kind === 'facility' && options.areaRadius && geometry.type === 'Point') {
