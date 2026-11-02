@@ -1,4 +1,6 @@
 import type { MapGeoFeature } from './models/map-geo-feature.model';
+import type { EventClusterViewport, EventQueryResponse, EventSelection } from './events/event-layer';
+import { FetchEventDataSource } from './events/event-layer';
 
 export interface MapSelection {
   dimension: string;
@@ -45,6 +47,9 @@ export function normalizeMapAnalytics(input: unknown): MapAnalytics {
   }) };
 }
 export interface MapDataSource {
+  loadEvents?(selection: EventSelection, baseUrl: string, signal?: AbortSignal): Promise<EventQueryResponse>;
+  loadEventClusters?(selection: EventSelection, baseUrl: string, signal?: AbortSignal,
+    viewport?: EventClusterViewport): Promise<EventQueryResponse>;
   loadGeoFeatures(
     selections: readonly MapSelection[],
     baseUrl: string,
@@ -66,6 +71,13 @@ export class FetchMapDataSource implements MapDataSource {
     private readonly analyticsLoader: MapDataSource['loadAnalytics'],
     private readonly fetcher: typeof fetch = fetch
   ) {}
+  loadEvents(selection: EventSelection, baseUrl: string, signal?: AbortSignal): Promise<EventQueryResponse> {
+    return new FetchEventDataSource(this.fetcher).load(selection, baseUrl, signal);
+  }
+  loadEventClusters(selection: EventSelection, baseUrl: string, signal?: AbortSignal,
+    viewport?: EventClusterViewport): Promise<EventQueryResponse> {
+    return new FetchEventDataSource(this.fetcher).loadClusters(selection, baseUrl, signal, viewport);
+  }
   async loadGeoFeatures(
     selections: readonly MapSelection[],
     baseUrl: string,

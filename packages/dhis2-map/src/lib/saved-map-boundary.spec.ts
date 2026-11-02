@@ -27,6 +27,6 @@ describe('versioned saved-map boundary', () => {
     expect(() => parseSavedMap(legacySavedMapFixture(), '2.43')).toThrow('basemaps');
   });
   it('rejects unregistered definitions without loading a provider', () => {
-    expect(() => new MapLayerRegistry().resolve('event')).toThrow('Unsupported map layer definition: event');
+    expect(() => new MapLayerRegistry().resolve('external')).toThrow('Unsupported map layer definition: external');
   });
 });

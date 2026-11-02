@@ -10,7 +10,11 @@ export interface ProviderControl {
 }
 export interface ProviderMap {
   once(event: 'load', listener: () => void): void;
-  off(event: 'load', listener: () => void): void;
+  on?(event: 'moveend', listener: () => void): void;
+  off(event: 'load' | 'moveend', listener: () => void): void;
+  getZoom?(): number;
+  getBounds?(): {getWest():number;getSouth():number;getEast():number;getNorth():number};
+  getSource?(id: string): {setData(data: unknown): void | Promise<void>} | undefined;
   addSource(id: string, source: unknown): void;
   addLayer(layer: unknown): void;
   loadImage?(url: string): Promise<{ data: unknown }>;

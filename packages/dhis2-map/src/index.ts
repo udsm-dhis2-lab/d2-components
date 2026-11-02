@@ -2,6 +2,7 @@ export * from './lib/core';
 export * from './lib/layers/map-layer.model';
 export * from './lib/layers/tracker';
 export * from './lib/map-data-source';
+export * from './lib/events/event-layer';
 export * from './lib/saved-map-boundary';
 export * from './lib/layer-registry';
 export * from './lib/thematic/thematic.model';

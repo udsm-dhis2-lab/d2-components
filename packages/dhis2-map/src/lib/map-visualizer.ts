@@ -6,6 +6,7 @@ import { MapLayerRegistry } from './layer-registry';
 import { LegendControl } from './models/legend-control.model';
 import { MapLayerConfiguration } from './models/map-layer-configuration.model';
 import { facilitySymbolUrl } from './geometry/facility-symbol';
+import { clusterSizeForZoom } from './events/event-layer';
 import {
   DefaultMapProviderAdapter,
   MapProviderAdapter,
@@ -26,6 +27,9 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
   zoom = 5;
   map: ProviderMap | null = null;
   #providerConfig?: MapProviderConfig;
+  #moveListener?: () => void;
+  #clusterAbort?: AbortController;
+  #clusterRequest = 0;
   #loadListener?: () => void;
   #readyResolve?: () => void;
   #controls: ProviderControl[] = [];
@@ -38,7 +42,7 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
     private readonly provider: MapProviderAdapter = new DefaultMapProviderAdapter()
   ) {
     super();
-    for (const kind of ['thematic', 'facility', 'boundary', 'orgUnit', 'legacy']) {
+    for (const kind of ['thematic', 'facility', 'boundary', 'orgUnit', 'event', 'legacy']) {
       this.layerRegistry.register({ kind,
         load: (layer, signal) => layer.loadFeatures(signal),
         render: (layer, map) => this.#renderLayer(layer, map) });
@@ -48,7 +52,7 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
     return this;
   }
   setZoom(zoom: number): D2Maps {
-    this.zoom = zoom;
+    if (Number.isFinite(zoom) && zoom >= 0 && zoom <= 22) this.zoom = zoom;
     return this;
   }
   addLayer(layer: MapLayer): D2Maps {
@@ -138,6 +142,11 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
         if (generation !== this.#generation) return resolve();
         try {
           await this.#renderLayers(map);
+          if (map.on && this.#loadedLayers.some(layer => layer.serverClustersLoaded)) {
+            this.#moveListener = () => { void this.#refreshServerClusters(map); };
+            map.on('moveend',this.#moveListener);
+            await this.#refreshServerClusters(map);
+          }
           this.#readyResolve = undefined;
           resolve();
         } catch (error) {
@@ -151,6 +160,30 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
   #addControl(control: ProviderControl, position?: string): void {
     this.#controls.push(control);
     this.map?.addControl(control, position);
+  }
+
+  async #refreshServerClusters(map: ProviderMap): Promise<void> {
+    if (!map.getBounds || !map.getZoom || !map.getSource) return;
+    const bounds = map.getBounds();
+    const zoom = map.getZoom();
+    const bbox = [bounds.getWest(),bounds.getSouth(),bounds.getEast(),bounds.getNorth()] as const;
+    if (!bbox.every(Number.isFinite) || !Number.isFinite(zoom)) return;
+    this.#clusterAbort?.abort();
+    const abort = new AbortController();
+    this.#clusterAbort = abort;
+    const request = ++this.#clusterRequest;
+    const viewport = {clusterSize:clusterSizeForZoom(zoom),bbox};
+    await Promise.all(this.#loadedLayers.filter(layer => layer.serverClustersLoaded && !layer.hidden)
+      .map(async layer => {
+        try {
+          const data = await layer.refreshEventClusters(viewport,abort.signal);
+          if (abort.signal.aborted || this.map !== map || request !== this.#clusterRequest) return;
+          await map.getSource?.(`${layer.id}-source`)?.setData(data);
+        } catch (error) {
+          if (!abort.signal.aborted && this.map === map)
+            this.layerFailures.push({layerId:layer.id,error});
+        }
+      }));
   }
 
   async #renderLayers(map: ProviderMap): Promise<void> {
@@ -180,7 +213,39 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
         map.addSource(source, {
           type: 'geojson',
           data: layer.featureCollection,
+          ...(layer.layer === 'event' && layer.eventClustering && !layer.serverClustersLoaded ? {
+            cluster: true, clusterRadius: 50, clusterMaxZoom: 12,
+          } : {}),
         });
+        if (layer.layer === 'event') {
+          const savedColor = layer.eventPointColor;
+          const eventColor = typeof savedColor === 'string' && /^#?[0-9a-fA-F]{6}$/.test(savedColor)
+            ? `#${savedColor.replace(/^#/, '')}` : '#333333';
+          const entries = Object.entries(layer.eventCategoryColors || {});
+          if (entries.some(([key, value]) => !key || key.length > 100 || !/^#[0-9a-fA-F]{6}$/.test(value)))
+            throw new Error(`Invalid event category colours for map layer "${layer.id}"`);
+          const color = entries.length ? ['match', ['get','category'],
+            ...entries.flatMap(([category, value]) => [category, value]), eventColor] : eventColor;
+          if (layer.eventClustering) {
+            map.addLayer({id: `${layer.id}-clusters`, type:'circle', source,
+              filter:['has','point_count'], paint:{'circle-color':eventColor,
+                'circle-radius':['step',['get','point_count'],14,100,18,1000,23,10000,29],
+                'circle-opacity':layer.opacity ?? 1,
+                'circle-stroke-color':'#ffffff','circle-stroke-width':1}});
+            map.addLayer({id:`${layer.id}-counts`, type:'symbol', source,
+              filter:['has','point_count'], layout:{'text-field':['get','point_count_abbreviated'],
+                'text-size':12}, paint:{'text-color':'#ffffff'}});
+          }
+          if (!layer.serverClustersLoaded)
+            map.addLayer({id:layer.id, type:'circle', source,
+              filter:layer.eventClustering ? ['!', ['has','point_count']] : undefined,
+              paint:{'circle-color':color,
+                'circle-radius': Number.isFinite(layer.eventPointRadius) && layer.eventPointRadius >= 1 && layer.eventPointRadius <= 30
+                  ? layer.eventPointRadius : 6,
+                'circle-opacity':layer.opacity ?? 1,
+                'circle-stroke-color':'#ffffff','circle-stroke-width':1}});
+          return;
+        }
         if (layer.layer === 'facility' || layer.layer === 'orgUnit' || layer.layer === 'boundary') {
           const polygonFilter = ['==', ['geometry-type'], 'Polygon'];
           const pointFilter = ['==', ['geometry-type'], 'Point'];
@@ -291,10 +356,15 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
 
   override dispose(): void {
     this.#generation++;
+    this.#clusterRequest++;
+    this.#clusterAbort?.abort();
+    this.#clusterAbort = undefined;
     this.#loadAbort?.abort();
     this.#loadAbort = undefined;
     if (this.map && this.#loadListener)
       this.map.off('load', this.#loadListener);
+    if (this.map && this.#moveListener)
+      this.map.off('moveend',this.#moveListener);
     if (this.map) {
       this.#controls.forEach((control) => this.map?.removeControl?.(control));
       this.map.remove();
@@ -303,6 +373,7 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
     this.#readyResolve?.();
     this.#readyResolve = undefined;
     this.#loadListener = undefined;
+    this.#moveListener = undefined;
     this.map = null;
   }
 }

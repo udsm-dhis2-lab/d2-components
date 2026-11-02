@@ -6,10 +6,17 @@ import type { MapGeoFeature } from './models/map-geo-feature.model';
 
 class FakeMap implements ProviderMap {
   listener?: () => void;
+  moveListener?: () => void;
+  currentZoom = 8;
+  geoJsonSource = {setData:jest.fn()};
   once = jest.fn((_event, listener) => {
     this.listener = listener;
   });
   off = jest.fn();
+  on = jest.fn((_event, listener) => { this.moveListener = listener; });
+  getZoom = jest.fn(() => this.currentZoom);
+  getBounds = jest.fn(() => ({getWest:()=>-14,getSouth:()=>6,getEast:()=>-10,getNorth:()=>11}));
+  getSource = jest.fn(() => this.geoJsonSource);
   addSource = jest.fn();
   addLayer = jest.fn();
   addControl = jest.fn();
@@ -46,6 +53,99 @@ async function ready(map: FakeMap, drawing: Promise<void>): Promise<void> {
 }
 
 describe('MapVisualizer', () => {
+  it('refreshes server clusters at zoom scale and drops stale results after disposal', async () => {
+    const map = new FakeMap();
+    const calls: number[] = [];
+    const source = {loadGeoFeatures:jest.fn(),loadAnalytics:jest.fn(),loadEvents:jest.fn(),
+      loadEventClusters:jest.fn().mockImplementation(async (_selection,_base,_signal,viewport) => {
+        calls.push(viewport?.clusterSize ?? 70000);
+        return {headers:[{name:'count'},{name:'center'}],rows:[
+          [String(viewport?.clusterSize ?? 3),'{"type":"Point","coordinates":[-12,8]}']]};
+      })};
+    const event = new MapLayer({id:'zoom-events',layer:'event',eventClustering:true,
+      eventPointColor:'333333',eventSelection:{locationAccess:'precise',program:'VBqh0ynB2wv',
+        startDate:'2025-08-04',endDate:'2026-08-04',coordinateField:'EVENT',
+        organisationUnits:['ImspTQPwCqd']}},source);
+    const renderer = new D2Maps(provider(map)).setId('host') as D2Maps;
+    renderer.setZoom(8).addLayer(event);
+    await ready(map,renderer.draw());
+    expect(map.on).toHaveBeenCalledWith('moveend',expect.any(Function));
+    map.currentZoom = 9;
+    map.moveListener?.();
+    await Promise.resolve(); await Promise.resolve();
+    expect(calls).toContain(35000);
+    expect(map.geoJsonSource.setData).toHaveBeenCalledWith(expect.objectContaining({features:[
+      expect.objectContaining({properties:expect.objectContaining({point_count:35000})})]}));
+    let finishStale: ((value: unknown) => void) | undefined;
+    source.loadEventClusters.mockImplementationOnce(() => new Promise(resolve => { finishStale = resolve; }));
+    map.currentZoom = 10;
+    map.moveListener?.();
+    const updatesBeforeDispose = map.geoJsonSource.setData.mock.calls.length;
+    renderer.dispose();
+    finishStale?.({headers:[{name:'count'},{name:'center'}],rows:[
+      ['999','{"type":"Point","coordinates":[-12,8]}']]});
+    await Promise.resolve(); await Promise.resolve();
+    expect(map.geoJsonSource.setData).toHaveBeenCalledTimes(updatesBeforeDispose);
+    expect(map.off).toHaveBeenCalledWith('moveend',expect.any(Function));
+  });
+  it('keeps historical non-event map fitBounds and local style with saved basemap metadata', async () => {
+    const map = new FakeMap();
+    const adapter = provider(map);
+    const renderer = new D2Maps(adapter).setId('host') as D2Maps;
+    renderer.setBaseMap('osmLight').addLayer(layer('thematic',[feature(35,-6)]));
+    await ready(map,renderer.draw());
+    expect(adapter.createMap).toHaveBeenCalledWith(expect.objectContaining({
+      zoom:5,style:{version:8,sources:{},layers:[]}}));
+    expect(map.fitBounds).toHaveBeenCalled();
+    expect(map.on).not.toHaveBeenCalled();
+  });
+  it('adapts a saved 2.43 event view with top-level dates and default EVENT coordinates', async () => {
+    const map = new FakeMap();
+    const source = {loadGeoFeatures:jest.fn(),loadAnalytics:jest.fn(),loadEvents:jest.fn(),
+      loadEventClusters:jest.fn().mockResolvedValue({headers:[{name:'count'},{name:'center'}],
+        rows:[['2914','{"type":"Point","coordinates":[-13.1,8.8]}']]})};
+    const event = new MapLayer({id:'saved-event',layer:'event',
+      program:{id:'VBqh0ynB2wv'} as never,programStage:{id:'pTo4uMt3xur'},
+      startDate:'2025-08-04T02:00:00.000',endDate:'2026-08-04T02:00:00.000',
+      eventClustering:true,config:undefined},source).setDataSelections([
+        {dimension:'ou',items:[{id:'ImspTQPwCqd'}]}]);
+    const renderer = new D2Maps(provider(map)).setId('host') as D2Maps;
+    renderer.addLayer(event);
+    await ready(map,renderer.draw());
+    expect(source.loadEventClusters).toHaveBeenCalledWith(expect.objectContaining({
+      program:'VBqh0ynB2wv',stage:'pTo4uMt3xur',coordinateField:'EVENT',
+      organisationUnits:['ImspTQPwCqd'],startDate:'2025-08-04'}),
+      '../../..',expect.any(AbortSignal));
+    expect(map.addSource.mock.calls[0][1].cluster).toBeUndefined();
+    expect(map.addLayer.mock.calls.map(([item])=>item.id)).toEqual([
+      'saved-event-clusters','saved-event-counts']);
+    expect(map.fitBounds).toHaveBeenCalled();
+  });
+  it('renders authorized event points and provider clusters without leaking event identifiers', async () => {
+    const map = new FakeMap();
+    const eventSource = { loadGeoFeatures: jest.fn(), loadAnalytics: jest.fn(),
+      loadEvents: jest.fn().mockResolvedValue({headers:[{name:'psi'}, {name:'coordinates'}, {name:'ou'}],
+        rows:[['private-id','[35,-6]','OrgUnit0001']]}) };
+    const event = new MapLayer({id:'events', layer:'event', eventClustering:true,
+      eventCategoryColors:{A:'#225588'},
+      eventSelection:{locationAccess:'precise', program:'Program0001', startDate:'2024-01-01', endDate:'2024-12-31',
+        coordinateField:'psigeometry', organisationUnits:['OrgUnit0001']}}, eventSource);
+    const renderer = new D2Maps(provider(map)).setId('host') as D2Maps;
+    renderer.addLayer(event);
+    await ready(map, renderer.draw());
+    expect(eventSource.loadGeoFeatures).not.toHaveBeenCalled();
+    expect(eventSource.loadAnalytics).not.toHaveBeenCalled();
+    expect(map.addSource).toHaveBeenCalledWith('events-source', expect.objectContaining({
+      cluster:true, clusterRadius:50, data:expect.objectContaining({features:[expect.objectContaining({
+        properties:{} })]})}));
+    expect(map.addLayer.mock.calls.map(([item]) => item.id)).toEqual(['events-clusters','events-counts','events']);
+    expect(map.addLayer.mock.calls[1][0].layout['text-field']).toEqual(['get','point_count_abbreviated']);
+    expect(map.addLayer.mock.calls[2][0].paint['circle-color'])
+      .toEqual(['match', ['get','category'], 'A', '#225588', '#333333']);
+    expect(map.fitBounds).toHaveBeenCalled();
+    renderer.dispose();
+    expect(map.remove).toHaveBeenCalledTimes(1);
+  });
   it('renders mixed thematic, facility and legacy boundary layers in stable order without geometry analytics', async () => {
     const map = new FakeMap();
     const point = { id: 'facility-a', na: 'Clinic A', co: '[35,-6]', ty: 1 } as MapGeoFeature;

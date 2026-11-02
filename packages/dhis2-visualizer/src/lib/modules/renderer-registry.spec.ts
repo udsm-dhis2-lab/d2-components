@@ -2,6 +2,27 @@ import { VisualizationType } from '../shared/models';
 import { createDefaultRendererRegistry } from './renderer-registry';
 
 describe('renderer registry', () => {
+  it('keeps saved event view dates, stage and OU selections through MAP facade delegation', async () => {
+    const loadEventClusters = jest.fn().mockResolvedValue({headers:[{name:'count'},{name:'center'}],
+      rows:[['3','{"type":"Point","coordinates":[-12,8]}']]});
+    const renderer = createDefaultRendererRegistry().create('MAP', {
+      id:'map-host',configuredType:'MAP',baseUrl:'/dhis',
+      config:{config:{zoom:8,longitude:-11.84,latitude:8.43,basemap:'osmLight',
+        mapViews:[{id:'event-a',layer:'event',program:{id:'VBqh0ynB2wv'},
+        programStage:{id:'pTo4uMt3xur'},startDate:'2025-08-04T02:00:00.000',
+        endDate:'2026-08-04T02:00:00.000',eventClustering:true,eventCoordinateField:null,
+        rows:[{dimension:'ou',items:[{id:'ImspTQPwCqd'}]}],columns:[],filters:[]}]}},
+      dataSelections:[],mapLayerConfig:undefined,mapDataSource:{loadEventClusters,
+        loadEvents:jest.fn(),loadGeoFeatures:jest.fn(),loadAnalytics:jest.fn()},
+      tableDashboardItem:undefined,legendSets:undefined,plotOptions:undefined,program:undefined,
+    },undefined) as unknown as {zoom:number;loadLayers:()=>Promise<unknown[]>;layers:{features:unknown[]}[]};
+    await renderer.loadLayers();
+    expect(renderer.zoom).toBe(5);
+    expect(loadEventClusters).toHaveBeenCalledWith(expect.objectContaining({
+      program:'VBqh0ynB2wv',stage:'pTo4uMt3xur',coordinateField:'EVENT',
+      organisationUnits:['ImspTQPwCqd']}),'/dhis',expect.any(AbortSignal));
+    expect(renderer.layers[0].features).toHaveLength(1);
+  });
   it('centrally identifies every supported and legacy-unsupported type', () => {
     const registry = createDefaultRendererRegistry();
     const supported: VisualizationType[] = [

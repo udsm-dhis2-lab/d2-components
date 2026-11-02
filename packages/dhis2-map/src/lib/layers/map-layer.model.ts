@@ -20,6 +20,7 @@ import { buildThematic, joinThematicData } from '../thematic/thematic.transform'
 import { thematicMapboxStyle } from '../thematic/thematic-mapbox.adapter';
 import type { ThematicMode } from '../thematic/thematic.model';
 import { buildGeometryLayer } from '../geometry/geometry-layer';
+import { clusterFeatures, eventFeatures, type EventClusterViewport, type EventSelection } from '../events/event-layer';
 
 export class MapLayer {
   /** Library fallback for historical views that did not save a colour scale. */
@@ -27,12 +28,21 @@ export class MapLayer {
   id!: string;
   name!: string;
   program!: string;
+  programStage?: {id:string};
+  startDate?: string;
+  endDate?: string;
   layer!: MapLayerType;
   renderingStrategy!: MapRenderingStrategy;
   sortOrder!: number;
   eventClustering!: boolean;
   opacity!: number;
   eventPointRadius!: number;
+  eventPointColor?: string;
+  eventSelection?: EventSelection;
+  eventCoordinateField?: string;
+  eventStyleItem?: string;
+  eventCategoryColors?: Record<string, string>;
+  serverClustersLoaded = false;
   hideSubtitle!: boolean;
   digitGroupSeparator!: DigitGroupSeparator;
   titleOption!: TitleOption;
@@ -70,6 +80,34 @@ export class MapLayer {
   baseUrl = '../../..';
   constructor(props?: Partial<MapLayer>, private dataSource?: MapDataSource) {
     if (props) Object.assign(this, props);
+    if (this.layer === 'event' && !this.eventSelection) {
+      let config: Record<string, unknown> = {};
+      if (this.config) {
+        try { config = typeof this.config === 'string' ? JSON.parse(this.config) : this.config; }
+        catch { throw new Error(`Invalid event config for map layer "${this.id}"`); }
+      }
+      if (!config || typeof config !== 'object' || Array.isArray(config))
+        throw new Error(`Invalid event config for map layer "${this.id}"`);
+      if (config['coordinateOuFallback'] || config['fallbackCoordinateField'])
+        throw new Error('Event coordinate fallback is not supported');
+      if (config['eventCategoryColors'] && typeof config['eventCategoryColors'] === 'object' &&
+          !Array.isArray(config['eventCategoryColors']))
+        this.eventCategoryColors = config['eventCategoryColors'] as Record<string, string>;
+      const program = this.program as unknown;
+      const programId = typeof program === 'string' ? program :
+        program && typeof program === 'object' ? (program as {id?: unknown}).id : undefined;
+      const startDate = this.startDate || config['startDate'];
+      const endDate = this.endDate || config['endDate'];
+      // A saved DHIS2 event view is already an explicit request to display event locations.
+      // The server remains responsible for access control; no identifiers reach the provider.
+      if (typeof programId === 'string' && typeof startDate === 'string' &&
+          typeof endDate === 'string')
+        this.eventSelection = { locationAccess:'precise', program: programId,
+          stage:this.programStage?.id, startDate:startDate.slice(0,10),
+          endDate:endDate.slice(0,10), organisationUnits: [],
+          coordinateField: this.eventCoordinateField || 'EVENT',
+          serverAuthorizedDescendants:true, styleItem: this.eventStyleItem };
+    }
     if ((this.layer === 'facility' || this.layer === 'orgUnit' || this.layer === 'boundary') && this.config) {
       let decoded: unknown;
       try { decoded = typeof this.config === 'string' ? JSON.parse(this.config) : this.config; }
@@ -205,6 +243,33 @@ export class MapLayer {
   async loadFeatures(signal?: AbortSignal) {
     if (!this.dataSource)
       throw new Error(`No data source configured for map layer "${this.id}"`);
+    if (this.layer === 'event') {
+      if (!this.dataSource.loadEvents) throw new Error(`Event data source is required for map layer "${this.id}"`);
+      const selection = this.eventSelection && this.eventSelection.organisationUnits.length
+        ? this.eventSelection : this.eventSelection && {
+          ...this.eventSelection,
+          organisationUnits: (this.dataSelections || []).find(item => item.dimension === 'ou')?.items
+            .map(item => item.dimensionItem || item.id).filter((id): id is string => typeof id === 'string') || [],
+        };
+      if (!selection) throw new Error(`Explicit event selection is required for map layer "${this.id}"`);
+      if (selection.locationAccess !== 'precise')
+        throw new Error('Precise event location access must be explicitly approved');
+      this.eventSelection = selection;
+      const response = this.eventClustering && this.dataSource.loadEventClusters
+        ? await this.dataSource.loadEventClusters(selection, this.baseUrl, signal)
+        : await this.dataSource.loadEvents(selection, this.baseUrl, signal);
+      if (signal?.aborted) return;
+      this.serverClustersLoaded = Boolean(this.eventClustering && this.dataSource.loadEventClusters);
+      this.features = this.eventClustering && this.dataSource.loadEventClusters
+        ? clusterFeatures(response).features : eventFeatures(response, {
+        allowedOrganisationUnits: selection.organisationUnits,
+        styleItem: selection.styleItem,
+        serverAuthorizedDescendants:selection.serverAuthorizedDescendants,
+      }).features;
+      this.#setMapSourceData();
+      this.setFillType('circle');
+      return;
+    }
     if (this.layer === 'facility' || this.layer === 'orgUnit' || this.layer === 'boundary') {
       if (this.opacity != null && (!Number.isFinite(this.opacity) || this.opacity < 0 || this.opacity > 1))
         throw new Error(`Invalid opacity for map layer "${this.id}"`);
@@ -267,6 +332,14 @@ export class MapLayer {
     this.#setFeatures();
     this.#setMapSourceData();
     this.setFillType();
+  }
+
+  async refreshEventClusters(viewport: EventClusterViewport, signal?: AbortSignal): Promise<FeatureCollection> {
+    if (!this.serverClustersLoaded || !this.dataSource?.loadEventClusters || !this.eventSelection)
+      throw new Error(`No server cluster source configured for map layer "${this.id}"`);
+    const response = await this.dataSource.loadEventClusters(this.eventSelection, this.baseUrl, signal, viewport);
+    if (signal?.aborted) return this.featureCollection;
+    return clusterFeatures(response);
   }
 
   get paint() {

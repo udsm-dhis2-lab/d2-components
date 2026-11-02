@@ -1,1 +1,1 @@
-export type MapLayerType = 'thematic' | 'thematic1' | 'facility' | 'boundary' | 'orgUnit';
+export type MapLayerType = 'thematic' | 'thematic1' | 'facility' | 'boundary' | 'orgUnit' | 'event';

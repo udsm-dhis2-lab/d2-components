@@ -50,3 +50,14 @@ export function mapAnalyticsFixture() {
     { ou: { id: 'ou-b' }, value: 0 },
   ] };
 }
+
+/** Event query rows are sanitized and use the documented named-header shape. */
+export function eventQueryFixture() {
+  return { headers: [{ name: 'psi' }, { name: 'coordinates' }, { name: 'ou' },
+    { name: 'StyleItem01' }], rows: [
+    ['Event000001', '[35,-6]', 'OrgUnit0001', 'A'],
+    ['Event000002', '[35.1,-6.1]', 'OrgUnit0001', 'B'],
+    ['Event000003', null, 'OrgUnit0001', 'A'],
+    ['Event000004', '[36,-7]', 'OrgUnit0002', 'A'],
+  ] };
+}
