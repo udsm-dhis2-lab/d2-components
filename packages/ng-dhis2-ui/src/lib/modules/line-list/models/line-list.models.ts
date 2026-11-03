@@ -1,4 +1,18 @@
 import { DHIS2Event, Pager, TrackedEntityInstance, } from '@iapps/d2-web-sdk';
+export interface OrganisationUnitLevel {
+  level: number;
+  name: string;
+}
+
+export interface OrganisationUnitHierarchyNode {
+  id: string;
+  name: string;
+  level: number;
+}
+
+export interface OrganisationUnitHierarchy extends OrganisationUnitHierarchyNode {
+  ancestors: OrganisationUnitHierarchyNode[];
+}
 
 export interface PagerObject {
   page: number;
@@ -129,6 +143,8 @@ export interface TrackedEntityInstancesResponse {
   trackedEntity?: TrackedEntity[];
   pager: Pager;
   orgUnitsMap?: Map<string, string>;
+  orgUnitHierarchyMap?: Map<string, OrganisationUnitHierarchy>;
+  orgUnitLevels?: OrganisationUnitLevel[];
 }
 
 export interface TrackedEntityResponse {

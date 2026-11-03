@@ -467,6 +467,10 @@ import {
 } from '../models/line-list-column-metadata-display-mode.model';
 import { format, isValid } from 'date-fns';
 import { formatMultiTextOptionValue } from './multi-text-option.util';
+import {
+  buildOrgUnitHierarchyColumns,
+  buildOrgUnitHierarchyValues,
+} from './org-unit-hierarchy.util';
 
 export const getTrackedEntityTableData = (
   response: LineListResponse,
@@ -477,7 +481,8 @@ export const getTrackedEntityTableData = (
   customDisplayInReportsIds?: string[],
   columnNameSource: 'NAME' | 'FORM_NAME' = 'NAME',
   columnMetadataDisplayMode?: LineListColumnMetadataDisplayModeValue,
-  orgUnitAndDateColumnsPosition: 'start' | 'end' = 'start'
+  orgUnitAndDateColumnsPosition: 'start' | 'end' = 'start',
+  showOrgUnitHierarchy = false
 ): {
   columns: ColumnDefinition[];
   data: TableRow[];
@@ -509,6 +514,10 @@ export const getTrackedEntityTableData = (
   const incidentDateLabel = metaData.incidentDateLabel as string;
   const orgUnitMap = (response.data as TrackedEntityInstancesResponse)
     .orgUnitsMap;
+  const orgUnitHierarchyMap = (response.data as TrackedEntityInstancesResponse)
+    .orgUnitHierarchyMap ?? new Map();
+  const orgUnitLevels = (response.data as TrackedEntityInstancesResponse)
+    .orgUnitLevels ?? [];
 
   const attributeColumns = (
     shouldShowAllAttributes
@@ -587,10 +596,9 @@ export const getTrackedEntityTableData = (
     }));
 
   const orgUnitAndDateColumns = [
-    {
-      label: orgUnitLabel || 'Registering unit',
-      key: 'orgUnit',
-    },
+    ...(showOrgUnitHierarchy
+      ? buildOrgUnitHierarchyColumns(orgUnitLevels)
+      : [{ label: orgUnitLabel || 'Registering unit', key: 'orgUnit' }]),
     ...(metaData.displayIncidentDate
       ? [
           {
@@ -745,6 +753,16 @@ export const getTrackedEntityTableData = (
 
     row['orgUnitId'] = { value: orgUnitId || '-' };
     row['orgUnit'] = { value: orgUnitName };
+    if (showOrgUnitHierarchy) {
+      const hierarchyValues = buildOrgUnitHierarchyValues(
+        orgUnitId,
+        orgUnitHierarchyMap,
+        orgUnitLevels
+      );
+      for (const [key, value] of Object.entries(hierarchyValues)) {
+        row[key] = { value };
+      }
+    }
     row['incidentDate'] = {
       value: enrollment.incidentDate
         ? formatDate(enrollment.incidentDate)

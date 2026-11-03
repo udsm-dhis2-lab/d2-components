@@ -1,5 +1,14 @@
 import { Program } from '@iapps/d2-web-sdk';
-import { ColumnDefinition, TableRow } from '../models/line-list.models';
+import {
+  ColumnDefinition,
+  OrganisationUnitHierarchy,
+  OrganisationUnitLevel,
+  TableRow,
+} from '../models/line-list.models';
+import {
+  buildOrgUnitHierarchyColumns,
+  buildOrgUnitHierarchyValues,
+} from './org-unit-hierarchy.util';
 
 /**
  * Export schema is intentionally independent of the on-screen table columns.
@@ -178,11 +187,14 @@ export function projectTrackerExport(
   metadata: Program,
   programStageId: string | undefined,
   columnNameSource: 'NAME' | 'FORM_NAME',
-  orgUnitNames: ReadonlyMap<string, string> = new Map()
+  orgUnitNames: ReadonlyMap<string, string> = new Map(),
+  orgUnitHierarchy: ReadonlyMap<string, OrganisationUnitHierarchy> = new Map(),
+  orgUnitLevels: OrganisationUnitLevel[] = []
 ): { columns: ColumnDefinition[]; data: TableRow[] } {
   const fields = assignedFields(metadata, programStageId, columnNameSource);
   const columns = [
     ...ORGANISATION_COLUMNS,
+    ...buildOrgUnitHierarchyColumns(orgUnitLevels),
     ...fields.map(({ key, label }) => ({ key, label })),
   ];
   const data = records.map((record, index) => {
@@ -199,6 +211,14 @@ export function projectTrackerExport(
             : undefined,
       },
       orgUnitNames
+    );
+    Object.assign(
+      values,
+      buildOrgUnitHierarchyValues(
+        registeringOrgUnit,
+        orgUnitHierarchy,
+        orgUnitLevels
+      )
     );
     const attributes = new Map<string, unknown>();
     for (const attribute of record.attributes ?? [])

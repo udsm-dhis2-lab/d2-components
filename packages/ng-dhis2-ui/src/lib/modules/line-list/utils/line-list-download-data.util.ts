@@ -224,7 +224,12 @@ import {
   Program,
 } from '@iapps/d2-web-sdk';
 import { addDays, format } from 'date-fns';
-import { ColumnDefinition, TableRow } from '../models/line-list.models';
+import {
+  ColumnDefinition,
+  OrganisationUnitHierarchy,
+  OrganisationUnitLevel,
+  TableRow,
+} from '../models/line-list.models';
 import {
   projectEventExport,
   projectTrackerExport,
@@ -244,6 +249,10 @@ interface LineListDownloadRowsConfig {
   eventStatus?: { programStage: string; status: EventStatus };
   columnNameSource: 'NAME' | 'FORM_NAME';
   resolveOrgUnitNames?: (ids: string[]) => Promise<Map<string, string>>;
+  resolveOrgUnitHierarchy?: (ids: string[]) => Promise<{
+    hierarchy: Map<string, OrganisationUnitHierarchy>;
+    levels: OrganisationUnitLevel[];
+  }>;
 }
 
 /** Fetch every matching page, not just the currently displayed page. */
@@ -320,6 +329,7 @@ export async function fetchLineListDownloadRows({
   eventStatus,
   columnNameSource,
   resolveOrgUnitNames,
+  resolveOrgUnitHierarchy,
 }: LineListDownloadRowsConfig): Promise<{
   columns: ColumnDefinition[];
   data: TableRow[];
@@ -405,11 +415,19 @@ export async function fetchLineListDownloadRows({
         ? entity.orgUnitName
         : undefined,
   }));
+  const registeringUnitIds = [...new Set(
+    registeringUnits.map((item) => item.orgUnit).filter(Boolean) as string[]
+  )];
+  const hierarchy = resolveOrgUnitHierarchy && registeringUnitIds.length
+    ? await resolveOrgUnitHierarchy(registeringUnitIds)
+    : { hierarchy: new Map<string, OrganisationUnitHierarchy>(), levels: [] };
   return projectTrackerExport(
     entities,
     metaData,
     programStageId,
     columnNameSource,
-    await namesFor(registeringUnits)
+    await namesFor(registeringUnits),
+    hierarchy.hierarchy,
+    hierarchy.levels
   );
 }

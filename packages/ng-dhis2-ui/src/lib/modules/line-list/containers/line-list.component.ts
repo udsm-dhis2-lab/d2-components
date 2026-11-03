@@ -1018,6 +1018,7 @@ export class LineListTableComponent
   @Input() searcheableDataElements: string[] = [];
   @Input() columnNameSource: 'NAME' | 'FORM_NAME' = 'NAME';
   @Input() orgUnitAndDateColumnsPosition: 'start' | 'end' = 'start';
+  @Input() showOrgUnitHierarchy = false;
   @Input() customDisplayInReportsIds?: string[];
   @Input() columnMetadataDisplayMode?: LineListColumnMetadataDisplayModeValue;
   private reactStateUpdaters: any = null;
@@ -1423,11 +1424,21 @@ export class LineListTableComponent
                     this.lineListService.fetchOrgUnits(uniqueOrgUnitIds)
                   )
                 : new Map<string, string>();
+            const orgUnitHierarchy =
+              this.showOrgUnitHierarchy && orgUnitIdsFromEnrollments.size > 0
+                ? await firstValueFrom(
+                    this.lineListService.fetchOrgUnitHierarchy(
+                      [...orgUnitIdsFromEnrollments].filter(Boolean)
+                    )
+                  )
+                : { hierarchy: new Map(), levels: [] };
 
             const trackedEntityResponse: TrackedEntityInstancesResponse = {
               trackedEntityInstances: response.data!,
               pager: pager,
               orgUnitsMap: fetchedOrgUnits,
+              orgUnitHierarchyMap: orgUnitHierarchy.hierarchy,
+              orgUnitLevels: orgUnitHierarchy.levels,
             };
 
             const { columns, data, filteredEntityColumns, orgUnitLabel } =
@@ -1440,7 +1451,8 @@ export class LineListTableComponent
                 this.customDisplayInReportsIds,
                 this.columnNameSource,
                 this.columnMetadataDisplayMode,
-                this.orgUnitAndDateColumnsPosition
+                this.orgUnitAndDateColumnsPosition,
+                this.showOrgUnitHierarchy
               );
 
             if (currentRequest !== requestSequence.current) return;
@@ -1543,6 +1555,11 @@ export class LineListTableComponent
           columnNameSource: this.columnNameSource,
           resolveOrgUnitNames: (ids) =>
             firstValueFrom(this.lineListService.fetchOrgUnits(ids)),
+          resolveOrgUnitHierarchy: this.showOrgUnitHierarchy
+            ? (ids) => firstValueFrom(
+                this.lineListService.fetchOrgUnitHierarchy(ids)
+              )
+            : undefined,
         });
 
         // Use the selected organisation unit's name (not a record-level name)
