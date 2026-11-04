@@ -3,7 +3,7 @@ import type { Feature, FeatureCollection } from 'geojson';
 import { BaseVisualizer, Visualizer } from './core';
 import { MapLayer } from './layers/map-layer.model';
 import { MapLayerRegistry } from './layer-registry';
-import { LegendControl } from './models/legend-control.model';
+import { LegendControl, LegendItem } from './models/legend-control.model';
 import { MapLayerConfiguration } from './models/map-layer-configuration.model';
 import { facilitySymbolUrl } from './geometry/facility-symbol';
 import { clusterSizeForZoom } from './events/event-layer';
@@ -33,6 +33,8 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
   #loadListener?: () => void;
   #readyResolve?: () => void;
   #controls: ProviderControl[] = [];
+  #resizeObserver?: ResizeObserver;
+  #legendControl?: LegendControl;
   #loadedLayers: MapLayer[] = [];
   #generation = 0;
   #loadAbort?: AbortController;
@@ -128,6 +130,16 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
       zoom: this.zoom,
       accessToken: this.#providerConfig?.accessToken,
     });
+    if (typeof ResizeObserver !== 'undefined' && typeof document !== 'undefined' && this.map.resize) {
+      const host = document.getElementById(this._id);
+      if (host) {
+        const map = this.map;
+        this.#resizeObserver = new ResizeObserver(() => {
+          if (this.map === map) map.resize?.();
+        });
+        this.#resizeObserver.observe(host);
+      }
+    }
     const bounds = this.getBounds();
     if (bounds) this.map.fitBounds(bounds, { padding: 40 });
     if (!this.mapLayerConfiguration.hideNavigationControls)
@@ -160,6 +172,15 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
   #addControl(control: ProviderControl, position?: string): void {
     this.#controls.push(control);
     this.map?.addControl(control, position);
+  }
+
+  #addLegend(legends: LegendItem[], title: string): void {
+    if (!legends.length) return;
+    if (this.#legendControl) this.#legendControl.addSection(legends, title);
+    else {
+      this.#legendControl = new LegendControl(legends, title);
+      this.#addControl(this.#legendControl, 'top-left');
+    }
   }
 
   async #refreshServerClusters(map: ProviderMap): Promise<void> {
@@ -230,6 +251,7 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
             map.addLayer({id: `${layer.id}-clusters`, type:'circle', source,
               filter:['has','point_count'], paint:{'circle-color':eventColor,
                 'circle-radius':['step',['get','point_count'],14,100,18,1000,23,10000,29],
+                'circle-pitch-alignment':'viewport','circle-pitch-scale':'viewport',
                 'circle-opacity':layer.opacity ?? 1,
                 'circle-stroke-color':'#ffffff','circle-stroke-width':1}});
             map.addLayer({id:`${layer.id}-counts`, type:'symbol', source,
@@ -281,12 +303,12 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
               layout: { 'text-field': ['get', 'name'], 'text-size': 11 },
               paint: { 'text-color': '#404b5a', 'text-halo-color': '#ffffff', 'text-halo-width': 1 } });
           if (!this.mapLayerConfiguration.hideLegendControl && layer.legendSet?.legends?.length)
-            this.#addControl(new LegendControl(layer.legendSet.legends.map(legend => ({
+            this.#addLegend(layer.legendSet.legends.map(legend => ({
               useBackgroundColor: !icons.some(icon => icon.groupId === legend.id),
               backgroundColor: legend.color,
               symbol: icons.find(icon => icon.groupId === legend.id)?.url,
               label: legend.name,
-            })), layer.legendSet.name || 'Map legend'), 'bottom-right');
+            })), layer.legendSet.name || 'Map legend');
           return;
         }
         map.addLayer({
@@ -329,10 +351,7 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
             backgroundColor: legend.color,
             label: `${legend.name} (${legend.startValue} - ${legend.endValue})`,
           }));
-          this.#addControl(
-            new LegendControl(legends, layer.legendSet?.name || 'Legend'),
-            'bottom-right'
-          );
+          this.#addLegend(legends, layer.legendSet?.name || 'Legend');
         }
   }
 
@@ -355,6 +374,8 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
   }
 
   override dispose(): void {
+    this.#resizeObserver?.disconnect();
+    this.#resizeObserver = undefined;
     this.#generation++;
     this.#clusterRequest++;
     this.#clusterAbort?.abort();
@@ -370,6 +391,7 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
       this.map.remove();
     }
     this.#controls = [];
+    this.#legendControl = undefined;
     this.#readyResolve?.();
     this.#readyResolve = undefined;
     this.#loadListener = undefined;

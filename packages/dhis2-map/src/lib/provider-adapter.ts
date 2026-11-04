@@ -9,6 +9,7 @@ export interface ProviderControl {
   onRemove?(): void;
 }
 export interface ProviderMap {
+  resize?(): void;
   once(event: 'load', listener: () => void): void;
   on?(event: 'moveend', listener: () => void): void;
   off(event: 'load' | 'moveend', listener: () => void): void;

@@ -1,6 +1,7 @@
 import type { Feature } from 'geojson';
 import { MapLayer } from './layers/map-layer.model';
 import { D2Maps, MapVisualizer } from './map-visualizer';
+import { LegendControl } from './models/legend-control.model';
 import type { MapProviderAdapter, ProviderMap } from './provider-adapter';
 import type { MapGeoFeature } from './models/map-geo-feature.model';
 
@@ -20,6 +21,7 @@ class FakeMap implements ProviderMap {
   addSource = jest.fn();
   addLayer = jest.fn();
   addControl = jest.fn();
+  resize = jest.fn();
   removeControl = jest.fn();
   fitBounds = jest.fn();
   remove = jest.fn();
@@ -53,6 +55,25 @@ async function ready(map: FakeMap, drawing: Promise<void>): Promise<void> {
 }
 
 describe('MapVisualizer', () => {
+  it('combines layer legends into one top-left control', async () => {
+    const map = new FakeMap();
+    const first = layer('first', [feature(35, -6)]);
+    const second = layer('second', [feature(36, -7)]);
+    first.legendSet = { id: 'first-legend', name: 'First legend', legends: [
+      { id: 'a', name: 'A', color: '#123456', startValue: 0, endValue: 10 }] };
+    second.legendSet = { id: 'second-legend', name: 'Second legend', legends: [
+      { id: 'b', name: 'B', color: '#abcdef', startValue: 10, endValue: 20 }] };
+    const renderer = new D2Maps(provider(map)).setId('host') as D2Maps;
+    renderer.addLayer(first).addLayer(second);
+    await ready(map, renderer.draw());
+    const legendCalls = map.addControl.mock.calls.filter(([control]) => control instanceof LegendControl);
+    expect(legendCalls).toHaveLength(1);
+    expect(legendCalls[0][1]).toBe('top-left');
+    const element = (legendCalls[0][0] as LegendControl).onAdd(map);
+    expect(element.textContent).toContain('First legend');
+    expect(element.textContent).toContain('Second legend');
+    expect((element.querySelector('[role="group"]') as HTMLElement).hidden).toBe(true);
+  });
   it('refreshes server clusters at zoom scale and drops stale results after disposal', async () => {
     const map = new FakeMap();
     const calls: number[] = [];
@@ -139,12 +160,42 @@ describe('MapVisualizer', () => {
       cluster:true, clusterRadius:50, data:expect.objectContaining({features:[expect.objectContaining({
         properties:{} })]})}));
     expect(map.addLayer.mock.calls.map(([item]) => item.id)).toEqual(['events-clusters','events-counts','events']);
+    expect(map.addLayer.mock.calls[0][0].paint).toEqual(expect.objectContaining({
+      'circle-pitch-alignment':'viewport', 'circle-pitch-scale':'viewport' }));
     expect(map.addLayer.mock.calls[1][0].layout['text-field']).toEqual(['get','point_count_abbreviated']);
     expect(map.addLayer.mock.calls[2][0].paint['circle-color'])
       .toEqual(['match', ['get','category'], 'A', '#225588', '#333333']);
     expect(map.fitBounds).toHaveBeenCalled();
     renderer.dispose();
     expect(map.remove).toHaveBeenCalledTimes(1);
+  });
+  it('resizes the provider canvas when the host card changes size and stops on disposal', async () => {
+    const host = document.createElement('div');
+    host.id = 'host';
+    document.body.appendChild(host);
+    const previous = globalThis.ResizeObserver;
+    let callback: ResizeObserverCallback | undefined;
+    const disconnect = jest.fn();
+    globalThis.ResizeObserver = class {
+      constructor(listener: ResizeObserverCallback) { callback = listener; }
+      observe = jest.fn();
+      disconnect = disconnect;
+      unobserve = jest.fn();
+    } as typeof ResizeObserver;
+    try {
+      const map = new FakeMap();
+      const renderer = new D2Maps(provider(map)).setId('host') as D2Maps;
+      await ready(map, renderer.draw());
+      callback?.([], {} as ResizeObserver);
+      expect(map.resize).toHaveBeenCalledTimes(1);
+      renderer.dispose();
+      expect(disconnect).toHaveBeenCalledTimes(1);
+      callback?.([], {} as ResizeObserver);
+      expect(map.resize).toHaveBeenCalledTimes(1);
+    } finally {
+      globalThis.ResizeObserver = previous;
+      host.remove();
+    }
   });
   it('renders mixed thematic, facility and legacy boundary layers in stable order without geometry analytics', async () => {
     const map = new FakeMap();
