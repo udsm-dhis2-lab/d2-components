@@ -1,6 +1,8 @@
+import { parseTrackerConfig } from './layers/tracker/tracker-map-layer';
+
 /** A version must be supplied by the caller; payload shape is not a version oracle. */
 export type MapCoreVersion = '2.41.3' | '2.43';
-export type MapLayerKind = 'thematic' | 'facility' | 'boundary' | 'orgUnit' | 'event' | 'legacy';
+export type MapLayerKind = 'thematic' | 'facility' | 'boundary' | 'orgUnit' | 'event' | 'trackedEntity' | 'legacy';
 export interface MapViewport { longitude: number; latitude: number; zoom: number }
 export interface MapBasemap { id: string; opacity?: number; hidden?: boolean; [key: string]: unknown }
 export interface MapSource { kind: 'analytics' | 'geometry'; selections?: readonly unknown[] }
@@ -9,6 +11,7 @@ export type MapLayerRequest =
   | { kind: 'thematic'; layer: SavedMapLayer; source: MapSource; period?: MapPeriod }
   | { kind: 'facility' | 'orgUnit'; layer: SavedMapLayer; source: MapSource; period?: MapPeriod }
   | { kind: 'event'; layer: SavedMapLayer; source: {kind:'events'}; period?: MapPeriod }
+  | { kind: 'trackedEntity'; layer: SavedMapLayer; source: {kind:'tracker'}; period?: MapPeriod }
   | { kind: 'unsupported'; layer: SavedMapLayer; originalKind: string };
 export interface SavedMapLayer { id: string; layer: string; config: Record<string, unknown>; raw: Record<string, unknown> }
 export interface SavedMapRequest {
@@ -87,6 +90,10 @@ export function serializeSavedMap(request: SavedMapRequest): Record<string, unkn
 export function toMapLayerRequest(layer: SavedMapLayer): MapLayerRequest {
   if (layer.layer === 'event')
     return { kind:'event', layer, source:{kind:'events'} };
+  if (layer.layer === 'trackedEntity') {
+    parseTrackerConfig(layer.config);
+    return { kind:'trackedEntity', layer, source:{kind:'tracker'} };
+  }
   if (layer.layer === 'thematic')
     return { kind: 'thematic', layer, source: { kind: 'analytics' } };
   if (layer.layer === 'facility' || layer.layer === 'orgUnit' || layer.layer === 'boundary')

@@ -60,9 +60,11 @@ try {
       "const m=require('@iapps/d2-maps');",
       "const provider={createMap(){throw new Error('draw should not run')},createNavigationControl(){return{}},createStyleSwitcherControl(){return{}}};",
       "const renderer=new m.D2Maps(provider).setProviderConfig({style:'mock://style',accessToken:'test-only'});",
-      "if(m.MapVisualizer!==m.D2Maps||typeof m.MapLayer!=='function'||typeof m.TrackedEntityLayer!=='function'||typeof m.FetchMapDataSource!=='function'||!renderer) throw new Error('map exports missing');",
+      "if(m.MapVisualizer!==m.D2Maps||typeof m.MapLayer!=='function'||typeof m.TrackedEntityLayer!=='function'||typeof m.TrackedEntityMapLayer!=='function'||typeof m.FetchMapDataSource!=='function'||!renderer) throw new Error('map exports missing');",
+      "const tracker=new m.TrackedEntityMapLayer({id:'tracker',trackedEntityType:{id:'EntityType1'},config:'{\"periodType\":\"lastUpdated\"}'},undefined,[{orgUnit:'OrgUnit0001',geometry:{type:'Point',coordinates:[35,-6]}}]).setDataSelections([{dimension:'ou',items:[{id:'OrgUnit0001'}]}]);",
+      "if(typeof m.parseTrackerConfig!=='function') throw new Error('tracker contract export missing');",
       "const layer=new m.MapLayer({id:'facility',layer:'facility'},{loadGeoFeatures:async()=>[{id:'ou-a',na:'Clinic',co:'[35,-6]',ty:1}],loadAnalytics:()=>{throw new Error('geometry layer requested analytics')}});",
-      "layer.loadFeatures().then(()=>{if(layer.features[0].geometry.type!=='Point') throw new Error('facility geometry missing');console.log('Map-only consumer import passed')}).catch(error=>{console.error(error);process.exitCode=1});",
+      "Promise.all([layer.loadFeatures(),tracker.loadFeatures()]).then(()=>{if(layer.features[0].geometry.type!=='Point'||tracker.features.length!==1) throw new Error('map geometry missing');console.log('Map-only consumer import passed')}).catch(error=>{console.error(error);process.exitCode=1});",
     ].join('\n')
   );
   execFileSync(process.execPath, ['verify.cjs'], {

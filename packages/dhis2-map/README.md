@@ -20,8 +20,26 @@ are reported by `layerFailures`; valid layers continue rendering. Empty layers
 do not trigger bounds fitting.
 
 Tracker-map support is exposed from this same entry point through
-`TrackedEntityLayer`, `TrackedEntityInstanceData`, and the validated tracker
-filter utilities.
+`TrackedEntityLayer`, `TrackedEntityMapLayer`, `TrackedEntityInstanceData`, and
+the validated tracker filter utilities. `TrackedEntityLayer` remains the fluent
+compatibility renderer; its `draw()` now delegates to one `D2Maps` provider.
+For a mixed map, add `new TrackedEntityMapLayer(savedView, source)` to `D2Maps`
+beside event, thematic or facility layers. The saved view needs a valid
+`trackedEntityType`, explicit OU selections and optional program, status,
+follow-up and date settings. The encoded `config.periodType` accepts
+`lastUpdated` or `program`; `program` requires a program UID. The fetch adapter
+uses the Core 2.43 tracker collection endpoint with scoped filters, a bounded
+page limit and `cache: 'no-store'`. A direct supplied-record consumer must use
+`SELECTED` OU mode; descendants require server-scoped acquisition. Set
+`locationAccess: 'none'` to suppress precise points and skip acquisition.
+Only point geometry and a validated colour cross into MapLibre source data;
+tracked-entity identifiers and attributes are never provider properties.
+The integrated layer currently uses provider circles with a single validated
+colour. Legacy per-attribute marker images and attribute hover popups are not
+carried into the provider layer; they require an access-scoped, DOM-safe overlay
+design before visual parity can be claimed.
+`config.relationships` is validated and retained but relationship lines remain
+disabled until target-app exports confirm direction and inclusion semantics.
 
 ## Installation
 
@@ -37,11 +55,10 @@ boundary and `serializeSavedMap(request)` when writing a compatible payload.
 The Core version must come from the caller's verified server contract; it is
 not inferred from a retained field. The parser decodes `mapViews[].config`
 once, validates viewport/basemap shape, preserves safe unknown properties and
-classifies `thematic`, `facility`, `boundary` and `orgUnit` as currently recognized
-layer requests. Other families remain unsupported; parsing them does not make
-them renderable. `MapLayerRegistry` permits provider-independent definitions,
-but the default `D2Maps` registry contains only the existing generic layer
-behavior. Existing `new D2Maps().addLayer(...).draw()` and `D2Visualizer` MAP
+classifies `thematic`, `facility`, `boundary`, `orgUnit`, `event` and
+`trackedEntity` as recognized layer requests. Other families remain unsupported;
+parsing them does not make them renderable. `MapLayerRegistry` permits
+provider-independent definitions. Existing `new D2Maps().addLayer(...).draw()` and `D2Visualizer` MAP
 facade imports remain supported.
 
 ## Geometry-only layers

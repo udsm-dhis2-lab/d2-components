@@ -8,6 +8,7 @@ import {
   MapLayer,
   MapProviderConfig,
   MapVisualizer,
+  TrackedEntityMapLayer,
 } from '@iapps/d2-maps';
 import { D2Pivots } from '@iapps/d2-pivots';
 import { getSelectionDimensionsFromFavorite } from '../shared/helpers';
@@ -121,9 +122,13 @@ export function createDefaultRendererRegistry(): RendererRegistry {
           getSelectionDimensionsFromFavorite(mapView),
           'dimension'
         );
-        renderer.addLayer(
-          new MapLayer(mapView, dataSource).setDataSelections(dataSelections)
-        );
+        renderer.addLayer(mapView.layer === 'trackedEntity'
+          ? new TrackedEntityMapLayer(mapView,
+              dataSource.loadTrackedEntities
+                ? {loadTrackedEntities:dataSource.loadTrackedEntities.bind(dataSource)}
+                : {loadTrackedEntities:async()=>{throw new Error('Tracker data source is required for this map');}})
+              .setDataSelections(dataSelections)
+          : new MapLayer(mapView, dataSource).setDataSelections(dataSelections));
       });
       return renderer;
     },
@@ -158,10 +163,11 @@ export function createDefaultRendererRegistry(): RendererRegistry {
     TRACKED_ENTITY_LAYER: (context) => {
       context.config.mergeDataSelections(context.dataSelections);
       const selections = context.config.dataSelections.filter(
-        (selection: any) => selection.dimension === 'tea'
+        (selection: any) => selection.dimension === 'tea' || selection.dimension === 'ou'
       );
       const renderer = new TrackedEntityLayer()
         .setId(context.id)
+        .setBaseUrl(context.baseUrl)
         .setConfig(context.config)
         .setSelections(selections)
         .setTrackedEntityInstances(context.trackedEntityInstances)

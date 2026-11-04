@@ -262,6 +262,24 @@ describe('D2Visualizer compatibility facade', () => {
     ]);
     await visualizer.dispose();
   });
+  it('routes a saved tracked-entity map view through the D2Maps layer path', async () => {
+    jest.spyOn(MapVisualizer.prototype, 'draw').mockResolvedValue(undefined);
+    const source = {loadGeoFeatures:jest.fn(),loadAnalytics:jest.fn(),
+      loadTrackedEntities:jest.fn().mockResolvedValue([])};
+    const visualizer = new D2Visualizer().setId('visualization-host').setType('MAP')
+      .setMapDataSource(source)
+      .setSelections([{dimension:'ou',items:[{id:'OrgUnit0001'}]}])
+      .setConfig(visualizationConfigFixture('MAP', {mapViews:[{
+        id:'tracker-a',layer:'trackedEntity',trackedEntityType:{id:'EntityType1'},
+        config:'{"periodType":"lastUpdated","relationships":null}' }]}));
+    await visualizer.draw();
+    const renderer = visualizer.visualizer as MapVisualizer;
+    expect(renderer.layers.map(layer=>layer.layer)).toEqual(['trackedEntity']);
+    await renderer.layers[0].loadFeatures();
+    expect(source.loadTrackedEntities).toHaveBeenCalledTimes(1);
+    expect(source.loadAnalytics).not.toHaveBeenCalled();
+    await visualizer.dispose();
+  });
 
   it('feeds a thematic facade layer through the same zero-safe direct MapLayer path', async () => {
     jest.spyOn(MapVisualizer.prototype, 'draw').mockResolvedValue(undefined);

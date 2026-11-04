@@ -21,6 +21,12 @@ describe('versioned saved-map boundary', () => {
     expect(toMapLayerRequest(request.layers[0])).toMatchObject({ kind: 'orgUnit', source: { kind: 'geometry' } });
     expect(serializeSavedMap(request).mapViews).toEqual([{ id: 'boundary-a', layer: 'boundary', config: '{"label":true}' }]);
   });
+  it('classifies tracker layers and rejects unsupported encoded tracker settings', () => {
+    const request = parseSavedMap({...legacySavedMapFixture(),mapViews:[{
+      id:'tracker-a',layer:'trackedEntity',config:'{"periodType":"program","relationships":null}'}]},'2.41.3');
+    expect(toMapLayerRequest(request.layers[0])).toMatchObject({kind:'trackedEntity',source:{kind:'tracker'}});
+    expect(()=>toMapLayerRequest({...request.layers[0],config:{periodType:'unknown'}})).toThrow('periodType');
+  });
   it('rejects malformed encoded objects and missing versioned basemaps', () => {
     expect(() => parseSavedMap({ ...legacySavedMapFixture(), mapViews: [
       { id: 'bad', layer: 'thematic', config: '{bad' }] }, '2.41.3')).toThrow('config');

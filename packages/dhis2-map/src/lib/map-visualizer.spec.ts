@@ -2,6 +2,7 @@ import type { Feature } from 'geojson';
 import { MapLayer } from './layers/map-layer.model';
 import { D2Maps, MapVisualizer } from './map-visualizer';
 import { LegendControl } from './models/legend-control.model';
+import { TrackedEntityMapLayer } from './layers/tracker/tracker-map-layer';
 import type { MapProviderAdapter, ProviderMap } from './provider-adapter';
 import type { MapGeoFeature } from './models/map-geo-feature.model';
 
@@ -55,6 +56,29 @@ async function ready(map: FakeMap, drawing: Promise<void>): Promise<void> {
 }
 
 describe('MapVisualizer', () => {
+  it('renders tracker and event layers on one provider and disposes once per draw', async () => {
+    const first = new FakeMap();
+    const second = new FakeMap();
+    const adapter = provider(first);
+    (adapter.createMap as jest.Mock).mockReturnValueOnce(first).mockReturnValueOnce(second);
+    const tracker = new TrackedEntityMapLayer({id:'tracker-a',trackedEntityType:{id:'EntityType1'},
+      config:'{"periodType":"lastUpdated"}'},
+    {loadTrackedEntities:jest.fn().mockResolvedValue([{orgUnit:'OrgUnit0001',
+      geometry:{type:'Point',coordinates:[35,-6]},attributes:[{value:'secret'}]}])})
+      .setDataSelections([{dimension:'ou',items:[{id:'OrgUnit0001'}]}]);
+    const renderer = new D2Maps(adapter).setId('host') as D2Maps;
+    renderer.addLayer(tracker).addLayer(layer('facility-a',[feature(36,-7)]));
+    await ready(first,renderer.draw());
+    expect(adapter.createMap).toHaveBeenCalledTimes(1);
+    expect(first.addLayer.mock.calls.map(([item])=>item.id)).toEqual(['tracker-a','facility-a']);
+    expect(first.addControl.mock.calls.some(([control,position])=>
+      control instanceof LegendControl && position === 'top-left')).toBe(true);
+    expect(JSON.stringify(first.addSource.mock.calls[0])).not.toContain('secret');
+    await ready(second,renderer.draw());
+    expect(first.remove).toHaveBeenCalledTimes(1);
+    renderer.dispose();
+    expect(second.remove).toHaveBeenCalledTimes(1);
+  });
   it('combines layer legends into one top-left control', async () => {
     const map = new FakeMap();
     const first = layer('first', [feature(35, -6)]);

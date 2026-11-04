@@ -44,7 +44,7 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
     private readonly provider: MapProviderAdapter = new DefaultMapProviderAdapter()
   ) {
     super();
-    for (const kind of ['thematic', 'facility', 'boundary', 'orgUnit', 'event', 'legacy']) {
+    for (const kind of ['thematic', 'facility', 'boundary', 'orgUnit', 'event', 'trackedEntity', 'legacy']) {
       this.layerRegistry.register({ kind,
         load: (layer, signal) => layer.loadFeatures(signal),
         render: (layer, map) => this.#renderLayer(layer, map) });
@@ -238,6 +238,18 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
             cluster: true, clusterRadius: 50, clusterMaxZoom: 12,
           } : {}),
         });
+        if (layer.layer === 'trackedEntity') {
+          map.addLayer({id:layer.id,type:'circle',source,
+            paint:{'circle-color':['get','color'],
+              'circle-radius':Number.isFinite(layer.eventPointRadius) && layer.eventPointRadius >= 1 && layer.eventPointRadius <= 30
+                ? layer.eventPointRadius : 6,
+              'circle-opacity':layer.opacity ?? 1,
+              'circle-stroke-color':'#ffffff','circle-stroke-width':1}});
+          if (!this.mapLayerConfiguration.hideLegendControl && layer.legendSet?.legends?.length)
+            this.#addLegend(layer.legendSet.legends.map(legend=>({useBackgroundColor:true,
+              backgroundColor:legend.color,label:legend.name})),layer.legendSet.name);
+          return;
+        }
         if (layer.layer === 'event') {
           const savedColor = layer.eventPointColor;
           const eventColor = typeof savedColor === 'string' && /^#?[0-9a-fA-F]{6}$/.test(savedColor)

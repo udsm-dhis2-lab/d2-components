@@ -1,6 +1,7 @@
 import type { MapGeoFeature } from './models/map-geo-feature.model';
 import type { EventClusterViewport, EventQueryResponse, EventSelection } from './events/event-layer';
 import { FetchEventDataSource } from './events/event-layer';
+import type { TrackerLayerSelection } from './layers/tracker/tracker-map-layer';
 
 export interface MapSelection {
   dimension: string;
@@ -47,6 +48,7 @@ export function normalizeMapAnalytics(input: unknown): MapAnalytics {
   }) };
 }
 export interface MapDataSource {
+  loadTrackedEntities?(selection: TrackerLayerSelection, baseUrl: string, signal?: AbortSignal): Promise<readonly unknown[]>;
   loadEvents?(selection: EventSelection, baseUrl: string, signal?: AbortSignal): Promise<EventQueryResponse>;
   loadEventClusters?(selection: EventSelection, baseUrl: string, signal?: AbortSignal,
     viewport?: EventClusterViewport): Promise<EventQueryResponse>;
@@ -71,6 +73,10 @@ export class FetchMapDataSource implements MapDataSource {
     private readonly analyticsLoader: MapDataSource['loadAnalytics'],
     private readonly fetcher: typeof fetch = fetch
   ) {}
+  async loadTrackedEntities(selection: TrackerLayerSelection, baseUrl: string, signal?: AbortSignal): Promise<readonly unknown[]> {
+    const { FetchTrackerDataSource } = await import('./layers/tracker/tracker-data-source');
+    return new FetchTrackerDataSource(this.fetcher).loadTrackedEntities(selection,baseUrl,signal);
+  }
   loadEvents(selection: EventSelection, baseUrl: string, signal?: AbortSignal): Promise<EventQueryResponse> {
     return new FetchEventDataSource(this.fetcher).load(selection, baseUrl, signal);
   }
