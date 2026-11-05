@@ -231,6 +231,7 @@ import {
   TableRow,
 } from '../models/line-list.models';
 import {
+  assignedOrganisationUnitFieldIds,
   projectEventExport,
   projectTrackerExport,
 } from './line-list-export-projection.util';
@@ -343,13 +344,17 @@ export async function fetchLineListDownloadRows({
   // Resolve organisation-unit names in bounded batches, rather than creating
   // one enormous metadata URL for a large download.
   async function namesFor(
-    items: Array<{ orgUnit?: string; orgUnitName?: string }>
+    items: Array<{ orgUnit?: string; orgUnitName?: string }>,
+    fieldValues: unknown[] = []
   ) {
     const ids = [
       ...new Set(
-        items
-          .filter((item) => item.orgUnit && !item.orgUnitName)
-          .map((item) => item.orgUnit as string)
+        [
+          ...items
+            .filter((item) => item.orgUnit && !item.orgUnitName)
+            .map((item) => item.orgUnit),
+          ...fieldValues,
+        ].filter((id): id is string => typeof id === 'string' && Boolean(id))
       ),
     ];
     const names = new Map<string, string>();
@@ -374,12 +379,27 @@ export async function fetchLineListDownloadRows({
       return query.get();
     });
 
+    const organisationUnitFieldIds = new Set(
+      assignedOrganisationUnitFieldIds(
+        metaData,
+        programStageId,
+        columnNameSource
+      )
+    );
+    const organisationUnitValues = events.flatMap((event) =>
+      (programStageId ? event.dataValues ?? [] : event.attributes ?? [])
+        .filter((item: any) =>
+          organisationUnitFieldIds.has(item.dataElement ?? item.attribute)
+        )
+        .map((item: any) => item.value)
+    );
+
     return projectEventExport(
       events,
       metaData,
       programStageId,
       columnNameSource,
-      await namesFor(events)
+      await namesFor(events, organisationUnitValues)
     );
   }
 
@@ -415,18 +435,32 @@ export async function fetchLineListDownloadRows({
         ? entity.orgUnitName
         : undefined,
   }));
-  const registeringUnitIds = [...new Set(
-    registeringUnits.map((item) => item.orgUnit).filter(Boolean) as string[]
-  )];
-  const hierarchy = resolveOrgUnitHierarchy && registeringUnitIds.length
-    ? await resolveOrgUnitHierarchy(registeringUnitIds)
-    : { hierarchy: new Map<string, OrganisationUnitHierarchy>(), levels: [] };
+  const organisationUnitFieldIds = new Set(
+    assignedOrganisationUnitFieldIds(metaData, programStageId, columnNameSource)
+  );
+  const organisationUnitValues = entities.flatMap((entity) => {
+    const latest = entity.latestEnrollment ?? entity.enrollments?.[0];
+    return [...(entity.attributes ?? []), ...(latest?.attributes ?? [])]
+      .filter((attribute: any) =>
+        organisationUnitFieldIds.has(attribute.attribute)
+      )
+      .map((attribute: any) => attribute.value);
+  });
+  const registeringUnitIds = [
+    ...new Set(
+      registeringUnits.map((item) => item.orgUnit).filter(Boolean) as string[]
+    ),
+  ];
+  const hierarchy =
+    resolveOrgUnitHierarchy && registeringUnitIds.length
+      ? await resolveOrgUnitHierarchy(registeringUnitIds)
+      : { hierarchy: new Map<string, OrganisationUnitHierarchy>(), levels: [] };
   return projectTrackerExport(
     entities,
     metaData,
     programStageId,
     columnNameSource,
-    await namesFor(registeringUnits),
+    await namesFor(registeringUnits, organisationUnitValues),
     hierarchy.hierarchy,
     hierarchy.levels
   );

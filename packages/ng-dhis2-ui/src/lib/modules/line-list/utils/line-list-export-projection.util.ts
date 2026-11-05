@@ -20,6 +20,7 @@ interface FieldDefinition {
   id: string;
   name?: string;
   formName?: string;
+  valueType?: string;
 }
 
 interface AssignedAttribute {
@@ -68,7 +69,12 @@ interface ExportEntity {
   enrollments?: ExportEnrollment[];
 }
 
-type ExportSchemaField = { key: string; label: string; uid: string };
+type ExportSchemaField = {
+  key: string;
+  label: string;
+  uid: string;
+  valueType?: string;
+};
 type ExportRow = Record<string, string>;
 
 const ORGANISATION_COLUMNS: ColumnDefinition[] = [
@@ -136,6 +142,7 @@ function assignedFields(
         key: `dataElement:${dataElement.id}`,
         label: displayName(dataElement, source),
         uid: dataElement.id,
+        valueType: dataElement.valueType,
       });
     }
   } else {
@@ -153,10 +160,21 @@ function assignedFields(
         key: `attribute:${attribute.id}`,
         label: displayName(attribute, source),
         uid: attribute.id,
+        valueType: attribute.valueType,
       });
     }
   }
   return deduplicateLabels(fields);
+}
+
+export function assignedOrganisationUnitFieldIds(
+  metadata: Program,
+  stageId: string | undefined,
+  source: 'NAME' | 'FORM_NAME'
+): string[] {
+  return assignedFields(metadata, stageId, source)
+    .filter((field) => field.valueType === 'ORGANISATION_UNIT')
+    .map((field) => field.uid);
 }
 
 function buildRow(
@@ -225,8 +243,13 @@ export function projectTrackerExport(
       attributes.set(attribute.attribute, attribute.value);
     for (const attribute of latest?.attributes ?? [])
       attributes.set(attribute.attribute, attribute.value);
-    for (const field of fields)
-      values[field.key] = text(attributes.get(field.uid));
+    for (const field of fields) {
+      const value = attributes.get(field.uid);
+      values[field.key] =
+        field.valueType === 'ORGANISATION_UNIT' && typeof value === 'string'
+          ? orgUnitNames.get(value) || value
+          : text(value);
+    }
     return buildRow(values, columns, index);
   });
   return { columns, data };
@@ -257,7 +280,13 @@ export function projectEventExport(
       const uid = 'dataElement' in item ? item.dataElement : item.attribute;
       lookup.set(uid, item.value);
     }
-    for (const field of fields) values[field.key] = text(lookup.get(field.uid));
+    for (const field of fields) {
+      const value = lookup.get(field.uid);
+      values[field.key] =
+        field.valueType === 'ORGANISATION_UNIT' && typeof value === 'string'
+          ? orgUnitNames.get(value) || value
+          : text(value);
+    }
     return buildRow(values, columns, index);
   });
   return { columns, data };
