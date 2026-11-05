@@ -5,6 +5,7 @@ import { LegendControl } from './models/legend-control.model';
 import { TrackedEntityMapLayer } from './layers/tracker/tracker-map-layer';
 import type { MapProviderAdapter, ProviderMap } from './provider-adapter';
 import type { MapGeoFeature } from './models/map-geo-feature.model';
+import { ExternalSourceRegistry } from './external-sources';
 
 class FakeMap implements ProviderMap {
   listener?: () => void;
@@ -56,6 +57,58 @@ async function ready(map: FakeMap, drawing: Promise<void>): Promise<void> {
 }
 
 describe('MapVisualizer', () => {
+  it('renders approved external TMS after internal layers and disposes one provider', async () => {
+    const map = new FakeMap();
+    const registry = new ExternalSourceRegistry(['https://maps.example.org']);
+    registry.register({id:'tiles-a',name:'District tiles',mapService:'TMS',
+      url:'https://maps.example.org/{z}/{x}/{y}.png',mapLayerPosition:'OVERLAY',
+      attribution:'District service'});
+    const renderer = new D2Maps(provider(map)).setId('host') as D2Maps;
+    renderer.addLayer(layer('facility-a',[feature(36,-7)]))
+      .setExternalSourceRegistry(registry).addExternalView('{"id":"tiles-a","opacity":0.6}');
+    await ready(map,renderer.draw());
+    expect(map.addLayer.mock.calls.map(([item])=>item.id)).toEqual(['facility-a','external-tiles-a']);
+    expect(map.addSource.mock.calls[1][1]).toMatchObject({scheme:'tms',attribution:'District service'});
+    renderer.dispose();
+    expect(map.remove).toHaveBeenCalledTimes(1);
+  });
+  it('requires a declared version for structured basemaps and uses approved raster basemap',async()=>{
+    const map = new FakeMap();
+    const adapter = provider(map);
+    const registry = new ExternalSourceRegistry(['https://maps.example.org']);
+    registry.register({id:'base-a',name:'Base',mapService:'XYZ',
+      url:'https://maps.example.org/{z}/{x}/{y}.png',mapLayerPosition:'BASEMAP',attribution:'Base source'});
+    const renderer = new D2Maps(adapter).setId('host') as D2Maps;
+    expect(()=>renderer.setBaseMap([{id:'base-a'}])).toThrow('2.43');
+    renderer.setMapCoreVersion('2.43').setExternalSourceRegistry(registry)
+      .setBaseMap([{id:'base-a',opacity:0.4}]);
+    await ready(map,renderer.draw());
+    expect((adapter.createMap as jest.Mock).mock.calls[0][0].style.layers[0].paint['raster-opacity']).toBe(0.4);
+    renderer.dispose();
+  });
+  it('selects timeline frames without mutating saved selections or loading stale frames', async () => {
+    const first = new FakeMap();
+    const second = new FakeMap();
+    const adapter = provider(first);
+    (adapter.createMap as jest.Mock).mockReturnValueOnce(first).mockReturnValueOnce(second);
+    const source = {loadGeoFeatures:jest.fn().mockResolvedValue([]),
+      loadAnalytics:jest.fn().mockResolvedValue({rows:[]})};
+    const thematic = new MapLayer({id:'period-layer',layer:'thematic',
+      dataSelections:[{dimension:'ou',items:[{id:'OU1'}]},
+        {dimension:'pe',items:[{id:'202501'},{id:'202502'}]}]},source);
+    const renderer = new D2Maps(adapter).setId('host') as D2Maps;
+    renderer.addLayer(thematic).configurePeriods({mode:'TIMELINE',version:'2.43',
+      periods:[{id:'202501',startDate:'2025-01-01'},{id:'202502',startDate:'2025-02-01'}],
+      layers:[{id:'period-layer',periods:['202501','202502']}]});
+    await ready(first,renderer.showPeriod('202501'));
+    await ready(second,renderer.showPeriod('202502'));
+    expect(source.loadAnalytics.mock.calls.map(([selections])=>
+      selections.find((item:{dimension:string})=>item.dimension==='pe').items[0].id))
+      .toEqual(['202501','202502']);
+    expect(thematic.dataSelections.find(item=>item.dimension==='pe')?.items).toHaveLength(2);
+    expect(first.remove).toHaveBeenCalledTimes(1);
+    renderer.dispose();
+  });
   it('renders tracker and event layers on one provider and disposes once per draw', async () => {
     const first = new FakeMap();
     const second = new FakeMap();

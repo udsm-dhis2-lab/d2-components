@@ -78,6 +78,7 @@ export class MapLayer {
   fillType!: 'fill' | 'line' | 'circle';
   sourceType = 'geojson';
   baseUrl = '../../..';
+  #periodGeometryCache = new Map<string, MapGeoFeature[]>();
   constructor(props?: Partial<MapLayer>, private dataSource?: MapDataSource) {
     if (props) Object.assign(this, props);
     if (this.layer === 'event' && !this.eventSelection) {
@@ -145,6 +146,35 @@ export class MapLayer {
   setDataSource(dataSource: MapDataSource): MapLayer {
     this.dataSource = dataSource;
     return this;
+  }
+
+  /** Create an independent analytics view; the original saved layer is not mutated. */
+  forPeriod(periodId: string): MapLayer {
+    if (!periodId || !this.dataSource) throw new Error(`Cannot select period for map layer "${this.id}"`);
+    if (this.layer === 'event' || this.layer === 'trackedEntity')
+      throw new Error(`Period frames for ${this.layer} require an explicit dated source contract`);
+    const selections = (this.dataSelections || []).filter(item => item.dimension !== 'pe');
+    const originalSource = this.dataSource;
+    const cache = this.#periodGeometryCache;
+    const source: MapDataSource = {
+      loadAnalytics: (...args) => originalSource.loadAnalytics(...args),
+      ...(originalSource.loadFacilityGroups ? {loadFacilityGroups:(...args: Parameters<NonNullable<MapDataSource['loadFacilityGroups']>>)=>
+        originalSource.loadFacilityGroups!(...args)} : {}),
+      loadGeoFeatures: async (items, baseUrl, signal, options) => {
+        const key = JSON.stringify({baseUrl,ou:items.filter(item=>item.dimension==='ou'),options});
+        const hit = cache.get(key);
+        if (hit) return hit;
+        const features = await originalSource.loadGeoFeatures(items,baseUrl,signal,options);
+        if (!signal?.aborted) {
+          if (cache.size >= 4) cache.delete(cache.keys().next().value as string);
+          cache.set(key,features);
+        }
+        return features;
+      },
+    };
+    const copy = new MapLayer({...this,
+      dataSelections:[...selections,{dimension:'pe',items:[{id:periodId}]}]},source);
+    return copy;
   }
 
   setId(id: string) {

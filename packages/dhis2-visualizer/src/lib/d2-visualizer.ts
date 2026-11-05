@@ -21,7 +21,7 @@ import {
   RendererRegistry,
 } from './modules/renderer-registry';
 import { D2Window } from '@iapps/d2-web-sdk';
-import type { MapDataSource, MapProviderConfig } from '@iapps/d2-maps';
+import type { ExternalSourceRegistry, MapCoreVersion, MapDataSource, MapProviderConfig } from '@iapps/d2-maps';
 import {
   validateVisualizationRequest,
   TrackedEntityInstance,
@@ -49,6 +49,8 @@ export class D2Visualizer {
   private readonly analyticsFacade = new D2AnalyticsFacade();
   private mapDataSource?: MapDataSource;
   private mapProviderConfig?: MapProviderConfig;
+  private mapExternalSourceRegistry?: ExternalSourceRegistry;
+  private mapCoreVersion?: MapCoreVersion;
   dataSelections: VisualizationDataSelection[] = [];
   type!: VisualizationType;
   visualizationType!: VisualizationType;
@@ -367,6 +369,16 @@ export class D2Visualizer {
     return this;
   }
 
+  setMapExternalSourceRegistry(registry: ExternalSourceRegistry): D2Visualizer {
+    this.mapExternalSourceRegistry = registry;
+    return this;
+  }
+
+  setMapCoreVersion(version: MapCoreVersion): D2Visualizer {
+    this.mapCoreVersion = version;
+    return this;
+  }
+
   /**
    *
    * @returns
@@ -568,6 +580,8 @@ export class D2Visualizer {
         dataSelections: this.dataSelections,
         mapLayerConfig: this.mapLayerConfig,
         mapProviderConfig: this.mapProviderConfig,
+        mapExternalSourceRegistry: this.mapExternalSourceRegistry,
+        mapCoreVersion: this.mapCoreVersion,
         mapDataSource: this.mapDataSource,
         tableDashboardItem: this.tableDashboardItem,
         legendSets: this.legendSets,

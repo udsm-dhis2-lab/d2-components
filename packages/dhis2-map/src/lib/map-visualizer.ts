@@ -7,6 +7,9 @@ import { LegendControl, LegendItem } from './models/legend-control.model';
 import { MapLayerConfiguration } from './models/map-layer-configuration.model';
 import { facilitySymbolUrl } from './geometry/facility-symbol';
 import { clusterSizeForZoom } from './events/event-layer';
+import { buildPeriodFrames, type PeriodFrame, type PeriodFrameRequest } from './period-frames';
+import { ExternalSourceRegistry, type ExternalView } from './external-sources';
+import type { MapBasemap, MapCoreVersion } from './saved-map-boundary';
 import {
   DefaultMapProviderAdapter,
   MapProviderAdapter,
@@ -38,10 +41,17 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
   #loadedLayers: MapLayer[] = [];
   #generation = 0;
   #loadAbort?: AbortController;
+  #periodFrames?: readonly PeriodFrame[];
+  #periodBaseLayers?: readonly MapLayer[];
+  #coreVersion: MapCoreVersion = '2.41.3';
+  #basemap?: MapBasemap;
+  #externalRegistry?: ExternalSourceRegistry;
+  #externalViews: ExternalView[] = [];
   readonly layerRegistry = new MapLayerRegistry();
 
   constructor(
-    private readonly provider: MapProviderAdapter = new DefaultMapProviderAdapter()
+    private readonly provider: MapProviderAdapter = new DefaultMapProviderAdapter(),
+    private readonly fetcher?: typeof fetch
   ) {
     super();
     for (const kind of ['thematic', 'facility', 'boundary', 'orgUnit', 'event', 'trackedEntity', 'legacy']) {
@@ -50,7 +60,40 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
         render: (layer, map) => this.#renderLayer(layer, map) });
     }
   }
-  setBaseMap(_basemap: unknown): D2Maps {
+  setMapCoreVersion(version: MapCoreVersion): D2Maps {
+    if (version !== '2.41.3' && version !== '2.43') throw new Error('Unsupported map Core version');
+    this.#coreVersion = version;
+    return this;
+  }
+  setBaseMap(input: unknown): D2Maps {
+    if (input == null) return this;
+    if (Array.isArray(input)) {
+      if (this.#coreVersion !== '2.43') throw new Error('basemaps[] requires Core 2.43');
+      if (input.length > 1) throw new Error('Multiple simultaneous basemaps are unsupported');
+      input = input[0];
+    }
+    let value = input;
+    if (typeof input === 'string') {
+      if (input.trim().startsWith('{')) {
+        try { value = JSON.parse(input); } catch { throw new Error('Invalid encoded basemap'); }
+      } else value = {id:input};
+    }
+    if (!value || typeof value !== 'object' || Array.isArray(value) ||
+      typeof (value as MapBasemap).id !== 'string') throw new Error('Invalid basemap');
+    const basemap = value as MapBasemap;
+    if (basemap.opacity !== undefined && (!Number.isFinite(basemap.opacity) || basemap.opacity < 0 || basemap.opacity > 1))
+      throw new Error('Invalid basemap opacity');
+    if (basemap.hidden !== undefined && typeof basemap.hidden !== 'boolean') throw new Error('Invalid basemap hidden state');
+    this.#basemap = basemap;
+    return this;
+  }
+  setExternalSourceRegistry(registry: ExternalSourceRegistry): D2Maps {
+    this.#externalRegistry = registry;
+    return this;
+  }
+  addExternalView(config: unknown): D2Maps {
+    if (!this.#externalRegistry) throw new Error('External source registry is required');
+    this.#externalViews.push(this.#externalRegistry.parseView(config));
     return this;
   }
   setZoom(zoom: number): D2Maps {
@@ -68,6 +111,27 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
   setProviderConfig(config: MapProviderConfig): D2Maps {
     this.#providerConfig = config;
     return this;
+  }
+
+  /** Opt-in period plan. Existing draw() calls retain their original combined-period semantics. */
+  configurePeriods(request: PeriodFrameRequest): D2Maps {
+    const configured = new Set(this.layers.map(layer=>layer.id));
+    if (request.layers.some(layer=>!configured.has(layer.id)))
+      throw new Error('Period plan refers to an unconfigured map layer');
+    this.#periodFrames = buildPeriodFrames(request);
+    this.#periodBaseLayers = [...this.layers];
+    return this;
+  }
+
+  get periodFrames(): readonly PeriodFrame[] { return this.#periodFrames || []; }
+
+  async showPeriod(periodId: string): Promise<void> {
+    const frame = this.#periodFrames?.find(item=>item.periodId===periodId);
+    if (!frame || !this.#periodBaseLayers) throw new Error(`Unknown map period: ${periodId}`);
+    const states = new Map(frame.layers.map(item=>[item.id,item.state]));
+    this.layers = this.#periodBaseLayers.filter(layer=>states.get(layer.id)==='available')
+      .map(layer=>layer.forPeriod(periodId));
+    await this.draw();
   }
 
   async loadLayers(signal: AbortSignal = new AbortController().signal): Promise<MapLayer[]> {
@@ -123,10 +187,23 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
       throw new Error(`Unable to load map layers: ${this.layerFailures.map(item => item.layerId).join(', ')}`);
     const blankStyle = { version: 8, sources: {}, layers: [] };
     const hasProviderStyle = Boolean(this.#providerConfig?.style);
+    let style: string | Record<string, unknown> | undefined = this.#providerConfig?.style;
+    const basemap = this.#basemap;
+    if (basemap && this.#externalRegistry?.has(basemap.id) && !basemap.hidden) {
+      const record = this.#externalRegistry.get(basemap.id);
+      if (record.mapLayerPosition !== 'BASEMAP') throw new Error('External basemap source must be registered as BASEMAP');
+      if (record.mapService === 'VECTOR_STYLE')
+        style = await this.#externalRegistry.loadVectorStyle(record,this.fetcher ?? globalThis.fetch,abort.signal);
+      else if (['WMS','XYZ','TMS'].includes(record.mapService))
+        style = {version:8,sources:{basemap:this.#externalRegistry.rasterSource(record)},
+          layers:[{id:'basemap',type:'raster',source:'basemap',paint:{'raster-opacity':basemap.opacity ?? 1}}]};
+      else throw new Error('GeoJSON URL cannot be a basemap');
+    }
+    if (abort.signal.aborted || generation !== this.#generation) return;
     this.map = this.provider.createMap({
       container: this._id,
-      style: this.mapLayerConfiguration.hideBasemap || !hasProviderStyle
-        ? blankStyle : this.#providerConfig?.style,
+      style: this.mapLayerConfiguration.hideBasemap || basemap?.hidden || (!hasProviderStyle && !style)
+        ? blankStyle : style,
       zoom: this.zoom,
       accessToken: this.#providerConfig?.accessToken,
     });
@@ -208,11 +285,19 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
   }
 
   async #renderLayers(map: ProviderMap): Promise<void> {
-    for (const { layer } of this.#loadedLayers
-      .map((layer, index) => ({ layer, index }))
-      .sort((a, b) => (a.layer.sortOrder ?? a.index) - (b.layer.sortOrder ?? b.index) || a.index - b.index)
+    const entries = [
+      ...this.#loadedLayers.map((layer,index)=>({layer,index,order:layer.sortOrder ?? index})),
+      ...this.#externalViews.map((view,index)=>({view,index:index+this.#loadedLayers.length,
+        order:view.sortOrder ?? index+this.#loadedLayers.length})),
+    ].sort((a,b)=>a.order-b.order || a.index-b.index);
+    for (const entry of entries
     ) {
       if (this.map !== map) return;
+      if ('view' in entry) {
+        if (!entry.view.hidden) await this.#renderExternalView(entry.view,map);
+        continue;
+      }
+      const {layer} = entry;
       if (layer.hidden) continue;
       try {
         await this.layerRegistry.resolve(this.#definitionKind(layer)).render(layer, map);
@@ -220,6 +305,29 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
         this.layerFailures.push({ layerId: layer.id, error });
       }
     }
+  }
+
+  async #renderExternalView(view: ExternalView, map: ProviderMap): Promise<void> {
+    const registry = this.#externalRegistry;
+    if (!registry) throw new Error('External source registry is required');
+    const record = registry.get(view.sourceId);
+    if (record.mapLayerPosition !== 'OVERLAY') throw new Error('External view must reference an OVERLAY source');
+    const sourceId = `external-${view.id}`;
+    if (record.mapService === 'VECTOR_STYLE') throw new Error('Vector styles are supported as basemaps only');
+    if (record.mapService === 'GEOJSON_URL') {
+      const data = await registry.loadGeoJSON(record,this.fetcher ?? globalThis.fetch,this.#loadAbort?.signal);
+      if (this.map !== map || this.#loadAbort?.signal.aborted) return;
+      map.addSource(sourceId,{type:'geojson',data,attribution:record.attribution});
+      for (const [type,geometry] of [['fill','Polygon'],['line','LineString'],['circle','Point']] as const)
+        map.addLayer({id:`${sourceId}-${type}`,source:sourceId,type,filter:['==',['geometry-type'],geometry],
+          paint:type === 'fill' ? {'fill-color':view.color || '#66c2a5','fill-opacity':view.opacity ?? 1} :
+            type === 'line' ? {'line-color':view.color || '#006d2c','line-opacity':view.opacity ?? 1} :
+              {'circle-color':view.color || '#66c2a5','circle-opacity':view.opacity ?? 1,'circle-radius':6}});
+      return;
+    }
+    map.addSource(sourceId,registry.rasterSource(record));
+    map.addLayer({id:sourceId,type:'raster',source:sourceId,
+      paint:{'raster-opacity':view.opacity ?? 1}});
   }
 
   #definitionKind(layer: MapLayer): string {

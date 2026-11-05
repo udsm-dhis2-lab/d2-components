@@ -38,8 +38,15 @@ function finite(value: unknown, path: string): number {
   return value;
 }
 function basemap(value: unknown, path: string): MapBasemap {
+  if (typeof value === 'string' && value !== '' && !value.trim().startsWith('{'))
+    return { id: value };
   const item = decoded(value, path);
   if (typeof item['id'] !== 'string' || !item['id']) throw new Error(`${path}.id is required`);
+  if (item['opacity'] !== undefined &&
+    (typeof item['opacity'] !== 'number' || !Number.isFinite(item['opacity']) || item['opacity'] < 0 || item['opacity'] > 1))
+    throw new Error(`${path}.opacity must be between 0 and 1`);
+  if (item['hidden'] !== undefined && typeof item['hidden'] !== 'boolean')
+    throw new Error(`${path}.hidden must be a boolean`);
   return item as MapBasemap;
 }
 
@@ -78,7 +85,11 @@ export function serializeSavedMap(request: SavedMapRequest): Record<string, unkn
       config: raw['config'] == null ? raw['config'] : JSON.stringify(config) })) };
   if (request.version === '2.41.3') {
     delete result['basemaps'];
-    result['basemap'] = request.basemaps[0] ? JSON.stringify(request.basemaps[0]) : null;
+    const selected = request.basemaps[0];
+    result['basemap'] = selected
+      ? typeof request.raw['basemap'] === 'string' && request.raw['basemap'] === selected.id
+        ? selected.id : JSON.stringify(selected)
+      : null;
   } else {
     delete result['basemap'];
     result['basemaps'] = request.basemaps.map(item => ({ ...item }));

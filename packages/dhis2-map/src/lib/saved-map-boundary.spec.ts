@@ -32,6 +32,16 @@ describe('versioned saved-map boundary', () => {
       { id: 'bad', layer: 'thematic', config: '{bad' }] }, '2.41.3')).toThrow('config');
     expect(() => parseSavedMap(legacySavedMapFixture(), '2.43')).toThrow('basemaps');
   });
+  it('accepts plain legacy basemap IDs and validates presentation state', () => {
+    const plain = {...legacySavedMapFixture(),basemap:'osmLight'};
+    const request = parseSavedMap(plain,'2.41.3');
+    expect(request.basemaps).toEqual([{id:'osmLight'}]);
+    expect(serializeSavedMap(request)).toEqual(plain);
+    expect(()=>parseSavedMap({...plain,basemap:'{"id":"osmLight","opacity":2}'},'2.41.3'))
+      .toThrow('opacity');
+    expect(()=>parseSavedMap({...plain,basemap:'{"id":"osmLight","hidden":"false"}'},'2.41.3'))
+      .toThrow('hidden');
+  });
   it('rejects unregistered definitions without loading a provider', () => {
     expect(() => new MapLayerRegistry().resolve('external')).toThrow('Unsupported map layer definition: external');
   });

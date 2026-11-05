@@ -4,6 +4,8 @@ export * from './lib/layers/tracker';
 export * from './lib/map-data-source';
 export * from './lib/events/event-layer';
 export * from './lib/saved-map-boundary';
+export * from './lib/external-sources';
+export * from './lib/period-frames';
 export * from './lib/layer-registry';
 export * from './lib/thematic/thematic.model';
 export * from './lib/thematic/thematic.transform';

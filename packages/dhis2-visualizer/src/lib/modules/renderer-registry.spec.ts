@@ -1,7 +1,21 @@
 import { VisualizationType } from '../shared/models';
 import { createDefaultRendererRegistry } from './renderer-registry';
+import { ExternalSourceRegistry } from '@iapps/d2-maps';
 
 describe('renderer registry', () => {
+  it('requires approved registered sources for external saved map views',()=>{
+    const sourceRegistry = new ExternalSourceRegistry(['https://maps.example.org']);
+    sourceRegistry.register({id:'tiles-a',name:'Tiles',mapService:'XYZ',
+      url:'https://maps.example.org/{z}/{x}/{y}.png',mapLayerPosition:'OVERLAY',attribution:'Source'});
+    const context = {id:'host',configuredType:'MAP' as const,baseUrl:'/dhis',
+      config:{config:{basemap:'osmLight',mapViews:[{id:'external-a',layer:'external',
+        config:'{"id":"tiles-a"}'}]}},dataSelections:[],mapLayerConfig:undefined,
+      mapExternalSourceRegistry:sourceRegistry,tableDashboardItem:undefined,
+      legendSets:undefined,plotOptions:undefined};
+    expect(createDefaultRendererRegistry().create('MAP',context,undefined)).toBeDefined();
+    expect(()=>createDefaultRendererRegistry().create('MAP',
+      {...context,mapExternalSourceRegistry:undefined},undefined)).toThrow('registry');
+  });
   it('keeps saved event view dates, stage and OU selections through MAP facade delegation', async () => {
     const loadEventClusters = jest.fn().mockResolvedValue({headers:[{name:'count'},{name:'center'}],
       rows:[['3','{"type":"Point","coordinates":[-12,8]}']]});

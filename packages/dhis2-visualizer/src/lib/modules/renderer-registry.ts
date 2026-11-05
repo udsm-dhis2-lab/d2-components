@@ -4,7 +4,9 @@ import { D2Charts } from '@iapps/d2-charts';
 import { SingleValueVisualizer } from '@iapps/d2-kpi-cards';
 import {
   FetchMapDataSource,
+  ExternalSourceRegistry,
   MapDataSource,
+  MapCoreVersion,
   MapLayer,
   MapProviderConfig,
   MapVisualizer,
@@ -39,6 +41,8 @@ export interface RendererContext {
   mapLayerConfig: any;
   mapProviderConfig?: MapProviderConfig;
   mapDataSource?: MapDataSource;
+  mapExternalSourceRegistry?: ExternalSourceRegistry;
+  mapCoreVersion?: MapCoreVersion;
   tableDashboardItem: any;
   legendSets: any;
   plotOptions: any;
@@ -109,14 +113,22 @@ export function createDefaultRendererRegistry(): RendererRegistry {
         );
       const renderer = new MapVisualizer()
         .setId(context.id)
-        .setBaseUrl(context.baseUrl)
-        .setBaseMap(context.config?.config?.basemap)
+        .setBaseUrl(context.baseUrl) as MapVisualizer;
+      if (context.mapCoreVersion) renderer.setMapCoreVersion(context.mapCoreVersion);
+      if (context.mapExternalSourceRegistry)
+        renderer.setExternalSourceRegistry(context.mapExternalSourceRegistry);
+      renderer.setBaseMap(context.mapCoreVersion === '2.43'
+        ? context.config?.config?.basemaps : context.config?.config?.basemap)
         .setLayerConfig(context.mapLayerConfig);
       if (context.mapProviderConfig) {
         renderer.setProviderConfig(context.mapProviderConfig);
       }
 
       (context.config?.config?.mapViews || []).forEach((mapView: any) => {
+        if (mapView.layer === 'external' || mapView.layer === 'geoJsonUrl') {
+          renderer.addExternalView(mapView.config);
+          return;
+        }
         const dataSelections = _.unionBy(
           context.dataSelections,
           getSelectionDimensionsFromFavorite(mapView),
