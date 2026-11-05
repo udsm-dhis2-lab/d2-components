@@ -201,4 +201,58 @@ describe('line-list export organisation-unit values', () => {
       'residenceOu name'
     );
   });
+
+  it('resolves tracker hierarchy in bounded batches', async () => {
+    const trackedEntities = Array.from({ length: 101 }, (_, index) => ({
+      latestEnrollment: { orgUnit: `orgUnit${index}` },
+    }));
+    const query: any = {};
+    for (const method of [
+      'setEndDate',
+      'setProgram',
+      'setOrgUnit',
+      'setOuMode',
+      'setStatus',
+      'setFilters',
+      'setPagination',
+      'setOrderCriterias',
+      'setStartDate',
+      'setEventStatus',
+    ])
+      query[method] = jest.fn(() => query);
+    query.get = jest.fn().mockResolvedValue({
+      data: trackedEntities,
+      pagination: { pageCount: 1 },
+      responseStatus: { status: 200 },
+    });
+    const resolveOrgUnitHierarchy = jest.fn(async (ids: string[]) => ({
+      hierarchy: new Map(
+        ids.map((id) => [
+          id,
+          { id, name: `${id} name`, level: 3, ancestors: [] },
+        ])
+      ),
+      levels: [
+        { level: 1, name: 'Country' },
+        { level: 3, name: 'Facility' },
+      ],
+    }));
+
+    const result = await fetchLineListDownloadRows({
+      d2: { trackerModule: { trackedEntity: query } } as any,
+      metaData: metadata,
+      programId: 'program',
+      orgUnit: 'selectedOu',
+      dataQueryFilters: [],
+      enrollmentStatus: 'ACTIVE' as any,
+      columnNameSource: 'NAME',
+      resolveOrgUnitHierarchy,
+    });
+
+    expect(resolveOrgUnitHierarchy).toHaveBeenCalledTimes(2);
+    expect(resolveOrgUnitHierarchy.mock.calls[0][0]).toHaveLength(100);
+    expect(resolveOrgUnitHierarchy.mock.calls[1][0]).toEqual(['orgUnit100']);
+    expect(result.data[0]['orgUnitLevel:3'].value).toBe('orgUnit0 name');
+    expect(result.data[100]['orgUnitLevel:3'].value).toBe('orgUnit100 name');
+  });
 });

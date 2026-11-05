@@ -366,6 +366,21 @@ export async function fetchLineListDownloadRows({
     return names;
   }
 
+  async function hierarchyFor(ids: string[]) {
+    const hierarchy = new Map<string, OrganisationUnitHierarchy>();
+    let levels: OrganisationUnitLevel[] = [];
+    if (!resolveOrgUnitHierarchy) return { hierarchy, levels };
+    for (let index = 0; index < ids.length; index += 100) {
+      const resolved = await resolveOrgUnitHierarchy(
+        ids.slice(index, index + 100)
+      );
+      for (const [id, orgUnit] of resolved.hierarchy)
+        hierarchy.set(id, orgUnit);
+      if (!levels.length) levels = resolved.levels;
+    }
+    return { hierarchy, levels };
+  }
+
   if (programStageId || isEvent) {
     const events = await fetchMatchingPages<any>(async (page) => {
       const query = d2.eventModule.event
@@ -451,10 +466,7 @@ export async function fetchLineListDownloadRows({
       registeringUnits.map((item) => item.orgUnit).filter(Boolean) as string[]
     ),
   ];
-  const hierarchy =
-    resolveOrgUnitHierarchy && registeringUnitIds.length
-      ? await resolveOrgUnitHierarchy(registeringUnitIds)
-      : { hierarchy: new Map<string, OrganisationUnitHierarchy>(), levels: [] };
+  const hierarchy = await hierarchyFor(registeringUnitIds);
   return projectTrackerExport(
     entities,
     metaData,
