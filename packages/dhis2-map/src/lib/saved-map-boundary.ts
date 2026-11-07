@@ -4,7 +4,7 @@ import { parseTrackerConfig } from './layers/tracker/tracker-map-layer';
 export type MapCoreVersion = '2.41.3' | '2.43';
 export type MapLayerKind = 'thematic' | 'facility' | 'boundary' | 'orgUnit' | 'event' | 'trackedEntity' | 'legacy';
 export interface MapViewport { longitude: number; latitude: number; zoom: number }
-export interface MapBasemap { id: string; opacity?: number; hidden?: boolean; [key: string]: unknown }
+export interface MapBasemap { id?: string; opacity?: number; hidden?: boolean; [key: string]: unknown }
 export interface MapSource { kind: 'analytics' | 'geometry'; selections?: readonly unknown[] }
 export interface MapPeriod { kind: 'single'; id?: string }
 export type MapLayerRequest =
@@ -37,11 +37,12 @@ function finite(value: unknown, path: string): number {
   if (typeof value !== 'number' || !Number.isFinite(value)) throw new Error(`${path} must be a finite number`);
   return value;
 }
-function basemap(value: unknown, path: string): MapBasemap {
+function basemap(value: unknown, path: string, allowDefault = false): MapBasemap {
   if (typeof value === 'string' && value !== '' && !value.trim().startsWith('{'))
     return { id: value };
   const item = decoded(value, path);
-  if (typeof item['id'] !== 'string' || !item['id']) throw new Error(`${path}.id is required`);
+  if ((!allowDefault || item['id'] !== undefined) &&
+    (typeof item['id'] !== 'string' || !item['id'])) throw new Error(`${path}.id is required`);
   if (item['opacity'] !== undefined &&
     (typeof item['opacity'] !== 'number' || !Number.isFinite(item['opacity']) || item['opacity'] < 0 || item['opacity'] > 1))
     throw new Error(`${path}.opacity must be between 0 and 1`);
@@ -58,7 +59,7 @@ export function parseSavedMap(input: unknown, version: MapCoreVersion): SavedMap
   const basemaps = version === '2.41.3'
     ? raw['basemap'] == null ? [] : [basemap(raw['basemap'], 'map.basemap')]
     : Array.isArray(raw['basemaps'])
-      ? raw['basemaps'].map((item, index) => basemap(item, `map.basemaps[${index}]`))
+      ? raw['basemaps'].map((item, index) => basemap(item, `map.basemaps[${index}]`,true))
       : (() => { throw new Error('map.basemaps must be an array'); })();
   return {
     version,

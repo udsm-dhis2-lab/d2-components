@@ -1,12 +1,15 @@
 # `@iapps/d2-maps`
 
 Standalone DHIS2 GeoJSON loading, transformation and open-source MapLibre GL
-rendering. Supply a MapLibre-compatible `{ style }` URL or style object through
-`D2Maps.setProviderConfig()` for a configured basemap. `mapbox://` style URLs
-are rejected. The deprecated `accessToken` property remains accepted for API
-compatibility but is never passed to MapLibre. Without a provider style, the
-renderer uses a credential-free blank style so GeoJSON overlays remain visible;
-it does not interpret DHIS2 basemap IDs as provider URLs.
+rendering. Saved `osmLight`, `osmDark`, `osmFiord` and `openStreetMap` IDs use
+credential-free OpenFreeMap or OpenStreetMap sources by default. An id-less
+Core 2.43 `basemaps` entry selects OSM Light; `hidden` and `hideBasemap` still
+produce a blank background. Supply a MapLibre-compatible `{ style }` URL or
+style object through `D2Maps.setProviderConfig()` to override the built-in
+background. `mapbox://` style URLs are rejected. The deprecated `accessToken`
+property remains accepted for API compatibility but is never passed to
+MapLibre. Unknown or credentialed basemap IDs are not silently translated to
+unapproved providers; they require an approved external source or host style.
 `MapVisualizer` remains an alias for existing
 consumers. Inject a `MapDataSource` into each
 `MapLayer`; call `draw()` and `dispose()` when replacing the renderer.
@@ -155,6 +158,6 @@ are validated before rendering.
 
 `D2Maps` accepts an `event` layer through the same registry used by thematic and geometry layers. Direct consumers supply `MapLayer.eventSelection` with `locationAccess: 'precise'`, an explicit program UID, ISO start/end dates, organisation-unit UIDs and `coordinateField`. Saved DHIS2 event views are treated as an explicit display request: the facade reads their top-level dates, program stage, OU selections and coordinate field. A null coordinate field uses DHIS2's documented `EVENT` default. DHIS2 server authorization controls the returned rows; the client does not infer event coordinates from reporting-OU geometry. Individual event queries use `/api/analytics/events/query/{program}` with `coordinatesOnly=true`, `coordinateOuFallback=false`, 100 rows per page and a 2,000-row safety ceiling. It does not call aggregate analytics or OU geometry for event positions.
 
-The individual response adapter accepts the target Core 2.43 `geometry` header (or older `coordinates`) and requires `ou`. Event IDs, tracker identifiers and other row values are not copied into GeoJSON or exposed in popups; an explicitly selected style item may contribute one bounded category string. Saved clustered views use the verified DHIS2 event-cluster endpoint, which returns authoritative query counts and point centers; direct custom sources without that method still use MapLibre's native GeoJSON clustering. Cluster count is **not** an administrative total. Zoom 8 corresponds to a calibrated 70 km cluster size; each zoom level halves/doubles that distance, and `moveend` reloads visible clusters with the current bounding box. In-flight requests are cancelled and stale responses cannot replace newer data. The map retains its historical fit-to-loaded-features behavior; saved center/zoom and basemap fields do not override that behavior. Donut composition, unclustered buffers and event popups remain deferred. The sample map's Earth Engine elevation layer is unsupported. Invalid coordinate fallback settings fail explicitly. Relative-period-only saved event views require an upstream resolved date range; this module does not guess one.
+The individual response adapter accepts the target Core 2.43 `geometry` header (or older `coordinates`) and requires `ou`. Event IDs, tracker identifiers and other row values are not copied into GeoJSON or exposed in popups; an explicitly selected style item may contribute one bounded category string. A saved event view with `eventClustering: false` (or no clustering flag) uses the individual-event query and one point layer, with no cluster request or cluster labels. Saved views with `eventClustering: true` use the verified DHIS2 event-cluster endpoint, which returns authoritative query counts and point centers; direct custom sources without that method still use MapLibre's native GeoJSON clustering. Cluster count is **not** an administrative total. Zoom 8 corresponds to a calibrated 70 km cluster size; each zoom level halves/doubles that distance, and `moveend` reloads visible clusters with the current bounding box. In-flight requests are cancelled and stale responses cannot replace newer data. The map retains its historical fit-to-loaded-features behavior; saved center/zoom and basemap fields do not override that behavior. Donut composition, unclustered buffers and event popups remain deferred. The sample map's Earth Engine elevation layer is unsupported. Invalid coordinate fallback settings fail explicitly. Relative-period-only saved event views require an upstream resolved date range; this module does not guess one.
 
 Coordinate-field names and query paging follow the [DHIS2 event analytics API](https://docs.dhis2.org/en/develop/using-the-api/dhis-core-version-243/analytics.html#event-analytics). The `psigeometry`, `pigeometry` and `teigeometry` aliases are accepted for compatibility but are deprecated by DHIS2 in favor of the documented modern names.

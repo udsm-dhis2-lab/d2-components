@@ -3,6 +3,12 @@ import { parseSavedMap, serializeSavedMap, toMapLayerRequest } from './saved-map
 import { MapLayerRegistry } from './layer-registry';
 
 describe('versioned saved-map boundary', () => {
+  it('round-trips an id-less Core 2.43 default basemap without inventing a saved ID',()=>{
+    const input = {...modernSavedMapFixture(),basemaps:[{opacity:1,hidden:false}]};
+    const request = parseSavedMap(input,'2.43');
+    expect(request.basemaps).toEqual([{opacity:1,hidden:false}]);
+    expect(serializeSavedMap(request)).toEqual(input);
+  });
   it.each([['2.41.3', legacySavedMapFixture()], ['2.43', modernSavedMapFixture()]] as const)(
     'round-trips %s without losing unknown fields', (version, fixture) => {
       const input = { ...fixture, safeUnknown: { note: 'retained' } };

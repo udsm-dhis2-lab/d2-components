@@ -118,7 +118,8 @@ export function createDefaultRendererRegistry(): RendererRegistry {
       if (context.mapExternalSourceRegistry)
         renderer.setExternalSourceRegistry(context.mapExternalSourceRegistry);
       renderer.setBaseMap(context.mapCoreVersion === '2.43'
-        ? context.config?.config?.basemaps : context.config?.config?.basemap)
+        ? context.config?.config?.basemaps
+        : context.config?.config?.basemap ?? context.config?.config?.basemaps?.[0])
         .setLayerConfig(context.mapLayerConfig);
       if (context.mapProviderConfig) {
         renderer.setProviderConfig(context.mapProviderConfig);

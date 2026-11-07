@@ -10,6 +10,7 @@ import { clusterSizeForZoom } from './events/event-layer';
 import { buildPeriodFrames, type PeriodFrame, type PeriodFrameRequest } from './period-frames';
 import { ExternalSourceRegistry, type ExternalView } from './external-sources';
 import type { MapBasemap, MapCoreVersion } from './saved-map-boundary';
+import { builtInBasemapStyle } from './built-in-basemap';
 import {
   DefaultMapProviderAdapter,
   MapProviderAdapter,
@@ -70,6 +71,7 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
     if (Array.isArray(input)) {
       if (this.#coreVersion !== '2.43') throw new Error('basemaps[] requires Core 2.43');
       if (input.length > 1) throw new Error('Multiple simultaneous basemaps are unsupported');
+      if (!input.length) { this.#basemap = undefined; return this; }
       input = input[0];
     }
     let value = input;
@@ -79,7 +81,9 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
       } else value = {id:input};
     }
     if (!value || typeof value !== 'object' || Array.isArray(value) ||
-      typeof (value as MapBasemap).id !== 'string') throw new Error('Invalid basemap');
+      ((value as MapBasemap).id !== undefined &&
+        (typeof (value as MapBasemap).id !== 'string' || !(value as MapBasemap).id)))
+      throw new Error('Invalid basemap');
     const basemap = value as MapBasemap;
     if (basemap.opacity !== undefined && (!Number.isFinite(basemap.opacity) || basemap.opacity < 0 || basemap.opacity > 1))
       throw new Error('Invalid basemap opacity');
@@ -189,7 +193,7 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
     const hasProviderStyle = Boolean(this.#providerConfig?.style);
     let style: string | Record<string, unknown> | undefined = this.#providerConfig?.style;
     const basemap = this.#basemap;
-    if (basemap && this.#externalRegistry?.has(basemap.id) && !basemap.hidden) {
+    if (basemap?.id && this.#externalRegistry?.has(basemap.id) && !basemap.hidden) {
       const record = this.#externalRegistry.get(basemap.id);
       if (record.mapLayerPosition !== 'BASEMAP') throw new Error('External basemap source must be registered as BASEMAP');
       if (record.mapService === 'VECTOR_STYLE')
@@ -199,6 +203,7 @@ export class D2Maps extends BaseVisualizer implements Visualizer {
           layers:[{id:'basemap',type:'raster',source:'basemap',paint:{'raster-opacity':basemap.opacity ?? 1}}]};
       else throw new Error('GeoJSON URL cannot be a basemap');
     }
+    if (!style) style = builtInBasemapStyle(basemap?.id,basemap?.opacity);
     if (abort.signal.aborted || generation !== this.#generation) return;
     this.map = this.provider.createMap({
       container: this._id,

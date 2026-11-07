@@ -193,9 +193,38 @@ describe('MapVisualizer', () => {
     renderer.setBaseMap('osmLight').addLayer(layer('thematic',[feature(35,-6)]));
     await ready(map,renderer.draw());
     expect(adapter.createMap).toHaveBeenCalledWith(expect.objectContaining({
-      zoom:5,style:{version:8,sources:{},layers:[]}}));
+      zoom:5,style:'https://tiles.openfreemap.org/styles/positron'}));
     expect(map.fitBounds).toHaveBeenCalled();
     expect(map.on).not.toHaveBeenCalled();
+  });
+  it.each([
+    ['osmDark','https://tiles.openfreemap.org/styles/dark'],
+    ['osmFiord','https://tiles.openfreemap.org/styles/fiord'],
+  ])('uses the built-in %s style without changing overlay order',async(id,expectedStyle)=>{
+    const map = new FakeMap();
+    const adapter = provider(map);
+    const renderer = new D2Maps(adapter).setId('host') as D2Maps;
+    renderer.setBaseMap(id).addLayer(layer('event-a',[feature(-13,8)]));
+    await ready(map,renderer.draw());
+    expect(adapter.createMap).toHaveBeenCalledWith(expect.objectContaining({style:expectedStyle}));
+    expect(map.addLayer.mock.calls.map(([item])=>item.id)).toEqual(['event-a']);
+  });
+  it('uses OSM Detailed raster tiles and treats an id-less 2.43 entry as OSM Light',async()=>{
+    const detailedMap = new FakeMap();
+    const detailed = provider(detailedMap);
+    const first = new D2Maps(detailed).setId('detailed') as D2Maps;
+    first.setBaseMap('openStreetMap');
+    await ready(detailedMap,first.draw());
+    expect((detailed.createMap as jest.Mock).mock.calls[0][0].style).toMatchObject({
+      version:8,sources:{basemap:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png']}},
+      layers:[{id:'basemap',type:'raster'}]});
+    const defaultMap = new FakeMap();
+    const fallback = provider(defaultMap);
+    const second = new D2Maps(fallback).setId('default') as D2Maps;
+    second.setMapCoreVersion('2.43').setBaseMap([{opacity:1,hidden:false}]);
+    await ready(defaultMap,second.draw());
+    expect((fallback.createMap as jest.Mock).mock.calls[0][0].style)
+      .toBe('https://tiles.openfreemap.org/styles/positron');
   });
   it('adapts a saved 2.43 event view with top-level dates and default EVENT coordinates', async () => {
     const map = new FakeMap();
@@ -218,6 +247,34 @@ describe('MapVisualizer', () => {
     expect(map.addLayer.mock.calls.map(([item])=>item.id)).toEqual([
       'saved-event-clusters','saved-event-counts']);
     expect(map.fitBounds).toHaveBeenCalled();
+  });
+  it('renders a saved unclustered event view as individual points without cluster requests or layers', async () => {
+    const map = new FakeMap();
+    const source = {loadGeoFeatures:jest.fn(),loadAnalytics:jest.fn(),
+      loadEvents:jest.fn().mockResolvedValue({
+        headers:[{name:'event'},{name:'coordinates'},{name:'ou'}],
+        rows:[['private-event','[-13.1,8.8]','ImspTQPwCqd']]}),
+      loadEventClusters:jest.fn()};
+    const event = new MapLayer({id:'saved-points',layer:'event',
+      program:{id:'VBqh0ynB2wv'} as never,
+      startDate:'2025-08-04T02:00:00.000',endDate:'2026-08-04T02:00:00.000',
+      eventClustering:false,eventPointColor:'225588',eventPointRadius:8},source)
+      .setDataSelections([{dimension:'ou',items:[{id:'ImspTQPwCqd'}]}]);
+    const renderer = new D2Maps(provider(map)).setId('host') as D2Maps;
+    renderer.addLayer(event);
+    await ready(map,renderer.draw());
+    expect(source.loadEvents).toHaveBeenCalledWith(expect.objectContaining({
+      program:'VBqh0ynB2wv',organisationUnits:['ImspTQPwCqd']}),
+      '../../..',expect.any(AbortSignal));
+    expect(source.loadEventClusters).not.toHaveBeenCalled();
+    expect(map.addSource.mock.calls[0][1]).toMatchObject({type:'geojson',
+      data:{features:[{geometry:{type:'Point',coordinates:[-13.1,8.8]},properties:{}}]}});
+    expect(map.addSource.mock.calls[0][1].cluster).toBeUndefined();
+    expect(map.addLayer.mock.calls.map(([item])=>item.id)).toEqual(['saved-points']);
+    expect(map.addLayer.mock.calls[0][0].paint).toMatchObject({
+      'circle-color':'#225588','circle-radius':8});
+    renderer.dispose();
+    expect(map.remove).toHaveBeenCalledTimes(1);
   });
   it('renders authorized event points and provider clusters without leaking event identifiers', async () => {
     const map = new FakeMap();
@@ -448,14 +505,14 @@ describe('MapVisualizer', () => {
     ]);
   });
 
-  it('renders overlays on a credential-free blank style when no provider style is supplied', async () => {
+  it('renders overlays above default OSM Light when no provider style is supplied', async () => {
     const map = new FakeMap();
     const adapter = provider(map);
     const renderer = new D2Maps(adapter).setId('host') as D2Maps;
     renderer.addLayer(layer('overlay', [feature(35, -6)]));
     await ready(map, renderer.draw());
     expect(adapter.createMap).toHaveBeenCalledWith(expect.objectContaining({
-      style: { version: 8, sources: {}, layers: [] },
+      style: 'https://tiles.openfreemap.org/styles/positron',
     }));
     expect(adapter.createStyleSwitcherControl).not.toHaveBeenCalled();
     expect(map.addSource).toHaveBeenCalledWith('overlay-source', expect.any(Object));

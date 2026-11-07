@@ -1,1 +1,1 @@
-export type BaseMap = 'osmLight';
+export type BaseMap = 'osmLight' | 'osmDark' | 'osmFiord' | 'openStreetMap';
